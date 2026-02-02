@@ -7,6 +7,7 @@ This file provides comprehensive guidance for AI agents and developers working w
 ## 1. Overview & Quick Reference
 
 ### Repository Purpose
+
 The Sentry Unity SDK provides error monitoring, performance tracing, and crash reporting for Unity applications across all platforms (Android, iOS, macOS, Windows, Linux, WebGL, PlayStation, Xbox).
 
 ### Quick Commands
@@ -45,18 +46,19 @@ pwsh scripts/repack.ps1
 
 ### Key Directories
 
-| Directory | Purpose |
-|-----------|---------|
-| `src/` | Source code for all platform implementations |
-| `package-dev/` | Development Unity package with all assemblies |
-| `package/` | Release package template for UPM |
-| `test/` | Test suite (unit, integration, platform tests) |
-| `modules/` | Git submodules for native SDKs |
-| `samples/` | Sample Unity projects |
-| `scripts/` | Build automation and testing scripts |
-| `.github/workflows/` | CI/CD workflow definitions |
+| Directory            | Purpose                                        |
+| -------------------- | ---------------------------------------------- |
+| `src/`               | Source code for all platform implementations   |
+| `package-dev/`       | Development Unity package with all assemblies  |
+| `package/`           | Release package template for UPM               |
+| `test/`              | Test suite (unit, integration, platform tests) |
+| `modules/`           | Git submodules for native SDKs                 |
+| `samples/`           | Sample Unity projects                          |
+| `scripts/`           | Build automation and testing scripts           |
+| `.github/workflows/` | CI/CD workflow definitions                     |
 
 ### Git Commit Guidelines
+
 - Use simple, direct commit messages without prefixes like "chore:" or "feat:"
 - Messages start with a capital letter
 
@@ -80,6 +82,7 @@ src/
 Each platform follows a consistent architecture:
 
 1. **Native Bridge** - Platform-specific interface to native SDK
+
    - Android: JNI via `AndroidJavaClass`/`AndroidJavaObject`
    - iOS/macOS: Objective-C via `DllImport("__Internal")`
    - Windows/Linux: P/Invoke via `DllImport("sentry")`
@@ -91,6 +94,7 @@ Each platform follows a consistent architecture:
 4. **Configuration** - Platform-specific options and initialization logic
 
 ### Assembly Structure
+
 - Runtime assemblies separate from Editor assemblies
 - Platform-specific assemblies compile only for target platforms
 - Clear dependency hierarchy prevents circular references
@@ -104,31 +108,32 @@ Each platform follows a consistent architecture:
 
 The CI system uses modular, reusable workflows in `.github/workflows/`:
 
-| Workflow | Purpose |
-|----------|---------|
-| `ci.yml` | Main pipeline - triggers on push/PR |
-| `build.yml` | Reusable build workflow |
-| `sdk.yml` | Native SDK builds (Android, Linux, Windows, Cocoa) |
-| `smoke-test-create.yml` | Creates integration test projects |
-| `smoke-test-build-android.yml` | Builds Android test apps |
-| `smoke-test-run-android.yml` | Runs Android tests on emulator |
-| `smoke-test-build-ios.yml` | Builds iOS test apps |
-| `smoke-test-compile-ios.yml` | Compiles iOS Xcode projects |
-| `smoke-test-run-ios.yml` | Runs iOS tests on simulator |
-| `release.yml` | Manual release preparation |
-| `update-deps.yml` | Scheduled dependency updates (daily) |
-| `create-unity-matrix.yml` | Generates test matrix |
+| Workflow                       | Purpose                                            |
+| ------------------------------ | -------------------------------------------------- |
+| `ci.yml`                       | Main pipeline - triggers on push/PR                |
+| `build.yml`                    | Reusable build workflow                            |
+| `sdk.yml`                      | Native SDK builds (Android, Linux, Windows, Cocoa) |
+| `smoke-test-create.yml`        | Creates integration test projects                  |
+| `smoke-test-build-android.yml` | Builds Android test apps                           |
+| `smoke-test-run-android.yml`   | Runs Android tests on emulator                     |
+| `smoke-test-build-ios.yml`     | Builds iOS test apps                               |
+| `smoke-test-compile-ios.yml`   | Compiles iOS Xcode projects                        |
+| `smoke-test-run-ios.yml`       | Runs iOS tests on simulator                        |
+| `release.yml`                  | Manual release preparation                         |
+| `update-deps.yml`              | Scheduled dependency updates (daily)               |
+| `create-unity-matrix.yml`      | Generates test matrix                              |
 
 ### Unity Version Matrix
 
-| Version | PR Testing | Main Branch |
-|---------|------------|-------------|
-| 2021.3.x | No | Yes |
-| 2022.3.x | Yes | Yes |
-| 6000.0.x | Yes | Yes |
-| 6000.1.x | No | Yes |
+| Version  | PR Testing | Main Branch |
+| -------- | ---------- | ----------- |
+| 2021.3.x | No         | Yes         |
+| 2022.3.x | Yes        | Yes         |
+| 6000.0.x | Yes        | Yes         |
+| 6000.1.x | No         | Yes         |
 
 Version mapping is defined in `scripts/ci-env.ps1`:
+
 - `2021.3` → `2021.3.45f2`
 - `2022.3` → `2022.3.70f1`
 - `6000.0` → `6000.0.48f1`
@@ -137,6 +142,7 @@ Version mapping is defined in `scripts/ci-env.ps1`:
 ### Docker-Based Builds
 
 Builds run in Docker containers using `ghcr.io/unityci/editor` images:
+
 - Ensures consistent environment across CI runs
 - Container setup in `scripts/ci-docker.sh`
 - Includes Unity editor, Android SDK, Java, and .NET
@@ -145,16 +151,16 @@ Builds run in Docker containers using `ghcr.io/unityci/editor` images:
 
 Key targets defined in `Directory.Build.targets`:
 
-| Target | Purpose |
-|--------|---------|
-| `DownloadNativeSDKs` | Downloads prebuilt native SDKs from CI |
-| `BuildAndroidSDK` | Builds Android SDK via Gradle |
-| `BuildLinuxSDK` | Builds Linux SDK via CMake |
-| `BuildWindowsSDK` | Builds Windows SDK via CMake (Crashpad) |
-| `BuildCocoaSDK` | Downloads iOS/macOS SDKs from releases |
-| `UnityEditModeTest` | Runs edit-mode unit tests |
-| `UnityPlayModeTest` | Runs play-mode tests |
-| `UnitySmokeTestStandalonePlayerIL2CPP` | Runs smoke tests |
+| Target                                 | Purpose                                 |
+| -------------------------------------- | --------------------------------------- |
+| `DownloadNativeSDKs`                   | Downloads prebuilt native SDKs from CI  |
+| `BuildAndroidSDK`                      | Builds Android SDK via Gradle           |
+| `BuildLinuxSDK`                        | Builds Linux SDK via CMake              |
+| `BuildWindowsSDK`                      | Builds Windows SDK via CMake (Crashpad) |
+| `BuildCocoaSDK`                        | Downloads iOS/macOS SDKs from releases  |
+| `UnityEditModeTest`                    | Runs edit-mode unit tests               |
+| `UnityPlayModeTest`                    | Runs play-mode tests                    |
+| `UnitySmokeTestStandalonePlayerIL2CPP` | Runs smoke tests                        |
 
 ### Artifact Caching
 
@@ -165,6 +171,7 @@ Key targets defined in `Directory.Build.targets`:
 ### CI Flow
 
 **On Pull Request:**
+
 1. Create Unity version matrix (2022.3, 6000.0 only)
 2. Build SDK in Docker
 3. Validate UPM package contents
@@ -174,6 +181,7 @@ Key targets defined in `Directory.Build.targets`:
 7. Measure build sizes
 
 **On Main Branch:**
+
 - Same as PR but with all Unity versions
 - Build native SDKs in parallel
 - Extended test coverage
@@ -201,6 +209,7 @@ dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 ```
 
 Downloads prebuilt native SDKs from CI artifacts or releases:
+
 - Android: JAR/AAR files to `package-dev/Plugins/Android/Sentry~/`
 - iOS: XCFramework to `package-dev/Plugins/iOS/`
 - macOS: DYLIB to `package-dev/Plugins/macOS/`
@@ -220,12 +229,12 @@ pwsh scripts/build-and-alias.ps1
 
 ### Package Structure
 
-| Directory | Purpose |
-|-----------|---------|
-| `package-dev/` | Development package with source, used for testing |
-| `package/` | Release template with metadata (package.json, LICENSE) |
-| `package-release/` | Final release package (created dynamically) |
-| `package-release.zip` | Distributed UPM package |
+| Directory             | Purpose                                                |
+| --------------------- | ------------------------------------------------------ |
+| `package-dev/`        | Development package with source, used for testing      |
+| `package/`            | Release template with metadata (package.json, LICENSE) |
+| `package-release/`    | Final release package (created dynamically)            |
+| `package-release.zip` | Distributed UPM package                                |
 
 ### Release Workflow
 
@@ -237,6 +246,7 @@ pwsh scripts/repack.ps1  # Assembly aliasing + packaging + snapshot update
 ```
 
 Scripts involved:
+
 - `scripts/pack.ps1` - Creates the release package
 - `scripts/repack.ps1` - Full preparation pipeline
 - `scripts/build-and-alias.ps1` - Build with assembly aliasing
@@ -251,14 +261,14 @@ Scripts involved:
 
 ### Platform Implementation Matrix
 
-| Platform | Bridge Type | DllImport | Key Source Files |
-|----------|-------------|-----------|------------------|
-| Android | JNI | N/A | `SentryJava.cs`, `SentryNativeAndroid.cs` |
-| iOS | Objective-C | `__Internal` | `SentryCocoaBridgeProxy.cs`, `SentryNativeCocoa.cs` |
-| macOS | Objective-C | `__Internal` | `SentryCocoaBridgeProxy.cs`, `SentryNativeCocoa.cs` |
-| Windows | P/Invoke | `sentry` | `SentryNativeBridge.cs`, `CFunctions.cs` |
-| Linux | P/Invoke | `sentry` | `SentryNativeBridge.cs`, `CFunctions.cs` |
-| PlayStation | P/Invoke | `sentry` | `SentryNativeBridge.cs`, `CFunctions.cs` |
+| Platform    | Bridge Type | DllImport    | Key Source Files                                    |
+| ----------- | ----------- | ------------ | --------------------------------------------------- |
+| Android     | JNI         | N/A          | `SentryJava.cs`, `SentryNativeAndroid.cs`           |
+| iOS         | Objective-C | `__Internal` | `SentryCocoaBridgeProxy.cs`, `SentryNativeCocoa.cs` |
+| macOS       | Objective-C | `__Internal` | `SentryCocoaBridgeProxy.cs`, `SentryNativeCocoa.cs` |
+| Windows     | P/Invoke    | `sentry`     | `SentryNativeBridge.cs`, `CFunctions.cs`            |
+| Linux       | P/Invoke    | `sentry`     | `SentryNativeBridge.cs`, `CFunctions.cs`            |
+| PlayStation | P/Invoke    | `sentry`     | `SentryNativeBridge.cs`, `CFunctions.cs`            |
 
 ### Native SDK Submodules
 
@@ -272,18 +282,21 @@ modules/
 ### Key Source Files
 
 **Android (`src/Sentry.Unity.Android/`):**
+
 - `SentryJava.cs` - JNI wrapper using `AndroidJavaClass`/`AndroidJavaObject`
 - `SentryNativeAndroid.cs` - Configuration and initialization
 - `AndroidJavaScopeObserver.cs` - Scope synchronization
 - `NativeContextWriter.cs` - Context synchronization
 
 **iOS/macOS (`src/Sentry.Unity.iOS/`):**
+
 - `SentryCocoaBridgeProxy.cs` - P/Invoke to Objective-C functions
 - `SentryNativeCocoa.cs` - Configuration logic
 - `NativeScopeObserver.cs` - Scope synchronization
 - `SentryNativeBridge.m` - Objective-C bridge implementation
 
 **Windows/Linux (`src/Sentry.Unity.Native/`):**
+
 - `SentryNativeBridge.cs` - P/Invoke bindings to `sentry` C library
 - `CFunctions.cs` - Low-level C API definitions
 - `SentryNative.cs` - Configuration and crash detection
@@ -343,6 +356,7 @@ package-dev/Plugins/
 Base class: `src/Sentry.Unity/ScopeObserver.cs`
 
 All platforms implement:
+
 - `AddBreadcrumbImpl()` - Add breadcrumbs to native layer
 - `SetTagImpl()` / `UnsetTagImpl()` - Manage tags
 - `SetUserImpl()` / `UnsetUserImpl()` - Manage user info
@@ -354,6 +368,7 @@ All platforms implement:
 Base class: `src/Sentry.Unity/ContextWriter.cs`
 
 Synchronizes during SDK initialization:
+
 - App start time, build type
 - OS information
 - Device info (CPU, memory, simulator status)
@@ -369,6 +384,7 @@ Synchronizes during SDK initialization:
 **`src/Sentry.Unity/SentryMonoBehaviour.cs`**
 
 Central lifecycle manager:
+
 - Singleton pattern with `DontDestroyOnLoad`
 - Handles `OnApplicationPause()`, `OnApplicationFocus()`, `OnApplicationQuit()`
 - Coroutine queue for background thread operations
@@ -379,6 +395,7 @@ Central lifecycle manager:
 **`src/Sentry.Unity/SentryUnitySdk.cs`**
 
 Orchestrates initialization:
+
 - Configures options from `ScriptableSentryUnityOptions`
 - Registers integrations
 - Sets up platform-specific callbacks
@@ -388,21 +405,22 @@ Orchestrates initialization:
 
 Located in `src/Sentry.Unity/Integrations/`:
 
-| Integration | File | Purpose |
-|-------------|------|---------|
-| Scene Manager | `SceneManagerIntegration.cs` | Breadcrumbs for scene load/unload/change |
-| Scene Tracing | `SceneManagerTracingIntegration.cs` | Spans for scene loading |
-| Startup Tracing | `StartupTracingIntegration.cs` | Transaction for app startup |
-| Lifecycle | `LifeCycleIntegration.cs` | Session tracking across pause/resume |
-| Log Handler | `UnityLogHandlerIntegration.cs` | Captures `Debug.LogException()` |
-| App Logging | `UnityApplicationLoggingIntegration.cs` | Hooks `Application.LogMessageReceived` |
-| ANR | `AnrIntegration.cs` | Application Not Responding detection |
-| Low Memory | `LowMemoryIntegration.cs` | Memory warning events |
-| Scope | `UnityScopeIntegration.cs` | Populates scope with Unity context |
+| Integration     | File                                    | Purpose                                  |
+| --------------- | --------------------------------------- | ---------------------------------------- |
+| Scene Manager   | `SceneManagerIntegration.cs`            | Breadcrumbs for scene load/unload/change |
+| Scene Tracing   | `SceneManagerTracingIntegration.cs`     | Spans for scene loading                  |
+| Startup Tracing | `StartupTracingIntegration.cs`          | Transaction for app startup              |
+| Lifecycle       | `LifeCycleIntegration.cs`               | Session tracking across pause/resume     |
+| Log Handler     | `UnityLogHandlerIntegration.cs`         | Captures `Debug.LogException()`          |
+| App Logging     | `UnityApplicationLoggingIntegration.cs` | Hooks `Application.LogMessageReceived`   |
+| ANR             | `AnrIntegration.cs`                     | Application Not Responding detection     |
+| Low Memory      | `LowMemoryIntegration.cs`               | Memory warning events                    |
+| Scope           | `UnityScopeIntegration.cs`              | Populates scope with Unity context       |
 
 ### Startup Tracing Detail
 
 `StartupTracingIntegration.cs` creates spans:
+
 - `app.start` - Main transaction
 - `runtime.init` - Runtime initialization
 - `runtime.init.subsystem` - Subsystem registration
@@ -412,12 +430,12 @@ Located in `src/Sentry.Unity/Integrations/`:
 
 ### Event Processors
 
-| Processor | File | Purpose |
-|-----------|------|---------|
-| Unity | `UnityEventProcessor.cs` | App memory, battery, device context |
-| Screenshot | `ScreenshotEventProcessor.cs` | Captures screen as JPEG attachment |
-| View Hierarchy | `ViewHierarchyEventProcessor.cs` | GameObject hierarchy JSON |
-| IL2CPP | `Il2CppEventProcessor.cs` | Line number support for IL2CPP |
+| Processor      | File                             | Purpose                             |
+| -------------- | -------------------------------- | ----------------------------------- |
+| Unity          | `UnityEventProcessor.cs`         | App memory, battery, device context |
+| Screenshot     | `ScreenshotEventProcessor.cs`    | Captures screen as JPEG attachment  |
+| View Hierarchy | `ViewHierarchyEventProcessor.cs` | GameObject hierarchy JSON           |
+| IL2CPP         | `Il2CppEventProcessor.cs`        | Line number support for IL2CPP      |
 
 ### Screenshot Capture
 
@@ -441,6 +459,7 @@ Located in `src/Sentry.Unity/Integrations/`:
 **`src/Sentry.Unity.Editor/ConfigurationWindow/`**
 
 Accessible via **Tools → Sentry** menu:
+
 - `SentryWindow.cs` - Main editor window
 - `CoreTab.cs` - DSN and basic setup
 - `LoggingTab.cs` - Log capture configuration
@@ -455,6 +474,7 @@ Accessible via **Tools → Sentry** menu:
 **`src/Sentry.Unity.Editor/Native/BuildPostProcess.cs`**
 
 Runs after build (Priority 1):
+
 - Debug symbol upload via `sentry-cli`
 - Crash handler installation (Windows: Crashpad)
 - Platform-specific configuration
@@ -465,6 +485,7 @@ Runs after build (Priority 1):
 **`src/Sentry.Unity/SentryUnityOptions.cs`** (560+ lines)
 
 Key options:
+
 - `Enabled` - Enable/disable SDK
 - `CaptureInEditor` - Capture events in editor
 - `AutoStartupTraces` - Automatic startup tracing
@@ -480,13 +501,13 @@ Key options:
 
 ### Test Types
 
-| Type | Command | Location |
-|------|---------|----------|
-| Edit Mode | `dotnet msbuild /t:UnityEditModeTest` | `test/Sentry.Unity.Tests/` |
-| Play Mode | `dotnet msbuild /t:UnityPlayModeTest` | `test/Sentry.Unity.Tests/` |
-| Editor Tests | `dotnet msbuild /t:UnityEditModeTest` | `test/Sentry.Unity.Editor.Tests/` |
-| Smoke Tests | `dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP` | Integration tests |
-| Integration | `integration-test.ps1` | `test/Scripts.Integration.Test/` |
+| Type         | Command                                                  | Location                          |
+| ------------ | -------------------------------------------------------- | --------------------------------- |
+| Edit Mode    | `dotnet msbuild /t:UnityEditModeTest`                    | `test/Sentry.Unity.Tests/`        |
+| Play Mode    | `dotnet msbuild /t:UnityPlayModeTest`                    | `test/Sentry.Unity.Tests/`        |
+| Editor Tests | `dotnet msbuild /t:UnityEditModeTest`                    | `test/Sentry.Unity.Editor.Tests/` |
+| Smoke Tests  | `dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP` | Integration tests                 |
+| Integration  | `integration-test.ps1`                                   | `test/Scripts.Integration.Test/`  |
 
 ### Running All Tests
 
@@ -505,15 +526,15 @@ pwsh scripts/run-tests.ps1 -SkipBuild
 
 Located in `test/Scripts.Integration.Test/`:
 
-| Script | Purpose |
-|--------|---------|
-| `create-project.ps1` | Creates new Unity test project |
-| `add-sentry.ps1` | Adds Sentry package to project |
-| `configure-sentry.ps1` | Configures Sentry in test project |
-| `build-project.ps1` | Builds for target platform |
-| `run-smoke-test.ps1` | Executes smoke and crash tests |
+| Script                   | Purpose                              |
+| ------------------------ | ------------------------------------ |
+| `create-project.ps1`     | Creates new Unity test project       |
+| `add-sentry.ps1`         | Adds Sentry package to project       |
+| `configure-sentry.ps1`   | Configures Sentry in test project    |
+| `build-project.ps1`      | Builds for target platform           |
+| `run-smoke-test.ps1`     | Executes smoke and crash tests       |
 | `measure-build-size.ps1` | Compares build size with/without SDK |
-| `integration-test.ps1` | Full local integration test |
+| `integration-test.ps1`   | Full local integration test          |
 
 ### Local Integration Testing
 
@@ -525,9 +546,9 @@ Supported platforms: `macOS`, `Windows`, `Linux`, `Android`, `iOS`, `WebGL`
 
 ### Sample Projects
 
-| Project | Path | Purpose |
-|---------|------|---------|
-| Unity of Bugs | `samples/unity-of-bugs/` | Sample app for testing |
+| Project          | Path                       | Purpose                |
+| ---------------- | -------------------------- | ---------------------- |
+| Unity of Bugs    | `samples/unity-of-bugs/`   | Sample app for testing |
 | Integration Test | `samples/IntegrationTest/` | CI integration testing |
 
 ---
@@ -537,12 +558,14 @@ Supported platforms: `macOS`, `Windows`, `Linux`, `Android`, `iOS`, `WebGL`
 ### Development Workflow
 
 **Prerequisites (first-time setup or after clean):**
+
 ```bash
 # Download native SDKs - REQUIRED before building
 dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 ```
 
 **Development cycle:**
+
 1. Make changes to source code in `src/`
 2. Run `dotnet build` to build and update `package-dev/`
 3. Run `pwsh scripts/run-tests.ps1` to build and run all tests
@@ -562,6 +585,7 @@ dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 ### Exception Filters
 
 Located in `src/Sentry.Unity/Integrations/`:
+
 - `UnityBadGatewayExceptionFilter.cs` - Filters HTTP 502 errors
 - `UnityWebExceptionFilter.cs` - Filters web-related exceptions
 - `UnitySocketExceptionFilter.cs` - Filters socket exceptions
@@ -576,6 +600,7 @@ Located in `src/Sentry.Unity/Integrations/`:
 ### Debug Symbol Upload
 
 Configured through Editor window (Debug Symbols tab):
+
 - Uses Sentry CLI (`scripts/download-sentry-cli.ps1`)
 - IL2CPP method mapping for accurate stack traces
 - Optional source inclusion

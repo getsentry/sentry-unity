@@ -9,6 +9,7 @@ namespace Sentry.Unity.Tests;
 /// <summary>
 /// Testing debouncer in realtime.
 /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
 public sealed class DebouncerTests
 {
     private readonly TimeSpan DefaultOffset = TimeSpan.FromMilliseconds(100);
@@ -55,3 +56,4 @@ public sealed class DebouncerTests
         Assert.IsTrue(debouncer.Debounced());
     }
 }
+#pragma warning restore CS0618 // Type or member is obsolete

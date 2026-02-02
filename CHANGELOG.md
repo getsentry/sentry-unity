@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Features
+
+- Added content-based error event throttling to prevent repeated errors from consuming quota. The new `IThrottler` interface and `ErrorEventThrottler` implementation deduplicate `LogError`, `LogException`, and `LogAssertion` events based on message + stacktrace fingerprinting. Configurable via the Editor window ("Enable Error Event Throttling" + "Dedupe Window"). Breadcrumbs and structured logs are not affected by default. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
+
+### Deprecations
+
+- The time-based log debouncing system (`TimeDebounceBase`, `LogTimeDebounce`, `ErrorTimeDebounce`, `WarningTimeDebounce`) and related options (`EnableLogDebouncing`, `DebounceTimeLog`, `DebounceTimeWarning`, `DebounceTimeError`) are now marked as `[Obsolete]`. Use the new content-based event throttling instead. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
+
 ### Behavioral Changes
 
 - The SDK no longer refreshes the trace ID when changing active scene. This follows the changes to not do so based on lifecycle events, meaning that the trace ID persists from game start to game end, as intended in `4.0.0`. ([#2502](https://github.com/getsentry/sentry-unity/pull/2502))
@@ -799,7 +807,6 @@ If you have compilation errors you can find the affected types or overloads miss
 - The `TracePropagationTarget` class has been removed, use the `SubstringOrRegexPattern` class instead. ([#2763](https://github.com/getsentry/sentry-dotnet/pull/2763))
 - The `WithScope` and `WithScopeAsync` methods have been removed. We have discovered that these methods didn't work correctly in certain desktop contexts, especially when using a global scope. ([#2717](https://github.com/getsentry/sentry-dotnet/pull/2717))
   Replace your usage of `WithScope` with overloads of `Capture*` methods:
-
   - `SentrySdk.CaptureEvent(SentryEvent @event, Action<Scope> scopeCallback)`
   - `SentrySdk.CaptureMessage(string message, Action<Scope> scopeCallback)`
   - `SentrySdk.CaptureException(Exception exception, Action<Scope> scopeCallback)`

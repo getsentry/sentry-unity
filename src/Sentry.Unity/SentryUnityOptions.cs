@@ -48,25 +48,39 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool CaptureInEditor { get; set; } = true;
 
     /// <summary>
-    /// Whether Sentry events should be debounced it too frequent.
+    /// Throttler for events, breadcrumbs, logs, and exceptions to prevent quota exhaustion.
     /// </summary>
+    /// <remarks>
+    /// When enabled via the configuration window, a <see cref="ErrorEventThrottler"/> is used by default.
+    /// The default implementation only throttles error/exception events - breadcrumbs and structured logs are not affected.
+    /// Implement a custom <see cref="IThrottler"/> to also throttle breadcrumbs and logs.
+    /// </remarks>
+    public IThrottler? Throttler { get; set; }
+
+    /// <summary>
+    /// Whether the SDK debounces log messages of the same type.
+    /// </summary>
+    [Obsolete("Use Throttler instead. This property will be removed in a future version.")]
     public bool EnableLogDebouncing { get; set; } = false;
 
     /// <summary>
-    /// Timespan between sending events of LogType.Log
+    /// The time that has to pass between events of LogType.Log before the SDK sends it again.
     /// </summary>
+    [Obsolete("Use Throttler instead. This property will be removed in a future version.")]
     public TimeSpan DebounceTimeLog { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Timespan between sending events of LogType.Warning
+    /// The time that has to pass between events of LogType.Warning before the SDK sends it again.
     /// </summary>
+    [Obsolete("Use Throttler instead. This property will be removed in a future version.")]
     public TimeSpan DebounceTimeWarning { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Timespan between sending events of LogType.Assert, LogType.Exception and LogType.Error
+    /// The time that has to pass between events of LogType.Error, LogType.Exception and LogType.Assert
+    /// before the SDK sends it again.
     /// </summary>
+    [Obsolete("Use Throttler instead. This property will be removed in a future version.")]
     public TimeSpan DebounceTimeError { get; set; } = TimeSpan.FromSeconds(1);
-
 
     private CompressionLevelWithAuto _requestBodyCompressionLevel = CompressionLevelWithAuto.Auto;
 
