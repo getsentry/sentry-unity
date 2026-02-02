@@ -13,35 +13,34 @@ if (-not (Test-Path $SourceDirectory))
 
 Write-Host "Copying native plugins from '$SourceDirectory' to '$TargetDirectory' for platform '$Platform'"
 
-# Create target directory if it doesn't exist
 if (-not (Test-Path $TargetDirectory))
 {
     New-Item -ItemType Directory -Path $TargetDirectory -Force | Out-Null
 }
 
-# Get all files recursively from source directory
 $files = Get-ChildItem -Path $SourceDirectory -File -Recurse
 
 foreach ($file in $files)
 {
-    # Calculate relative path from source directory
     $relativePath = $file.FullName.Substring($SourceDirectory.Length).TrimStart([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
     $targetPath = Join-Path $TargetDirectory $relativePath
     $targetDir = Split-Path $targetPath -Parent
 
-    # Create target subdirectory if needed
     if (-not (Test-Path $targetDir))
     {
         New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
     }
 
-    # Copy the file
     Write-Host "  Copying: $relativePath"
     Copy-Item -Path $file.FullName -Destination $targetPath -Force
 
-    # Generate meta file
     $metaPath = "$targetPath.meta"
-    $guid = [guid]::NewGuid().ToString("N")
+    $guid = [guid]::NewGuid().ToString("N").ToLower()
+
+    $excludeGameCoreScarlett = if ($Platform -eq "GameCoreScarlett") { 0 } else { 1 }
+    $excludeGameCoreXboxOne = if ($Platform -eq "GameCoreXboxOne") { 0 } else { 1 }
+    $excludePS5 = if ($Platform -eq "PS5") { 0 } else { 1 }
+    $excludeSwitch = if ($Platform -eq "Switch") { 0 } else { 1 }
 
     $metaContent = @"
 fileFormatVersion: 2
@@ -53,31 +52,69 @@ PluginImporter:
   executionOrder: {}
   defineConstraints: []
   isPreloaded: 0
-  isOverridable: 1
+  isOverridable: 0
   isExplicitlyReferenced: 0
   validateReferences: 1
   platformData:
+    Android:
+      enabled: 0
+      settings:
+        AndroidLibraryDependee: UnityLibrary
+        AndroidSharedLibraryType: Executable
+        CPU: ARMv7
     Any:
       enabled: 0
       settings:
         Exclude Android: 1
         Exclude Editor: 1
+        Exclude GameCoreScarlett: $excludeGameCoreScarlett
+        Exclude GameCoreXboxOne: $excludeGameCoreXboxOne
         Exclude Linux64: 1
         Exclude OSXUniversal: 1
-        Exclude WebGL: 1
+        Exclude PS5: $excludePS5
+        Exclude Switch: $excludeSwitch
         Exclude Win: 1
         Exclude Win64: 1
         Exclude iOS: 1
+    Editor:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+        DefaultValueInitialized: true
+        OS: AnyOS
+    Linux64:
+      enabled: 0
+      settings:
+        CPU: None
+    OSXUniversal:
+      enabled: 0
+      settings:
+        CPU: None
     ${Platform}:
       enabled: 1
       settings: {}
+    Win:
+      enabled: 0
+      settings:
+        CPU: None
+    Win64:
+      enabled: 0
+      settings:
+        CPU: None
+    iOS:
+      enabled: 0
+      settings:
+        AddToEmbeddedBinaries: false
+        CPU: AnyCPU
+        CompileFlags:
+        FrameworkDependencies:
   userData:
   assetBundleName:
   assetBundleVariant:
 "@
 
     Write-Host "  Creating meta: $relativePath.meta"
-    Set-Content -Path $metaPath -Value $metaContent -NoNewline
+    Set-Content -Path $metaPath -Value $metaContent
 }
 
 Write-Host "Successfully copied $($files.Count) file(s) with meta files for platform '$Platform'"
