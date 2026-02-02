@@ -13,6 +13,8 @@ if (-not $Global:NewProjectPathCache)
 
 $UnityPath = FormatUnityPath $UnityPath
 
+Write-Log "Configuring Sentry options..."
+
 $unityArgs = @( `
         "-quit", "-batchmode", "-nographics", "-disable-assembly-updater", "-projectPath ", $(GetNewProjectPath), `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
@@ -21,6 +23,8 @@ $unityArgs = @( `
         "-cliOptions.UrlOverride", ($CheckSymbols ? (SymbolServerUrlFor $UnityPath $Platform) : "") )
 
 RunUnityAndExpect $UnityPath "ConfigureSentryOptions" "ConfigureOptions: SUCCESS" $unityArgs
+
+Write-PhaseSuccess "Sentry configured"
 
 function AssertPathExists([string] $Path)
 {

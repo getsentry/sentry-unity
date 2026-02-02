@@ -6,12 +6,16 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+. $PSScriptRoot/common.ps1
+
 if (-not (Test-Path $SourceDirectory))
 {
     throw "Source directory does not exist: $SourceDirectory"
 }
 
-Write-Host "Copying native plugins from '$SourceDirectory' to '$TargetDirectory' for platform '$Platform'"
+Write-Log "Copying native plugins for platform '$Platform'"
+Write-Detail "Source: $SourceDirectory"
+Write-Detail "Target: $TargetDirectory"
 
 if (-not (Test-Path $TargetDirectory))
 {
@@ -31,7 +35,7 @@ foreach ($file in $files)
         New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
     }
 
-    Write-Host "  Copying: $relativePath"
+    Write-Detail "Copying: $relativePath"
     Copy-Item -Path $file.FullName -Destination $targetPath -Force
 
     $metaPath = "$targetPath.meta"
@@ -113,8 +117,8 @@ PluginImporter:
   assetBundleVariant:
 "@
 
-    Write-Host "  Creating meta: $relativePath.meta"
+    Write-Detail "Creating meta: $relativePath.meta"
     Set-Content -Path $metaPath -Value $metaContent
 }
 
-Write-Host "Successfully copied $($files.Count) file(s) with meta files for platform '$Platform'"
+Write-PhaseSuccess "Copied $($files.Count) file(s) with meta files for platform '$Platform'"

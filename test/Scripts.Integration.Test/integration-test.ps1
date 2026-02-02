@@ -20,6 +20,8 @@ if (-not $Global:NewProjectPathCache)
     . ./test/Scripts.Integration.Test/globals.ps1
 }
 
+. ./test/Scripts.Integration.Test/common.ps1
+
 # Validate package path exists
 If (-not (Test-Path -Path $PackagePath))
 {
@@ -38,11 +40,15 @@ if ($Recreate -and (Test-Path -Path $(GetNewProjectPath)))
 
 If (-not(Test-Path -Path "$(GetNewProjectPath)"))
 {
-    Write-Host "Creating Project at '$(GetNewProjectPath)'"
+    Write-PhaseHeader "Creating Project"
+    Write-Log "Project path: $(GetNewProjectPath)"
     ./test/Scripts.Integration.Test/create-project.ps1 "$UnityPath"
-    Write-Host "Adding Sentry"
+
+    Write-PhaseHeader "Adding Sentry"
+    Write-Log "Package path: $PackagePath"
     ./test/Scripts.Integration.Test/add-sentry.ps1 "$UnityPath" -PackagePath $PackagePath
-    Write-Host "Configuring Sentry"
+
+    Write-PhaseHeader "Configuring Sentry"
     ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols:$CheckSymbols
 
     If ($Platform -eq "Switch")
@@ -52,7 +58,7 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)"))
             Throw "Switch platform requires -NativeSDKPath parameter pointing to directory containing libsentry.a and libzstd.a"
         }
 
-        Write-Host "Setting up Switch native plugins"
+        Write-PhaseHeader "Setting Up Switch Native Plugins"
         ./test/Scripts.Integration.Test/copy-native-plugins.ps1 `
             -SourceDirectory $NativeSDKPath `
             -TargetDirectory "$(GetNewProjectAssetsPath)/Plugins/Sentry/Switch" `
@@ -63,7 +69,7 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)"))
 # Support rebuilding the integration test project. I.e. if you make changes to the SmokeTester.cs during
 If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath)))
 {
-    Write-Host "Building Project"
+    Write-PhaseHeader "Building Project"
 
     If ("iOS" -eq $Platform)
     {
@@ -79,11 +85,11 @@ If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath)))
 
 If ($SkipTests)
 {
-    Write-Host "Skipping tests (-SkipTests flag set)"
+    Write-Log "Skipping tests (-SkipTests flag set)" -ForegroundColor Yellow
 }
 Else
 {
-    Write-Host "Running tests"
+    Write-PhaseHeader "Running Tests"
 
     Switch -Regex ($Platform)
     {
@@ -105,7 +111,7 @@ Else
         }
         "^Switch$"
         {
-            Write-Host "Switch build completed successfully - no automated test execution available"
+            Write-PhaseSuccess "Switch build completed - no automated test execution available"
         }
         Default { Write-Warning "No test run for platform: '$platform'" }
     }
