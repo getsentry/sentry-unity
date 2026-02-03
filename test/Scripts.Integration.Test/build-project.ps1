@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string] $UnityPath,
     [string] $Platform = "",
     [string] $UnityVersion = "",
@@ -34,7 +34,7 @@ else
 if ($Platform -eq "Android-Export")
 {
     # See test/Scripts.Integration.Test/gradle/README.md
-    $gradleVersion = $UnityVersion.StartsWith("2019") ? "v5.1.1" : "v6.1.1"
+    $gradleVersion = "v6.1.1"
     Copy-Item -Force -Recurse "$IntegrationScriptsPath/gradle/$gradleVersion/*" -Destination $outputPath
 }
 
