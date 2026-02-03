@@ -55,6 +55,30 @@ internal class NativePluginBuildPreProcess : IPreprocessBuildWithReport
             },
             buildTarget: BuildTarget.Switch
         ),
+        [BuildTarget.PS5] = new PlatformNativeConfig(
+            platformName: "PlayStation",
+            requiredFiles: new[]
+            {
+                "Assets/Plugins/Sentry/PS5/sentry.prx",
+            },
+            buildTarget: BuildTarget.PS5
+        ),
+        [BuildTarget.GameCoreXboxSeries] = new PlatformNativeConfig(
+            platformName: "Xbox Series X/S",
+            requiredFiles: new[]
+            {
+                "Assets/Plugins/Sentry/XSX/sentry.dll",
+            },
+            buildTarget: BuildTarget.GameCoreXboxSeries
+        ),
+        [BuildTarget.GameCoreXboxOne] = new PlatformNativeConfig(
+            platformName: "Xbox One",
+            requiredFiles: new[]
+            {
+                "Assets/Plugins/Sentry/XB1/sentry.dll",
+            },
+            buildTarget: BuildTarget.GameCoreXboxOne
+        ),
     };
 
     public int callbackOrder => -100;
