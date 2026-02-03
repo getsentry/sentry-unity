@@ -13,7 +13,8 @@ public class Builder
     {
         Debug.Log("Builder: Starting to build");
 
-        var args = ParseCommandLineArguments();
+        Debug.Log("Builder: Parsing command line arguments");
+        var args = CommandLineArguments.Parse();
         ValidateArguments(args);
 
         Debug.Log($"Builder: Starting build. Output will be '{args["buildPath"]}'.");
@@ -171,29 +172,6 @@ public class Builder
     {
         Debug.Log("Builder: Building Switch IL2CPP Player");
         BuildIl2CPPPlayer(BuildTarget.Switch, BuildTargetGroup.Switch, BuildOptions.StrictMode);
-    }
-
-    public static Dictionary<string, string> ParseCommandLineArguments()
-    {
-        Debug.Log("Builder: Parsing command line arguments");
-        var commandLineArguments = new Dictionary<string, string>();
-        var args = Environment.GetCommandLineArgs();
-
-        for (int current = 0, next = 1; current < args.Length; current++, next++)
-        {
-            if (!args[current].StartsWith("-"))
-            {
-                continue;
-            }
-
-            var flag = args[current].TrimStart('-');
-            var flagHasValue = next < args.Length && !args[next].StartsWith("-");
-            var flagValue = flagHasValue ? args[next].TrimStart('-') : "";
-
-            commandLineArguments.Add(flag, flagValue);
-        }
-
-        return commandLineArguments;
     }
 
     private static void ValidateArguments(Dictionary<string, string> args)
