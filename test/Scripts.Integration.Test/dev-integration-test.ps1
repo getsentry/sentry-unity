@@ -30,6 +30,7 @@ $UnityPath = $null
 If ($IsMacOS)
 {
     $UnityPath = "/Applications/Unity/Hub/Editor/$UnityVersion*/Unity.app/"
+    $UnityPath = (Resolve-Path $UnityPath | Select-Object -First 1).Path
 }
 Elseif ($IsWindows)
 {
