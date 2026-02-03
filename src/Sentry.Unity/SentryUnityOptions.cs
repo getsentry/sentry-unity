@@ -331,11 +331,11 @@ public sealed class SentryUnityOptions : SentryOptions
             _defaultUserId = value;
             if (_defaultUserId is null)
             {
-                DiagnosticLogger?.LogWarning("Couldn't set the default user ID - the value is NULL.");
+                this.LogWarning("Couldn't set the default user ID - the value is NULL.");
             }
             else
             {
-                DiagnosticLogger?.LogDebug("Setting '{0}' as the default user ID.", _defaultUserId);
+                this.LogDebug("Setting '{0}' as the default user ID.", _defaultUserId);
             }
         }
     }

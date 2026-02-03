@@ -26,7 +26,7 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
         // original handler loghandler and endlessly forward to itself
         if (Debug.unityLogger.logHandler == this)
         {
-            _options.DiagnosticLogger?.LogWarning("UnityLogHandlerIntegration has already been registered.");
+            _options.LogWarning("UnityLogHandlerIntegration has already been registered.");
             return;
         }
 

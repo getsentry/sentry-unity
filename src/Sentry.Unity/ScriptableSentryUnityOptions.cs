@@ -239,7 +239,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
         if (OptionsConfiguration != null)
         {
-            options.DiagnosticLogger?.LogDebug("OptionsConfiguration found. Calling configure.");
+            options.LogDebug("OptionsConfiguration found. Calling configure.");
             OptionsConfiguration.Configure(options);
         }
 

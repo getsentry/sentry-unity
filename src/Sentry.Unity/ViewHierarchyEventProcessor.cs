@@ -26,13 +26,13 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
     {
         if (!MainThreadData.IsMainThread())
         {
-            _options.DiagnosticLogger?.LogDebug("Hierarchy capture skipped. Can't capture hierarchy on other than the main thread.");
+            _options.LogDebug("Hierarchy capture skipped. Can't capture hierarchy on other than the main thread.");
             return @event;
         }
 
         if (_options.BeforeCaptureViewHierarchyInternal?.Invoke(@event) is false)
         {
-            _options.DiagnosticLogger?.LogInfo("Hierarchy capture skipped by BeforeCaptureViewHierarchy callback.");
+            _options.LogInfo("Hierarchy capture skipped by BeforeCaptureViewHierarchy callback.");
             return @event;
         }
 
@@ -47,7 +47,7 @@ public class ViewHierarchyEventProcessor : ISentryEventProcessorWithHint
 
             if (viewHierarchy == null)
             {
-                _options.DiagnosticLogger?.LogInfo("View hierarchy discarded by BeforeSendViewHierarchy callback.");
+                _options.LogInfo("View hierarchy discarded by BeforeSendViewHierarchy callback.");
                 return @event;
             }
         }

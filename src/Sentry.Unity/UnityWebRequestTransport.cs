@@ -91,7 +91,7 @@ internal class UnityWebRequestTransport : HttpTransportBase
     {
         if (www.result == UnityWebRequest.Result.ConnectionError)
         {
-            _options.DiagnosticLogger?.LogWarning("Failed to send request: {0}", www.error);
+            _options.LogWarning("Failed to send request: {0}", www.error);
             return null;
         }
 
@@ -108,7 +108,7 @@ internal class UnityWebRequestTransport : HttpTransportBase
             }
             catch (InvalidOperationException e)
             {
-                _options.DiagnosticLogger?.LogError(e, "Failed to extract response header: {0}", header.Key);
+                _options.LogError(e, "Failed to extract response header: {0}", header.Key);
             }
         }
         response.Content = new StringContent(www.downloadHandler.text);
