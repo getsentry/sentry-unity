@@ -112,7 +112,7 @@ Else
         }
         "^WebGL$"
         {
-            python3 scripts/smoke-test-webgl.py $buildDir
+            python3 scripts/smoke-test-webgl.py $(GetNewProjectBuildPath)
         }
         "^Switch$"
         {
