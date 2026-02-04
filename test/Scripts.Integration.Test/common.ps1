@@ -26,6 +26,53 @@ function Write-Log
     }
 }
 
+function Write-Detail
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $timestamp = Get-Date -Format "HH:mm:ss.fff"
+    Write-Host "$timestamp |   $Message" -ForegroundColor Gray
+}
+
+function Write-PhaseHeader
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    $line = "=" * 64
+    Write-Host ""
+    Write-Host $line -ForegroundColor Cyan
+    Write-Host "  $($Name.ToUpper())" -ForegroundColor Cyan
+    Write-Host $line -ForegroundColor Cyan
+}
+
+function Write-PhaseSuccess
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $timestamp = Get-Date -Format "HH:mm:ss.fff"
+    Write-Host "$timestamp | [OK] $Message" -ForegroundColor Green
+}
+
+function Write-PhaseFailed
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $timestamp = Get-Date -Format "HH:mm:ss.fff"
+    Write-Host "$timestamp | [FAILED] $Message" -ForegroundColor Red
+}
+
 function RunApiServer([string] $ServerScript, [string] $Uri)
 {
     if ([string]::IsNullOrEmpty($Uri))
@@ -322,6 +369,12 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     {
         Write-Log 'No symbols are uploaded for WebGL - nothing to test.' -ForegroundColor Yellow
         return
+    }
+    ElseIf ($buildMethod.contains('Switch'))
+    {
+        $expectedFiles = @(
+            'GameAssembly.nss: count=1'
+        )
     }
     Else
     {
