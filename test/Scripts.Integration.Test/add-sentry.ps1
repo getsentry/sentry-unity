@@ -1,5 +1,6 @@
 param(
-    [string] $UnityPath
+    [Parameter(Mandatory = $true)][string] $UnityPath,
+    [Parameter(Mandatory = $true)][string] $PackagePath
 )
 
 if (-not $Global:NewProjectPathCache)
@@ -11,9 +12,19 @@ if (-not $Global:NewProjectPathCache)
 
 $UnityPath = FormatUnityPath $UnityPath
 
-RunUnityAndExpect $UnityPath "AddSentryPackage" "Sentry Package Installation: SUCCESS" @( `
-        "-batchmode", "-projectPath ", "$(GetNewProjectPath)", "-installSentry", "Disk")
+# Convert relative paths to absolute (relative to ProjectRoot)
+# This ensures the path works both locally and in Docker (where RunUnityCustom handles path translation)
+if (-not [System.IO.Path]::IsPathRooted($PackagePath))
+{
+    $PackagePath = "$(ProjectRoot)/$PackagePath"
+}
 
-Write-Log "Copying Integration Test Files"
-New-Item -Path "$(GetNewProjectAssetsPath)" -Name "Scripts" -ItemType "directory"
+Write-Log "Installing Sentry package..."
+RunUnityAndExpect $UnityPath "AddSentryPackage" "Sentry Package Installation: SUCCESS" @( `
+        "-batchmode", "-projectPath", "$(GetNewProjectPath)", `
+        "-installSentry", "Disk", `
+        "-sentryPackagePath", $PackagePath)
+
+Write-Log "Copying Integration Test Files..."
+New-Item -Path "$(GetNewProjectAssetsPath)" -Name "Scripts" -ItemType "directory" | Out-Null
 Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$(GetNewProjectAssetsPath)/Scripts/"
