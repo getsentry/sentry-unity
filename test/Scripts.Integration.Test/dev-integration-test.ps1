@@ -34,7 +34,13 @@ If ($IsMacOS)
 }
 Elseif ($IsWindows)
 {
-    $UnityPath = "C:/Program Files/Unity/Hub/Editor/$UnityVersion/Editor/Unity.exe"
+    $UnityPath = "C:/Program Files/Unity/Hub/Editor/$UnityVersion*/Editor/Unity.exe"
+    $UnityPath = (Resolve-Path $UnityPath | Select-Object -First 1).Path
+}
+Elseif ($IsLinux)
+{
+    $UnityPath = "$HOME/Unity/Hub/Editor/$UnityVersion*/Editor/Unity"
+    $UnityPath = (Resolve-Path $UnityPath | Select-Object -First 1).Path
 }
 
 If (-not(Test-Path -Path $UnityPath))
