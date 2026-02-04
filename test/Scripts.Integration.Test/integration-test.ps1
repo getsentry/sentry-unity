@@ -68,6 +68,36 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)"))
             -Platform "Switch"
         Write-PhaseSuccess "Native plugins copied"
     }
+
+    If ($Platform -eq "GameCoreScarlett")
+    {
+        If (-not $NativeSDKPath -or -not (Test-Path $NativeSDKPath))
+        {
+            Throw "GameCoreScarlett platform requires -NativeSDKPath parameter pointing to directory containing sentry.dll"
+        }
+
+        Write-PhaseHeader "Setting Up Xbox Native Plugins"
+        ./test/Scripts.Integration.Test/copy-native-plugins.ps1 `
+            -SourceDirectory $NativeSDKPath `
+            -TargetDirectory "$(GetNewProjectAssetsPath)/Plugins/Sentry/XSX" `
+            -Platform "GameCoreScarlett"
+        Write-PhaseSuccess "Native plugins copied"
+    }
+
+    If ($Platform -eq "PS5")
+    {
+        If (-not $NativeSDKPath -or -not (Test-Path $NativeSDKPath))
+        {
+            Throw "PS5 platform requires -NativeSDKPath parameter pointing to directory containing sentry.prx"
+        }
+
+        Write-PhaseHeader "Setting Up PlayStation Native Plugins"
+        ./test/Scripts.Integration.Test/copy-native-plugins.ps1 `
+            -SourceDirectory $NativeSDKPath `
+            -TargetDirectory "$(GetNewProjectAssetsPath)/Plugins/Sentry/PS5" `
+            -Platform "PS5"
+        Write-PhaseSuccess "Native plugins copied"
+    }
 }
 
 # Support rebuilding the integration test project. I.e. if you make changes to the SmokeTester.cs during
@@ -117,6 +147,14 @@ Else
         "^Switch$"
         {
             Write-PhaseSuccess "Switch build completed - no automated test execution available"
+        }
+        "^GameCoreScarlett$"
+        {
+            Write-PhaseSuccess "Xbox build completed - no automated test execution available"
+        }
+        "^PS5$"
+        {
+            Write-PhaseSuccess "PS5 build completed - no automated test execution available"
         }
         Default { Write-Warning "No test run for platform: '$platform'" }
     }
