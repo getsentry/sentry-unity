@@ -62,7 +62,7 @@ internal class NativePluginBuildPreProcess : IPreprocessBuildWithReport
                 "Assets/Plugins/Sentry/Switch/libzstd.a",
             },
             buildTarget: BuildTarget.Switch
-            // Switch has no utility plugin - vsnprintf_sentry comes from user's native lib or stubs
+        // Switch has no utility plugin - vsnprintf_sentry comes from user's native lib or stubs
         ),
         [BuildTarget.PS5] = new PlatformNativeConfig(
             platformName: "PlayStation",
