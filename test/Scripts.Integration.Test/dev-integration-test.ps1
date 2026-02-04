@@ -26,26 +26,28 @@ $Global:UnityVersionInUse = $UnityVersion
 
 # Detect local Unity installation
 $UnityPath = $null
+$UnitySearchPattern = $null
 
 If ($IsMacOS)
 {
-    $UnityPath = "/Applications/Unity/Hub/Editor/$UnityVersion*/Unity.app/"
-    $UnityPath = (Resolve-Path $UnityPath | Select-Object -First 1).Path
+    $UnitySearchPattern = "/Applications/Unity/Hub/Editor/$UnityVersion*/Unity.app/"
+    $UnityPath = (Resolve-Path $UnitySearchPattern -ErrorAction SilentlyContinue | Select-Object -First 1).Path
 }
 Elseif ($IsWindows)
 {
-    $UnityPath = "C:/Program Files/Unity/Hub/Editor/$UnityVersion*/Editor/Unity.exe"
-    $UnityPath = (Resolve-Path $UnityPath | Select-Object -First 1).Path
+    $UnitySearchPattern = "C:/Program Files/Unity/Hub/Editor/$UnityVersion*/Editor/Unity.exe"
+    $UnityPath = (Resolve-Path $UnitySearchPattern -ErrorAction SilentlyContinue | Select-Object -First 1).Path
 }
 Elseif ($IsLinux)
 {
-    $UnityPath = "$HOME/Unity/Hub/Editor/$UnityVersion*/Editor/Unity"
-    $UnityPath = (Resolve-Path $UnityPath | Select-Object -First 1).Path
+    $UnitySearchPattern = "$HOME/Unity/Hub/Editor/$UnityVersion*/Editor/Unity"
+    $UnityPath = (Resolve-Path $UnitySearchPattern -ErrorAction SilentlyContinue | Select-Object -First 1).Path
 }
 
-If (-not(Test-Path -Path $UnityPath))
+If (-not $UnityPath -or -not(Test-Path -Path $UnityPath))
 {
-    Throw "Failed to find Unity at '$UnityPath'"
+    Write-Log "No Unity $UnityVersion installation found at: $UnitySearchPattern"
+    Throw "Failed to find Unity $UnityVersion. Please ensure Unity $UnityVersion is installed via Unity Hub."
 }
 
 # Handle cleanup
