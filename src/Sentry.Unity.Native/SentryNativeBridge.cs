@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
-using Sentry.Unity.Integrations;
 using UnityEngine;
 using AOT;
 
@@ -22,7 +21,7 @@ internal static class SentryNativeBridge
 
     public static bool Init(SentryUnityOptions options)
     {
-        _useLibC = Application.platform
+        _useStructVaList = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
             or RuntimePlatform.PS5 or RuntimePlatform.Switch;
         _isWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
@@ -171,7 +170,7 @@ internal static class SentryNativeBridge
 
     // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
     private static IDiagnosticLogger? _logger;
-    private static bool _useLibC = false;
+    private static bool _useStructVaList = false;
     private static bool _isWindows = false;
 
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
@@ -216,8 +215,8 @@ internal static class SentryNativeBridge
         try
         {
             // We cannot access C var-arg (va_list) in c# thus we pass it back to vsnprintf to do the formatting.
-            // For Linux and PlayStation, we must make a copy of the VaList to be able to pass it back...
-            if (_useLibC)
+            // For Linux, PlayStation, and Switch we must make a copy of the VaList to be able to pass it back...
+            if (_useStructVaList)
             {
                 var argsStruct = Marshal.PtrToStructure<VaListLinux64>(args);
                 var formattedLength = 0;
@@ -261,7 +260,7 @@ internal static class SentryNativeBridge
         }
     }
 
-#if SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_SWITCH
+#if SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_SWITCH || SENTRY_NATIVE_XBOX
     [DllImport("__Internal", EntryPoint = "vsnprintf_sentry")]
     private static extern int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 #else
@@ -275,7 +274,7 @@ internal static class SentryNativeBridge
 
     private static int vsnprintf(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args)
     {
-#if SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_SWITCH
+#if SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_SWITCH || SENTRY_NATIVE_XBOX
         return vsnprintf_sentry(buffer, bufferSize, format, args);
 #else
         return _isWindows

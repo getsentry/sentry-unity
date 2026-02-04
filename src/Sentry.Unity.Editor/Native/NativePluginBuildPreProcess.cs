@@ -32,12 +32,20 @@ internal class NativePluginBuildPreProcess : IPreprocessBuildWithReport
         public string PlatformName { get; }
         public string[] RequiredFiles { get; }
         public BuildTarget BuildTarget { get; }
+        /// <summary>
+        /// Path to the platform's sentry_utils.c file (relative to package root).
+        /// When stubs are enabled, this utility plugin should be disabled to avoid duplicate symbols.
+        /// When stubs are disabled (real native lib present), this should be enabled.
+        /// </summary>
+        public string? UtilityPluginPath { get; }
 
-        public PlatformNativeConfig(string platformName, string[] requiredFiles, BuildTarget buildTarget)
+        public PlatformNativeConfig(string platformName, string[] requiredFiles, BuildTarget buildTarget,
+            string? utilityPluginPath = null)
         {
             PlatformName = platformName;
             RequiredFiles = requiredFiles;
             BuildTarget = buildTarget;
+            UtilityPluginPath = utilityPluginPath;
         }
     }
 
@@ -54,6 +62,7 @@ internal class NativePluginBuildPreProcess : IPreprocessBuildWithReport
                 "Assets/Plugins/Sentry/Switch/libzstd.a",
             },
             buildTarget: BuildTarget.Switch
+            // Switch has no utility plugin - vsnprintf_sentry comes from user's native lib or stubs
         ),
         [BuildTarget.PS5] = new PlatformNativeConfig(
             platformName: "PlayStation",
@@ -61,7 +70,8 @@ internal class NativePluginBuildPreProcess : IPreprocessBuildWithReport
             {
                 "Assets/Plugins/Sentry/PS5/sentry.prx",
             },
-            buildTarget: BuildTarget.PS5
+            buildTarget: BuildTarget.PS5,
+            utilityPluginPath: "Plugins/PS5/sentry_utils.c"
         ),
         [BuildTarget.GameCoreXboxSeries] = new PlatformNativeConfig(
             platformName: "Xbox Series X/S",
@@ -69,7 +79,8 @@ internal class NativePluginBuildPreProcess : IPreprocessBuildWithReport
             {
                 "Assets/Plugins/Sentry/XSX/sentry.dll",
             },
-            buildTarget: BuildTarget.GameCoreXboxSeries
+            buildTarget: BuildTarget.GameCoreXboxSeries,
+            utilityPluginPath: "Plugins/Xbox/sentry_utils.c"
         ),
         [BuildTarget.GameCoreXboxOne] = new PlatformNativeConfig(
             platformName: "Xbox One",
@@ -77,7 +88,8 @@ internal class NativePluginBuildPreProcess : IPreprocessBuildWithReport
             {
                 "Assets/Plugins/Sentry/XB1/sentry.dll",
             },
-            buildTarget: BuildTarget.GameCoreXboxOne
+            buildTarget: BuildTarget.GameCoreXboxOne,
+            utilityPluginPath: "Plugins/Xbox/sentry_utils.c"
         ),
     };
 
@@ -105,8 +117,8 @@ internal class NativePluginBuildPreProcess : IPreprocessBuildWithReport
             return;
         }
 
-        var importer = AssetImporter.GetAtPath(stubPath) as PluginImporter;
-        if (importer == null)
+        var stubImporter = AssetImporter.GetAtPath(stubPath) as PluginImporter;
+        if (stubImporter == null)
         {
             logger.LogError("Failed to get PluginImporter for stub at '{0}'. Skipping stub configuration.", stubPath);
             return;
@@ -129,17 +141,42 @@ internal class NativePluginBuildPreProcess : IPreprocessBuildWithReport
         var allFilesPresent = missingFiles.Count == 0;
         if (allFilesPresent)
         {
+            // Native libs found - disable stubs, enable utility plugin
             logger.LogInfo("{0} native libs found. Disabling stubs, native support enabled.",
                 config.PlatformName);
-            importer.SetCompatibleWithPlatform(config.BuildTarget, false);
+            stubImporter.SetCompatibleWithPlatform(config.BuildTarget, false);
+            ConfigureUtilityPlugin(config, logger, enabled: true);
         }
         else
         {
+            // Native libs not found - enable stubs, disable utility plugin (to avoid duplicate symbols)
             logger.LogInfo("{0} native libs not found. Enabling stubs (native calls will be no-op).",
                 config.PlatformName);
-            importer.SetCompatibleWithPlatform(config.BuildTarget, true);
+            stubImporter.SetCompatibleWithPlatform(config.BuildTarget, true);
+            ConfigureUtilityPlugin(config, logger, enabled: false);
         }
 
-        importer.SaveAndReimport();
+        stubImporter.SaveAndReimport();
+    }
+
+    private static void ConfigureUtilityPlugin(PlatformNativeConfig config, IDiagnosticLogger logger, bool enabled)
+    {
+        if (config.UtilityPluginPath == null)
+        {
+            return;
+        }
+
+        var utilityPath = Path.Combine("Packages", SentryPackageInfo.GetName(), config.UtilityPluginPath);
+        var utilityImporter = AssetImporter.GetAtPath(utilityPath) as PluginImporter;
+
+        if (utilityImporter == null)
+        {
+            logger.LogWarning("Failed to get PluginImporter for utility plugin at '{0}'.", utilityPath);
+            return;
+        }
+
+        logger.LogDebug("{0} sentry_utils.c for {1}.", enabled ? "Enabling" : "Disabling", config.PlatformName);
+        utilityImporter.SetCompatibleWithPlatform(config.BuildTarget, enabled);
+        utilityImporter.SaveAndReimport();
     }
 }

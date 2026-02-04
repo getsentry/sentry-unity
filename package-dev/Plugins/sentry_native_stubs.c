@@ -312,10 +312,9 @@ const char *sentry_switch_utils_get_default_user_id(void)
  */
 
 /*
- * vsnprintf_sentry stub is only needed for Switch.
- * PS5 and Xbox use the real implementation from sentry_utils.c.
+ * vsnprintf_sentry stub for all console platforms (Switch, PS5, Xbox).
+ * Required at link time for IL2CPP static linking via [DllImport("__Internal")].
  */
-#if defined(UNITY_SWITCH)
 int vsnprintf_sentry(char *buffer, size_t size, const char *format, va_list args)
 {
     (void)format;
@@ -327,4 +326,3 @@ int vsnprintf_sentry(char *buffer, size_t size, const char *format, va_list args
     }
     return 0;
 }
-#endif
