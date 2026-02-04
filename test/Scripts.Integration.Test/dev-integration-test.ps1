@@ -54,7 +54,7 @@ If ($Clean)
     Write-PhaseHeader "Cleanup"
     If (Test-Path -Path "package-release.zip")
     {
-        Remove-Item -Path "package-release.zip" -Recurse -Force -Confirm:$false
+        Remove-Item -Path "package-release.zip" -Force -Confirm:$false
     }
     If (Test-Path -Path "package-release")
     {
