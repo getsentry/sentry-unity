@@ -58,4 +58,3 @@ if (-not ($manifest.dependencies.PSObject.Properties.Name -contains "com.unity.u
     Write-Detail "Unity UI package already exists"
 }
 
-Write-PhaseSuccess "Project created"

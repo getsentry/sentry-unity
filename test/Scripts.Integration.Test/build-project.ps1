@@ -39,6 +39,6 @@ if ($Platform -eq "Android-Export")
     Copy-Item -Force -Recurse "$IntegrationScriptsPath/gradle/$gradleVersion/*" -Destination $outputPath
 }
 
-Write-PhaseSuccess "Project built successfully"
+
 Write-Log "Build output:"
 Get-ChildItem $buildDirectory | ForEach-Object { Write-Detail $_.Name }

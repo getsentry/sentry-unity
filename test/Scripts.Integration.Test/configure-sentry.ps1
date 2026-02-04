@@ -24,7 +24,6 @@ $unityArgs = @( `
 
 RunUnityAndExpect $UnityPath "ConfigureSentryOptions" "ConfigureOptions: SUCCESS" $unityArgs
 
-Write-PhaseSuccess "Sentry configured"
 
 function AssertPathExists([string] $Path)
 {

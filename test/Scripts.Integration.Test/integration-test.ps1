@@ -43,13 +43,16 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)"))
     Write-PhaseHeader "Creating Project"
     Write-Log "Project path: $(GetNewProjectPath)"
     ./test/Scripts.Integration.Test/create-project.ps1 "$UnityPath"
+    Write-PhaseSuccess "Project created"
 
     Write-PhaseHeader "Adding Sentry"
     Write-Log "Package path: $PackagePath"
     ./test/Scripts.Integration.Test/add-sentry.ps1 "$UnityPath" -PackagePath $PackagePath
+    Write-PhaseSuccess "Sentry added"
 
     Write-PhaseHeader "Configuring Sentry"
     ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols:$CheckSymbols
+    Write-PhaseSuccess "Sentry configured"
 
     If ($Platform -eq "Switch")
     {
@@ -63,6 +66,7 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)"))
             -SourceDirectory $NativeSDKPath `
             -TargetDirectory "$(GetNewProjectAssetsPath)/Plugins/Sentry/Switch" `
             -Platform "Switch"
+        Write-PhaseSuccess "Native plugins copied"
     }
 }
 
@@ -81,6 +85,7 @@ If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath)))
     {
         ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -CheckSymbols:$CheckSymbols -UnityVersion $UnityVersion -Platform $Platform
     }
+    Write-PhaseSuccess "Project built"
 }
 
 If ($SkipTests)

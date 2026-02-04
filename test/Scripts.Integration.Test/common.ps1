@@ -26,6 +26,17 @@ function Write-Log
     }
 }
 
+function Write-Detail
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $timestamp = Get-Date -Format "HH:mm:ss.fff"
+    Write-Host "$timestamp |   $Message" -ForegroundColor Gray
+}
+
 function Write-PhaseHeader
 {
     param(
@@ -60,17 +71,6 @@ function Write-PhaseFailed
 
     $timestamp = Get-Date -Format "HH:mm:ss.fff"
     Write-Host "$timestamp | [FAILED] $Message" -ForegroundColor Red
-}
-
-function Write-Detail
-{
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Message
-    )
-
-    $timestamp = Get-Date -Format "HH:mm:ss.fff"
-    Write-Host "$timestamp |   $Message" -ForegroundColor Gray
 }
 
 function RunApiServer([string] $ServerScript, [string] $Uri)

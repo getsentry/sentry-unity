@@ -62,6 +62,7 @@ If ($Clean)
     {
         Remove-Item -Path $(GetNewProjectPath) -Recurse -Force -Confirm:$false
     }
+    Write-PhaseSuccess "Cleanup complete"
 }
 
 # Build and package the SDK
@@ -72,6 +73,7 @@ If ($Repack -Or -not(Test-Path -Path $PackageReleaseOutput))
     ./scripts/pack.ps1
     Write-Log "Extracting Package..."
     ./test/Scripts.Integration.Test/extract-package.ps1
+    Write-PhaseSuccess "Package created"
 }
 
 # Call the core integration test script

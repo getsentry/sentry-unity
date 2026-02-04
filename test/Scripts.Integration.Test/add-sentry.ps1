@@ -28,4 +28,3 @@ RunUnityAndExpect $UnityPath "AddSentryPackage" "Sentry Package Installation: SU
 Write-Log "Copying Integration Test Files..."
 New-Item -Path "$(GetNewProjectAssetsPath)" -Name "Scripts" -ItemType "directory" | Out-Null
 Copy-Item -Recurse "$IntegrationScriptsPath/Scripts/*" -Destination "$(GetNewProjectAssetsPath)/Scripts/"
-Write-PhaseSuccess "Sentry added"

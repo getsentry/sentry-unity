@@ -121,4 +121,4 @@ PluginImporter:
     Set-Content -Path $metaPath -Value $metaContent
 }
 
-Write-PhaseSuccess "Copied $($files.Count) file(s) with meta files for platform '$Platform'"
+Write-Log "Copied $($files.Count) file(s) with meta files"
