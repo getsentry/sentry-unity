@@ -9,6 +9,7 @@ namespace Sentry.Unity.Editor;
 internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
 {
     internal const string SourceMappingArgument = "--emit-source-mapping";
+    private static IDiagnosticLogger? Logger;
 
     public int callbackOrder => 0;
 
@@ -20,13 +21,14 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
             return;
         }
 
-
         var options = SentryScriptableObject.LoadOptions(isBuilding: true);
-
         if (options is null)
         {
             return;
         }
+
+        Logger = options.DiagnosticLogger;
+        Logger?.LogInfo("IL2CPP build detected. Handling additional IL2CPP arguments.");
 
         SetAdditionalIl2CppArguments(options,
             PlayerSettings.GetAdditionalIl2CppArgs,
@@ -37,12 +39,12 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
     {
         if (options.Il2CppLineNumberSupportEnabled)
         {
-            options.DiagnosticLogger?.LogDebug("IL2CPP line number support enabled - Adding additional IL2CPP arguments.");
+            Logger?.LogDebug("IL2CPP line number support enabled - Adding additional IL2CPP arguments.");
 
             var arguments = getArguments.Invoke();
             if (arguments.Contains(SourceMappingArgument))
             {
-                options.DiagnosticLogger?.LogDebug("Additional argument '{0}' already present.", SourceMappingArgument);
+                Logger?.LogDebug("Additional argument '{0}' already present.", SourceMappingArgument);
                 return;
             }
 
@@ -53,7 +55,7 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
             var arguments = getArguments.Invoke();
             if (arguments.Contains(SourceMappingArgument))
             {
-                options.DiagnosticLogger?.LogDebug("IL2CPP line number support disabled - Removing additional IL2CPP arguments.");
+                Logger?.LogDebug("IL2CPP line number support disabled - Removing additional IL2CPP arguments.");
 
                 arguments = arguments.Replace(SourceMappingArgument, "");
                 setArguments.Invoke(arguments);

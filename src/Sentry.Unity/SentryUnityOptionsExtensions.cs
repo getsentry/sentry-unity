@@ -23,7 +23,7 @@ public static class SentryUnityOptionsExtensions
         application ??= ApplicationAdapter.Instance;
         if (!options!.CaptureInEditor && application.IsEditor)
         {
-            options.DiagnosticLogger?.LogInfo("Disabled while in the Editor.");
+            options.LogInfo("Disabled while in the Editor.");
             return false;
         }
 
@@ -34,14 +34,14 @@ public static class SentryUnityOptionsExtensions
     {
         if (!options.Enabled)
         {
-            options.DiagnosticLogger?.LogDebug("Sentry SDK has been disabled." +
-                                               "\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
+            options.LogDebug("Sentry SDK has been disabled." +
+                            "\nYou can disable this log by raising the debug verbosity level above 'Debug'.");
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(options.Dsn))
         {
-            options.DiagnosticLogger?.LogWarning("No Sentry DSN configured. Sentry will be disabled.");
+            options.LogWarning("No Sentry DSN configured. Sentry will be disabled.");
             return false;
         }
 

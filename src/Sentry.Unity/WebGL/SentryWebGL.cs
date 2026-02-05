@@ -15,7 +15,7 @@ public static class SentryWebGL
     /// <param name="options">The Sentry Unity options to use.</param>
     public static void Configure(SentryUnityOptions options)
     {
-        options.DiagnosticLogger?.LogDebug("Updating configuration for Unity WebGL.");
+        options.LogDebug("Updating configuration for Unity WebGL.");
 
         // Note: we need to use a custom background worker which actually doesn't work in the background
         // because Unity doesn't support async (multithreading) yet. This may change in the future so let's watch
@@ -35,15 +35,15 @@ public static class SentryWebGL
         if (options.AttachScreenshot)
         {
             options.AttachScreenshot = false;
-            options.DiagnosticLogger?.LogWarning("Attaching screenshots is unsupported on WebGL - disabling. " +
-                                                 "Currently, it produces blank screenshots mid-frame.");
+            options.LogWarning("Attaching screenshots is unsupported on WebGL - disabling. " +
+                             "Currently, it produces blank screenshots mid-frame.");
         }
 
         // On WebGL, the IL2CPP backend does not provide the API required to make the IL2CPP Event Processor work
         if (options.Il2CppLineNumberSupportEnabled)
         {
             options.Il2CppLineNumberSupportEnabled = false;
-            options.DiagnosticLogger?.LogWarning("IL2CPP line number support is unsupported on WebGL - disabling.");
+            options.LogWarning("IL2CPP line number support is unsupported on WebGL - disabling.");
         }
 
         // Use AnalyticsSessionInfo.userId as the default UserID

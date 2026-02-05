@@ -31,7 +31,7 @@ internal sealed class TraceGenerationIntegration : ISdkIntegration
         // Create initial trace context if tracing is disabled or startup tracing is disabled
         if (!isTracingEnabled || !options.AutoStartupTraces)
         {
-            options.DiagnosticLogger?.LogDebug("Startup. Creating new Trace.");
+            options.LogDebug("Startup. Creating new Trace.");
             hub.ConfigureScope(scope => scope.SetPropagationContext(new SentryPropagationContext()));
         }
     }

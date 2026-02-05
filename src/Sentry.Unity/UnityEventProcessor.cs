@@ -62,7 +62,7 @@ internal class UnityEventProcessor :
         }
         catch (Exception exception)
         {
-            _sentryOptions.DiagnosticLogger?.LogError(exception: exception, "{0} processing failed.", nameof(SentryEvent));
+            _sentryOptions.LogError(exception, "{0} processing failed.", nameof(SentryEvent));
         }
     }
 

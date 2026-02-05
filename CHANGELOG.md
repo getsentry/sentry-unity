@@ -16,6 +16,7 @@
 
 ### Fixes
 
+- Fixed IL2CPP line number support for 32-bit Windows and Linux ([#2514](https://github.com/getsentry/sentry-unity/pull/2514))
 - The SDK now specifies the files and directories targeted for debug symbol upload instead of pointing sentry-cli at the build output directory ([#2485](https://github.com/getsentry/sentry-unity/pull/2485))
 - The 'SceneManagerTracingIntegration' properly respects the `AutoSceneTracing` flag again ([#2496](https://github.com/getsentry/sentry-unity/pull/2496))
 - When targeting Android, the capturing native SDK now has its name correctly set ([#2476](https://github.com/getsentry/sentry-unity/pull/2476))

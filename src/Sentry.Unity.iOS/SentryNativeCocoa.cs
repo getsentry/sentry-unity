@@ -10,6 +10,8 @@ namespace Sentry.Unity.iOS;
 /// </summary>
 public static class SentryNativeCocoa
 {
+    private static IDiagnosticLogger? Logger;
+
     /// <summary>
     /// Configures the native support.
     /// </summary>
@@ -20,11 +22,12 @@ public static class SentryNativeCocoa
     // For testing
     internal static void Configure(SentryUnityOptions options, RuntimePlatform platform)
     {
-        options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Cocoa SDK");
+        Logger = options.DiagnosticLogger;
+        Logger?.LogInfo("Attempting to configure native support via the Cocoa SDK");
 
         if (!options.IsNativeSupportEnabled(platform))
         {
-            options.DiagnosticLogger?.LogDebug("Native support is disabled for: '{0}'", platform);
+            Logger?.LogDebug("Native support is disabled for: '{0}'", platform);
             return;
         }
 
@@ -32,11 +35,11 @@ public static class SentryNativeCocoa
         {
             if (SentryCocoaBridgeProxy.IsEnabled())
             {
-                options.DiagnosticLogger?.LogDebug("The native SDK is already initialized");
+                Logger?.LogDebug("The native SDK is already initialized");
             }
             else if (!SentryCocoaBridgeProxy.Init(options))
             {
-                options.DiagnosticLogger?.LogWarning("Failed to initialize the native SDK");
+                Logger?.LogWarning("Failed to initialize the native SDK");
                 return;
             }
 
@@ -46,7 +49,7 @@ public static class SentryNativeCocoa
         {
             if (!SentryCocoaBridgeProxy.Init(options))
             {
-                options.DiagnosticLogger?.LogWarning("Failed to initialize the native SDK");
+                Logger?.LogWarning("Failed to initialize the native SDK");
                 return;
             }
             options.ScopeObserver = new NativeScopeObserver("macOS", options);
@@ -58,10 +61,10 @@ public static class SentryNativeCocoa
         options.EnableScopeSync = true;
         options.CrashedLastRun = () =>
         {
-            options.DiagnosticLogger?.LogDebug("Checking for 'CrashedLastRun'");
+            Logger?.LogDebug("Checking for 'CrashedLastRun'");
 
             var crashedLastRun = SentryCocoaBridgeProxy.CrashedLastRun() == 1;
-            options.DiagnosticLogger?.LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
+            Logger?.LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
 
             return crashedLastRun;
         };
@@ -73,7 +76,7 @@ public static class SentryNativeCocoa
             if (string.IsNullOrEmpty(options.DefaultUserId))
             {
                 // In case we can't get an installation ID we create one and sync that down to the native layer
-                options.DiagnosticLogger?.LogDebug("Failed to fetch 'Installation ID' from the native SDK. Creating new 'Default User ID'.");
+                Logger?.LogDebug("Failed to fetch 'Installation ID' from the native SDK. Creating new 'Default User ID'.");
 
                 // We fall back to Unity's Analytics Session Info: https://docs.unity3d.com/ScriptReference/Analytics.AnalyticsSessionInfo-userId.html
                 // It's a randomly generated GUID that gets created immediately after installation helping
@@ -85,12 +88,12 @@ public static class SentryNativeCocoa
                 }
                 else
                 {
-                    options.DiagnosticLogger?.LogDebug("Failed to create new 'Default User ID'.");
+                    Logger?.LogDebug("Failed to create new 'Default User ID'.");
                 }
             }
         }
 
-        options.DiagnosticLogger?.LogInfo("Successfully configured the native SDK");
+        Logger?.LogInfo("Successfully configured the native SDK");
     }
 
     /// <summary>
@@ -98,15 +101,15 @@ public static class SentryNativeCocoa
     /// </summary>
     public static void Close(SentryUnityOptions options)
     {
-        options.DiagnosticLogger?.LogInfo("Attempting to close the Cocoa SDK");
+        Logger?.LogInfo("Attempting to close the Cocoa SDK");
 
         if (!options.IsNativeSupportEnabled())
         {
-            options.DiagnosticLogger?.LogDebug("Cocoa Native Support is not enable. Skipping closing the Cocoa SDK");
+            Logger?.LogDebug("Cocoa Native Support is not enable. Skipping closing the Cocoa SDK");
             return;
         }
 
-        options.DiagnosticLogger?.LogDebug("Closing the Cocoa SDK");
+        Logger?.LogDebug("Closing the Cocoa SDK");
         SentryCocoaBridgeProxy.Close();
     }
 }

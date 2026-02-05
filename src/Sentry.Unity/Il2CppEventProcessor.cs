@@ -29,7 +29,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
 
     public void Process(Exception incomingException, SentryEvent sentryEvent)
     {
-        Options.DiagnosticLogger?.LogDebug("Running Unity IL2CPP event exception processor on: Event {0}", sentryEvent.EventId);
+        Options.LogDebug("Running Unity IL2CPP event exception processor on: Event {0}", sentryEvent.EventId);
 
         var sentryExceptions = sentryEvent.SentryExceptions;
         if (sentryExceptions == null)
@@ -67,7 +67,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
 
             var nativeStackTrace = GetNativeStackTrace(exception);
 
-            Options.DiagnosticLogger?.LogDebug("NativeStackTrace Image: '{0}' (UUID: {1})", nativeStackTrace.ImageName, nativeStackTrace.ImageUuid);
+            Options.LogDebug("NativeStackTrace Image: '{0}' (UUID: {1})", nativeStackTrace.ImageName, nativeStackTrace.ImageUuid);
 
             // Unity by definition only builds a single library which we add once to our list of debug images.
             // We use this when we encounter stack frames with relative addresses.
@@ -84,7 +84,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             var eventLen = sentryStacktrace.Frames.Count;
             if (nativeLen != eventLen)
             {
-                Options.DiagnosticLogger?.LogWarning(
+                Options.LogWarning(
                     "Native and sentry stack trace lengths don't match '({0} != {1})' - this may cause invalid stack traces.",
                     nativeLen, eventLen);
             }
@@ -133,7 +133,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
                 {
                     if (mainImageUUID is null)
                     {
-                        Options.DiagnosticLogger?.LogWarning("Couldn't process stack trace - main image UUID reported as NULL by Unity");
+                        Options.LogWarning("Couldn't process stack trace - main image UUID reported as NULL by Unity");
                         continue;
                     }
 
@@ -180,7 +180,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
                     }
                 }
 
-                Options.DiagnosticLogger?.Log(logLevel, "Stack frame '{0}' at {1:X8} (originally {2:X8}) belongs to {3} {4}",
+                Options.Log(logLevel, "Stack frame '{0}' at {1:X8} (originally {2:X8}) belongs to {3} {4}",
                     null, frame.Function, instructionAddress, nativeFrame.ToInt64(), image.CodeFile, notes ?? "");
 
                 _ = usedImages.Add(image);
@@ -236,9 +236,9 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             {
                 if (image.ImageSize is null)
                 {
-                    Options.DiagnosticLogger?.Log(SentryLevel.Debug,
+                    Options.LogDebug(
                         "Skipping debug image '{0}' (CodeId {1} | DebugId: {2}) because its size is NULL",
-                        null, image.CodeFile, image.CodeId, image.DebugId);
+                        image.CodeFile, image.CodeId, image.DebugId);
                     continue;
                 }
 
@@ -254,7 +254,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
                 }
                 result.Insert(i, info);
 
-                Options.DiagnosticLogger?.Log(SentryLevel.Debug,
+                Options.Log(SentryLevel.Debug,
                     "Found debug image '{0}' (CodeId {1} | DebugId: {2}) with addresses between {3:X8} and {4:X8}",
                     null, image.CodeFile, image.CodeId, image.DebugId, info.StartAddress, info.EndAddress);
             }

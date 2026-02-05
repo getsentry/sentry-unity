@@ -1,3 +1,4 @@
+using Sentry.Extensibility;
 using Sentry.Unity.Json;
 
 namespace Sentry.Unity;
@@ -19,8 +20,7 @@ public abstract class ScopeObserver : IScopeObserver
 
     public void AddBreadcrumb(Breadcrumb breadcrumb)
     {
-        _options.DiagnosticLogger?.Log(SentryLevel.Debug,
-            "{0} Scope Sync - Adding breadcrumb m:\"{1}\" l:\"{2}\"", null, _name,
+        _options.LogDebug("{0} Scope Sync - Adding breadcrumb m:\"{1}\" l:\"{2}\"", _name,
             breadcrumb.Message, breadcrumb.Level);
         AddBreadcrumbImpl(breadcrumb);
     }
@@ -32,14 +32,12 @@ public abstract class ScopeObserver : IScopeObserver
         var serialized = value is null ? null : SafeSerializer.SerializeSafely(value);
         if (value is not null && serialized is null)
         {
-            _options.DiagnosticLogger?.Log(SentryLevel.Warning,
-                "{0} Scope Sync - SetExtra k:\"{1}\" v:\"{2}\" - value was serialized as null",
-                null, _name, key, value);
+            _options.LogWarning("{0} Scope Sync - SetExtra k:\"{1}\" v:\"{2}\" - value was serialized as null",
+                _name, key, value);
         }
         else
         {
-            _options.DiagnosticLogger?.Log(SentryLevel.Debug,
-                "{0} Scope Sync - Setting Extra k:\"{1}\" v:\"{2}\"", null, _name, key, value);
+            _options.LogDebug("{0} Scope Sync - Setting Extra k:\"{1}\" v:\"{2}\"", _name, key, value);
         }
         SetExtraImpl(key, serialized);
     }
@@ -48,8 +46,7 @@ public abstract class ScopeObserver : IScopeObserver
 
     public void SetTag(string key, string value)
     {
-        _options.DiagnosticLogger?.Log(SentryLevel.Debug,
-            "{0} Scope Sync - Setting Tag k:\"{1}\" v:\"{2}\"", null, _name, key, value);
+        _options.LogDebug("{0} Scope Sync - Setting Tag k:\"{1}\" v:\"{2}\"", _name, key, value);
         SetTagImpl(key, value);
     }
 
@@ -57,8 +54,7 @@ public abstract class ScopeObserver : IScopeObserver
 
     public void UnsetTag(string key)
     {
-        _options.DiagnosticLogger?.Log(
-            SentryLevel.Debug, "{0} Scope Sync - Unsetting Tag k:\"{1}\"", null, _name, key);
+        _options.LogDebug("{0} Scope Sync - Unsetting Tag k:\"{1}\"", _name, key);
         UnsetTagImpl(key);
     }
 
@@ -68,14 +64,12 @@ public abstract class ScopeObserver : IScopeObserver
     {
         if (user is null)
         {
-            _options.DiagnosticLogger?.Log(
-                SentryLevel.Debug, "{0} Scope Sync - Unsetting User", null, _name);
+            _options.LogDebug("{0} Scope Sync - Unsetting User", _name);
             UnsetUserImpl();
         }
         else
         {
-            _options.DiagnosticLogger?.Log(SentryLevel.Debug,
-                "{0} Scope Sync - Setting User i:\"{1}\" n:\"{2}\"", null, _name, user.Id,
+            _options.LogDebug("{0} Scope Sync - Setting User i:\"{1}\" n:\"{2}\"", _name, user.Id,
                 user.Username);
             SetUserImpl(user);
         }
@@ -87,9 +81,7 @@ public abstract class ScopeObserver : IScopeObserver
 
     public void SetTrace(SentryId traceId, SpanId spanId)
     {
-        _options.DiagnosticLogger?.Log(
-            SentryLevel.Debug, "{0} Scope Sync - Setting Trace traceId:{1} spanId:{2}", null,
-                _name, traceId, spanId);
+        _options.LogDebug("{0} Scope Sync - Setting Trace traceId:{1} spanId:{2}", _name, traceId, spanId);
         SetTraceImpl(traceId, spanId);
     }
 
