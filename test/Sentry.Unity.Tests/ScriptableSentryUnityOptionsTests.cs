@@ -44,8 +44,10 @@ public class ScriptableSentryUnityOptionsTests
             Enabled = false,
             Dsn = "test",
             CaptureInEditor = false,
-            EnableLogDebouncing = true,
             TracesSampleRate = 1.0f,
+#pragma warning disable CS0618 // Type or member is obsolete
+            EnableLogDebouncing = true,
+#pragma warning restore CS0618
             AutoSessionTracking = false,
             AutoSessionTrackingInterval = TimeSpan.FromSeconds(1),
             AttachStacktrace = true,
@@ -70,7 +72,9 @@ public class ScriptableSentryUnityOptionsTests
         scriptableOptions.Enabled = expectedOptions.Enabled;
         scriptableOptions.Dsn = expectedOptions.Dsn;
         scriptableOptions.CaptureInEditor = expectedOptions.CaptureInEditor;
+#pragma warning disable CS0618 // Type or member is obsolete
         scriptableOptions.EnableLogDebouncing = expectedOptions.EnableLogDebouncing;
+#pragma warning restore CS0618
         scriptableOptions.TracesSampleRate = (double)expectedOptions.TracesSampleRate;
         scriptableOptions.AutoSessionTracking = expectedOptions.AutoSessionTracking;
         scriptableOptions.AutoSessionTrackingInterval = (int)expectedOptions.AutoSessionTrackingInterval.TotalMilliseconds;
@@ -166,7 +170,9 @@ public class ScriptableSentryUnityOptionsTests
         Assert.AreEqual(expected.Enabled, actual.Enabled);
         Assert.AreEqual(expected.Dsn, actual.Dsn);
         Assert.AreEqual(expected.CaptureInEditor, actual.CaptureInEditor);
+#pragma warning disable CS0618 // Type or member is obsolete
         Assert.AreEqual(expected.EnableLogDebouncing, actual.EnableLogDebouncing);
+#pragma warning restore CS0618
         Assert.AreEqual(expected.TracesSampleRate, actual.TracesSampleRate);
         Assert.AreEqual(expected.AutoSessionTracking, actual.AutoSessionTracking);
         Assert.AreEqual(expected.AutoSessionTrackingInterval, actual.AutoSessionTrackingInterval);
