@@ -29,9 +29,14 @@ internal class PS5NativePluginBuildPreProcess : IPreprocessBuildWithReport
         }
 
         var options = SentryScriptableObject.LoadOptions(isBuilding: true);
-        var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
+        if (options is null)
+        {
+            return; // Sentry not configured - skip validation
+        }
 
-        ValidateNativePlugin(logger, options?.PlayStationNativeSupportEnabled ?? true);
+        var logger = options.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
+
+        ValidateNativePlugin(logger, options.PlayStationNativeSupportEnabled);
     }
 
     internal static void ValidateNativePlugin(IDiagnosticLogger logger, bool nativeSupportEnabled)
