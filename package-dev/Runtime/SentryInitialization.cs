@@ -3,7 +3,7 @@
 #define SENTRY_NATIVE_COCOA
 #elif UNITY_ANDROID && ENABLE_IL2CPP
 #define SENTRY_NATIVE_ANDROID
-#elif UNITY_64 && (UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX)
+#elif UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
 #define SENTRY_NATIVE
 #elif UNITY_GAMECORE
 #define SENTRY_NATIVE
@@ -176,20 +176,20 @@ namespace Sentry.Unity
 
         // Available in Unity `2013.3.12f1` (and later)
         // Il2CppObject* il2cpp_gchandle_get_target(Il2CppGCHandle gchandle)
-        [DllImport("__Internal")]
+        [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr il2cpp_gchandle_get_target(IntPtr gchandle);
 #else
         private static IntPtr Il2CppGcHandleGetTargetShim(IntPtr gchandle) => il2cpp_gchandle_get_target(gchandle.ToInt32());
 
         // Available in Unity `2019.4.34f1` (and later)
         // Il2CppObject* il2cpp_gchandle_get_target(uint32_t gchandle)
-        [DllImport("__Internal")]
+        [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr il2cpp_gchandle_get_target(int gchandle);
 #endif
 
         // Available in Unity `2019.4.34f1` (and later)
         // void il2cpp_free(void* ptr)
-        [DllImport("__Internal")]
+        [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
         private static extern void il2cpp_free(IntPtr ptr);
 
         private static void Il2CppNativeStackTraceShim(IntPtr exc, out IntPtr addresses, out int numFrames, out string? imageUUID, out string? imageName)
@@ -212,7 +212,7 @@ namespace Sentry.Unity
 
         // Definition from Unity `2021.3` (and later):
         // void il2cpp_native_stack_trace(const Il2CppException * ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName)
-        [DllImport("__Internal")]
+        [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
         private static extern void il2cpp_native_stack_trace(IntPtr exc, out IntPtr addresses, out int numFrames, out IntPtr imageUUID, out IntPtr imageName);
 
 #pragma warning restore 8632

@@ -14,9 +14,9 @@ on:
 
 env:
   # Unity versions used in PRs
-  PR_UNITY_VERSIONS: '["2022.3", "6000.0"]'
+  PR_UNITY_VERSIONS: '["2022.3", "6000.0", "6000.3"]'
   # Unity versions used on main branch
-  FULL_UNITY_VERSIONS: '["2021.3", "2022.3", "6000.0", "6000.1"]'
+  FULL_UNITY_VERSIONS: '["2021.3", "2022.3", "6000.0", "6000.3"]'
 
 jobs:
   create-unity-matrix:

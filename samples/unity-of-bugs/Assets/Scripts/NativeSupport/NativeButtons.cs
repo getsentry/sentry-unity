@@ -31,13 +31,13 @@ public class NativeButtons : MonoBehaviour
     public void CrashInC() => crash_in_c();
 
     // CppPlugin.cpp
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern void throw_cpp();
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern void crash_in_cpp();
 
     // CPlugin.c
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern void crash_in_c();
 
     public void CatchViaCallback() => call_into_csharp(new callback_t(csharpCallback));
@@ -45,7 +45,7 @@ public class NativeButtons : MonoBehaviour
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void callback_t(int code);
 
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern void call_into_csharp(callback_t callback);
 
     // This method is called from the C library.

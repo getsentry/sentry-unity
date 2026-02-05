@@ -16,6 +16,7 @@
 
 ### Fixes
 
+- Fixed IL2CPP line number support for 32-bit Windows and Linux ([#2514](https://github.com/getsentry/sentry-unity/pull/2514))
 - The SDK now specifies the files and directories targeted for debug symbol upload instead of pointing sentry-cli at the build output directory ([#2485](https://github.com/getsentry/sentry-unity/pull/2485))
 - The 'SceneManagerTracingIntegration' properly respects the `AutoSceneTracing` flag again ([#2496](https://github.com/getsentry/sentry-unity/pull/2496))
 - When targeting Android, the capturing native SDK now has its name correctly set ([#2476](https://github.com/getsentry/sentry-unity/pull/2476))
@@ -33,9 +34,9 @@
 - Bump Native SDK from v0.12.2 to v0.12.5 ([#2471](https://github.com/getsentry/sentry-unity/pull/2471), [#2505](https://github.com/getsentry/sentry-unity/pull/2505), [#2512](https://github.com/getsentry/sentry-unity/pull/2512))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0125)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.5)
-- Bump Cocoa SDK from v9.1.0 to v9.3.0 ([#2492](https://github.com/getsentry/sentry-unity/pull/2492), [#2507](https://github.com/getsentry/sentry-unity/pull/2507))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#930)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.1.0...9.3.0)
+- Bump Cocoa SDK from v9.1.0 to v9.4.0 ([#2492](https://github.com/getsentry/sentry-unity/pull/2492), [#2507](https://github.com/getsentry/sentry-unity/pull/2507), [#2521](https://github.com/getsentry/sentry-unity/pull/2521))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#940)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.1.0...9.4.0)
 - Bump CLI from v2.58.4 to v3.1.0 ([#2474](https://github.com/getsentry/sentry-unity/pull/2474))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#310)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.58.4...3.1.0)

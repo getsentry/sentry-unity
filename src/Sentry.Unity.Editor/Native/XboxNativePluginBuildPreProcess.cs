@@ -32,7 +32,12 @@ internal class XboxNativePluginBuildPreProcess : IPreprocessBuildWithReport
         }
 
         var options = SentryScriptableObject.LoadOptions(isBuilding: true);
-        var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
+        if (options is null)
+        {
+            return; // Sentry not configured - skip validation
+        }
+
+        var logger = options.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
         var requiredFile = report.summary.platform == BuildTarget.GameCoreXboxSeries
             ? XsxRequiredFile
@@ -42,7 +47,7 @@ internal class XboxNativePluginBuildPreProcess : IPreprocessBuildWithReport
             ? "Xbox Series X|S"
             : "Xbox One";
 
-        ValidateNativePlugin(logger, options?.XboxNativeSupportEnabled ?? true, requiredFile, platformName);
+        ValidateNativePlugin(logger, options.XboxNativeSupportEnabled, requiredFile, platformName);
     }
 
     internal static void ValidateNativePlugin(IDiagnosticLogger logger, bool nativeSupportEnabled,

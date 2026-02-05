@@ -139,9 +139,9 @@ internal class AnrWatchDogMultiThreaded : AnrWatchDog
         {
             var reportThreshold = DetectionTimeoutMs / SleepIntervalMs;
 
-            Logger?.Log(SentryLevel.Info,
+            Logger?.LogInfo(
                 "Starting an ANR WatchDog - detection timeout: {0} ms, check every {1} ms => report after {2} failed checks",
-                null, DetectionTimeoutMs, SleepIntervalMs, reportThreshold);
+                DetectionTimeoutMs, SleepIntervalMs, reportThreshold);
 
             while (!_stop)
             {
@@ -165,7 +165,7 @@ internal class AnrWatchDogMultiThreaded : AnrWatchDog
         }
         catch (Exception e)
         {
-            Logger?.Log(SentryLevel.Error, "Exception in the ANR watchdog.", e);
+            Logger?.LogError(e, "Exception in the ANR watchdog.");
         }
     }
 }

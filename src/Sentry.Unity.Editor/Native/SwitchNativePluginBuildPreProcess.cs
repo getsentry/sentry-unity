@@ -39,7 +39,7 @@ internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
         var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
-        ConfigureStub(logger, options?.SwitchNativeSupportEnabled ?? true);
+        ConfigureStub(logger, options?.SwitchNativeSupportEnabled ?? false);
     }
 
     internal static void ConfigureStub(IDiagnosticLogger logger, bool nativeSupportEnabled)

@@ -32,8 +32,7 @@ Plugins/iOS.meta
 Plugins/Linux.meta
 Plugins/macOS.meta
 Plugins/PS5.meta
-Plugins/sentry_native_stubs.c
-Plugins/sentry_native_stubs.c.meta
+Plugins/Switch.meta
 Plugins/Windows.meta
 Plugins/macOS/Sentry.meta
 Plugins/macOS/SentryNativeBridge.m
@@ -58,13 +57,11 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Priv
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Sentry
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/_CodeSignature/CodeResources
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryAsynchronousOperation.h
-Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryBaseIntegration.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryBreadcrumb+Private.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryCrashReportConverter.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryCrashReportSink.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryDateUtils.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryFormatter.h
-Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryIntegrationProtocol.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryLogC.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryNSDataUtils.h
@@ -131,13 +128,11 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Info.plist
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivacyInfo.xcprivacy
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Sentry
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryAsynchronousOperation.h
-Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryBaseIntegration.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryBreadcrumb+Private.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryCrashReportConverter.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryCrashReportSink.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryDateUtils.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryFormatter.h
-Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryIntegrationProtocol.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryLogC.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryNSDataUtils.h
@@ -211,6 +206,8 @@ Plugins/Android/Sentry~/sentry-android-core-release.aar
 Plugins/Android/Sentry~/sentry-android-ndk-release.aar
 Plugins/Android/Sentry~/sentry-native-ndk-release.aar
 Plugins/Android/Sentry~/sentry.jar
+Plugins/Switch/sentry_native_stubs.c
+Plugins/Switch/sentry_native_stubs.c.meta
 Plugins/Windows/Sentry.meta
 Plugins/Windows/Sentry/crashpad_handler.exe
 Plugins/Windows/Sentry/crashpad_handler.exe.meta

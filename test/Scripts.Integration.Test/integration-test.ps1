@@ -15,16 +15,14 @@ param(
     [switch] $CheckSymbols
 )
 
-if (-not $Global:NewProjectPathCache)
-{
-    . ./test/Scripts.Integration.Test/globals.ps1
+if (-not $Global:NewProjectPathCache) {
+    . $PSScriptRoot/globals.ps1
 }
 
-. ./test/Scripts.Integration.Test/common.ps1
+. $PSScriptRoot/common.ps1
 
 # Validate package path exists
-If (-not (Test-Path -Path $PackagePath))
-{
+If (-not (Test-Path -Path $PackagePath)) {
     Throw "Package path does not exist: '$PackagePath'. If running locally, use dev-integration-test.ps1 with -Repack flag."
 }
 
@@ -33,13 +31,11 @@ $Global:UnityVersionInUse = $UnityVersion
 $UnityPath = FormatUnityPath $UnityPath
 
 # Support recreating the integration test project without cleaning the SDK build (and repackaging).
-if ($Recreate -and (Test-Path -Path $(GetNewProjectPath)))
-{
+if ($Recreate -and (Test-Path -Path $(GetNewProjectPath))) {
     Remove-Item -Path $(GetNewProjectPath) -Recurse -Force -Confirm:$false
 }
 
-If (-not(Test-Path -Path "$(GetNewProjectPath)"))
-{
+If (-not(Test-Path -Path "$(GetNewProjectPath)")) {
     Write-PhaseHeader "Creating Project"
     Write-Log "Project path: $(GetNewProjectPath)"
     ./test/Scripts.Integration.Test/create-project.ps1 "$UnityPath"
@@ -54,10 +50,8 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)"))
     ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols:$CheckSymbols
     Write-PhaseSuccess "Sentry configured"
 
-    If ($Platform -eq "Switch")
-    {
-        If (-not $NativeSDKPath -or -not (Test-Path $NativeSDKPath))
-        {
+    If ($Platform -eq "Switch") {
+        If (-not $NativeSDKPath -or -not (Test-Path $NativeSDKPath)) {
             Throw "Switch platform requires -NativeSDKPath parameter pointing to directory containing libsentry.a and libzstd.a"
         }
 
@@ -101,51 +95,40 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)"))
 }
 
 # Support rebuilding the integration test project. I.e. if you make changes to the SmokeTester.cs during
-If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath)))
-{
+If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath))) {
     Write-PhaseHeader "Building Project"
 
-    If ("iOS" -eq $Platform)
-    {
+    If ("iOS" -eq $Platform) {
         # We're exporting an Xcode project and building that in a separate step.
         ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
         & "./scripts/smoke-test-ios.ps1" Build -IsIntegrationTest -UnityVersion $UnityVersion
     }
-    Else
-    {
+    Else {
         ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -CheckSymbols:$CheckSymbols -UnityVersion $UnityVersion -Platform $Platform
     }
     Write-PhaseSuccess "Project built"
 }
 
-If ($SkipTests)
-{
+If ($SkipTests) {
     Write-Log "Skipping tests (-SkipTests flag set)" -ForegroundColor Yellow
 }
-Else
-{
+Else {
     Write-PhaseHeader "Running Tests"
 
-    Switch -Regex ($Platform)
-    {
-        "^(Windows|MacOS|Linux)$"
-        {
+    Switch -Regex ($Platform) {
+        "^(Windows|MacOS|Linux)$" {
             ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash
         }
-        "^(Android)$"
-        {
+        "^(Android)$" {
             ./scripts/smoke-test-android.ps1
         }
-        "^iOS$"
-        {
+        "^iOS$" {
             ./scripts/smoke-test-ios.ps1 Test "latest" -IsIntegrationTest
         }
-        "^WebGL$"
-        {
+        "^WebGL$" {
             python3 scripts/smoke-test-webgl.py $(GetNewProjectBuildPath)
         }
-        "^Switch$"
-        {
+        "^Switch$" {
             Write-PhaseSuccess "Switch build completed - no automated test execution available"
         }
         "^GameCoreScarlett$"
