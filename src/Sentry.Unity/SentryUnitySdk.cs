@@ -49,7 +49,7 @@ internal class SentryUnitySdk
                 {
                     if (t.Exception is not null)
                     {
-                        options.DiagnosticLogger?.LogWarning(
+                        options.LogWarning(
                             "Failed to synchronize scope to the native SDK: {0}", t.Exception);
                     }
                 });
@@ -63,7 +63,7 @@ internal class SentryUnitySdk
 
     public void Close()
     {
-        _options.DiagnosticLogger?.LogDebug("Closing the sentry-dotnet SDK");
+        _options.LogDebug("Closing the sentry-dotnet SDK");
         try
         {
             ApplicationAdapter.Instance.Quitting -= Close;
@@ -74,8 +74,8 @@ internal class SentryUnitySdk
         }
         catch (Exception ex)
         {
-            _options.DiagnosticLogger?.Log(SentryLevel.Warning,
-                "Exception while closing the .NET SDK.", ex);
+            _options.LogWarning(ex,
+                "Exception while closing the .NET SDK.");
         }
 
         try
@@ -85,8 +85,8 @@ internal class SentryUnitySdk
         }
         catch (Exception ex)
         {
-            _options.DiagnosticLogger?.Log(SentryLevel.Warning,
-                "Exception while releasing the lockfile on the config directory.", ex);
+            _options.LogWarning(ex,
+                "Exception while releasing the lockfile on the config directory.");
         }
     }
 
@@ -96,13 +96,13 @@ internal class SentryUnitySdk
         {
             if (ApplicationAdapter.Instance.Platform == RuntimePlatform.WebGLPlayer)
             {
-                _options.DiagnosticLogger?.LogDebug("Currently, the Sentry SDK for Unity provides no native support for WebGL." +
-                                                    "LastRunState is `Unknown`.");
+                _options.LogDebug("Currently, the Sentry SDK for Unity provides no native support for WebGL." +
+                                  "LastRunState is `Unknown`.");
             }
             else
             {
-                _options.DiagnosticLogger?.LogDebug("The SDK does not have a 'CrashedLastRun' set. " +
-                                                    "This might be due to a missing or disabled native integration.");
+                _options.LogDebug("The SDK does not have a 'CrashedLastRun' set. " +
+                                  "This might be due to a missing or disabled native integration.");
             }
 
             return SentrySdk.CrashedLastRun.Unknown;
@@ -171,8 +171,8 @@ internal class SentryUnitySdk
         }
         catch (Exception ex)
         {
-            options.DiagnosticLogger?.LogWarning("An exception was thrown while trying to " +
-                                                 "acquire a lockfile on the config directory: .NET event cache will be disabled.", ex);
+            options.LogWarning(ex, "An exception was thrown while trying to " +
+                               "acquire a lockfile on the config directory: .NET event cache will be disabled.");
             options.CacheDirectoryPath = null;
             options.AutoSessionTracking = false;
         }
@@ -199,7 +199,7 @@ internal class SentryUnitySdk
             }
             else
             {
-                options.DiagnosticLogger?.LogWarning("Failed to find required IL2CPP methods - Skipping line number support");
+                options.LogWarning("Failed to find required IL2CPP methods - Skipping line number support");
             }
         }
     }
@@ -214,14 +214,14 @@ internal class SentryUnitySdk
             // Requires file access, see https://github.com/getsentry/sentry-unity/issues/290#issuecomment-1163608988
             if (options.AutoSessionTracking)
             {
-                options.DiagnosticLogger?.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
+                options.LogDebug("Platform support for automatic session tracking is unknown: disabling.");
                 options.AutoSessionTracking = false;
             }
 
             // This is only provided on a best-effort basis for other than the explicitly supported platforms.
             if (options.BackgroundWorker is null)
             {
-                options.DiagnosticLogger?.LogDebug("Platform support for background thread execution is unknown: using WebBackgroundWorker.");
+                options.LogDebug("Platform support for background thread execution is unknown: using WebBackgroundWorker.");
                 options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
             }
         }

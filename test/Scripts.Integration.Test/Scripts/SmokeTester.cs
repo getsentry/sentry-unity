@@ -321,7 +321,7 @@ public class SmokeTester : MonoBehaviour
     }
 
     // CppPlugin.cpp
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern void throw_cpp();
 
     internal class TestHandler : HttpClientHandler

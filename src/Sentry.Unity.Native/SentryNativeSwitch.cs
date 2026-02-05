@@ -36,7 +36,7 @@ public static class SentryNativeSwitch
     /// <param name="options">The Sentry Unity options to use.</param>
     public static void Configure(SentryUnityOptions options) =>
         Configure(options, ApplicationAdapter.Instance.Platform);
-    
+
     // For testing
     internal static void Configure(SentryUnityOptions options, RuntimePlatform platform)
     {
@@ -50,18 +50,18 @@ public static class SentryNativeSwitch
         if (options.Il2CppLineNumberSupportEnabled)
         {
             options.Il2CppLineNumberSupportEnabled = false;
-            options.DiagnosticLogger?.LogWarning("IL2CPP line number support is not available on Nintendo Switch - disabling.");
+            Logger?.LogWarning("IL2CPP line number support is not available on Nintendo Switch - disabling.");
         }
 
         if (options.AutoSessionTracking)
         {
-            options.DiagnosticLogger?.LogDebug("Disabling automatic session tracking on Switch due to limited file access.");
+            Logger?.LogDebug("Disabling automatic session tracking on Switch due to limited file access.");
             options.AutoSessionTracking = false;
         }
 
         if (options.BackgroundWorker is null)
         {
-            options.DiagnosticLogger?.LogDebug("Setting WebBackgroundWorker as background.");
+            Logger?.LogDebug("Setting WebBackgroundWorker as background.");
             options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
         }
 
@@ -72,11 +72,11 @@ public static class SentryNativeSwitch
             return;
         }
 
-        options.DiagnosticLogger?.LogDebug("Mounting temporary storage for sentry-switch.");
+        Logger?.LogDebug("Mounting temporary storage for sentry-switch.");
 
         if (sentry_switch_utils_mount() != 1)
         {
-            options.DiagnosticLogger?.LogError(
+            Logger?.LogError(
                 "Failed to mount temporary storage - Native scope sync will be disabled. " +
                 "Ensure 'TemporaryStorageSize' is set in the '.nmeta file'.");
             return;
@@ -85,38 +85,38 @@ public static class SentryNativeSwitch
         var cachePath = Marshal.PtrToStringAnsi(sentry_switch_utils_get_cache_path());
         if (string.IsNullOrEmpty(cachePath))
         {
-            options.DiagnosticLogger?.LogError("Failed to get cache path from mounted storage - Native scope sync will be disabled.");
+            Logger?.LogError("Failed to get cache path from mounted storage - Native scope sync will be disabled.");
             return;
         }
 
-        options.DiagnosticLogger?.LogDebug("Setting native cache directory: {0}", cachePath);
+        Logger?.LogDebug("Setting native cache directory: {0}", cachePath);
         options.CacheDirectoryPath = cachePath;
 
         try
         {
-            options.DiagnosticLogger?.LogDebug("Initializing the native SDK.");
+            Logger?.LogDebug("Initializing the native SDK.");
             if (!SentryNativeBridge.Init(options))
             {
-                options.DiagnosticLogger?.LogError("Failed to initialize sentry-switch - Native scope sync will be disabled.");
+                Logger?.LogError("Failed to initialize sentry-switch - Native scope sync will be disabled.");
                 sentry_switch_utils_unmount();
                 return;
             }
         }
         catch (Exception e)
         {
-            options.DiagnosticLogger?.LogError(e, "Sentry native initialization failed - Native scope sync will be disabled.");
+            Logger?.LogError(e, "Sentry native initialization failed - Native scope sync will be disabled.");
             sentry_switch_utils_unmount();
             return;
         }
 
         ApplicationAdapter.Instance.Quitting += () =>
         {
-            options.DiagnosticLogger?.LogDebug("Closing the sentry-switch SDK.");
+            Logger?.LogDebug("Closing the sentry-switch SDK.");
             SentryNativeBridge.Close();
             sentry_switch_utils_unmount();
         };
 
-        options.DiagnosticLogger?.LogDebug("Setting up native scope sync.");
+        Logger?.LogDebug("Setting up native scope sync.");
         options.ScopeObserver = new NativeScopeObserver(options);
         options.EnableScopeSync = true;
         options.NativeContextWriter = new NativeContextWriter();
@@ -126,7 +126,7 @@ public static class SentryNativeSwitch
         var defaultUserId = Marshal.PtrToStringAnsi(defaultUserIdPtr);
         if (!string.IsNullOrEmpty(defaultUserId))
         {
-            options.DiagnosticLogger?.LogDebug("Using Default User ID: {0}", defaultUserId);
+            Logger?.LogDebug("Using Default User ID: {0}", defaultUserId);
             options.DefaultUserId = defaultUserId;
         }
     }

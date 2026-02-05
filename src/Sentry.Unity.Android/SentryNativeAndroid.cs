@@ -16,55 +16,59 @@ public static class SentryNativeAndroid
     // parameter on `Configure` due SentryNativeAndroid being public
     internal static ISentryJava? SentryJava;
 
+    private static IDiagnosticLogger? Logger;
+
     /// <summary>
     /// Configures the native Android support.
     /// </summary>
     /// <param name="options">The Sentry Unity options to use.</param>
     public static void Configure(SentryUnityOptions options)
     {
-        options.DiagnosticLogger?.LogInfo("Attempting to configure native support via the Android SDK");
+        Logger = options.DiagnosticLogger;
+
+        Logger?.LogInfo("Attempting to configure native support via the Android SDK");
 
         if (!options.AndroidNativeSupportEnabled)
         {
-            options.DiagnosticLogger?.LogDebug("Native support is disabled for Android");
+            Logger?.LogDebug("Native support is disabled for Android");
             return;
         }
 
-        options.DiagnosticLogger?.LogDebug("Checking whether the Android SDK is present.");
+        Logger?.LogDebug("Checking whether the Android SDK is present.");
 
         // If it's not been set (in a test)
-        SentryJava ??= new SentryJava(options.DiagnosticLogger);
+        SentryJava ??= new SentryJava(Logger);
         if (!SentryJava.IsSentryJavaPresent())
         {
-            options.DiagnosticLogger?.LogError("Android Native Support has been enabled but the " +
+            Logger?.LogError("Android Native Support has been enabled but the " +
                                                "Android SDK is missing. This could have been caused by a mismatching" +
                                                "build time / runtime configuration. Please make sure you have " +
                                                "Android Native Support enabled during build time.");
             return;
         }
 
-        options.DiagnosticLogger?.LogDebug("Checking whether the Android SDK has already been initialized");
+        Logger?.LogDebug("Checking whether the Android SDK has already been initialized");
 
         if (SentryJava.IsEnabled() is true)
         {
-            options.DiagnosticLogger?.LogDebug("The Android SDK is already initialized");
+            Logger?.LogDebug("The Android SDK is already initialized");
         }
         else
         {
-            options.DiagnosticLogger?.LogInfo("Initializing the Android SDK");
+            Logger?.LogInfo("Initializing the Android SDK");
 
             SentryJava.Init(options);
 
-            options.DiagnosticLogger?.LogDebug("Validating Android SDK initialization");
+            Logger?.LogDebug("Validating Android SDK initialization");
 
             if (SentryJava.IsEnabled() is not true)
             {
-                options.DiagnosticLogger?.LogError("Failed to initialize Android Native Support");
+                Logger?.LogError("Failed to initialize Android Native Support");
                 return;
             }
         }
 
-        options.DiagnosticLogger?.LogDebug("Configuring scope sync");
+        Logger?.LogDebug("Configuring scope sync");
 
         options.NativeContextWriter = new NativeContextWriter(SentryJava);
         options.ScopeObserver = new AndroidJavaScopeObserver(options, SentryJava);
@@ -72,20 +76,20 @@ public static class SentryNativeAndroid
         options.NativeDebugImageProvider = new Native.NativeDebugImageProvider();
         options.CrashedLastRun = () =>
         {
-            options.DiagnosticLogger?.LogDebug("Checking for 'CrashedLastRun'");
+            Logger?.LogDebug("Checking for 'CrashedLastRun'");
 
             var crashedLastRun = SentryJava.CrashedLastRun();
             if (crashedLastRun is null)
             {
                 // Could happen if the Android SDK wasn't initialized before the .NET layer.
-                options.DiagnosticLogger?
+                Logger?
                     .LogWarning(
                         "Unclear from the native SDK if the previous run was a crash. Assuming it was not.");
                 crashedLastRun = false;
             }
             else
             {
-                options.DiagnosticLogger?.LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
+                Logger?.LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
             }
 
             return crashedLastRun.Value;
@@ -93,7 +97,7 @@ public static class SentryNativeAndroid
 
         try
         {
-            options.DiagnosticLogger?.LogDebug("Reinstalling native backend.");
+            Logger?.LogDebug("Reinstalling native backend.");
 
             // At this point Unity has taken the signal handler and will not invoke the original handler (Sentry)
             // So we register our backend once more to make sure user-defined data is available in the crash report.
@@ -101,19 +105,19 @@ public static class SentryNativeAndroid
         }
         catch (Exception e)
         {
-            options.DiagnosticLogger?.LogError(
+            Logger?.LogError(
                 e, "Failed to reinstall backend. Captured native crashes will miss scope data and tag.");
         }
 
         options.NativeSupportCloseCallback = () => Close(options);
 
-        options.DiagnosticLogger?.LogDebug("Fetching installation ID");
+        Logger?.LogDebug("Fetching installation ID");
 
         options.DefaultUserId = SentryJava.GetInstallationId();
         if (string.IsNullOrEmpty(options.DefaultUserId))
         {
             // In case we can't get an installation ID we create one and sync that down to the native layer
-            options.DiagnosticLogger?.LogDebug(
+            Logger?.LogDebug(
                 "Failed to fetch 'Installation ID' from the native SDK. Creating new 'Default User ID'.");
 
             // We fall back to Unity's Analytics Session Info: https://docs.unity3d.com/ScriptReference/Analytics.AnalyticsSessionInfo-userId.html
@@ -126,11 +130,11 @@ public static class SentryNativeAndroid
             }
             else
             {
-                options.DiagnosticLogger?.LogDebug("Failed to create new 'Default User ID'.");
+                Logger?.LogDebug("Failed to create new 'Default User ID'.");
             }
         }
 
-        options.DiagnosticLogger?.LogInfo("Successfully configured the Android SDK");
+        Logger?.LogInfo("Successfully configured the Android SDK");
     }
 
     /// <summary>
@@ -138,21 +142,21 @@ public static class SentryNativeAndroid
     /// </summary>
     public static void Close(SentryUnityOptions options)
     {
-        options.DiagnosticLogger?.LogInfo("Attempting to close the Android SDK");
+        Logger?.LogInfo("Attempting to close the Android SDK");
 
         if (!options.IsNativeSupportEnabled())
         {
-            options.DiagnosticLogger?.LogDebug("Android Native Support is not enabled. Skipping closing the Android SDK");
+            Logger?.LogDebug("Android Native Support is not enabled. Skipping closing the Android SDK");
             return;
         }
 
         if (SentryJava?.IsSentryJavaPresent() is not true)
         {
-            options.DiagnosticLogger?.LogDebug("Failed to find Sentry Java. Skipping closing the Android SDK");
+            Logger?.LogDebug("Failed to find Sentry Java. Skipping closing the Android SDK");
             return;
         }
 
-        options.DiagnosticLogger?.LogDebug("Closing the Android SDK");
+        Logger?.LogDebug("Closing the Android SDK");
         SentryJava.Close();
     }
 }

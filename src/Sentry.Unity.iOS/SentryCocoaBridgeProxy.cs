@@ -13,6 +13,7 @@ namespace Sentry.Unity.iOS;
 /// <see href="https://github.com/getsentry/sentry-cocoa"/>
 internal static class SentryCocoaBridgeProxy
 {
+    private static IDiagnosticLogger? Logger;
     public static bool IsEnabled() => SentryNativeBridgeIsEnabled() == 1;
 
     public static bool Init(SentryUnityOptions options)
@@ -22,6 +23,8 @@ internal static class SentryCocoaBridgeProxy
             return false;
         }
 
+        Logger = options.DiagnosticLogger;
+
         var cOptions = OptionsNew();
 
         // Note: DSN is not null because options.IsValid() must have returned true for this to be called.
@@ -29,41 +32,41 @@ internal static class SentryCocoaBridgeProxy
 
         if (options.Release is not null)
         {
-            options.DiagnosticLogger?.LogDebug("Setting Release: {0}", options.Release);
+            Logger?.LogDebug("Setting Release: {0}", options.Release);
             OptionsSetString(cOptions, "release", options.Release);
         }
 
         if (options.Environment is not null)
         {
-            options.DiagnosticLogger?.LogDebug("Setting Environment: {0}", options.Environment);
+            Logger?.LogDebug("Setting Environment: {0}", options.Environment);
             OptionsSetString(cOptions, "environment", options.Environment);
         }
 
-        options.DiagnosticLogger?.LogDebug("Setting Debug: {0}", options.Debug);
+        Logger?.LogDebug("Setting Debug: {0}", options.Debug);
         OptionsSetInt(cOptions, "debug", options.Debug ? 1 : 0);
 
         var diagnosticLevel = options.DiagnosticLevel.ToString().ToLowerInvariant();
-        options.DiagnosticLogger?.LogDebug("Setting DiagnosticLevel: {0}", diagnosticLevel);
+        Logger?.LogDebug("Setting DiagnosticLevel: {0}", diagnosticLevel);
         OptionsSetString(cOptions, "diagnosticLevel", diagnosticLevel);
 
-        options.DiagnosticLogger?.LogDebug("Setting SendDefaultPii: {0}", options.SendDefaultPii);
+        Logger?.LogDebug("Setting SendDefaultPii: {0}", options.SendDefaultPii);
         OptionsSetInt(cOptions, "sendDefaultPii", options.SendDefaultPii ? 1 : 0);
 
         // macOS screenshots currently don't work, because there's no UIKit. Cocoa logs: "Sentry - info:: NO UIKit"
-        // options.DiagnosticLogger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
+        // Logger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
         // OptionsSetInt(cOptions, "attachScreenshot", options.AttachScreenshot ? 1 : 0);
         OptionsSetInt(cOptions, "attachScreenshot", 0);
 
-        options.DiagnosticLogger?.LogDebug("Setting MaxBreadcrumbs: {0}", options.MaxBreadcrumbs);
+        Logger?.LogDebug("Setting MaxBreadcrumbs: {0}", options.MaxBreadcrumbs);
         OptionsSetInt(cOptions, "maxBreadcrumbs", options.MaxBreadcrumbs);
 
-        options.DiagnosticLogger?.LogDebug("Setting MaxCacheItems: {0}", options.MaxCacheItems);
+        Logger?.LogDebug("Setting MaxCacheItems: {0}", options.MaxCacheItems);
         OptionsSetInt(cOptions, "maxCacheItems", options.MaxCacheItems);
 
         // See https://github.com/getsentry/sentry-unity/issues/1658
         OptionsSetInt(cOptions, "enableNetworkBreadcrumbs", 0);
 
-        options.DiagnosticLogger?.LogDebug("Setting EnableWatchdogTerminationTracking: {0}", options.IosWatchdogTerminationIntegrationEnabled);
+        Logger?.LogDebug("Setting EnableWatchdogTerminationTracking: {0}", options.IosWatchdogTerminationIntegrationEnabled);
         OptionsSetInt(cOptions, "enableWatchdogTerminationTracking", options.IosWatchdogTerminationIntegrationEnabled ? 1 : 0);
 
         var result = StartWithOptions(cOptions);

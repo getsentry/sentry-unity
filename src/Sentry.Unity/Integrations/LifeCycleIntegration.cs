@@ -47,7 +47,7 @@ internal class LifeCycleIntegration : ISdkIntegration
                 data: ForegroundData,
                 level: BreadcrumbLevel.Info));
 
-            _options.DiagnosticLogger?.LogDebug("Resuming session.");
+            _options.LogDebug("Resuming session.");
             hub.ResumeSession();
         };
 
@@ -64,7 +64,7 @@ internal class LifeCycleIntegration : ISdkIntegration
                 data: BackgroundData,
                 level: BreadcrumbLevel.Info));
 
-            _options.DiagnosticLogger?.LogDebug("Pausing session.");
+            _options.LogDebug("Pausing session.");
             hub.PauseSession();
         };
 
