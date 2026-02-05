@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Features
+
+- Added content-based error event throttling to prevent repeated errors from consuming quota. The new `IThrottler` interface and `ErrorEventThrottler` implementation deduplicate `LogError`, `LogException`, and `LogAssertion` events based on message + stacktrace fingerprinting. Configurable via the Editor window ("Enable Error Event Throttling" + "Dedupe Window"). Breadcrumbs and structured logs are not affected by default. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
+
+### Deprecations
+
+- The time-based log debouncing system (`TimeDebounceBase`, `LogTimeDebounce`, `ErrorTimeDebounce`, `WarningTimeDebounce`) and related options (`EnableLogDebouncing`, `DebounceTimeLog`, `DebounceTimeWarning`, `DebounceTimeError`) are now marked as `[Obsolete]`. Use the new content-based event throttling instead. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
+
 ### Behavioral Changes
 
 - The SDK no longer refreshes the trace ID when changing active scene. This follows the changes to not do so based on lifecycle events, meaning that the trace ID persists from game start to game end, as intended in `4.0.0`. ([#2502](https://github.com/getsentry/sentry-unity/pull/2502))
@@ -23,9 +31,9 @@
 - Bump Java SDK from v8.28.0 to v8.31.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462), [#2481](https://github.com/getsentry/sentry-unity/pull/2481), [#2493](https://github.com/getsentry/sentry-unity/pull/2493))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8310)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.28.0...8.31.0)
-- Bump Native SDK from v0.12.2 to v0.12.4 ([#2471](https://github.com/getsentry/sentry-unity/pull/2471), [#2505](https://github.com/getsentry/sentry-unity/pull/2505))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0124)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.4)
+- Bump Native SDK from v0.12.2 to v0.12.5 ([#2471](https://github.com/getsentry/sentry-unity/pull/2471), [#2505](https://github.com/getsentry/sentry-unity/pull/2505), [#2512](https://github.com/getsentry/sentry-unity/pull/2512))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0125)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.5)
 - Bump Cocoa SDK from v9.1.0 to v9.3.0 ([#2492](https://github.com/getsentry/sentry-unity/pull/2492), [#2507](https://github.com/getsentry/sentry-unity/pull/2507))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#930)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.1.0...9.3.0)

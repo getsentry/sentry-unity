@@ -13,6 +13,8 @@ param(
 Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
 
+. $PSScriptRoot/common.ps1
+
 function Get-Size {
     param ([string]$Path)
 
@@ -50,9 +52,9 @@ $percentChange = if ($size1 -gt 0) { ($diff / $size1) * 100 } else { 0 }
 $diffFormatted = "$(if ($diff -gt 0) { '+' })$(Format-Size ([Math]::Abs($diff)))"
 $percentFormatted = "$(if ($diff -gt 0) { '+' })$([Math]::Round($percentChange, 2))%"
 
-Write-Host "Without Sentry: $(Format-Size $size1)"
-Write-Host "With Sentry:    $(Format-Size $size2)"
-Write-Host "Difference:     $diffFormatted ($percentFormatted)"
+Write-Log "Without Sentry: $(Format-Size $size1)"
+Write-Log "With Sentry:    $(Format-Size $size2)"
+Write-Log "Difference:     $diffFormatted ($percentFormatted)"
 
 # Save measurement to artifact for consolidated summary
 $measurement = @{

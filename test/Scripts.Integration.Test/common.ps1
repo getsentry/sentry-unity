@@ -26,6 +26,53 @@ function Write-Log
     }
 }
 
+function Write-Detail
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $timestamp = Get-Date -Format "HH:mm:ss.fff"
+    Write-Host "$timestamp |   $Message" -ForegroundColor Gray
+}
+
+function Write-PhaseHeader
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    $line = "=" * 64
+    Write-Host ""
+    Write-Host $line -ForegroundColor Cyan
+    Write-Host "  $($Name.ToUpper())" -ForegroundColor Cyan
+    Write-Host $line -ForegroundColor Cyan
+}
+
+function Write-PhaseSuccess
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $timestamp = Get-Date -Format "HH:mm:ss.fff"
+    Write-Host "$timestamp | [OK] $Message" -ForegroundColor Green
+}
+
+function Write-PhaseFailed
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $timestamp = Get-Date -Format "HH:mm:ss.fff"
+    Write-Host "$timestamp | [FAILED] $Message" -ForegroundColor Red
+}
+
 function RunApiServer([string] $ServerScript, [string] $Uri)
 {
     if ([string]::IsNullOrEmpty($Uri))
@@ -215,8 +262,7 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     #    chunks = the total number of chunks over all occurrences of a file.
     # We don't check the number of chunks because it depends on the file size.
     $expectedFiles = @()
-    $unity_2020_OrHigher = $unityVersion -match "202[0-9]+"
-    $unity_2021_OrHigher = $unityVersion -match "202[1-9]+"
+    $unity_6000_3_OrHigher = $unityVersion -match "6000\.[3-9]"
 
     # Currently we only test symbol upload with sources, but we want to keep the values below to also test without in the future.
     # We can have up to 4 different types of files grouped under one name:
@@ -229,51 +275,24 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     $withSources = $true
     If ($buildMethod.contains('Mac'))
     {
-        if ($unity_2020_OrHigher)
-        {
-            $expectedFiles = @(
-                "GameAssembly.dylib: count=$($withSources ? 8 : 6)",
-                'IntegrationTest: count=2',
-                'Sentry.dylib: count=2',
-                "Sentry.dylib.dSYM: count=$($withSources ? 4 : 2)",
-                'UnityPlayer.dylib: count=2'
-            )
-        }
-        else
-        {
-            $expectedFiles = @(
-                "GameAssembly.dylib: count=$($withSources ? 3 : 2)",
-                'IntegrationTest: count=1',
-                'Sentry.dylib: count=2',
-                "Sentry.dylib.dSYM: count=$($withSources ? 4 : 2)",
-                'UnityPlayer.dylib: count=1'
-            )
-        }
+        $expectedFiles = @(
+            "GameAssembly.dylib: count=$($withSources ? 8 : 6)",
+            'IntegrationTest: count=2',
+            'Sentry.dylib: count=2',
+            "Sentry.dylib.dSYM: count=$($withSources ? 4 : 2)",
+            'UnityPlayer.dylib: count=2'
+        )
     }
     ElseIf ($buildMethod.contains('Windows'))
     {
-        if ($unity_2020_OrHigher)
-        {
-            $expectedFiles = @(
-                'GameAssembly.dll: count=1',
-                "GameAssembly.pdb: count=$($withSources ? 3 : 2)",
-                'sentry.dll: count=1',
-                "sentry.pdb: count=$($withSources ? 2 : 1)",
-                'test.exe: count=1',
-                'UnityPlayer.dll: count=1'
-            )
-        }
-        else
-        {
-            $expectedFiles = @(
-                'GameAssembly.dll: count=1',
-                "GameAssembly.pdb: count=$($withSources ? 2 : 1)",
-                'sentry.dll: count=1',
-                "sentry.pdb: count=$($withSources ? 2 : 1)",
-                'test.exe: count=1',
-                'UnityPlayer.dll: count=1'
-            )
-        }
+        $expectedFiles = @(
+            'GameAssembly.dll: count=1',
+            "GameAssembly.pdb: count=$($withSources ? 3 : 2)",
+            'sentry.dll: count=1',
+            "sentry.pdb: count=$($withSources ? 2 : 1)",
+            'test.exe: count=1',
+            'UnityPlayer.dll: count=1'
+        )
     }
     ElseIf ($buildMethod.contains('Linux'))
     {
@@ -299,21 +318,22 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     }
     ElseIf ($buildMethod.contains('IOS'))
     {
-        if ($unity_2020_OrHigher)
+        if ($unity_6000_3_OrHigher)
         {
+            # Unity 6.3+ removed libiPhone-lib.dylib and Sentry is arm64-only
             $expectedFiles = @(
                 "IntegrationTest: count=$($withSources ? 3 : 2)",
-                'Sentry: count=8',
-                "UnityFramework: count=$($withSources ? 5 : 4)",
-                'libiPhone-lib.dylib: count=1'
+                'Sentry: count=4',
+                "UnityFramework: count=$($withSources ? 5 : 4)"
             )
         }
         else
         {
+            # Unity 2021 - 6000.2
             $expectedFiles = @(
                 "IntegrationTest: count=$($withSources ? 3 : 2)",
                 'Sentry: count=8',
-                "UnityFramework: count=$($withSources ? 4 : 3)",
+                "UnityFramework: count=$($withSources ? 5 : 4)",
                 'libiPhone-lib.dylib: count=1'
             )
         }
@@ -322,6 +342,12 @@ function CheckSymbolServerOutput([string] $buildMethod, [string] $symbolServerOu
     {
         Write-Log 'No symbols are uploaded for WebGL - nothing to test.' -ForegroundColor Yellow
         return
+    }
+    ElseIf ($buildMethod.contains('Switch'))
+    {
+        $expectedFiles = @(
+            'GameAssembly.nss: count=1'
+        )
     }
     Else
     {

@@ -54,6 +54,12 @@ internal sealed class UnityLogHandlerIntegration : ISdkIntegration, ILogHandler
             return;
         }
 
+        if (_options.Throttler is { } throttler && !throttler.ShouldCaptureException(exception))
+        {
+            _options.LogDebug("Exception event throttled: {0}", exception.GetType().Name);
+            return;
+        }
+
         // TODO: Capture the context (i.e. grab the name if != null and set it as context)
 
         // NOTE: This might not be entirely true, as a user could as well call `Debug.LogException`

@@ -4,11 +4,13 @@ param(
     [Parameter(Mandatory = $true)][string] $NdkPath
 )
 
+. $PSScriptRoot/common.ps1
+
 $workingDirectory = "samples/IntegrationTest/Build/"
 
 # Write SDK and NDK to the local.properties. The referenced Unity built-in SDK & NDK are not available in this job
 $localPropertiesPath = Join-Path -Path $workingDirectory -ChildPath "local.properties"
-Write-Host "Overwriting 'sdk.dir' and 'ndk.dir' at '$localPropertiesPath'"
+Write-Log "Overwriting 'sdk.dir' and 'ndk.dir' at '$localPropertiesPath'"
 $content = @(
     "sdk.dir=$androidSdkRoot"
     "ndk.dir=$ndkPath"
@@ -28,7 +30,7 @@ If ([int]$UnityVersion -ge 2021)
     {
         if (Test-Path -Path $gradleFilePath)
         {
-            Write-Output "Removing 'ndk path' from: $gradleFilePath"
+            Write-Detail "Removing 'ndk path' from: $gradleFilePath"
 
             $fileContent = Get-Content -Path $gradleFilePath
             $filteredContent = $fileContent | Where-Object { $_ -notmatch 'ndkPath.*AndroidPlayer/NDK"' }
@@ -36,7 +38,7 @@ If ([int]$UnityVersion -ge 2021)
         }
         else
         {
-            Write-Output "File not found: $gradleFilePath"
+            Write-Log "File not found: $gradleFilePath" -ForegroundColor Yellow
         }
     }
 }
@@ -46,7 +48,7 @@ If ([int]$UnityVersion -ge 2021)
 # https://discussions.unity.com/t/gradle-build-issues-for-android-api-sdk-35-in-unity-2022-3lts/1502187/10
 If ([int]$UnityVersion -eq 2022)
 {
-    Write-Output "Updating aapt2 path."
+    Write-Log "Updating aapt2 path..."
 
     $gradlePropertiesFile = Join-Path -Path $workingDirectory -ChildPath "gradle.properties"
     $fileContent = Get-Content -Path $gradlePropertiesFile
@@ -54,14 +56,14 @@ If ([int]$UnityVersion -eq 2022)
     $aapt2Path = "$androidSdkRoot/build-tools/34.0.0/aapt2"
     if (Test-Path $aapt2Path) 
     {
-        Write-Output "Setting the aapt2 path to: $aapt2Path"
+        Write-Detail "Setting the aapt2 path to: $aapt2Path"
 
         $updatedContent = $fileContent -replace '/opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/build-tools/34.0.0/aapt2', $aapt2Path
         $updatedContent | Set-Content -Path $gradlePropertiesFile
     }
     else 
     {
-        Write-Output "aapt2 not found at: $aapt2Path"
+        Write-Log "aapt2 not found at: $aapt2Path" -ForegroundColor Yellow
     }
 }
 
@@ -69,9 +71,8 @@ If ([int]$UnityVersion -eq 2022)
 # We're removing it to cause it to fall back to the local.properties
 If ([int]$UnityVersion -ge 6000)
 {
-    Write-Output "Removing 'SDK, NDK, and JDK paths' from: $gradleFilePath"
-
     $gradlePropertiesFile = Join-Path -Path $workingDirectory -ChildPath "gradle.properties"
+    Write-Log "Removing 'SDK, NDK, and JDK paths' from: $gradlePropertiesFile"
 
     $fileContent = Get-Content -Path $gradlePropertiesFile
     $filteredContent = $fileContent | Where-Object { $_ -notmatch 'unity.androidSdkPath|unity.androidNdkPath|unity.jdkPath' }

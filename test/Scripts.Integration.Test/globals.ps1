@@ -1,6 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 . $PSScriptRoot/../../scripts/unity-utils.ps1
+. $PSScriptRoot/common.ps1
 
 function ProjectRoot
 {
@@ -35,6 +36,10 @@ function GetTestAppName
     ElseIf ($buildMethod.contains("AndroidIl2CPPProject") -or $buildMethod.contains("IOS") -or $buildMethod.contains("WebGL"))
     {
         return ""
+    }
+    ElseIf ($buildMethod.contains("Switch"))
+    {
+        return "test"
     }
     Else
     {
@@ -96,21 +101,21 @@ function FormatUnityPath
     {
         If (-not $unityPath.EndsWith("Contents/MacOS/Unity"))
         {
-            $unityPath = $unityPath + "/Unity"
+            $unityPath = Join-Path $unityPath "Unity"
         }
     }
     ElseIf ($IsWindows)
     {
         If (-not $unityPath.EndsWith("Unity.exe"))
         {
-            $unityPath = $unityPath + "/Unity.exe"
+            $unityPath = Join-Path $unityPath "Unity.exe"
         }
     }
     ElseIf ($IsLinux)
     {
         If (((Get-Item $unityPath) -is [System.IO.DirectoryInfo]) -and $unityPath.EndsWith("unity"))
         {
-            $unityPath = $unityPath + "/Editor/Unity"
+            $unityPath = Join-Path (Join-Path $unityPath "Editor") "Unity"
         }
     }
     Else
@@ -118,7 +123,7 @@ function FormatUnityPath
         Throw "Cannot find Unity executable name for the current operating system"
     }
 
-    Write-Host "Unity path is $unityPath"
+    Write-Detail "Unity path: $unityPath"
     return $unityPath
 }
 
@@ -133,6 +138,7 @@ function BuildMethodFor([string] $platform)
         "Linux" { return "Builder.BuildLinuxIl2CPPPlayer" }
         "WebGL" { return "Builder.BuildWebGLPlayer" }
         "iOS" { return "Builder.BuildIOSProject" }
+        "Switch" { return "Builder.BuildSwitchIL2CPPPlayer" }
         ""
         {
             If ($IsMacOS)
@@ -161,7 +167,7 @@ function RunUnityCustom([string] $unityPath, [string[]] $arguments, [switch] $Re
     If ($unityPath.StartsWith("docker "))
     {
         # Fix paths (they're supposed to be the current working directory in the docker container)
-        Write-Host "Replacing project root ($(ProjectRoot)) in docker arguments: $arguments"
+        Write-Detail "Replacing project root ($(ProjectRoot)) in docker arguments"
         $arguments = $arguments | ForEach-Object { $_.Replace("$(ProjectRoot)", "/sentry-unity") }
     }
 
