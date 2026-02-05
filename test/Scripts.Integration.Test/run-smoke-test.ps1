@@ -1,4 +1,4 @@
-﻿param (
+param (
     [Parameter(Position = 0)]
     [string] $TestAppPath = "",
 
@@ -14,7 +14,7 @@
 
 if (-not $Global:NewProjectPathCache)
 {
-    . ./test/Scripts.Integration.Test/globals.ps1
+    . $PSScriptRoot/globals.ps1
 }
 
 . $PSScriptRoot/common.ps1
