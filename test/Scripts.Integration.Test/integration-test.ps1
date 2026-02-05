@@ -26,13 +26,6 @@ If (-not (Test-Path -Path $PackagePath)) {
     Throw "Package path does not exist: '$PackagePath'. If running locally, use dev-integration-test.ps1 with -Repack flag."
 }
 
-. ./test/Scripts.Integration.Test/common.ps1
-
-# Validate package path exists
-If (-not (Test-Path -Path $PackagePath)) {
-    Throw "Package path does not exist: '$PackagePath'. If running locally, use dev-integration-test.ps1 with -Repack flag."
-}
-
 $Global:UnityVersionInUse = $UnityVersion
 
 $UnityPath = FormatUnityPath $UnityPath
