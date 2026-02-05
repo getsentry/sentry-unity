@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
-using Sentry.Unity.Integrations;
 using UnityEngine;
 using AOT;
 
@@ -20,12 +19,18 @@ internal static class SentryNativeBridge
     private const string SentryLib = "sentry";
 #endif
 
+    private static IDiagnosticLogger? Logger; // This is also the logger we're forwarding native messages to.
+    private static bool UseLibC;
+    private static bool IsWindows;
+
     public static bool Init(SentryUnityOptions options)
     {
-        _useLibC = Application.platform
+        Logger = options.DiagnosticLogger;
+
+        UseLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
             or RuntimePlatform.PS5 or RuntimePlatform.Switch;
-        _isWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
+        IsWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
 
         var cOptions = sentry_options_new();
 
@@ -34,73 +39,64 @@ internal static class SentryNativeBridge
 
         if (options.Release is not null)
         {
-            options.DiagnosticLogger?.LogDebug("Setting Release: {0}", options.Release);
+            Logger?.LogDebug("Setting Release: {0}", options.Release);
             sentry_options_set_release(cOptions, options.Release);
         }
 
         if (options.Environment is not null)
         {
-            options.DiagnosticLogger?.LogDebug("Setting Environment: {0}", options.Environment);
+            Logger?.LogDebug("Setting Environment: {0}", options.Environment);
             sentry_options_set_environment(cOptions, options.Environment);
         }
 
-        options.DiagnosticLogger?.LogDebug("Setting Debug: {0}", options.Debug);
+        Logger?.LogDebug("Setting Debug: {0}", options.Debug);
         sentry_options_set_debug(cOptions, options.Debug ? 1 : 0);
 
         if (options.SampleRate.HasValue)
         {
-            options.DiagnosticLogger?.LogDebug("Setting Sample Rate: {0}", options.SampleRate.Value);
+            Logger?.LogDebug("Setting Sample Rate: {0}", options.SampleRate.Value);
             sentry_options_set_sample_rate(cOptions, options.SampleRate.Value);
         }
 
         // Disabling the native in favor of the C# layer for now
-        options.DiagnosticLogger?.LogDebug("Disabling native auto session tracking");
+        Logger?.LogDebug("Disabling native auto session tracking");
         sentry_options_set_auto_session_tracking(cOptions, 0);
 
-        if (_isWindows)
+        if (IsWindows)
         {
-            options.DiagnosticLogger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
+            Logger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
             sentry_options_set_attach_screenshot(cOptions, options.AttachScreenshot ? 1 : 0);
         }
 
         var dir = GetCacheDirectory(options);
 #if SENTRY_NATIVE_SWITCH
-        options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
+        Logger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
         sentry_options_set_database_path(cOptions, dir);
 #else
         // Note: don't use RuntimeInformation.IsOSPlatform - it will report windows on WSL.
-        if (_isWindows)
+        if (IsWindows)
         {
-            options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
+            Logger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
             sentry_options_set_database_pathw(cOptions, dir);
         }
         else
         {
-            options.DiagnosticLogger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
+            Logger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
             sentry_options_set_database_path(cOptions, dir);
         }
 #endif
 
-        if (options.DiagnosticLogger is null)
+        if (options.UnityInfo.IL2CPP)
         {
-            _logger?.LogDebug("Unsetting the current native logger");
-            _logger = null;
+            Logger?.LogDebug("Setting the native logger");
+            sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
         }
         else
         {
-            if (options.UnityInfo.IL2CPP)
-            {
-                options.DiagnosticLogger.LogDebug($"{(_logger is null ? "Setting a" : "Replacing the")} native logger");
-                _logger = options.DiagnosticLogger;
-                sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
-            }
-            else
-            {
-                options.DiagnosticLogger.LogInfo("Passing the native logs back to the C# layer is not supported on Mono - skipping native logger.");
-            }
+            Logger?.LogInfo("Passing the native logs back to the C# layer is not supported on Mono - skipping native logger.");
         }
 
-        options.DiagnosticLogger?.LogDebug("Initializing sentry native");
+        Logger?.LogDebug("Initializing sentry native");
         return 0 == sentry_init(cOptions);
     }
 
@@ -169,11 +165,6 @@ internal static class SentryNativeBridge
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_logger(IntPtr options, sentry_logger_function_t logger, IntPtr userData);
 
-    // The logger we should forward native messages to. This is referenced by nativeLog() which in turn for.
-    private static IDiagnosticLogger? _logger;
-    private static bool _useLibC = false;
-    private static bool _isWindows = false;
-
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
     [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
     private static void nativeLog(int cLevel, IntPtr format, IntPtr args, IntPtr userData)
@@ -190,7 +181,7 @@ internal static class SentryNativeBridge
 
     private static void nativeLogImpl(int cLevel, IntPtr format, IntPtr args, IntPtr userData)
     {
-        var logger = _logger;
+        var logger = Logger;
         if (logger is null || format == IntPtr.Zero || args == IntPtr.Zero)
         {
             return;
@@ -217,7 +208,7 @@ internal static class SentryNativeBridge
         {
             // We cannot access C var-arg (va_list) in c# thus we pass it back to vsnprintf to do the formatting.
             // For Linux and PlayStation, we must make a copy of the VaList to be able to pass it back...
-            if (_useLibC)
+            if (UseLibC)
             {
                 var argsStruct = Marshal.PtrToStructure<VaListLinux64>(args);
                 var formattedLength = 0;
@@ -278,7 +269,7 @@ internal static class SentryNativeBridge
 #if SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_SWITCH
         return vsnprintf_sentry(buffer, bufferSize, format, args);
 #else
-        return _isWindows
+        return IsWindows
             ? vsnprintf_windows(buffer, bufferSize, format, args)
             : vsnprintf_linux(buffer, bufferSize, format, args);
 #endif
