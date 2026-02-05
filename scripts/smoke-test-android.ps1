@@ -8,7 +8,7 @@ param (
 
 if (-not $Global:NewProjectPathCache)
 {
-    . ./test/Scripts.Integration.Test/globals.ps1
+    . $PSScriptRoot/../test/Scripts.Integration.Test/globals.ps1
 }
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1

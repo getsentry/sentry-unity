@@ -1,9 +1,9 @@
 if (-not $Global:NewProjectPathCache)
 {
-    . ./test/Scripts.Integration.Test/globals.ps1
+    . $PSScriptRoot/globals.ps1
 }
 
-. ./test/Scripts.Integration.Test/common.ps1
+. $PSScriptRoot/common.ps1
 
 # Check if SDK is packed.
 $packageFile = "package-release.zip"
