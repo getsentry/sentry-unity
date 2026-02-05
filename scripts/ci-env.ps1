@@ -11,7 +11,7 @@ switch ($name) {
         return "2022.3.62f3"
     }
     "unity6000.0" {
-        return "6000.0.66f2"
+        return "6000.0.67f1"
     }
     "unity6000.1" {
         return "6000.1.17f1"
