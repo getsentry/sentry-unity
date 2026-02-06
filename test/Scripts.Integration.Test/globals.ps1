@@ -147,7 +147,7 @@ function BuildMethodFor([string] $platform)
         "WebGL" { return "Builder.BuildWebGLPlayer" }
         "iOS" { return "Builder.BuildIOSProject" }
         "Switch" { return "Builder.BuildSwitchIL2CPPPlayer" }
-        "GameCoreScarlett" { return "Builder.BuildGameCoreScarlettIL2CPPPlayer" }
+        "XSX" { return "Builder.BuildGameCoreScarlettIL2CPPPlayer" }
         "PS5" { return "Builder.BuildPS5IL2CPPPlayer" }
         ""
         {
