@@ -146,11 +146,43 @@ function Test
         xcrun simctl install $($device.UUID) "$AppPath"
         Write-Log "OK" -ForegroundColor Green
 
-        function RunTest([string] $Name, [string] $SuccessString)
+        function RunTest([string] $Name, [string] $SuccessString, [int] $TimeoutSeconds = 60)
         {
-            Write-Log "Test: '$name'"
+            Write-Log "Test: '$Name'"
             Write-Log "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
-            $consoleOut = xcrun simctl launch --console-pty $($device.UUID) $AppName "--test" $Name
+
+            # Use Start-Process with output redirection and timeout to prevent hanging
+            # when the app crashes (which is expected for crash tests)
+            $outFile = New-TemporaryFile
+            $errFile = New-TemporaryFile
+            $consoleOut = @()
+
+            try
+            {
+                $process = Start-Process "xcrun" `
+                    -ArgumentList "simctl", "launch", "--console-pty", $device.UUID, $AppName, "--test", $Name `
+                    -NoNewWindow -PassThru `
+                    -RedirectStandardOutput $outFile `
+                    -RedirectStandardError $errFile
+
+                $timedOut = $null
+                $process | Wait-Process -Timeout $TimeoutSeconds -ErrorAction SilentlyContinue -ErrorVariable timedOut
+
+                if ($timedOut)
+                {
+                    Write-Log "Test '$Name' timed out after $TimeoutSeconds seconds - stopping process" -ForegroundColor Yellow
+                    $process | Stop-Process -Force -ErrorAction SilentlyContinue
+                }
+
+                # Read captured output
+                $consoleOut = @(Get-Content $outFile -ErrorAction SilentlyContinue) + `
+                              @(Get-Content $errFile -ErrorAction SilentlyContinue)
+            }
+            finally
+            {
+                Remove-Item $outFile -ErrorAction SilentlyContinue
+                Remove-Item $errFile -ErrorAction SilentlyContinue
+            }
 
             if ("$SuccessString" -eq "")
             {
@@ -158,7 +190,7 @@ function Test
             }
 
             Write-Log -NoNewline "'$Name' test STATUS: "
-            $stdout = $consoleOut  | Select-String $SuccessString
+            $stdout = $consoleOut | Select-String $SuccessString
             If ($null -ne $stdout)
             {
                 Write-Log "PASSED" -ForegroundColor Green
