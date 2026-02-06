@@ -101,7 +101,7 @@ Else {
         "^Switch$" {
             Write-PhaseSuccess "Switch build completed - no automated test execution available"
         }
-        "^GameCoreScarlett$"
+        "^(XSX|XB1)$"
         {
             Write-PhaseSuccess "Xbox build completed - no automated test execution available"
         }

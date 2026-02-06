@@ -41,7 +41,7 @@ function GetTestAppName
     {
         return "test"
     }
-    ElseIf ($buildMethod.contains("GameCoreScarlett"))
+    ElseIf ($buildMethod.contains("XSX") -or $buildMethod.contains("XB1"))
     {
         return "test"
     }
@@ -147,7 +147,8 @@ function BuildMethodFor([string] $platform)
         "WebGL" { return "Builder.BuildWebGLPlayer" }
         "iOS" { return "Builder.BuildIOSProject" }
         "Switch" { return "Builder.BuildSwitchIL2CPPPlayer" }
-        "XSX" { return "Builder.BuildGameCoreScarlettIL2CPPPlayer" }
+        "XSX" { return "Builder.BuildXSXIL2CPPPlayer" }
+        "XB1" { return "Builder.BuildXB1IL2CPPPlayer" }
         "PS5" { return "Builder.BuildPS5IL2CPPPlayer" }
         ""
         {
