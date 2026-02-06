@@ -221,6 +221,12 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     Write-Log "Clearing logcat from '$device'"
     adb -s $device logcat -c
 
+    # Force-stop any existing app instances to ensure clean state.
+    # This is especially important after crash tests where zombie processes may linger.
+    Write-Log "Force-stopping any existing '$ProcessName' instances"
+    adb -s $device shell am force-stop $ProcessName
+    Start-Sleep -Milliseconds 500
+
     $activityName = $TestActivityName
 
     Write-Log "Setting configuration"
