@@ -22,7 +22,7 @@ if (-not (Test-Path $TargetDirectory))
     New-Item -ItemType Directory -Path $TargetDirectory -Force | Out-Null
 }
 
-$files = Get-ChildItem -Path $SourceDirectory -File -Recurse
+$files = @(Get-ChildItem -Path $SourceDirectory -File -Recurse)
 
 foreach ($file in $files)
 {
