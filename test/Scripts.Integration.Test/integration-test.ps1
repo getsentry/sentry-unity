@@ -49,49 +49,19 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)")) {
     Write-PhaseHeader "Configuring Sentry"
     ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols:$CheckSymbols
     Write-PhaseSuccess "Sentry configured"
+}
 
-    If ($Platform -eq "Switch") {
-        If (-not $NativeSDKPath -or -not (Test-Path $NativeSDKPath)) {
-            Throw "Switch platform requires -NativeSDKPath parameter pointing to directory containing libsentry.a and libzstd.a"
-        }
-
-        Write-PhaseHeader "Setting Up Switch Native Plugins"
-        ./test/Scripts.Integration.Test/copy-native-plugins.ps1 `
-            -SourceDirectory $NativeSDKPath `
-            -TargetDirectory "$(GetNewProjectAssetsPath)/Plugins/Sentry/Switch" `
-            -Platform "Switch"
-        Write-PhaseSuccess "Native plugins copied"
-    }
-
-    If ($Platform -eq "GameCoreScarlett")
-    {
-        If (-not $NativeSDKPath -or -not (Test-Path $NativeSDKPath))
-        {
-            Throw "GameCoreScarlett platform requires -NativeSDKPath parameter pointing to directory containing sentry.dll"
-        }
-
-        Write-PhaseHeader "Setting Up Xbox Native Plugins"
-        ./test/Scripts.Integration.Test/copy-native-plugins.ps1 `
-            -SourceDirectory $NativeSDKPath `
-            -TargetDirectory "$(GetNewProjectAssetsPath)/Plugins/Sentry/XSX" `
-            -Platform "GameCoreScarlett"
-        Write-PhaseSuccess "Native plugins copied"
-    }
-
-    If ($Platform -eq "PS5")
-    {
-        If (-not $NativeSDKPath -or -not (Test-Path $NativeSDKPath))
-        {
-            Throw "PS5 platform requires -NativeSDKPath parameter pointing to directory containing sentry.prx"
-        }
-
-        Write-PhaseHeader "Setting Up PlayStation Native Plugins"
-        ./test/Scripts.Integration.Test/copy-native-plugins.ps1 `
-            -SourceDirectory $NativeSDKPath `
-            -TargetDirectory "$(GetNewProjectAssetsPath)/Plugins/Sentry/PS5" `
-            -Platform "PS5"
-        Write-PhaseSuccess "Native plugins copied"
-    }
+# Copying the native SDK over to the expected directory.
+If ($NativeSDKPath -and (Test-Path $NativeSDKPath)) {
+    Write-PhaseHeader "Setting up the native plugin for $Platform"
+    ./test/Scripts.Integration.Test/copy-native-plugins.ps1 `
+        -SourceDirectory $NativeSDKPath `
+        -TargetDirectory "$(GetNewProjectAssetsPath)/Plugins/Sentry/$Platform" `
+        -Platform $Platform
+    Write-PhaseSuccess "Native plugins copied"
+}
+Else {
+    Write-Log "No NativeSDKPath provided (native features disabled)" -ForegroundColor Yellow
 }
 
 # Support rebuilding the integration test project. I.e. if you make changes to the SmokeTester.cs during
