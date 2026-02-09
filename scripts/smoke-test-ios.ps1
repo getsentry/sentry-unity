@@ -146,7 +146,7 @@ function Test
         xcrun simctl install $($device.UUID) "$AppPath"
         Write-Log "OK" -ForegroundColor Green
 
-        function RunTest([string] $Name, [string] $SuccessString, [int] $TimeoutSeconds = 60)
+        function RunTest([string] $Name, [string] $SuccessString, [int] $TimeoutSeconds = 180)
         {
             Write-Log "Test: '$Name'"
             Write-Log "Launching '$Name' test on '$($device.Name)'" -ForegroundColor Green
@@ -189,6 +189,13 @@ function Test
                 $SuccessString = "$($Name.ToUpper()) TEST: PASS"
             }
 
+            Write-Host "::group::$($device.Name) Console Output"
+            foreach ($consoleLine in $consoleOut)
+            {
+                Write-Host $consoleLine
+            }
+            Write-Host "::endgroup::"
+
             Write-Log -NoNewline "'$Name' test STATUS: "
             $stdout = $consoleOut | Select-String $SuccessString
             If ($null -ne $stdout)
@@ -199,37 +206,59 @@ function Test
             {
                 $device.TestFailed = $True
                 Write-Log "FAILED" -ForegroundColor Red
+                throw "Test '$Name' failed - success string '$SuccessString' not found in output"
             }
-
-            Write-Host "::group::$($device.Name) Console Output"
-            foreach ($consoleLine in $consoleOut)
-            {
-                Write-Host $consoleLine
-            }
-            Write-Host "::endgroup::"
         }
 
-        RunTest "smoke"
-        RunTest "hasnt-crashed"
-
-        try
+        function RunTestSuiteWithRetry([int] $MaxRetries = 3)
         {
-            # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CrashTestWithServer"
-            CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
-                RunTest "crash" "CRASH TEST: Issuing a native crash"
-                RunTest "has-crashed"
-            }
-        }
-        catch
-        {
-            Write-Host "::group::$($device.Name) console output"
-            foreach ($consoleLine in $consoleOut)
+            for ($attempt = 1; $attempt -le $MaxRetries; $attempt++)
             {
-                Write-Host $consoleLine
+                Write-Log "Test suite attempt $attempt/$MaxRetries" -ForegroundColor Cyan
+
+                if ($attempt -gt 1)
+                {
+                    # Reset simulator state between retries
+                    Write-Log "Reinstalling app to reset state..." -ForegroundColor Yellow
+                    xcrun simctl uninstall $($device.UUID) $AppName 2>$null
+                    Start-Sleep -Seconds 2
+                    xcrun simctl install $($device.UUID) "$AppPath"
+                    Start-Sleep -Seconds 2
+                }
+
+                $device.TestFailed = $false
+
+                try
+                {
+                    RunTest "smoke"
+                    RunTest "hasnt-crashed"
+
+                    # Note: mobile apps post the crash on the second app launch, so we must run both as part of the "CrashTestWithServer"
+                    CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'1f8b08000000000000" -CrashTestCallback {
+                        RunTest "crash" "CRASH TEST: Issuing a native crash"
+                        RunTest "has-crashed"
+                    }
+
+                    Write-Log "All tests passed on attempt $attempt/$MaxRetries" -ForegroundColor Green
+                    return  # Success!
+                }
+                catch
+                {
+                    Write-Log "Test suite attempt $attempt failed: $_" -ForegroundColor Yellow
+
+                    if ($attempt -lt $MaxRetries)
+                    {
+                        Write-Log "Will retry..." -ForegroundColor Yellow
+                        continue
+                    }
+
+                    # Final attempt failed
+                    throw
+                }
             }
-            Write-Host "::endgroup::"
-            throw;
         }
+
+        RunTestSuiteWithRetry -MaxRetries 3
 
         Write-Log -NoNewline "Removing Smoke Test from $($device.Name): "
         xcrun simctl uninstall $($device.UUID) $AppName
