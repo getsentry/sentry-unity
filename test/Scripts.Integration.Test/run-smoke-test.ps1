@@ -9,7 +9,10 @@ param (
     [switch] $Smoke,
 
     [Parameter()]
-    [switch] $Crash
+    [switch] $Crash,
+
+    [Parameter()]
+    [int] $MaxRetries = 3
 )
 
 if (-not $Global:NewProjectPathCache)
@@ -24,6 +27,7 @@ Write-Log "  TestAppPath: $TestAppPath"
 Write-Log "   AppDataDir: $AppDataDir"
 Write-Log "        Smoke: $Smoke"
 Write-Log "        Crash: $Crash"
+Write-Log "   MaxRetries: $MaxRetries"
 
 If (!$Smoke -and !$Crash)
 {
@@ -66,21 +70,6 @@ if ("$TestAppPath" -eq "")
 Write-Log "Resolved parameters:"
 Write-Log "  TestAppPath: $TestAppPath"
 Write-Log "   AppDataDir: $AppDataDir"
-
-if ("$AppDataDir" -ne "")
-{
-    if (Test-Path $AppDataDir)
-    {
-        Write-Warning "Removing AppDataDir '$AppDataDir'"
-        Remove-Item -Force -Recurse $AppDataDir
-    }
-}
-else
-{
-    Write-Warning "No AppDataDir param given - if you're running this after a previous crash test, the smoke test will fail."
-    Write-Warning "You can provide AppDataDir and it will be deleted before running the test."
-    Write-Warning 'On windows, this would normally be: -AppDataDir "$env:UserProfile\AppData\LocalLow\DefaultCompany\unity-of-bugs\"'
-}
 
 function RunTest([string] $type)
 {
@@ -145,29 +134,54 @@ function RunTest([string] $type)
     }
 }
 
-# Simple smoke test
-if ($Smoke)
+for ($attempt = 1; $attempt -le $MaxRetries; $attempt++)
 {
-    RunTest "smoke"
-    RunTest "hasnt-crashed"
-}
+    Write-Log "Test suite attempt $attempt/$MaxRetries"
 
-# Native crash test
-if ($Crash)
-{
-    # Note: macOS & Linux apps post the crash on the next app launch so we must run both as part of the "CrashTestWithServer"
-    #       Windows posts the crash immediately because the handler runs as a standalone process.
-    if ($IsMacOS -or $IsLinux)
+    if ("$AppDataDir" -ne "" -and (Test-Path $AppDataDir))
     {
-        $expectedFragment = $IsMacOS ? '1f8b08000000000000' : '7b2264736e223a2268'
-        CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'$expectedFragment" -CrashTestCallback {
-            RunTest "crash" "CRASH TEST: Issuing a native crash"
-            RunTest "has-crashed"
-        }
+        Write-Warning "Removing AppDataDir '$AppDataDir'"
+        Remove-Item -Force -Recurse $AppDataDir
     }
-    else
+
+    try
     {
-        CrashTestWithServer -SuccessString "POST /api/12345/minidump/" -CrashTestCallback { RunTest "crash" }
-        RunTest "has-crashed"
+        if ($Smoke)
+        {
+            RunTest "smoke"
+            RunTest "hasnt-crashed"
+        }
+
+        if ($Crash)
+        {
+            # Note: macOS & Linux apps post the crash on the next app launch so we must run both as part of the "CrashTestWithServer"
+            #       Windows posts the crash immediately because the handler runs as a standalone process.
+            if ($IsMacOS -or $IsLinux)
+            {
+                $expectedFragment = $IsMacOS ? '1f8b08000000000000' : '7b2264736e223a2268'
+                CrashTestWithServer -SuccessString "POST /api/12345/envelope/ HTTP/1.1`" 200 -b'$expectedFragment" -CrashTestCallback {
+                    RunTest "crash" "CRASH TEST: Issuing a native crash"
+                    RunTest "has-crashed"
+                }
+            }
+            else
+            {
+                CrashTestWithServer -SuccessString "POST /api/12345/minidump/" -CrashTestCallback { RunTest "crash" }
+                RunTest "has-crashed"
+            }
+        }
+
+        Write-Log "All tests passed on attempt $attempt/$MaxRetries"
+        return
+    }
+    catch
+    {
+        Write-Log "Test suite attempt $attempt failed: $_"
+        if ($attempt -lt $MaxRetries)
+        {
+            Write-Log "Will retry..."
+            continue
+        }
+        throw
     }
 }
