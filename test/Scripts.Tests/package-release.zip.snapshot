@@ -32,8 +32,7 @@ Plugins/iOS.meta
 Plugins/Linux.meta
 Plugins/macOS.meta
 Plugins/PS5.meta
-Plugins/sentry_native_stubs.c
-Plugins/sentry_native_stubs.c.meta
+Plugins/Switch.meta
 Plugins/Windows.meta
 Plugins/macOS/Sentry.meta
 Plugins/macOS/SentryNativeBridge.m
@@ -207,6 +206,8 @@ Plugins/Android/Sentry~/sentry-android-core-release.aar
 Plugins/Android/Sentry~/sentry-android-ndk-release.aar
 Plugins/Android/Sentry~/sentry-native-ndk-release.aar
 Plugins/Android/Sentry~/sentry.jar
+Plugins/Switch/sentry_native_stubs.c
+Plugins/Switch/sentry_native_stubs.c.meta
 Plugins/Windows/Sentry.meta
 Plugins/Windows/Sentry/crashpad_handler.exe
 Plugins/Windows/Sentry/crashpad_handler.exe.meta
