@@ -62,12 +62,10 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         }
         
         $hasLicenseError = $stdout -match "No valid Unity Editor license found. Please activate your license."
-        # In Unity 6.0, building on mobile with no license available errors with "unsuppored". Retrying works :)
-        $hasUnsupportedTargetError = $stdout -match "Error building player because build target was unsupported"
         
-        if ($hasLicenseError -or $hasUnsupportedTargetError)
+        if ($hasLicenseError)
         {
-            $msg = if ($hasLicenseError) { "Unity failed because it couldn't acquire a license." } else { "Unity failed because build target was unsupported but it's probably a license issue." }
+            $msg = "Unity failed because it couldn't acquire a license."
             $timeRemaining = $RunUnityLicenseRetryTimeoutSeconds - $stopwatchTotal.Elapsed.TotalSeconds
             $timeToSleep = $timeRemaining -gt $RunUnityLicenseRetryIntervalSeconds ? $RunUnityLicenseRetryIntervalSeconds : $timeRemaining - 1
             if ($timeToSleep -gt 0)

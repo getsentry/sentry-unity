@@ -152,7 +152,8 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
 
     Write-Log "Running crash test with server" -ForegroundColor Yellow
 
-    # You can increase this to retry multiple times. Seems a bit flaky at the moment in CI.
+    # Retry on server communication issues (success string not found in output).
+    # Callback exceptions are re-thrown immediately for the caller to handle.
     if ($null -eq $env:CI)
     {
         $runs = 1
@@ -175,7 +176,8 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         # start the server
         $httpServer = RunApiServer "crash-test-server"
 
-        # run the test
+        # run the test - callback exceptions are re-thrown immediately for the caller to handle
+        # (e.g., suite-level retry with app reinstall). Only server issues trigger internal retry.
         try
         {
             $CrashTestCallback.Invoke()
@@ -183,16 +185,7 @@ function CrashTestWithServer([ScriptBlock] $CrashTestCallback, [string] $Success
         catch
         {
             $httpServer.stop.Invoke()
-            if ($run -eq $runs)
-            {
-                throw
-            }
-            else
-            {
-                Write-Warning "crash test $run/$runs : FAILED, retrying. The error was: $_"
-                Write-Host $_.ScriptStackTrace
-                continue
-            }
+            throw
         }
 
         # evaluate the result

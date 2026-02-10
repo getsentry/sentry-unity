@@ -64,7 +64,11 @@ public sealed class UnityEventProcessorThreadingTests
             Enabled = true,
             AttachStacktrace = true,
             Debug = true,
-            DiagnosticLogger = _testLogger
+            DiagnosticLogger = _testLogger,
+            // Disable caching to avoid file system race conditions between test runs.
+            // The cache directory lock mechanism only applies to Windows Player runtime,
+            // so parallel tests or residual cache files can cause sharing violations.
+            CacheDirectoryPath = null
         };
         SentrySdk.Init(options);
 

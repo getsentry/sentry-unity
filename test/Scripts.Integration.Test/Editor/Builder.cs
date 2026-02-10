@@ -182,6 +182,24 @@ public class Builder
         BuildIl2CPPPlayer(BuildTarget.Switch, BuildTargetGroup.Switch, BuildOptions.StrictMode);
     }
 
+    public static void BuildXSXIL2CPPPlayer()
+    {
+        Debug.Log("Builder: Building Xbox Series X|S IL2CPP Player");
+        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxSeries, BuildTargetGroup.GameCoreXboxSeries, BuildOptions.StrictMode);
+    }
+
+    public static void BuildXB1IL2CPPPlayer()
+    {
+        Debug.Log("Builder: Building Xbox One IL2CPP Player");
+        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxOne, BuildTargetGroup.GameCoreXboxOne, BuildOptions.StrictMode);
+    }
+
+    public static void BuildPS5IL2CPPPlayer()
+    {
+        Debug.Log("Builder: Building PS5 IL2CPP Player");
+        BuildIl2CPPPlayer(BuildTarget.PS5, BuildTargetGroup.PS5, BuildOptions.StrictMode);
+    }
+
     private static void ValidateArguments(Dictionary<string, string> args)
     {
         Debug.Log("Builder: Validating command line arguments");
