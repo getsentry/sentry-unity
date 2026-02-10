@@ -4,6 +4,7 @@
 
 ### Features
 
+- [Sentry trace-connected Metrics](https://docs.sentry.io/product/explore/metrics/) are now available as _experimental_. ([#2533](https://github.com/getsentry/sentry-unity/pull/2533))
 - Added content-based error event throttling to prevent repeated errors from consuming quota. The new `IThrottler` interface and `ErrorEventThrottler` implementation deduplicate `LogError`, `LogException`, and `LogAssertion` events based on message + stacktrace fingerprinting. Configurable via the Editor window ("Enable Error Event Throttling" + "Dedupe Window"). Breadcrumbs and structured logs are not affected by default. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
 
 ### Deprecations
@@ -29,6 +30,9 @@
 
 ### Dependencies
 
+- Bump .NET SDK from v6.0.0 to v6.1.0 ([#2533](https://github.com/getsentry/sentry-unity/pull/2533))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#610)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.0.0...6.1.0)
 - Bump Java SDK from v8.28.0 to v8.31.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462), [#2481](https://github.com/getsentry/sentry-unity/pull/2481), [#2493](https://github.com/getsentry/sentry-unity/pull/2493))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8310)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.28.0...8.31.0)
