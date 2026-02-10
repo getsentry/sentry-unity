@@ -84,7 +84,7 @@ int SentryNativeBridgeLoadLibrary()
             LOAD_CLASS_OR_BREAK(SentryUser)
             LOAD_CLASS_OR_BREAK(SentryOptions)
             LOAD_CLASS_OR_BREAK(SentryOptionsInternal)
-            LOAD_SWIFT_CLASS_OR_BREAK(SentryId, _TtC6Sentry8SentryId)
+            LOAD_CLASS_OR_BREAK(SentryId)
             LOAD_CLASS_OR_BREAK(SentrySpanId)
             LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
 
