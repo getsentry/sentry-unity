@@ -130,6 +130,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool PlayStationNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool SwitchNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
+    [field: SerializeField] public bool EnableMetrics { get; set; } = true;
     [field: SerializeField] public SentryOptionsConfiguration? OptionsConfiguration { get; set; }
 
     [field: SerializeField] public bool Debug { get; set; } = true;
@@ -226,6 +227,8 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             },
             AddBreadcrumbsWithStructuredLogs = AddBreadcrumbsWithStructuredLogs
         };
+
+        options.Experimental.EnableMetrics = EnableMetrics;
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
         if (!EnableOfflineCaching)

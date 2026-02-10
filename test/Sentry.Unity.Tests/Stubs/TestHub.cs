@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Sentry.Internal;
 using Sentry.Protocol.Envelopes;
 
 namespace Sentry.Unity.Tests.Stubs;
@@ -123,6 +124,8 @@ internal sealed class TestHub : IHub
 #pragma warning disable SENTRY0001
     public SentryStructuredLogger Logger { get; }
 #pragma warning restore SENTRY0001
+
+    public SentryMetricEmitter Metrics => DisabledSentryMetricEmitter.Instance;
 
     public ITransactionTracer StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext) =>
         new TransactionTracer(this, context);

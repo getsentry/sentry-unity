@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: -668357930, guid: 43ec428a58422470fa764bdba9d9bc19, type: 3}
   m_Name: SentryOptions
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   <Enabled>k__BackingField: 1
   <Dsn>k__BackingField: https://e9ee299dbf554dfd930bc5f3c90d5d4b@o447951.ingest.us.sentry.io/4504604988538880
   <CaptureInEditor>k__BackingField: 1
@@ -27,8 +27,8 @@ MonoBehaviour:
   <AutoAwakeTraces>k__BackingField: 0
   <AutoSessionTracking>k__BackingField: 1
   <AutoSessionTrackingInterval>k__BackingField: 30000
-  <ReleaseOverride>k__BackingField: 
-  <EnvironmentOverride>k__BackingField: 
+  <ReleaseOverride>k__BackingField:
+  <EnvironmentOverride>k__BackingField:
   <AttachStacktrace>k__BackingField: 1
   <AttachScreenshot>k__BackingField: 1
   <ScreenshotQuality>k__BackingField: 1
@@ -78,6 +78,7 @@ MonoBehaviour:
   <PlayStationNativeSupportEnabled>k__BackingField: 1
   <SwitchNativeSupportEnabled>k__BackingField: 1
   <Il2CppLineNumberSupportEnabled>k__BackingField: 1
+  <EnableMetrics>k__BackingField: 1
   <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: cea63afb7c75f429799422326f926abe, type: 2}
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 0
