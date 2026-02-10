@@ -22,7 +22,15 @@ if (-not (Test-Path $TargetDirectory))
     New-Item -ItemType Directory -Path $TargetDirectory -Force | Out-Null
 }
 
-$files = Get-ChildItem -Path $SourceDirectory -File -Recurse
+$files = @(Get-ChildItem -Path $SourceDirectory -File -Recurse)
+
+# Map short platform names to Unity's internal platform names for meta files
+$unityPlatformName = switch ($Platform)
+{
+    "XSX" { "GameCoreScarlett" }
+    "XB1" { "GameCoreXboxOne" }
+    Default { $Platform }
+}
 
 foreach ($file in $files)
 {
@@ -41,8 +49,8 @@ foreach ($file in $files)
     $metaPath = "$targetPath.meta"
     $guid = [guid]::NewGuid().ToString("N").ToLower()
 
-    $excludeGameCoreScarlett = if ($Platform -eq "GameCoreScarlett") { 0 } else { 1 }
-    $excludeGameCoreXboxOne = if ($Platform -eq "GameCoreXboxOne") { 0 } else { 1 }
+    $excludeGameCoreScarlett = if ($Platform -eq "XSX") { 0 } else { 1 }
+    $excludeGameCoreXboxOne = if ($Platform -eq "XB1") { 0 } else { 1 }
     $excludePS5 = if ($Platform -eq "PS5") { 0 } else { 1 }
     $excludeSwitch = if ($Platform -eq "Switch") { 0 } else { 1 }
 
@@ -94,7 +102,7 @@ PluginImporter:
       enabled: 0
       settings:
         CPU: None
-    ${Platform}:
+    ${unityPlatformName}:
       enabled: 1
       settings: {}
     Win:

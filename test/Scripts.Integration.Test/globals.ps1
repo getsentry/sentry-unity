@@ -41,6 +41,14 @@ function GetTestAppName
     {
         return "test"
     }
+    ElseIf ($buildMethod.contains("XSX") -or $buildMethod.contains("XB1"))
+    {
+        return "test"
+    }
+    ElseIf ($buildMethod.contains("PS5"))
+    {
+        return "test"
+    }
     Else
     {
         Throw "Cannot determine Test App name for the given buildMethod: '$buildMethod'"
@@ -139,6 +147,9 @@ function BuildMethodFor([string] $platform)
         "WebGL" { return "Builder.BuildWebGLPlayer" }
         "iOS" { return "Builder.BuildIOSProject" }
         "Switch" { return "Builder.BuildSwitchIL2CPPPlayer" }
+        "XSX" { return "Builder.BuildXSXIL2CPPPlayer" }
+        "XB1" { return "Builder.BuildXB1IL2CPPPlayer" }
+        "PS5" { return "Builder.BuildPS5IL2CPPPlayer" }
         ""
         {
             If ($IsMacOS)
