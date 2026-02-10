@@ -29,9 +29,9 @@
 
 ### Dependencies
 
-- Bump Java SDK from v8.28.0 to v8.31.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462), [#2481](https://github.com/getsentry/sentry-unity/pull/2481), [#2493](https://github.com/getsentry/sentry-unity/pull/2493))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8310)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.28.0...8.31.0)
+- Bump Java SDK from v8.28.0 to v8.32.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462), [#2481](https://github.com/getsentry/sentry-unity/pull/2481), [#2493](https://github.com/getsentry/sentry-unity/pull/2493), [#2530](https://github.com/getsentry/sentry-unity/pull/2530))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8320)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.28.0...8.32.0)
 - Bump Native SDK from v0.12.2 to v0.12.6 ([#2471](https://github.com/getsentry/sentry-unity/pull/2471), [#2505](https://github.com/getsentry/sentry-unity/pull/2505), [#2512](https://github.com/getsentry/sentry-unity/pull/2512), [#2524](https://github.com/getsentry/sentry-unity/pull/2524))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0126)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.6)
