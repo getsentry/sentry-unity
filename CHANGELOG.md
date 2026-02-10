@@ -2,10 +2,6 @@
 
 ## Unreleased
 
-### Features
-
-- Added content-based error event throttling to prevent repeated errors from consuming quota. The new `IThrottler` interface and `ErrorEventThrottler` implementation deduplicate `LogError`, `LogException`, and `LogAssertion` events based on message + stacktrace fingerprinting. Configurable via the Editor window ("Enable Error Event Throttling" + "Dedupe Window"). Breadcrumbs and structured logs are not affected by default. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
-
 ### Deprecations
 
 - The time-based log debouncing system (`TimeDebounceBase`, `LogTimeDebounce`, `ErrorTimeDebounce`, `WarningTimeDebounce`) and related options (`EnableLogDebouncing`, `DebounceTimeLog`, `DebounceTimeWarning`, `DebounceTimeError`) are now marked as `[Obsolete]`. Use the new content-based event throttling instead. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
@@ -26,12 +22,17 @@
 ### Features
 
 - Added Nintendo Switch Native Support. The SDK now automatically syncs the scope - tags, breadcrumbs, context - to the native layer, so native crashes have the same rich context as managed events. ([#2503](https://github.com/getsentry/sentry-unity/pull/2503))
+- [Sentry trace-connected Metrics](https://docs.sentry.io/product/explore/metrics/) are now available as _experimental_. ([#2533](https://github.com/getsentry/sentry-unity/pull/2533))
+- Added content-based error event throttling to prevent repeated errors from consuming quota. The new `IThrottler` interface and `ErrorEventThrottler` implementation deduplicate `LogError`, `LogException`, and `LogAssertion` events based on message + stacktrace fingerprinting. Configurable via the Editor window ("Enable Error Event Throttling" + "Dedupe Window"). Breadcrumbs and structured logs are not affected by default. ([#2479](https://github.com/getsentry/sentry-unity/pull/2479))
 
 ### Dependencies
 
-- Bump Java SDK from v8.28.0 to v8.32.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462), [#2481](https://github.com/getsentry/sentry-unity/pull/2481), [#2493](https://github.com/getsentry/sentry-unity/pull/2493), [#2530](https://github.com/getsentry/sentry-unity/pull/2530))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8320)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.28.0...8.32.0)
+- Bump .NET SDK from v6.0.0 to v6.1.0 ([#2533](https://github.com/getsentry/sentry-unity/pull/2533))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#610)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.0.0...6.1.0)
+- Bump Java SDK from v8.28.0 to v8.31.0 ([#2462](https://github.com/getsentry/sentry-unity/pull/2462), [#2481](https://github.com/getsentry/sentry-unity/pull/2481), [#2493](https://github.com/getsentry/sentry-unity/pull/2493))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8310)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.28.0...8.31.0)
 - Bump Native SDK from v0.12.2 to v0.12.6 ([#2471](https://github.com/getsentry/sentry-unity/pull/2471), [#2505](https://github.com/getsentry/sentry-unity/pull/2505), [#2512](https://github.com/getsentry/sentry-unity/pull/2512), [#2524](https://github.com/getsentry/sentry-unity/pull/2524))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0126)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.12.2...0.12.6)

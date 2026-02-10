@@ -530,4 +530,34 @@ public static partial class SentrySdk
     /// </remarks>
     [Obsolete("WARNING: This method deliberately causes a crash, and should not be used in a real application.")]
     public static void CauseCrash(CrashType crashType) => Sentry.SentrySdk.CauseCrash(crashType);
+
+    /// <summary>
+    /// Sentry features that are currently in an experimental state.
+    /// </summary>
+    /// <remarks>
+    /// Experimental features are subject to binary, source and behavioral breaking changes in future updates.
+    /// </remarks>
+    public static ExperimentalSentrySdk Experimental { get; } = new();
+
+    /// <summary>
+    /// Sentry features that are currently in an experimental state.
+    /// </summary>
+    /// <remarks>
+    /// Experimental features are subject to binary, source and behavioral breaking changes in future updates.
+    /// </remarks>
+    public sealed class ExperimentalSentrySdk
+    {
+        internal ExperimentalSentrySdk()
+        {
+        }
+
+        /// <summary>
+        /// Gets the metric emitter for emitting counters, gauges, and distributions connected to traces.
+        /// </summary>
+        public SentryMetricEmitter Metrics
+        {
+            [DebuggerStepThrough]
+            get => Sentry.SentrySdk.Experimental.Metrics;
+        }
+    }
 }

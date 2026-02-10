@@ -9,6 +9,7 @@
     <Deterministic>true</Deterministic>
     <Features>strict</Features>
     <SignAssembly>false</SignAssembly>
+    <NoWarn>$(NoWarn);SENTRYTRACECONNECTEDMETRICS</NoWarn>
 
     <!-- This is the default for our lowest supported version 2020 LTS: netstandard2.0 -->
     <!-- The TargetFramework gets overridden depending on the UnityVersion here and in test/props -->
