@@ -213,7 +213,7 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
     NSString *spanIdStr = [NSString stringWithUTF8String:spanId];
 
     // This is a workaround to deal with SentryId living inside the Swift header
-    Class sentryIdClass = NSClassFromString(@"_TtC6Sentry8SentryId");
+    Class sentryIdClass = NSClassFromString(@"SentryId");
     Class sentrySpanIdClass = NSClassFromString(@"SentrySpanId");
 
     if (sentryIdClass && sentrySpanIdClass) {
