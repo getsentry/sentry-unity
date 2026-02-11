@@ -31,8 +31,6 @@ public sealed class SentryCliOptions : ScriptableObject
     private static void MissingFieldWarning(IDiagnosticLogger? logger, string name) =>
         logger?.LogWarning("{0} missing. Please set it under {1}", name, EditorMenuPath);
 
-    public bool IsOrgAuthToken() => Auth is not null && Auth.StartsWith("sntrys_");
-
     public bool IsValid(IDiagnosticLogger? logger, bool isDevelopmentBuild)
     {
         if (!UploadSymbols)

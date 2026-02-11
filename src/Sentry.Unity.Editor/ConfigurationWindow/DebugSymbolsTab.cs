@@ -35,26 +35,11 @@ internal static class DebugSymbolsTab
                 "The authorization token from your user settings in Sentry"),
             cliOptions.Auth);
 
-        // Org tokens have a `sntrys` prefix and do not require an organisation
-        var isOrgAuthToken = cliOptions.IsOrgAuthToken();
-        if (isOrgAuthToken)
-        {
-            EditorGUILayout.HelpBox(
-                "Organization Auth Token detected. The token's embedded 'org slug' will be used during " +
-                "symbol upload.",
-                MessageType.Info);
-        }
-
-        EditorGUI.BeginDisabledGroup(isOrgAuthToken);
-
         cliOptions.Organization = EditorGUILayout.TextField(
                 new GUIContent(
                     "Org Slug",
-                    cliOptions.UploadSymbols && string.IsNullOrWhiteSpace(cliOptions.Organization) && !isOrgAuthToken ? SentryWindow.ErrorIcon : null,
                     "The organization slug in Sentry"),
                 cliOptions.Organization);
-
-        EditorGUI.EndDisabledGroup();
 
         cliOptions.Project = EditorGUILayout.TextField(
             new GUIContent(
