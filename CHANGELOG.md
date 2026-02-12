@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK no longer wrongly disables the org slug field based on assumed the auth-tolken type ([#2537](https://github.com/getsentry/sentry-unity/pull/2537))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.4.0 to v9.4.1 ([#2540](https://github.com/getsentry/sentry-unity/pull/2540))
