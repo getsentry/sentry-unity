@@ -190,5 +190,19 @@ internal static class AdvancedTab
                 }
             }
         }
+
+        EditorGUILayout.Space();
+        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+        EditorGUILayout.Space();
+
+        {
+            GUILayout.Label("Metrics", EditorStyles.boldLabel);
+
+            options.EnableMetrics = EditorGUILayout.Toggle(
+                new GUIContent("Enable Metrics",
+                    "Whether the SDK sends metrics to Sentry. " +
+                    "Metrics are connected to traces for correlation."),
+                options.EnableMetrics);
+        }
     }
 }
