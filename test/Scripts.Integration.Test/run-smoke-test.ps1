@@ -130,6 +130,11 @@ function RunTest([string] $type)
     }
     finally
     {
+        if ($null -ne $process -and !$process.HasExited)
+        {
+            Write-Warning "Process still running - forcing termination."
+            $process | Stop-Process -Force
+        }
         Write-Host "::endgroup::"
     }
 }
