@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- When targeting Switch, the SDK will no longer cause the build to fail when native libraries are missing but log a warning instead ([#2541](https://github.com/getsentry/sentry-unity/pull/2541))
+
 ## 4.1.0
 
 ### Deprecations
