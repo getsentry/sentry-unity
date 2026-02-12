@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- The SDK no longer wrongly disabled the org slug field based on assumed the auth-tolken type ([#2537](https://github.com/getsentry/sentry-unity/pull/2537))
+- The SDK no longer wrongly disables the org slug field based on assumed the auth-tolken type ([#2537](https://github.com/getsentry/sentry-unity/pull/2537))
 
 ### Dependencies
 
