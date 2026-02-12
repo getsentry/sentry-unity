@@ -47,10 +47,7 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)")) {
     Write-PhaseSuccess "Sentry added"
 
     Write-PhaseHeader "Configuring Sentry"
-    $nativeSupportEnabled = if ($Platform -eq "Switch") {
-        if ($NativeSDKPath) { "true" } else { "false" }
-    } else { "" }
-    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols:$CheckSymbols -NativeSupportEnabled $nativeSupportEnabled
+    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols:$CheckSymbols
     Write-PhaseSuccess "Sentry configured"
 }
 
