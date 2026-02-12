@@ -83,7 +83,7 @@ internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
         {
             if (nativeSupportEnabled)
             {
-                logger.LogError(
+                logger.LogWarning(
                     "Switch native support is enabled but required files are missing:\n{0}\n" +
                     "Build sentry-switch and copy the libraries to the expected locations. " +
                     "See: https://github.com/getsentry/sentry-switch",

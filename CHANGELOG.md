@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- When targeting Switch, the SDK will no longer cause the build to fail when native libraries are missing but log a warning instead ([#2541](https://github.com/getsentry/sentry-unity/pull/2541))
 - The SDK no longer wrongly disables the org slug field based on assumed the auth-tolken type ([#2537](https://github.com/getsentry/sentry-unity/pull/2537))
 
 ### Dependencies
