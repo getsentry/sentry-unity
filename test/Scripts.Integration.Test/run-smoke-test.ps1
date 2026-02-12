@@ -114,7 +114,7 @@ function RunTest([string] $type)
         }
         ElseIf ($timedOut)
         {
-            $process | Stop-Process
+            $process | Stop-Process -Force
             Throw "Test process timed out."
         }
         Else
