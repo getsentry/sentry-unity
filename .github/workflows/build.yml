@@ -10,7 +10,6 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
   GITHUB_ACTOR: ${{ github.actor }}
-  GITHUB_SHA: ${{ github.sha }}
   UNITY_VERSION: ${{ inputs.unity-version }}
 
 defaults:
@@ -129,7 +128,7 @@ jobs:
       - name: Upload release artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: ${{ env.GITHUB_SHA }}
+          name: package-release
           if-no-files-found: error
           path: |
             package-release.zip

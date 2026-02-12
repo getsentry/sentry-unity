@@ -22,7 +22,6 @@ jobs:
             build_platform: iOS
     env:
       GITHUB_ACTOR: ${{ github.actor }}
-      GITHUB_SHA: ${{ github.sha }}
       UNITY_PATH: docker exec unity unity-editor
       UNITY_VERSION: ${{ inputs.unity-version }}
     
@@ -87,7 +86,7 @@ jobs:
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
-          name: ${{ env.GITHUB_SHA }}
+          name: package-release
           wait-timeout: 3600
 
       - name: Extract UPM package
