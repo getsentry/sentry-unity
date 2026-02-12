@@ -75,7 +75,7 @@ jobs:
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
-          name: ${{ github.sha }}
+          name: package-release
           wait-timeout: 3600
 
       - name: Verify package content against snapshot
@@ -183,7 +183,7 @@ jobs:
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
-          name: ${{ github.sha }}
+          name: package-release
           wait-timeout: 3600
 
       - name: Extract UPM package
@@ -437,7 +437,7 @@ jobs:
       - name: Download UPM package
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: ${{ github.sha }}
+          name: package-release
 
       - name: Extract UPM package
         run: ./test/Scripts.Integration.Test/extract-package.ps1
