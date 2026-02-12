@@ -50,6 +50,12 @@ public static class SentryEditorWindowInstrumentation
             OptionsConfigurationItem.SetScript(value);
         }
 
+        if (args.TryGetValue("options.SwitchNativeSupportEnabled", out bool switchNativeSupport))
+        {
+            Debug.LogFormat("{0}: Configuring SwitchNativeSupportEnabled to {1}", functionName, switchNativeSupport);
+            options.SwitchNativeSupportEnabled = switchNativeSupport;
+        }
+
         optionsWindow.Close();
         Debug.LogFormat("{0}: SUCCESS", functionName);
     }
