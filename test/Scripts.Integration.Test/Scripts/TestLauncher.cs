@@ -51,7 +51,7 @@ public class TestLauncher : MonoBehaviour
 
 #if UNITY_IOS && !UNITY_EDITOR
     [DllImport("__Internal", EntryPoint="getTestArgObjectiveC")]
-    private static extern string GetTestArg();
+    internal static extern string GetTestArg();
 #else
     internal static string GetTestArg()
     {
