@@ -1,5 +1,9 @@
-minVersion: 0.24.0
+minVersion: 2.21.4
 changelogPolicy: auto
+artifactProvider:
+  name: github
+  config:
+    artifacts: package-release
 targets:
   - name: upm
     releaseRepoOwner: getsentry
