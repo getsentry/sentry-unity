@@ -41,12 +41,9 @@ BeforeAll {
         # Launch app again to ensure crash report is sent
         if ($Action -eq "crash-capture") {
             Write-Host "Running crash-send to ensure crash report is sent..."
-            Write-Host "::group::Log of crash-send"
 
             $sendExtras = @("-e", "test", "crash-send")
             Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $sendExtras
-
-            Write-Host "::endgroup::"
         }
 
         return $runResult
