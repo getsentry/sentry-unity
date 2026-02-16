@@ -26,6 +26,10 @@ $unityArgs = @( `
         "-cliOptionsScript", "CliConfiguration", `
         "-cliOptions.UrlOverride", ($CheckSymbols ? (SymbolServerUrlFor $UnityPath $Platform) : "") )
 
+if ($env:SENTRY_DSN) {
+    $unityArgs += @("-dsn", $env:SENTRY_DSN)
+}
+
 RunUnityAndExpect $UnityPath "ConfigureSentryOptions" "ConfigureOptions: SUCCESS" $unityArgs
 
 

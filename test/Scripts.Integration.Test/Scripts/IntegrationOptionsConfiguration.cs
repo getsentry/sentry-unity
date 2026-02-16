@@ -9,8 +9,8 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
     {
         Debug.Log("Sentry: IntegrationOptionsConfig::Configure() called");
 
-        // DSN is read from SentryOptions.asset (baked at build time via configure-sentry.ps1)
-        // No custom DSN override needed -- the real DSN is set in the editor configuration.
+        // DSN is baked into SentryOptions.asset at build time by configure-sentry.ps1
+        // which passes the SENTRY_DSN env var to ConfigureOptions via the -dsn argument.
 
         options.Environment = "integration-test";
         options.Release = "sentry-unity-test@1.0.0";
