@@ -65,6 +65,13 @@ jobs:
           mkdir -p $HOME/.android/avd
           touch $HOME/.android/repositories.cfg
 
+      - name: Add Android build-tools to PATH
+        run: |
+          BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
+          echo "Found build-tools at: $BUILD_TOOLS_DIR"
+          echo "$BUILD_TOOLS_DIR" >> $GITHUB_PATH
+        shell: bash
+
       - name: Run Android Integration Tests
         uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v2.33.0
         id: integration-test
@@ -90,9 +97,6 @@ jobs:
             adb wait-for-device
             adb shell input keyevent 82
             adb devices -l
-            # Add Android SDK build-tools to PATH so aapt2 is available
-            BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
-            export PATH="$BUILD_TOOLS_DIR:$PATH"
             pwsh -Command '$env:SENTRY_TEST_APK = "samples/IntegrationTest/Build/test.apk"; Invoke-Pester -Script test/IntegrationTest/Integration.Tests.ps1 -CI'
 
       - name: Upload test results on failure
