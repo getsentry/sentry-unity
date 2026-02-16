@@ -11,10 +11,7 @@ Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
 $global:DebugPreference = "Continue"
 
-if (-not $Global:NewProjectPathCache)
-{
-    . $PSScriptRoot/../Scripts.Integration.Test/globals.ps1
-}
+. $PSScriptRoot/../Scripts.Integration.Test/common.ps1
 
 # Import app-runner modules
 . $PSScriptRoot/../../modules/app-runner/import-modules.ps1
