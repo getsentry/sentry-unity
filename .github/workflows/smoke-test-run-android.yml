@@ -90,10 +90,7 @@ jobs:
             adb wait-for-device
             adb shell input keyevent 82
             adb devices -l
-            pwsh -Command '
-              $env:SENTRY_TEST_APK = "samples/IntegrationTest/Build/test.apk"
-              Invoke-Pester -Script test/IntegrationTest/Integration.Tests.ps1 -Output Detailed
-            '
+            pwsh -Command '$env:SENTRY_TEST_APK = "samples/IntegrationTest/Build/test.apk"; Invoke-Pester -Script test/IntegrationTest/Integration.Tests.ps1 -Output Detailed'
 
       - name: Upload test results on failure
         if: ${{ failure() }}
