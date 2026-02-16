@@ -9,6 +9,9 @@
 
 Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
+$global:DebugPreference = "Continue"
+
+. $PSScriptRoot/../Scripts.Integration.Test/common.ps1
 
 # Import app-runner modules
 . $PSScriptRoot/../../modules/app-runner/import-modules.ps1
