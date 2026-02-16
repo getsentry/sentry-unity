@@ -90,7 +90,10 @@ jobs:
             adb wait-for-device
             adb shell input keyevent 82
             adb devices -l
-            pwsh -Command '$env:SENTRY_TEST_APK = "samples/IntegrationTest/Build/test.apk"; Invoke-Pester -Script test/IntegrationTest/Integration.Tests.ps1 -Output Detailed'
+            # Add Android SDK build-tools to PATH so aapt2 is available
+            BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
+            export PATH="$BUILD_TOOLS_DIR:$PATH"
+            pwsh -Command '$env:SENTRY_TEST_APK = "samples/IntegrationTest/Build/test.apk"; Invoke-Pester -Script test/IntegrationTest/Integration.Tests.ps1 -CI'
 
       - name: Upload test results on failure
         if: ${{ failure() }}
