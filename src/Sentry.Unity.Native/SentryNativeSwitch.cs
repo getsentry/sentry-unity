@@ -89,6 +89,10 @@ public static class SentryNativeSwitch
             return;
         }
 
+        // Setting CacheDirectoryPath here so that GetDatabasePath() finds it in step 1 of its
+        // cascading resolution. On Switch, DisableFileWrite is true, which prevents the .NET
+        // CachingTransport from using this path for offline caching — it only serves as the
+        // base for the native database path.
         Logger?.LogDebug("Setting native cache directory: {0}", cachePath);
         options.CacheDirectoryPath = cachePath;
 

@@ -70,17 +70,17 @@ public static class SentryNative
         // Note: we must actually call the function now and on every other call use the value we get here.
         // Additionally, we cannot call this multiple times for the same directory, because the result changes
         // on subsequent runs. Therefore, we cache the value during the whole runtime of the application.
-        var cacheDirectory = SentryNativeBridge.GetCacheDirectory(options);
+        var databasePath = SentryNativeBridge.GetDatabasePath(options);
         var crashedLastRun = false;
         // In the event the SDK is re-initialized with a different path on disk, we need to track which ones were already read
         // Similarly we need to cache the value of each call since a subsequent call would return a different value
         // as the file used on disk to mark it as crashed is deleted after we read it.
         lock (PerDirectoryCrashInfo)
         {
-            if (!PerDirectoryCrashInfo.TryGetValue(cacheDirectory, out crashedLastRun))
+            if (!PerDirectoryCrashInfo.TryGetValue(databasePath, out crashedLastRun))
             {
                 crashedLastRun = SentryNativeBridge.HandleCrashedLastRun(options);
-                PerDirectoryCrashInfo.Add(cacheDirectory, crashedLastRun);
+                PerDirectoryCrashInfo.Add(databasePath, crashedLastRun);
 
                 Logger?
                     .LogDebug("Native SDK reported: 'crashedLastRun': '{0}'", crashedLastRun);
