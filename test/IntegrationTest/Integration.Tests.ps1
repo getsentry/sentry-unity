@@ -32,7 +32,19 @@ BeforeAll {
 
         $extras = @("-e", "test", $Action)
 
-        $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
+        try {
+            $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
+        }
+        catch {
+            if ($_.Exception.Message -match "Activity class .* does not exist" -or $_.Exception.Message -match "Error type 3") {
+                Write-Host "Activity not found, trying fallback: $($script:FallbackAndroidComponent)"
+                $script:AndroidComponent = $script:FallbackAndroidComponent
+                $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
+            }
+            else {
+                throw
+            }
+        }
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
