@@ -37,6 +37,12 @@ public static class SentryNative
             return;
         }
 
+        if (options.DisableFileWrite)
+        {
+            Logger?.LogWarning("Native support disabled because it requires file writing.");
+            return;
+        }
+
         try
         {
             if (!SentryNativeBridge.Init(options))
