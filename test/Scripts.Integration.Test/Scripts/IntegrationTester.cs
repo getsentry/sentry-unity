@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Sentry;
 using Sentry.Unity;
 using UnityEngine;
@@ -69,7 +70,7 @@ public class IntegrationTester : MonoBehaviour
 
         try
         {
-            throw new InvalidOperationException("Integration test exception");
+            DoSomeWork();
         }
         catch (Exception ex)
         {
@@ -78,6 +79,24 @@ public class IntegrationTester : MonoBehaviour
         }
 
         Application.Quit(0);
+    }
+
+    // Use a deeper call stack with NoInlining to ensure Unity 2022's IL2CPP
+    // produces a non-empty managed stack trace (single-method throw/catch can
+    // result in an empty stack trace with OptimizeSize + High stripping).
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void DoSomeWork()
+    {
+        if (DateTime.Now.Ticks > 0) // Always true but not optimizable
+        {
+            ThrowException();
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowException()
+    {
+        throw new InvalidOperationException("Integration test exception");
     }
 
     private void CrashCapture()
