@@ -92,9 +92,9 @@ public class IntegrationTester : MonoBehaviour
         });
 
         Debug.Log($"EVENT_CAPTURED: {crashId}");
-        Debug.Log("CRASH TEST: Issuing a native crash (FatalError)");
+        Debug.Log("CRASH TEST: Issuing a native crash (Abort)");
 
-        Utils.ForceCrash(ForcedCrashCategory.FatalError);
+        Utils.ForceCrash(ForcedCrashCategory.Abort);
 
         // Should not reach here
         Debug.LogError("CRASH TEST: FAIL - unexpected code executed after crash");

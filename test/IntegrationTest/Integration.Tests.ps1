@@ -39,7 +39,7 @@ BeforeAll {
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
 
         # Launch app again to ensure crash report is sent
-        if ($Action -eq "crash-capture" -or $runResult.ExitCode -ne 0) {
+        if ($Action -eq "crash-capture") {
             Write-Host "Running crash-send to ensure crash report is sent..."
             Write-Host "::group::Log of crash-send"
 
