@@ -11,8 +11,6 @@ Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
 $global:DebugPreference = "Continue"
 
-. $PSScriptRoot/../Scripts.Integration.Test/common.ps1
-
 # Import app-runner modules
 . $PSScriptRoot/../../modules/app-runner/import-modules.ps1
 
@@ -43,12 +41,12 @@ BeforeAll {
         # Launch app again to ensure crash report is sent
         if ($Action -eq "crash-capture" -or $runResult.ExitCode -ne 0) {
             Write-Host "Running crash-send to ensure crash report is sent..."
-            Write-Log "::group::Log of crash-send"
+            Write-Host "::group::Log of crash-send"
 
             $sendExtras = @("-e", "test", "crash-send")
             Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $sendExtras
 
-            Write-Log "::endgroup::"
+            Write-Host "::endgroup::"
         }
 
         return $runResult
@@ -102,9 +100,9 @@ Describe "Unity Android Integration Tests" {
 
             $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
             if ($eventId) {
-                Write-Log "::group::Getting event content"
+                Write-Host "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
-                Write-Log "::endgroup::"
+                Write-Host "::endgroup::"
             }
         }
 
@@ -127,9 +125,9 @@ Describe "Unity Android Integration Tests" {
 
             $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
             if ($eventId) {
-                Write-Log "::group::Getting event content"
+                Write-Host "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
-                Write-Log "::endgroup::"
+                Write-Host "::endgroup::"
             }
         }
 
@@ -160,9 +158,9 @@ Describe "Unity Android Integration Tests" {
 
             $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
             if ($eventId) {
-                Write-Log "::group::Getting event content"
+                Write-Host "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -TagName "test.crash_id" -TagValue "$eventId" -TimeoutSeconds 120
-                Write-Log "::endgroup::"
+                Write-Host "::endgroup::"
             }
         }
 
