@@ -115,6 +115,7 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setDsn", options.Dsn);
                 androidOptions.Call("setDebug", options.Debug);
                 androidOptions.Call("setRelease", options.Release);
+                androidOptions.Call("setDist", options.Distribution);
                 androidOptions.Call("setEnvironment", options.Environment);
 
                 var sentryLevelClass = new AndroidJavaClass("io.sentry.SentryLevel");
