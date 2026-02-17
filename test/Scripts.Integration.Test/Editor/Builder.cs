@@ -137,13 +137,12 @@ public class Builder
     {
         Debug.Log("Builder: Building Android IL2CPP Player");
 
-#if UNITY_6000_3_OR_NEWER
-        // Force OpenGLES3 to avoid Vulkan emulator crashes in CI.
-        // The Android emulator's swiftshader Vulkan implementation has shutdown issues
-        // with Unity 6000.3+ that cause SIGSEGV in libvulkan_enc.so after tests complete.
+        // Force OpenGLES3 to avoid Vulkan issues with the Android emulator in CI.
+        // The emulator's swiftshader Vulkan implementation doesn't fully support Unity's
+        // Vulkan usage, causing "Processed some Vulkan packets without process resources
+        // created" warnings and SIGSEGV crashes in libvulkan_enc.so.
         PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
         PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { UnityEngine.Rendering.GraphicsDeviceType.OpenGLES3 });
-#endif
 
 #if UNITY_2021_2_OR_NEWER && !UNITY_6000_0_OR_NEWER
         // Clean Android gradle cache to force regeneration of gradle files
