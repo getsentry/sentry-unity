@@ -29,12 +29,11 @@ public class Builder
         DisableUnityAudio();
         DisableProgressiveLightMapper();
 
-        // This should make IL2CCPP builds faster, see https://forum.unity.com/threads/il2cpp-build-time-improvements-seeking-feedback.1064135/
-        Debug.Log("Builder: Setting IL2CPP generation to OptimizeSize");
+        Debug.Log("Builder: Setting IL2CPP generation to OptimizeSpeed");
 #if UNITY_2022_1_OR_NEWER
-        PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.FromBuildTargetGroup(group), UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize);
+        PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.FromBuildTargetGroup(group), UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed);
 #elif UNITY_2021_2_OR_NEWER
-        EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize;
+        EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed;
 #endif
 
         Debug.Log("Builder: Configuring code stripping level");

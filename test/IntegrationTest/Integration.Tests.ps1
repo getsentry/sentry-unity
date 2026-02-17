@@ -57,6 +57,11 @@ BeforeAll {
             Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $sendExtras
         }
 
+        # Print app output so it's visible in CI logs
+        Write-Host "::group::App output ($Action)"
+        $runResult.Output | ForEach-Object { Write-Host $_ }
+        Write-Host "::endgroup::"
+
         return $runResult
     }
 
