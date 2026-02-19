@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- When targeting Android, the SDK now syncs `AppStartTime` and `AppBuildType` to the native layer ([#2557](https://github.com/getsentry/sentry-unity/pull/2557))
 - When targeting Switch, the SDK will no longer cause the build to fail when native libraries are missing but log a warning instead ([#2541](https://github.com/getsentry/sentry-unity/pull/2541))
 - The SDK no longer wrongly disables the org slug field based on assumed the auth-tolken type ([#2537](https://github.com/getsentry/sentry-unity/pull/2537))
 
