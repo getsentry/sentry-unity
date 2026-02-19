@@ -42,9 +42,6 @@ jobs:
         run: git submodule update --init modules/app-runner
         shell: bash
 
-      - name: Install Pester
-        run: Install-Module -Name Pester -Force -SkipPublisherCheck
-
       - name: Download test app artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -92,6 +89,7 @@ jobs:
             -camera-back none
             -camera-front none
             -timezone US/Pacific
+            -no-metrics
           arch: x86_64
           script: |
             adb wait-for-device
