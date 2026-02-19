@@ -27,12 +27,16 @@ jobs:
       - name: Set Unity version matrices based on event type
         id: set-matrix
         shell: bash
+        env:
+          EVENT_NAME: ${{ inputs.event-name }}
+          PR_UNITY_VERSIONS_VALUE: ${{ env.PR_UNITY_VERSIONS }}
+          FULL_UNITY_VERSIONS_VALUE: ${{ env.FULL_UNITY_VERSIONS }}
         run: |
-          if [[ "${{ inputs.event-name }}" == "pull_request" ]]; then
-            versions='${{ env.PR_UNITY_VERSIONS }}'
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            versions="$PR_UNITY_VERSIONS_VALUE"
           else
-            versions='${{ env.FULL_UNITY_VERSIONS }}'
+            versions="$FULL_UNITY_VERSIONS_VALUE"
           fi
-          
+
           # Unity version matrix
           echo "matrix={\"unity-version\":$versions}" >> $GITHUB_OUTPUT
