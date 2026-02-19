@@ -54,7 +54,18 @@ BeforeAll {
             Write-Host "Running crash-send to ensure crash report is sent..."
 
             $sendExtras = @("-e", "test", "crash-send")
-            Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $sendExtras
+            $sendResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $sendExtras
+
+            # Save crash-send result to JSON for debugging
+            $sendResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "crash-send-result.json")
+
+            # Print crash-send output
+            Write-Host "::group::App output (crash-send)"
+            $sendResult.Output | ForEach-Object { Write-Host $_ }
+            Write-Host "::endgroup::"
+
+            # Attach to runResult for test access
+            $runResult | Add-Member -NotePropertyName "CrashSendOutput" -NotePropertyValue $sendResult.Output
         }
 
         # Print app output so it's visible in CI logs
@@ -191,6 +202,20 @@ Describe "Unity Android Integration Tests" {
             $exception = $runEvent.exception.values[0]
             $exception | Should -Not -BeNullOrEmpty
             $exception.stacktrace | Should -Not -BeNullOrEmpty
+        }
+
+        It "Reports crashedLastRun as Crashed on relaunch" {
+            $crashedLastRunLine = $runResult.CrashSendOutput | Where-Object {
+                $_ -match "crashedLastRun=Crashed"
+            }
+            $crashedLastRunLine | Should -Not -BeNullOrEmpty -Because "Native SDK should report crashedLastRun=Crashed after a native crash"
+        }
+
+        It "Crash-send completes flush successfully" {
+            $flushLine = $runResult.CrashSendOutput | Where-Object {
+                $_ -match "Flush complete"
+            }
+            $flushLine | Should -Not -BeNullOrEmpty -Because "crash-send should complete its flush before quitting"
         }
     }
 }
