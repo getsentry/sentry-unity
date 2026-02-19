@@ -47,10 +47,9 @@ internal class NativeContextWriter : ContextWriter
         string? UnityRenderingThreadingMode
     )
     {
-        // We're only setting the missing contexts, the rest is configured by sentry-java.  We could also sync
-        // the "unity" context, but it doesn't seem so useful and the effort to do is larger because there's no
-        // class for it in Java - not sure how we could add a generic context object in Java...
         _sentryJava.WriteScope(
+            AppStartTime,
+            AppBuildType,
             GpuId,
             GpuName,
             GpuVendorName,
@@ -66,6 +65,8 @@ internal class NativeContextWriter : ContextWriter
             GpuVendorId,
             GpuMultiThreadedRendering,
             GpuGraphicsShaderLevel);
+
+        CWUtil.WriteApp(AppStartTime, AppBuildType);
 
         CWUtil.WriteGpu(
             GpuId,
