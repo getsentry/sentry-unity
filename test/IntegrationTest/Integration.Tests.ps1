@@ -18,8 +18,7 @@ $ErrorActionPreference = "Stop"
 
 
 BeforeAll {
-    $script:AndroidComponent = "io.sentry.unity.integrationtest/com.unity3d.player.UnityPlayerActivity"
-    $script:FallbackAndroidComponent = "io.sentry.unity.integrationtest/com.unity3d.player.UnityPlayerGameActivity"
+    $script:PackageName = "io.sentry.unity.integrationtest"
 
     # Run integration test action on device
     function Invoke-TestAction {
@@ -31,20 +30,7 @@ BeforeAll {
         Write-Host "Running $Action..."
 
         $extras = @("-e", "test", $Action)
-
-        try {
-            $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
-        }
-        catch {
-            if ($_.Exception.Message -match "Activity class .* does not exist" -or $_.Exception.Message -match "Error type 3") {
-                Write-Host "Activity not found, trying fallback: $($script:FallbackAndroidComponent)"
-                $script:AndroidComponent = $script:FallbackAndroidComponent
-                $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
-            }
-            else {
-                throw
-            }
-        }
+        $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
@@ -107,6 +93,15 @@ BeforeAll {
 
     Connect-Device -Platform "Adb"
     Install-DeviceApp -Path $script:TestSetup.ApkPath
+
+    # Detect the launcher activity from the installed package
+    $dumpOutput = & adb shell dumpsys package $script:PackageName 2>&1 | Out-String
+    if ($dumpOutput -match "com.unity3d.player.UnityPlayerGameActivity") {
+        $script:AndroidComponent = "$($script:PackageName)/com.unity3d.player.UnityPlayerGameActivity"
+    } else {
+        $script:AndroidComponent = "$($script:PackageName)/com.unity3d.player.UnityPlayerActivity"
+    }
+    Write-Host "Detected activity: $($script:AndroidComponent)"
 }
 
 
