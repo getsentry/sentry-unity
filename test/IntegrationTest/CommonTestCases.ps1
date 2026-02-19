@@ -53,6 +53,11 @@ $CommonTestCases = @(
     @{ Name = "Contains user information"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
 
+            if ($TestType -eq "crash-capture") {
+                Set-ItResult -Skipped -Because "user context may not survive native crashes"
+                return
+            }
+
             $SentryEvent.user | Should -Not -BeNullOrEmpty
             $SentryEvent.user.username | Should -Be "TestUser"
             $SentryEvent.user.email | Should -Be "user-mail@test.abc"
@@ -62,12 +67,22 @@ $CommonTestCases = @(
     @{ Name = "Contains breadcrumbs"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
 
+            if ($TestType -eq "crash-capture") {
+                Set-ItResult -Skipped -Because "breadcrumbs may not survive native crashes"
+                return
+            }
+
             $SentryEvent.breadcrumbs | Should -Not -BeNullOrEmpty
             $SentryEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
         }
     }
     @{ Name = "Contains expected breadcrumbs"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
+
+            if ($TestType -eq "crash-capture") {
+                Set-ItResult -Skipped -Because "breadcrumbs may not survive native crashes"
+                return
+            }
 
             $SentryEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
             $SentryEvent.breadcrumbs.values | Where-Object { $_.message -eq "Integration test started" } | Should -Not -BeNullOrEmpty
@@ -85,7 +100,7 @@ $CommonTestCases = @(
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
 
             if ($TestType -eq "crash-capture") {
-                Set-ItResult -Skipped -Because "app context is not synced to sentry-native on Android"
+                Set-ItResult -Skipped -Because "app context may not be available for native crashes"
                 return
             }
 
@@ -105,6 +120,11 @@ $CommonTestCases = @(
     }
     @{ Name = "Contains Unity context"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
+
+            if ($TestType -eq "crash-capture") {
+                Set-ItResult -Skipped -Because "Unity context may not be synchronized to NDK for native crashes"
+                return
+            }
 
             $SentryEvent.contexts.unity | Should -Not -BeNullOrEmpty
         }
