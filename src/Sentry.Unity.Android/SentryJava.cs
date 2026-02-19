@@ -107,8 +107,8 @@ internal class SentryJava : ISentryJava
         try
         {
             using var sentry = new AndroidJavaClass("io.sentry.android.core.SentryAndroid");
-            using var context = new AndroidJavaClass("com.unity3d.player.UnityPlayer")
-                .GetStatic<AndroidJavaObject>("currentActivity");
+            using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            using var context = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
 
             sentry.CallStatic("init", context, new AndroidOptionsConfiguration(androidOptions =>
             {
@@ -118,9 +118,9 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setDist", options.Distribution);
                 androidOptions.Call("setEnvironment", options.Environment);
 
-                var sentryLevelClass = new AndroidJavaClass("io.sentry.SentryLevel");
+                using var sentryLevelClass = new AndroidJavaClass("io.sentry.SentryLevel");
                 var levelString = GetLevelString(options.DiagnosticLevel);
-                var sentryLevel = sentryLevelClass.GetStatic<AndroidJavaObject>(levelString);
+                using var sentryLevel = sentryLevelClass.GetStatic<AndroidJavaObject>(levelString);
                 androidOptions.Call("setDiagnosticLevel", sentryLevel);
 
                 if (options.SampleRate.HasValue)
@@ -253,7 +253,7 @@ internal class SentryJava : ISentryJava
     {
         try
         {
-            _ = GetSentryJava();
+            using var _ = GetSentryJava();
         }
         catch (AndroidJavaException)
         {
@@ -373,9 +373,9 @@ internal class SentryJava : ISentryJava
             {
                 action.Invoke();
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                _logger?.LogError("Calling '{0}' failed.", actionName);
+                _logger?.LogError(e, "Calling '{0}' failed.", actionName);
             }
         }
         else
@@ -409,9 +409,9 @@ internal class SentryJava : ISentryJava
                     {
                         action.Invoke();
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
-                        _logger?.LogError("Calling '{0}' failed.", actionName);
+                        _logger?.LogError(e, "Calling '{0}' failed.", actionName);
                     }
                 }
             }
@@ -436,7 +436,8 @@ internal class SentryJava : ISentryJava
 
         if (!MainThreadData.IsMainThread())
         {
-            _logger?.LogError("Calling Close() on Android SDK requires running on MainThread");
+            _logger?.LogError("Calling Close() on Android SDK requires running on MainThread. " +
+                "Scope sync thread stopped but Java SDK was not closed.");
             return;
         }
 
