@@ -5,6 +5,7 @@
 ### Fixes
 
 - The SDK now also uses `.sentry-native` as a subdirectory for native support on desktop platforms. It now also falls back to `Application.persistentDataPath` instead of the current working directory. Note: `crashedLastRun` may report `false` for the first time after upgrading. ([#2547](https://github.com/getsentry/sentry-unity/pull/2547))
+- The currently experimental Metrics are now opt-in by default ([#2546](https://github.com/getsentry/sentry-unity/pull/2546))
 - When targeting Switch, the SDK will no longer cause the build to fail when native libraries are missing but log a warning instead ([#2541](https://github.com/getsentry/sentry-unity/pull/2541))
 - The SDK no longer wrongly disables the org slug field based on assumed the auth-tolken type ([#2537](https://github.com/getsentry/sentry-unity/pull/2537))
 
@@ -13,9 +14,12 @@
 - Bump Cocoa SDK from v9.4.0 to v9.4.1 ([#2540](https://github.com/getsentry/sentry-unity/pull/2540))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#941)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.4.0...9.4.1)
-- Bump Native SDK from v0.12.6 to v0.12.7 ([#2543](https://github.com/getsentry/sentry-unity/pull/2543))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0127)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.6...0.12.7)
+- Bump Native SDK from v0.12.6 to v0.12.8 ([#2543](https://github.com/getsentry/sentry-unity/pull/2543), [#2550](https://github.com/getsentry/sentry-unity/pull/2550))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0128)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.12.6...0.12.8)
+- Bump Java SDK from v8.32.0 to v8.33.0 ([#2555](https://github.com/getsentry/sentry-unity/pull/2555))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8330)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.32.0...8.33.0)
 
 ## 4.1.0
 
