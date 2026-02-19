@@ -18,8 +18,7 @@ $ErrorActionPreference = "Stop"
 
 
 BeforeAll {
-    $script:AndroidComponent = "io.sentry.unity.integrationtest/com.unity3d.player.UnityPlayerActivity"
-    $script:FallbackAndroidComponent = "io.sentry.unity.integrationtest/com.unity3d.player.UnityPlayerGameActivity"
+    $script:PackageName = "io.sentry.unity.integrationtest"
 
     # Run integration test action on device
     function Invoke-TestAction {
@@ -31,20 +30,7 @@ BeforeAll {
         Write-Host "Running $Action..."
 
         $extras = @("-e", "test", $Action)
-
-        try {
-            $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
-        }
-        catch {
-            if ($_.Exception.Message -match "Activity class .* does not exist" -or $_.Exception.Message -match "Error type 3") {
-                Write-Host "Activity not found, trying fallback: $($script:FallbackAndroidComponent)"
-                $script:AndroidComponent = $script:FallbackAndroidComponent
-                $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
-            }
-            else {
-                throw
-            }
-        }
+        $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
@@ -54,7 +40,18 @@ BeforeAll {
             Write-Host "Running crash-send to ensure crash report is sent..."
 
             $sendExtras = @("-e", "test", "crash-send")
-            Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $sendExtras
+            $sendResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $sendExtras
+
+            # Save crash-send result to JSON for debugging
+            $sendResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "crash-send-result.json")
+
+            # Print crash-send output
+            Write-Host "::group::App output (crash-send)"
+            $sendResult.Output | ForEach-Object { Write-Host $_ }
+            Write-Host "::endgroup::"
+
+            # Attach to runResult for test access
+            $runResult | Add-Member -NotePropertyName "CrashSendOutput" -NotePropertyValue $sendResult.Output
         }
 
         # Print app output so it's visible in CI logs
@@ -96,6 +93,15 @@ BeforeAll {
 
     Connect-Device -Platform "Adb"
     Install-DeviceApp -Path $script:TestSetup.ApkPath
+
+    # Detect the launcher activity from the installed package
+    $dumpOutput = & adb shell dumpsys package $script:PackageName 2>&1 | Out-String
+    if ($dumpOutput -match "com.unity3d.player.UnityPlayerGameActivity") {
+        $script:AndroidComponent = "$($script:PackageName)/com.unity3d.player.UnityPlayerGameActivity"
+    } else {
+        $script:AndroidComponent = "$($script:PackageName)/com.unity3d.player.UnityPlayerActivity"
+    }
+    Write-Host "Detected activity: $($script:AndroidComponent)"
 }
 
 
@@ -191,6 +197,20 @@ Describe "Unity Android Integration Tests" {
             $exception = $runEvent.exception.values[0]
             $exception | Should -Not -BeNullOrEmpty
             $exception.stacktrace | Should -Not -BeNullOrEmpty
+        }
+
+        It "Reports crashedLastRun as Crashed on relaunch" {
+            $crashedLastRunLine = $runResult.CrashSendOutput | Where-Object {
+                $_ -match "crashedLastRun=Crashed"
+            }
+            $crashedLastRunLine | Should -Not -BeNullOrEmpty -Because "Native SDK should report crashedLastRun=Crashed after a native crash"
+        }
+
+        It "Crash-send completes flush successfully" {
+            $flushLine = $runResult.CrashSendOutput | Where-Object {
+                $_ -match "Flush complete"
+            }
+            $flushLine | Should -Not -BeNullOrEmpty -Because "crash-send should complete its flush before quitting"
         }
     }
 }

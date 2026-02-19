@@ -127,6 +127,9 @@ public class IntegrationTester : MonoBehaviour
     {
         Debug.Log("CrashSend: Initializing Sentry to flush cached crash report...");
 
+        var lastRunState = SentrySdk.GetLastRunState();
+        Debug.Log($"CrashSend: crashedLastRun={lastRunState}");
+
         // Sentry is already initialized by IntegrationOptionsConfiguration.
         // Just wait a bit for the queued crash report to be sent, then quit.
         StartCoroutine(WaitAndQuit());
