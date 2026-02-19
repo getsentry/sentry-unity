@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK now also uses `.sentry-native` as a subdirectory for native support on desktop platforms. It now also falls back to `Application.persistentDataPath` instead of the current working directory. Note: `crashedLastRun` may report `false` for the first time after upgrading. ([#2547](https://github.com/getsentry/sentry-unity/pull/2547))
 - When targeting Switch, the SDK will no longer cause the build to fail when native libraries are missing but log a warning instead ([#2541](https://github.com/getsentry/sentry-unity/pull/2541))
 - The SDK no longer wrongly disables the org slug field based on assumed the auth-tolken type ([#2537](https://github.com/getsentry/sentry-unity/pull/2537))
 
