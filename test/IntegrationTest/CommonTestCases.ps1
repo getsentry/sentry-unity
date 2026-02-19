@@ -54,7 +54,7 @@ $CommonTestCases = @(
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
 
             if ($TestType -eq "crash-capture") {
-                # User context may not survive native crashes on all platforms
+                Set-ItResult -Skipped -Because "user context may not survive native crashes"
                 return
             }
 
@@ -68,7 +68,7 @@ $CommonTestCases = @(
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
 
             if ($TestType -eq "crash-capture") {
-                # Breadcrumbs may not survive native crashes
+                Set-ItResult -Skipped -Because "breadcrumbs may not survive native crashes"
                 return
             }
 
@@ -80,6 +80,7 @@ $CommonTestCases = @(
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
 
             if ($TestType -eq "crash-capture") {
+                Set-ItResult -Skipped -Because "breadcrumbs may not survive native crashes"
                 return
             }
 
@@ -99,7 +100,7 @@ $CommonTestCases = @(
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
 
             if ($TestType -eq "crash-capture") {
-                # App context may not be available for native crashes
+                Set-ItResult -Skipped -Because "app context may not be available for native crashes"
                 return
             }
 
@@ -121,7 +122,7 @@ $CommonTestCases = @(
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
 
             if ($TestType -eq "crash-capture") {
-                # Unity context may not be synchronized to NDK for native crashes
+                Set-ItResult -Skipped -Because "Unity context may not be synchronized to NDK for native crashes"
                 return
             }
 
