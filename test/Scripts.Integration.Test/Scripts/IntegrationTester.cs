@@ -23,7 +23,7 @@ public class IntegrationTester : MonoBehaviour
                 ExceptionCapture();
                 break;
             case "crash-capture":
-                CrashCapture();
+                StartCoroutine(CrashCapture());
                 break;
             case "crash-send":
                 CrashSend();
@@ -99,7 +99,7 @@ public class IntegrationTester : MonoBehaviour
         throw new InvalidOperationException("Integration test exception");
     }
 
-    private void CrashCapture()
+    private IEnumerator CrashCapture()
     {
         var crashId = Guid.NewGuid().ToString();
 
@@ -109,6 +109,9 @@ public class IntegrationTester : MonoBehaviour
         {
             scope.SetTag("test.crash_id", crashId);
         });
+
+        // Wait for the scope sync to complete on platforms that use a background thread (e.g. Android JNI)
+        yield return new WaitForSeconds(0.5f);
 
         Debug.Log($"EVENT_CAPTURED: {crashId}");
         Debug.Log("CRASH TEST: Issuing a native crash (Abort)");
