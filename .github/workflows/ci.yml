@@ -273,8 +273,7 @@ jobs:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         # api-level: [30, 31, 34]
         api-level: [30]
-        # init-type: ["runtime", "buildtime"]
-        init-type: ["runtime"]
+        init-type: ["runtime", "buildtime"]
 
   smoke-test-build-ios:
     name: Build iOS ${{ matrix.unity-version }} Smoke Test
