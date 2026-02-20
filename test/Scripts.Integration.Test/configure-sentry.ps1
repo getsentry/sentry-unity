@@ -1,7 +1,9 @@
 param(
     [string] $UnityPath,
     [string] $Platform = "",
-    [Switch] $CheckSymbols
+    [Switch] $CheckSymbols,
+    [ValidateSet("smoke", "integration")]
+    [string] $TestMode = "smoke"
 )
 
 if (-not $Global:NewProjectPathCache)
@@ -13,14 +15,20 @@ if (-not $Global:NewProjectPathCache)
 
 $UnityPath = FormatUnityPath $UnityPath
 
-Write-Log "Configuring Sentry options..."
+Write-Log "Configuring Sentry options (TestMode: $TestMode)..."
+
+$optionsScript = if ($TestMode -eq "integration") { "IntegrationOptionsConfiguration" } else { "OptionsConfiguration" }
 
 $unityArgs = @( `
         "-quit", "-batchmode", "-nographics", "-disable-assembly-updater", "-projectPath ", $(GetNewProjectPath), `
         "-executeMethod", "Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation.ConfigureOptions", `
-        "-optionsScript", "OptionsConfiguration", `
+        "-optionsScript", $optionsScript, `
         "-cliOptionsScript", "CliConfiguration", `
         "-cliOptions.UrlOverride", ($CheckSymbols ? (SymbolServerUrlFor $UnityPath $Platform) : "") )
+
+if ($env:SENTRY_DSN) {
+    $unityArgs += @("-dsn", $env:SENTRY_DSN)
+}
 
 RunUnityAndExpect $UnityPath "ConfigureSentryOptions" "ConfigureOptions: SUCCESS" $unityArgs
 

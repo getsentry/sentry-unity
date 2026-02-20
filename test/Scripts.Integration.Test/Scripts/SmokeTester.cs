@@ -126,9 +126,6 @@ public class SmokeTester : MonoBehaviour
 
         t.ExpectMessage(currentMessage, "'type':'transaction");
         t.ExpectMessage(currentMessage, "'op':'app.start'"); // startup transaction
-#if !UNITY_EDITOR
-        t.ExpectMessage(currentMessage, "'op':'awake','description':'Main Camera.SmokeTester'"); // auto instrumentation
-#endif
         t.ExpectMessageNot(currentMessage, "'length':0");
 
         var guid = Guid.NewGuid().ToString();

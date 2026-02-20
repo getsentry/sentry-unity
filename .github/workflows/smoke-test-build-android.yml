@@ -77,7 +77,9 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols -TestMode "integration"
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Export APK - Runtime Initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols:$true -UnityVersion "$env:UNITY_VERSION"
@@ -99,9 +101,9 @@ jobs:
           path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
           retention-days: 14 # Lower retention period - we only need this to retry CI.
 
-      - name: Overwrite OptionsConfiguration for build-time initialization
+      - name: Overwrite IntegrationOptionsConfiguration for build-time initialization
         run: |
-          $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionsConfiguration.cs"
+          $optionsPath = "samples/IntegrationTest/Assets/Scripts/IntegrationOptionsConfiguration.cs"
           $content = Get-Content $optionsPath -Raw
           $content = $content -replace 'AndroidNativeInitializationType = NativeInitializationType.Runtime', 'AndroidNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
@@ -113,9 +115,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: testapp-android-compiled-${{ env.UNITY_VERSION }}-buildtime
-          path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
-          retention-days: 14 # Lower retention period - we only need this to retry CI.
-          
+          path: samples/IntegrationTest/Build/*.apk
+          retention-days: 14
+
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
