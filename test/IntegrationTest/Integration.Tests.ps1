@@ -115,6 +115,7 @@ Describe "Unity Android Integration Tests" {
 
     Context "Message Capture" {
         BeforeAll {
+            $script:runEvent = $null
             $script:runResult = Invoke-TestAction -Action "message-capture"
 
             $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
@@ -140,6 +141,7 @@ Describe "Unity Android Integration Tests" {
 
     Context "Exception Capture" {
         BeforeAll {
+            $script:runEvent = $null
             $script:runResult = Invoke-TestAction -Action "exception-capture"
 
             $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
@@ -173,6 +175,7 @@ Describe "Unity Android Integration Tests" {
 
     Context "Crash Capture" {
         BeforeAll {
+            $script:runEvent = $null
             $script:runResult = Invoke-TestAction -Action "crash-capture"
 
             $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
