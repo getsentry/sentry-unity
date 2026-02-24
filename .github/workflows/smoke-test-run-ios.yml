@@ -72,7 +72,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: testapp-ios-logs-${{ env.IOS_VERSION }}-${{ env.UNITY_VERSION }}
+          name: testapp-ios-logs-${{ env.IOS_VERSION }}-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
           path: |
             ${{ env.ARTIFACTS_PATH }}
             test/IntegrationTest/results/

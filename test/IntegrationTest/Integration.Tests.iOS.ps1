@@ -97,6 +97,10 @@ BeforeAll {
         -DSN $script:TestSetup.Dsn
 
     $target = $script:TestSetup.iOSVersion
+    # Convert bare version numbers (e.g. "17.0") to "iOS 17.0" format expected by iOSSimulatorProvider
+    if ($target -match '^\d+\.\d+$') {
+        $target = "iOS $target"
+    }
     Connect-Device -Platform "iOSSimulator" -Target $target
     Install-DeviceApp -Path $script:TestSetup.AppPath
 }
