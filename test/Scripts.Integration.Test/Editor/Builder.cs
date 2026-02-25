@@ -29,12 +29,11 @@ public class Builder
         DisableUnityAudio();
         DisableProgressiveLightMapper();
 
-        // This should make IL2CCPP builds faster, see https://forum.unity.com/threads/il2cpp-build-time-improvements-seeking-feedback.1064135/
-        Debug.Log("Builder: Setting IL2CPP generation to OptimizeSize");
+        Debug.Log("Builder: Setting IL2CPP generation to OptimizeSpeed");
 #if UNITY_2022_1_OR_NEWER
-        PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.FromBuildTargetGroup(group), UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize);
+        PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.FromBuildTargetGroup(group), UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed);
 #elif UNITY_2021_2_OR_NEWER
-        EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSize;
+        EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed;
 #endif
 
         Debug.Log("Builder: Configuring code stripping level");
@@ -137,13 +136,12 @@ public class Builder
     {
         Debug.Log("Builder: Building Android IL2CPP Player");
 
-#if UNITY_6000_3_OR_NEWER
-        // Force OpenGLES3 to avoid Vulkan emulator crashes in CI.
-        // The Android emulator's swiftshader Vulkan implementation has shutdown issues
-        // with Unity 6000.3+ that cause SIGSEGV in libvulkan_enc.so after tests complete.
+        // Force OpenGLES3 to avoid Vulkan issues with the Android emulator in CI.
+        // The emulator's swiftshader Vulkan implementation doesn't fully support Unity's
+        // Vulkan usage, causing "Processed some Vulkan packets without process resources
+        // created" warnings and SIGSEGV crashes in libvulkan_enc.so.
         PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
         PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { UnityEngine.Rendering.GraphicsDeviceType.OpenGLES3 });
-#endif
 
 #if UNITY_2021_2_OR_NEWER && !UNITY_6000_0_OR_NEWER
         // Clean Android gradle cache to force regeneration of gradle files

@@ -14,7 +14,7 @@ on:
     # Map the workflow outputs to job outputs
     outputs:
       status:
-        description: "Smoke test status"
+        description: "Integration test status"
         value: ${{ jobs.run.outputs.status }}
 
 defaults:
@@ -28,14 +28,20 @@ jobs:
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     # Map the job outputs to step outputs
     outputs:
-      status: ${{ steps.smoke-test.outputs.status }}
-    
+      status: ${{ steps.integration-test.outputs.status }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      
+
+      - name: Initialize app-runner submodule
+        run: git submodule update --init modules/app-runner
+        shell: bash
+
       - name: Download test app artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -56,9 +62,16 @@ jobs:
           mkdir -p $HOME/.android/avd
           touch $HOME/.android/repositories.cfg
 
-      - name: Run Android Smoke Tests
+      - name: Add Android build-tools to PATH
+        run: |
+          BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
+          echo "Found build-tools at: $BUILD_TOOLS_DIR"
+          echo "$BUILD_TOOLS_DIR" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Run Android Integration Tests
         uses: reactivecircus/android-emulator-runner@d94c3fbe4fe6a29e4a5ba47c12fb47677c73656b # pin@v2.33.0
-        id: smoke-test
+        id: integration-test
         timeout-minutes: 30
         with:
           api-level: ${{ inputs.api-level }}
@@ -76,17 +89,20 @@ jobs:
             -camera-back none
             -camera-front none
             -timezone US/Pacific
+            -no-metrics
           arch: x86_64
           script: |
             adb wait-for-device
             adb shell input keyevent 82
             adb devices -l
-            pwsh ./scripts/smoke-test-android.ps1 -WarnIfFlaky
+            pwsh -Command '$env:SENTRY_TEST_APK = "samples/IntegrationTest/Build/test.apk"; Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI'
 
-      - name: Upload artifacts on failure
+      - name: Upload test results on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: testapp-android-logs-${{ inputs.api-level }}-${{ inputs.unity-version }}
-          path: ${{ env.ARTIFACTS_PATH }}
+          path: |
+            ${{ env.ARTIFACTS_PATH }}
+            test/IntegrationTest/results/
           retention-days: 14

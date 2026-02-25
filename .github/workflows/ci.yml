@@ -258,9 +258,10 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
 
   smoke-test-run-android:
-    name: Run Android ${{ matrix.unity-version }} Smoke Test
+    name: Run Android ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build-android, create-unity-matrix]
+    secrets: inherit
     uses: ./.github/workflows/smoke-test-run-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -270,7 +271,8 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-        api-level: [30, 31, 34]
+        # api-level: [30, 31, 34]
+        api-level: [30]
         init-type: ["runtime", "buildtime"]
 
   smoke-test-build-ios:

@@ -50,6 +50,12 @@ public static class SentryEditorWindowInstrumentation
             OptionsConfigurationItem.SetScript(value);
         }
 
+        if (args.TryGetValue("dsn", out value))
+        {
+            Debug.LogFormat("{0}: Setting DSN", functionName);
+            options.Dsn = value;
+        }
+
         optionsWindow.Close();
         Debug.LogFormat("{0}: SUCCESS", functionName);
     }

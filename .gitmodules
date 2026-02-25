@@ -7,3 +7,6 @@
 [submodule "modules/sentry-native"]
 	path = modules/sentry-native
 	url = https://github.com/getsentry/sentry-native.git
+[submodule "modules/app-runner"]
+	path = modules/app-runner
+	url = https://github.com/getsentry/app-runner.git

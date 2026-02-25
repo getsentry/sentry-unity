@@ -106,9 +106,20 @@ function RunTest([string] $type)
             Write-Log "$type test: Player.log contents END" -ForegroundColor Yellow
         }
 
+        # Check for test failures first - a graceful shutdown doesn't mean tests passed.
+        $lineWithFailure = $appLog | Select-String "$($type.ToUpper()) TEST: FAIL"
+        If ($lineWithFailure)
+        {
+            $info = "Test process finished with status code $($process.ExitCode). $lineWithFailure"
+            If ($type -ne "crash")
+            {
+                throw $info
+            }
+            Write-Log $info
+        }
         # Relying on ExitCode does not seem reliable. We're looking for the line "SmokeTester is quitting." instead to indicate
         # a successful shut-down.
-        If ($appLog | Select-String "SmokeTester is quitting.")
+        ElseIf ($appLog | Select-String "SmokeTester is quitting.")
         {
             Write-Log "$type test: PASSED" -ForegroundColor Green
         }
@@ -119,8 +130,7 @@ function RunTest([string] $type)
         }
         Else
         {
-            $lineWithFailure = $appLog | Select-String "$($type.ToUpper()) TEST: FAIL"
-            $info = "Test process finished with status code $($process.ExitCode). $lineWithFailure"
+            $info = "Test process finished with status code $($process.ExitCode). No completion marker found in Player.log"
             If ($type -ne "crash")
             {
                 throw $info

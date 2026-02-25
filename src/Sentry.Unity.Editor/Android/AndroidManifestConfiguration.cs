@@ -176,6 +176,12 @@ public class AndroidManifestConfiguration
             androidManifest.SetRelease(_options.Release);
         }
 
+        if (_options.Distribution is not null)
+        {
+            _logger.LogDebug("Setting Dist: {0}", _options.Distribution);
+            androidManifest.SetDist(_options.Distribution);
+        }
+
         if (_options.Environment is not null)
         {
             _logger.LogDebug("Setting Environment: {0}", _options.Environment);
@@ -468,6 +474,8 @@ internal class AndroidManifest : AndroidXmlDocument
         SetMetaData($"{SentryPrefix}.sample-rate", sampleRate.ToString("F", CultureInfo.InvariantCulture));
 
     internal void SetRelease(string release) => SetMetaData($"{SentryPrefix}.release", release);
+
+    internal void SetDist(string dist) => SetMetaData($"{SentryPrefix}.dist", dist);
 
     internal void SetAttachScreenshot(bool value) => SetMetaData($"{SentryPrefix}.attach-screenshot", value.ToString());
 
