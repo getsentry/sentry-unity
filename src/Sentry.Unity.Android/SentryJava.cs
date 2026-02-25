@@ -235,7 +235,12 @@ internal class SentryJava : ISentryJava
         RunJniSafe(() =>
         {
             using var app = new AndroidJavaObject("io.sentry.protocol.App");
-            app.SetIfNotNull("appStartTime", AppStartTime);
+            if (AppStartTime is not null)
+            {
+                var epochMs = DateTimeOffset.Parse(AppStartTime).ToUnixTimeMilliseconds();
+                using var date = new AndroidJavaObject("java.util.Date", epochMs);
+                app.Set("appStartTime", date);
+            }
             app.SetIfNotNull("buildType", AppBuildType);
 
             using var gpu = new AndroidJavaObject("io.sentry.protocol.Gpu");
