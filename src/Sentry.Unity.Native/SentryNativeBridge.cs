@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using UnityEngine;
 using AOT;
 
@@ -68,21 +69,21 @@ internal static class SentryNativeBridge
             sentry_options_set_attach_screenshot(cOptions, options.AttachScreenshot ? 1 : 0);
         }
 
-        var dir = GetCacheDirectory(options);
+        var databasePath = GetDatabasePath(options);
 #if SENTRY_NATIVE_SWITCH
-        Logger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
-        sentry_options_set_database_path(cOptions, dir);
+        Logger?.LogDebug("Setting DatabasePath: {0}", databasePath);
+        sentry_options_set_database_path(cOptions, databasePath);
 #else
         // Note: don't use RuntimeInformation.IsOSPlatform - it will report windows on WSL.
         if (IsWindows)
         {
-            Logger?.LogDebug("Setting CacheDirectoryPath on Windows: {0}", dir);
-            sentry_options_set_database_pathw(cOptions, dir);
+            Logger?.LogDebug("Setting DatabasePath on Windows: {0}", databasePath);
+            sentry_options_set_database_pathw(cOptions, databasePath);
         }
         else
         {
-            Logger?.LogDebug("Setting CacheDirectoryPath: {0}", dir);
-            sentry_options_set_database_path(cOptions, dir);
+            Logger?.LogDebug("Setting DatabasePath: {0}", databasePath);
+            sentry_options_set_database_path(cOptions, databasePath);
         }
 #endif
 
@@ -111,17 +112,15 @@ internal static class SentryNativeBridge
         return result;
     }
 
-    internal static string GetCacheDirectory(SentryUnityOptions options)
+    internal static string GetDatabasePath(SentryUnityOptions options, IApplication? application = null)
     {
-        if (options.CacheDirectoryPath is null)
+        if (options.CacheDirectoryPath is not null)
         {
-            // same as the default of sentry-native
-            return Path.Combine(Directory.GetCurrentDirectory(), ".sentry-native");
+            return Path.Combine(options.CacheDirectoryPath, ".sentry-native");
         }
-        else
-        {
-            return Path.Combine(options.CacheDirectoryPath, "SentryNative");
-        }
+
+        application ??= ApplicationAdapter.Instance;
+        return Path.Combine(application.PersistentDataPath, ".sentry-native");
     }
 
     internal static void ReinstallBackend() => sentry_reinstall_backend();

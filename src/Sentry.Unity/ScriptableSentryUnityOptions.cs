@@ -130,7 +130,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool PlayStationNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool SwitchNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
-    [field: SerializeField] public bool EnableMetrics { get; set; } = true;
+    [field: SerializeField] public bool EnableMetrics { get; set; } = false;
     [field: SerializeField] public SentryOptionsConfiguration? OptionsConfiguration { get; set; }
 
     [field: SerializeField] public bool Debug { get; set; } = true;
