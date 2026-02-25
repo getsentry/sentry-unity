@@ -67,6 +67,7 @@ jobs:
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/IntegrationTest.app"
           $env:SENTRY_IOS_VERSION = "${{ inputs.ios-version }}"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.iOS.ps1 -CI
+          echo "status=success" >> $env:GITHUB_OUTPUT
 
       - name: Upload test results on failure
         if: ${{ failure() }}

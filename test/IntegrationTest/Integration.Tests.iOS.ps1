@@ -30,13 +30,13 @@ BeforeAll {
 
         Write-Host "Running $Action..."
 
-        $args = @("--test", $Action)
+        $appArgs = @("--test", $Action)
 
         # Use a shorter timeout for crash tests - the app should crash within seconds.
         # On iOS Simulator, xcrun's --console-pty can hang after a crash, so we don't
         # want to wait the full default timeout (300s).
         $timeout = if ($Action -eq "crash-capture") { 30 } else { 0 }
-        $runResult = Invoke-DeviceApp -ExecutablePath $script:BundleId -Arguments $args -Timeout $timeout
+        $runResult = Invoke-DeviceApp -ExecutablePath $script:BundleId -Arguments $appArgs -Timeout $timeout
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
