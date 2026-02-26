@@ -70,6 +70,7 @@ BeforeAll {
 
     # Initialize test parameters
     $script:TestSetup = [PSCustomObject]@{
+        Platform = "iOS"
         AppPath = $env:SENTRY_TEST_APP
         iOSVersion = $env:SENTRY_IOS_VERSION
         Dsn = $env:SENTRY_TEST_DSN

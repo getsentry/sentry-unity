@@ -68,6 +68,7 @@ BeforeAll {
 
     # Initialize test parameters
     $script:TestSetup = [PSCustomObject]@{
+        Platform = "Android"
         ApkPath = $env:SENTRY_TEST_APK
         Dsn = $env:SENTRY_TEST_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN

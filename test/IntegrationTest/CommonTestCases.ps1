@@ -84,8 +84,8 @@ $CommonTestCases = @(
     @{ Name = "Contains app context"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
 
-            if ($TestType -eq "crash-capture") {
-                Set-ItResult -Skipped -Because "app context is not synced to sentry-native on Android"
+            if ($TestType -eq "crash-capture" -and $TestSetup.Platform -eq "iOS") {
+                Set-ItResult -Skipped -Because "app context is not synced to sentry-cocoa on iOS"
                 return
             }
 
