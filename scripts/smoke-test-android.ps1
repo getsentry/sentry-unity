@@ -258,7 +258,7 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
         return $false
     }
 
-    $output = Receive-Job $job
+    Receive-Job $job | Out-Null
     Remove-Job $job
 
     Write-Log "Activity started successfully"
