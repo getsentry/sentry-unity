@@ -25,8 +25,7 @@ Write-Host "#####################################################"
 $BuildDir = $(GetNewProjectBuildPath)
 $ApkFileName = "test.apk"
 $ProcessName = "io.sentry.unity.integrationtest"
-$TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
-$FallBackTestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerGameActivity"
+$TestActivityName = $null # Detected after install via dumpsys
 
 $_ArtifactsPath = (Test-Path env:ARTIFACTS_PATH) ? $env:ARTIFACTS_PATH : (Join-Path $BuildDir "../test-artifacts/" $(Get-Date -Format "HHmmss"))
 
@@ -199,6 +198,15 @@ else
     return 1
 }
 
+# Detect the launcher activity from the installed package
+$dumpOutput = adb -s $device shell dumpsys package $ProcessName 2>&1 | Out-String
+if ($dumpOutput -match "com.unity3d.player.UnityPlayerGameActivity") {
+    $TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerGameActivity"
+} else {
+    $TestActivityName = "$ProcessName/com.unity3d.player.UnityPlayerActivity"
+}
+Write-Log "Detected activity: $TestActivityName"
+
 function ProcessNewLogs([array]$newLogs, [ref]$lastLogCount, [array]$logCache) {
     if ($newLogs) {
         $currentLogs = @($newLogs)  # Force array creation even for single line
@@ -227,21 +235,19 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
     adb -s $device shell am force-stop $ProcessName
     Start-Sleep -Milliseconds 500
 
-    $activityName = $TestActivityName
-
     Write-Log "Setting configuration"
 
     # Mark the full-screen notification as acknowledged
     adb -s $device shell "settings put secure immersive_mode_confirmations confirmed"
     adb -s $device shell "input keyevent KEYCODE_HOME"
 
-    Write-Log "Starting app '$activityName'"
+    Write-Log "Starting app '$TestActivityName'"
 
     # Start the adb command as a background job so we can wait for it to finish with a timeout
     $job = Start-Job -ScriptBlock {
         param($device, $activityName, $Name)
         & adb -s $device shell am start -n $activityName -e test $Name -W 2>&1
-    } -ArgumentList $device, $activityName, $Name
+    } -ArgumentList $device, $TestActivityName, $Name
 
     # Wait for the job to complete or to timeout
     $completed = Wait-Job $job -Timeout 60
@@ -254,24 +260,6 @@ function RunTest([string] $Name, [string] $SuccessString, [string] $FailureStrin
 
     $output = Receive-Job $job
     Remove-Job $job
-
-    Write-Log "Checking if activity started"
-
-    # Check if the activity failed to start
-    if ($output -match "Error type 3" -or $output -match "Activity class \{$activityName\} does not exist.")
-    {
-        $activityName = $FallBackTestActivityName
-        Write-Log "Trying fallback activity $activityName"
-
-        $output = & adb -s $device shell am start -n $activityName -e test $Name -W 2>&1
-
-        # Check if the fallback activity failed to start
-        if ($output -match "Error type 3" -or $output -match "Activity class \{$activityName\} does not exist.")
-        {
-            Write-Log "Activity does not exist"
-            return $false
-        }
-    }
 
     Write-Log "Activity started successfully"
 
