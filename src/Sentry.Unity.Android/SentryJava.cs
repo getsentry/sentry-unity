@@ -15,6 +15,8 @@ internal interface ISentryJava
     public bool? CrashedLastRun();
     public void Close();
     public void WriteScope(
+        string? AppStartTime,
+        string? AppBuildType,
         int? GpuId,
         string? GpuName,
         string? GpuVendorName,
@@ -212,6 +214,8 @@ internal class SentryJava : ISentryJava
     }
 
     public void WriteScope(
+        string? AppStartTime,
+        string? AppBuildType,
         int? GpuId,
         string? GpuName,
         string? GpuVendorName,
@@ -230,6 +234,15 @@ internal class SentryJava : ISentryJava
     {
         RunJniSafe(() =>
         {
+            using var app = new AndroidJavaObject("io.sentry.protocol.App");
+            if (AppStartTime is not null)
+            {
+                var epochMs = DateTimeOffset.Parse(AppStartTime).ToUnixTimeMilliseconds();
+                using var date = new AndroidJavaObject("java.util.Date", epochMs);
+                app.Set("appStartTime", date);
+            }
+            app.SetIfNotNull("buildType", AppBuildType);
+
             using var gpu = new AndroidJavaObject("io.sentry.protocol.Gpu");
             gpu.SetIfNotNull("name", GpuName);
             gpu.SetIfNotNull("id", GpuId);
@@ -244,6 +257,7 @@ internal class SentryJava : ISentryJava
             sentry.CallStatic("configureScope", new ScopeCallback(scope =>
             {
                 using var contexts = scope.Call<AndroidJavaObject>("getContexts");
+                contexts.Call("setApp", app);
                 contexts.Call("setGpu", gpu);
             }));
         });
