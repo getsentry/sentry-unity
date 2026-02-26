@@ -83,7 +83,6 @@ $CommonTestCases = @(
     }
     @{ Name = "Contains app context"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
-
             $SentryEvent.contexts.app | Should -Not -BeNullOrEmpty
         }
     }
