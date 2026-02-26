@@ -30,6 +30,7 @@ BeforeAll {
         Write-Host "Running $Action..."
 
         $extras = @("-e", "test", $Action)
+
         $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
 
         # Save result to JSON file
