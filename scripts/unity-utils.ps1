@@ -52,7 +52,9 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
             ClearUnityLog $logFilePath
             New-Item $logFilePath > $null
 
-            $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
+            # -NoNewWindow ensures stdout/stderr go to the parent console (visible in CI logs).
+            # Without it, Windows creates a hidden window and all Docker/process output is lost.
+            $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -NoNewWindow -PassThru
 
             $stdout = WaitForUnityExit $logFilePath $process
         }

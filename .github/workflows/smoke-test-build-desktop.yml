@@ -133,14 +133,33 @@ jobs:
           path: test-app-desktop.tar.gz
           retention-days: 14
 
-      - name: Dump Unity log from Docker container on failure
+      - name: Docker diagnostics on failure
         if: ${{ failure() }}
         run: |
-          Write-Host "=== Unity log from inside Docker container ==="
+          Write-Host "=== Docker container status ==="
+          docker ps -a --filter "name=^/unity$"
+
           if ("${{ inputs.os }}" -eq "windows") {
-            docker exec unity cmd /c type C:\sentry-unity\unity.log
+            Write-Host "`n=== Working directory ==="
+            docker exec unity cmd /c cd
+
+            Write-Host "`n=== unity-editor.cmd exists? ==="
+            docker exec unity cmd /c "if exist C:\Windows\unity-editor.cmd (echo YES & type C:\Windows\unity-editor.cmd) else (echo NO)"
+
+            Write-Host "`n=== Test unity-editor wrapper ==="
+            docker exec -w C:\sentry-unity unity cmd /c "unity-editor -quit -batchmode -nographics 2>&1"
+
+            Write-Host "`n=== Unity log from container ==="
+            docker exec unity cmd /c "if exist C:\sentry-unity\unity.log (type C:\sentry-unity\unity.log) else (echo unity.log not found at C:\sentry-unity)"
+
+            Write-Host "`n=== Check for log in default locations ==="
+            docker exec unity powershell -Command "Get-ChildItem -Path C:\ -Filter unity.log -Recurse -Depth 2 -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }"
           } else {
-            docker exec unity cat /sentry-unity/unity.log
+            Write-Host "`n=== Working directory ==="
+            docker exec unity pwd
+
+            Write-Host "`n=== Unity log from container ==="
+            docker exec unity cat /sentry-unity/unity.log 2>&1 || echo "unity.log not found"
           }
         continue-on-error: true
 
