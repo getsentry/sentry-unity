@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ inputs.os == 'windows' && 'windows-latest' || 'ubuntu-latest' }}
     env:
       GITHUB_ACTOR: ${{ github.actor }}
-      UNITY_PATH: docker exec unity unity-editor
+      UNITY_PATH: ${{ inputs.os == 'windows' && 'docker exec unity cmd /c unity-editor' || 'docker exec unity unity-editor' }}
       UNITY_VERSION: ${{ inputs.unity-version }}
       BUILD_PLATFORM: ${{ inputs.os == 'windows' && 'Windows' || 'Linux' }}
 
