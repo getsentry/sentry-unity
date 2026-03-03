@@ -50,7 +50,7 @@ docker exec $container powershell -Command "Set-Content -Path 'C:\ProgramData\Un
 docker exec $container powershell -Command @'
 $unityExe = Join-Path $env:UNITY_PATH 'Editor\Unity.exe'
 if (-not (Test-Path $unityExe)) { throw "Unity.exe not found at $unityExe (UNITY_PATH=$env:UNITY_PATH)" }
-$content = "@echo off`r`n`"$unityExe`" -batchmode -nographics %*"
+$content = "@echo off`r`n`"$unityExe`" -batchmode %*"
 Set-Content -Path 'C:\Windows\unity-editor.cmd' -Value $content
 Write-Host "Created unity-editor wrapper pointing to $unityExe"
 '@
