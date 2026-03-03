@@ -36,6 +36,7 @@ docker run -td --name $container `
     -v "${cwd}:C:\sentry-unity" `
     -e UNITY_VERSION=$unityVersion `
     -e GITHUB_ACTIONS=$env:GITHUB_ACTIONS `
+    -e SENTRY_AUTH_TOKEN=$env:SENTRY_AUTH_TOKEN `
     --workdir "C:\sentry-unity" $image
 
 # Set up Unity license configuration

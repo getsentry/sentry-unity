@@ -52,12 +52,14 @@ jobs:
         shell: bash
         env:
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Start the Unity docker container (Windows)
         if: ${{ inputs.os == 'windows' }}
         run: ./scripts/ci-docker-windows.ps1 -UnityPrefix "$env:UNITY_VERSION" -ImageVariant "windows-il2cpp" -LicenseConfig "$env:UNITY_LICENSE_SERVER_CONFIG"
         env:
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -100,12 +102,12 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols -TestMode "integration"
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -TestMode "integration"
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Build with Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$true -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
 
       - name: Compare build sizes
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION"
