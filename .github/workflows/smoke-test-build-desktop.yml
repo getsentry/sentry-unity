@@ -17,7 +17,7 @@ defaults:
 jobs:
   build:
     name: ${{ inputs.os }} ${{ inputs.unity-version }}
-    runs-on: ${{ inputs.os == 'windows' && 'windows-latest' || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.os == 'windows' && 'windows-2022' || 'ubuntu-latest' }}
     env:
       GITHUB_ACTOR: ${{ github.actor }}
       UNITY_PATH: ${{ inputs.os == 'windows' && 'docker exec -w C:\sentry-unity unity cmd /c unity-editor' || 'docker exec unity unity-editor' }}
