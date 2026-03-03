@@ -46,15 +46,15 @@ docker exec $container powershell -Command "Set-Content -Path 'C:\ProgramData\Un
 # Create unity-editor wrapper script to match the Linux Docker image convention.
 # In Linux GameCI images, /usr/bin/unity-editor wraps Unity with -batchmode.
 # We replicate that here so the same UNITY_PATH env var works for both platforms.
-docker exec $container powershell -Command @'
-$unityExe = Get-ChildItem 'C:\Program Files\Unity' -Filter Unity.exe -Recurse -ErrorAction SilentlyContinue |
-    Where-Object { $_.DirectoryName -match '\\Editor$' } |
-    Select-Object -First 1
-if (-not $unityExe) { throw 'Unity.exe not found in the container' }
-$content = "@echo off`r`n`"$($unityExe.FullName)`" -batchmode %*"
-Set-Content -Path 'C:\Windows\unity-editor.cmd' -Value $content
-Write-Host "Created unity-editor wrapper pointing to $($unityExe.FullName)"
-'@
+# GameCI Windows images install Unity to C:\UnityEditor\<version>\Editor\.
+$unityExe = "C:\UnityEditor\$unityVersion\Editor\Unity.exe"
+docker exec $container cmd /c "if not exist `"$unityExe`" exit 1"
+if ($LASTEXITCODE -ne 0) { throw "Unity.exe not found at $unityExe" }
+
+$wrapperContent = "@echo off`r`n`"$unityExe`" -batchmode %*"
+docker exec $container powershell -Command "Set-Content -Path 'C:\Windows\unity-editor.cmd' -Value '$wrapperContent'"
+if ($LASTEXITCODE -ne 0) { throw "Failed to create unity-editor wrapper" }
+Write-Host "Created unity-editor wrapper pointing to $unityExe"
 
 Write-Host "Container started successfully:"
 docker ps --filter "name=^/$container$"
