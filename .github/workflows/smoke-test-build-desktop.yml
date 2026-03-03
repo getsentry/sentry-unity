@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ inputs.os == 'windows' && 'windows-latest' || 'ubuntu-latest' }}
     env:
       GITHUB_ACTOR: ${{ github.actor }}
-      UNITY_PATH: ${{ inputs.os == 'windows' && 'docker exec unity cmd /c unity-editor' || 'docker exec unity unity-editor' }}
+      UNITY_PATH: ${{ inputs.os == 'windows' && 'docker exec -w C:\sentry-unity unity cmd /c unity-editor' || 'docker exec unity unity-editor' }}
       UNITY_VERSION: ${{ inputs.unity-version }}
       BUILD_PLATFORM: ${{ inputs.os == 'windows' && 'Windows' || 'Linux' }}
 
@@ -133,6 +133,17 @@ jobs:
           path: test-app-desktop.tar.gz
           retention-days: 14
 
+      - name: Dump Unity log from Docker container on failure
+        if: ${{ failure() }}
+        run: |
+          Write-Host "=== Unity log from inside Docker container ==="
+          if ("${{ inputs.os }}" -eq "windows") {
+            docker exec unity cmd /c type C:\sentry-unity\unity.log
+          } else {
+            docker exec unity cat /sentry-unity/unity.log
+          }
+        continue-on-error: true
+
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -140,5 +151,6 @@ jobs:
           name: failed-project-desktop-${{ inputs.os }}-${{ env.UNITY_VERSION }}
           path: |
             samples/IntegrationTest
+            unity.log
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
           retention-days: 14
