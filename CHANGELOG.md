@@ -21,9 +21,9 @@
 - Bump Java SDK from v8.32.0 to v8.33.0 ([#2555](https://github.com/getsentry/sentry-unity/pull/2555))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8330)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.32.0...8.33.0)
-- Bump CLI from v3.2.0 to v3.2.2 ([#2561](https://github.com/getsentry/sentry-unity/pull/2561), [#2563](https://github.com/getsentry/sentry-unity/pull/2563))
-  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#322)
-  - [diff](https://github.com/getsentry/sentry-cli/compare/3.2.0...3.2.2)
+- Bump CLI from v3.2.0 to v3.2.3 ([#2561](https://github.com/getsentry/sentry-unity/pull/2561), [#2563](https://github.com/getsentry/sentry-unity/pull/2563), [#2568](https://github.com/getsentry/sentry-unity/pull/2568))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#323)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.2.0...3.2.3)
 
 ## 4.1.0
 
