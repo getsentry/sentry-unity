@@ -12,7 +12,7 @@ defaults:
 
 jobs:
   run:
-    name: windows ${{ inputs.unity-version }}
+    name: Windows ${{ inputs.unity-version }}
     runs-on: windows-latest
     env:
       SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}

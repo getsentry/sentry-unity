@@ -12,7 +12,7 @@ defaults:
 
 jobs:
   build:
-    name: windows ${{ inputs.unity-version }}
+    name: Windows ${{ inputs.unity-version }}
     runs-on: windows-latest
     env:
       UNITY_VERSION: ${{ inputs.unity-version }}

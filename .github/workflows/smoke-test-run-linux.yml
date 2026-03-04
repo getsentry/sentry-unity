@@ -12,7 +12,7 @@ defaults:
 
 jobs:
   run:
-    name: linux ${{ inputs.unity-version }}
+    name: Linux ${{ inputs.unity-version }}
     runs-on: ubuntu-latest
     env:
       SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}

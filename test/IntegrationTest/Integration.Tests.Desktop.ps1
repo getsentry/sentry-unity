@@ -16,11 +16,7 @@ $ErrorActionPreference = "Stop"
 # Import shared test cases and utility functions
 . $PSScriptRoot/CommonTestCases.ps1
 
-
 BeforeAll {
-    # Auto-detect platform
-    $script:PlatformName = if ($IsWindows) { "Windows" } elseif ($IsLinux) { "Linux" } else { throw "Unsupported desktop platform" }
-
     # Run integration test action on device
     function Invoke-TestAction {
         param (
@@ -70,7 +66,7 @@ BeforeAll {
 
     # Initialize test parameters
     $script:TestSetup = [PSCustomObject]@{
-        Platform = $script:PlatformName
+        Platform = "Desktop"
         AppPath = $env:SENTRY_TEST_APP
         Dsn = $env:SENTRY_TEST_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
@@ -104,7 +100,7 @@ AfterAll {
 }
 
 
-Describe "Unity $($script:PlatformName) Integration Tests" {
+Describe "Unity Desktop Integration Tests" {
 
     Context "Message Capture" {
         BeforeAll {
