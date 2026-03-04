@@ -325,10 +325,10 @@ jobs:
         # Also make sure to match the versions available here:
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
 
-  smoke-test-run:
+  smoke-test-run-webgl:
     name: Run ${{ matrix.platform }} ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build, create-unity-matrix]
+    needs: [smoke-test-build-webgl, create-unity-matrix]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -410,7 +410,7 @@ jobs:
     name: Build Size
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build, smoke-test-build-android, smoke-test-compile-ios, smoke-test-build-linux, smoke-test-build-windows]
+    needs: [smoke-test-build-webgl, smoke-test-build-android, smoke-test-compile-ios, smoke-test-build-linux, smoke-test-build-windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
