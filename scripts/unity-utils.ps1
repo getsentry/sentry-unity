@@ -12,9 +12,9 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
 
     If ($unityPath -eq "docker")
     {
-        # Remove "-batchmode" and "-nographics" which end up being duplicate because the unity-editor wrapper already adds them
-        Write-Host "Removing arguments '-batchmode' and '-nographics' - they would be duplicate and cause a build to fail"
-        $arguments = $arguments | Where-Object { $_ -ne "-batchmode" -and $_ -ne "-nographics" }
+        # Remove "-batchmode" which ends up being duplicate because the referenced unity-editor script already adds it
+        Write-Host "Removing argument '-batchmode' - it would be duplicate and cause a build to fail"
+        $arguments = $arguments | Where-Object { $_ –ne "-batchmode" }
         Write-Host "Updated arguments: $arguments"
     }
     ElseIf ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "" -and $unityPath -ne "xvfb-run")
@@ -52,9 +52,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
             ClearUnityLog $logFilePath
             New-Item $logFilePath > $null
 
-            # -NoNewWindow ensures stdout/stderr go to the parent console (visible in CI logs).
-            # Without it, Windows creates a hidden window and all Docker/process output is lost.
-            $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -NoNewWindow -PassThru
+            $process = Start-Process -FilePath $unityPath -ArgumentList $arguments -PassThru
 
             $stdout = WaitForUnityExit $logFilePath $process
         }
