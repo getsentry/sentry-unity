@@ -30,7 +30,9 @@ public class IntegrationTester : MonoBehaviour
                 break;
             default:
                 Debug.LogError($"IntegrationTester: Unknown command: {arg}");
+#if !UNITY_WEBGL
                 Application.Quit(1);
+#endif
                 break;
         }
     }
@@ -61,7 +63,11 @@ public class IntegrationTester : MonoBehaviour
         var eventId = SentrySdk.CaptureMessage("Integration test message");
         Debug.Log($"EVENT_CAPTURED: {eventId}");
 
+        SentrySdk.FlushAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+        Debug.Log("INTEGRATION_TEST_COMPLETE");
+#if !UNITY_WEBGL
         Application.Quit(0);
+#endif
     }
 
     private void ExceptionCapture()
@@ -78,7 +84,11 @@ public class IntegrationTester : MonoBehaviour
             Debug.Log($"EVENT_CAPTURED: {eventId}");
         }
 
+        SentrySdk.FlushAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+        Debug.Log("INTEGRATION_TEST_COMPLETE");
+#if !UNITY_WEBGL
         Application.Quit(0);
+#endif
     }
 
     // Use a deeper call stack with NoInlining to ensure Unity 2022's IL2CPP
