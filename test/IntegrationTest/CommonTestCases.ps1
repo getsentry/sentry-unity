@@ -100,6 +100,11 @@ $CommonTestCases = @(
     @{ Name = "Contains OS context"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
             $SentryEvent.contexts.os | Should -Not -BeNullOrEmpty
+
+            if ($TestSetup.Platform -eq "WebGL") {
+                Set-ItResult -Skipped -Because "OS name is not available in the browser sandbox"
+                return
+            }
             $SentryEvent.contexts.os.name | Should -Not -BeNullOrEmpty
         }
     }
