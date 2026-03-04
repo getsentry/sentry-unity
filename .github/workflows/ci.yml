@@ -99,7 +99,7 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
     
   # A Linux, docker-based build to prepare a WebGL player. The tests run in `smoke-test-run`.
-  smoke-test-build:
+  smoke-test-build-webgl:
     name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Smoke Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-create, create-unity-matrix]

@@ -26,7 +26,7 @@ BeforeAll {
 
         Write-Host "Running $Action..."
 
-        $appArgs = @("--test", $Action)
+        $appArgs = @("--test", $Action, "-logFile", "-")
 
         $runResult = Invoke-DeviceApp -ExecutablePath $env:SENTRY_TEST_APP -Arguments $appArgs
 
@@ -37,7 +37,7 @@ BeforeAll {
         if ($Action -eq "crash-capture") {
             Write-Host "Running crash-send to ensure crash report is sent..."
 
-            $sendArgs = @("--test", "crash-send")
+            $sendArgs = @("--test", "crash-send", "-logFile", "-")
             $sendResult = Invoke-DeviceApp -ExecutablePath $env:SENTRY_TEST_APP -Arguments $sendArgs
 
             # Save crash-send result to JSON for debugging
