@@ -17,7 +17,9 @@ $ErrorActionPreference = "Stop"
 . $PSScriptRoot/CommonTestCases.ps1
 
 BeforeAll {
-    # Run integration test action on device
+    # Run a test app action using Start-Process with file-based logging.
+    # We avoid piping stdout because on Windows it kills crashpad_handler.exe
+    # when the process crashes, preventing native crash capture.
     function Invoke-TestAction {
         param (
             [Parameter(Mandatory=$true)]
@@ -26,30 +28,44 @@ BeforeAll {
 
         Write-Host "Running $Action..."
 
-        $appArgs = @("--test", $Action, "-logFile", "-")
+        $resultsDir = Resolve-Path "$PSScriptRoot/results/"
+        $logFile = Join-Path $resultsDir "$Action-player.log"
+        $appArgs = @("--test", $Action, "-logFile", $logFile)
 
-        $runResult = Invoke-DeviceApp -ExecutablePath $env:SENTRY_TEST_APP -Arguments $appArgs
+        $process = Start-Process $env:SENTRY_TEST_APP -ArgumentList $appArgs -PassThru
+        $process | Wait-Process -Timeout 60 -ErrorAction SilentlyContinue
+
+        if (-not $process.HasExited) {
+            $process | Stop-Process -Force
+        }
+
+        $output = @(Get-Content $logFile -ErrorAction SilentlyContinue)
+
+        $runResult = @{
+            Output   = $output
+            ExitCode = $process.ExitCode
+        }
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
 
-        # Launch app again to ensure crash report is sent
+        # For crash tests: relaunch the app to flush the cached crash report
         if ($Action -eq "crash-capture") {
             Write-Host "Running crash-send to ensure crash report is sent..."
 
-            $sendArgs = @("--test", "crash-send", "-logFile", "-")
-            $sendResult = Invoke-DeviceApp -ExecutablePath $env:SENTRY_TEST_APP -Arguments $sendArgs
+            $sendLogFile = Join-Path $resultsDir "crash-send-player.log"
+            $sendProcess = Start-Process $env:SENTRY_TEST_APP `
+                -ArgumentList "--test", "crash-send", "-logFile", $sendLogFile `
+                -PassThru
+            $sendProcess | Wait-Process -Timeout 60 -ErrorAction SilentlyContinue
 
-            # Save crash-send result to JSON for debugging
-            $sendResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "crash-send-result.json")
+            $sendOutput = @(Get-Content $sendLogFile -ErrorAction SilentlyContinue)
 
-            # Print crash-send output
             Write-Host "::group::App output (crash-send)"
-            $sendResult.Output | ForEach-Object { Write-Host $_ }
+            $sendOutput | ForEach-Object { Write-Host $_ }
             Write-Host "::endgroup::"
 
-            # Attach to runResult for test access
-            $runResult | Add-Member -NotePropertyName "CrashSendOutput" -NotePropertyValue $sendResult.Output
+            $runResult.CrashSendOutput = $sendOutput
         }
 
         # Print app output so it's visible in CI logs
@@ -89,14 +105,11 @@ BeforeAll {
     Connect-SentryApi `
         -ApiToken $script:TestSetup.AuthToken `
         -DSN $script:TestSetup.Dsn
-
-    Connect-Device -Platform "Local"
 }
 
 
 AfterAll {
     Disconnect-SentryApi
-    Disconnect-Device
 }
 
 
