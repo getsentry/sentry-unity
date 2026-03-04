@@ -389,9 +389,10 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-    uses: ./.github/workflows/smoke-test-run-linux.yml
+    uses: ./.github/workflows/smoke-test-run-desktop.yml
     with:
       unity-version: ${{ matrix.unity-version }}
+      platform: linux
 
   smoke-test-run-windows:
     name: Run Windows ${{ matrix.unity-version }} Integration Test
@@ -402,9 +403,10 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-    uses: ./.github/workflows/smoke-test-run-windows.yml
+    uses: ./.github/workflows/smoke-test-run-desktop.yml
     with:
       unity-version: ${{ matrix.unity-version }}
+      platform: windows
 
   build-size-summary:
     name: Build Size
