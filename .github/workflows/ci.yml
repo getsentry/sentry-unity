@@ -354,8 +354,8 @@ jobs:
           pip3 install --upgrade --user selenium urllib3 requests
           python3 scripts/smoke-test-webgl.py "samples/IntegrationTest/Build"
 
-  smoke-test-build-desktop:
-    name: Build ${{ matrix.os }} ${{ matrix.unity-version }} Integration Test
+  smoke-test-build-linux:
+    name: Build linux ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-create, create-unity-matrix]
     secrets: inherit
@@ -363,32 +363,54 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-        os: ["windows", "linux"]
-    uses: ./.github/workflows/smoke-test-build-desktop.yml
+    uses: ./.github/workflows/smoke-test-build-linux.yml
     with:
       unity-version: ${{ matrix.unity-version }}
-      os: ${{ matrix.os }}
 
-  smoke-test-run-desktop:
-    name: Run ${{ matrix.os }} ${{ matrix.unity-version }} Integration Test
+  smoke-test-build-windows:
+    name: Build windows ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build-desktop, create-unity-matrix]
+    needs: [smoke-test-create, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-        os: ["windows", "linux"]
-    uses: ./.github/workflows/smoke-test-run-desktop.yml
+    uses: ./.github/workflows/smoke-test-build-windows.yml
     with:
       unity-version: ${{ matrix.unity-version }}
-      os: ${{ matrix.os }}
+
+  smoke-test-run-linux:
+    name: Run linux ${{ matrix.unity-version }} Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [smoke-test-build-linux, create-unity-matrix]
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+    uses: ./.github/workflows/smoke-test-run-linux.yml
+    with:
+      unity-version: ${{ matrix.unity-version }}
+
+  smoke-test-run-windows:
+    name: Run windows ${{ matrix.unity-version }} Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [smoke-test-build-windows, create-unity-matrix]
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+    uses: ./.github/workflows/smoke-test-run-windows.yml
+    with:
+      unity-version: ${{ matrix.unity-version }}
 
   build-size-summary:
     name: Build Size
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build, smoke-test-build-android, smoke-test-compile-ios, smoke-test-build-desktop]
+    needs: [smoke-test-build, smoke-test-build-android, smoke-test-compile-ios, smoke-test-build-linux, smoke-test-build-windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v3

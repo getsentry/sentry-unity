@@ -1,14 +1,10 @@
-name: "IntegrationTest: Run Desktop"
+name: "IntegrationTest: Run Linux"
 on:
   workflow_call:
     inputs:
       unity-version:
         required: true
         type: string
-      os:
-        required: true
-        type: string
-        description: '"windows" or "linux"'
 
 defaults:
   run:
@@ -16,8 +12,8 @@ defaults:
 
 jobs:
   run:
-    name: ${{ inputs.os }} ${{ inputs.unity-version }}
-    runs-on: ${{ inputs.os == 'windows' && 'windows-latest' || 'ubuntu-latest' }}
+    name: linux ${{ inputs.unity-version }}
+    runs-on: ubuntu-latest
     env:
       SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -33,25 +29,16 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: testapp-desktop-compiled-${{ inputs.unity-version }}-${{ inputs.os }}
+          name: testapp-desktop-compiled-${{ inputs.unity-version }}-linux
 
       - name: Extract test app
         run: tar -xvzf test-app-desktop.tar.gz
 
-      - name: Set executable permission (Linux)
-        if: ${{ inputs.os == 'linux' }}
+      - name: Set executable permission
         run: chmod +x samples/IntegrationTest/Build/test
         shell: bash
 
-      - name: Run Integration Tests (Windows)
-        if: ${{ inputs.os == 'windows' }}
-        timeout-minutes: 20
-        run: |
-          $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.exe"
-          Invoke-Pester -Path test/IntegrationTest/Integration.Tests.Desktop.ps1 -CI
-
-      - name: Run Integration Tests (Linux)
-        if: ${{ inputs.os == 'linux' }}
+      - name: Run Integration Tests
         timeout-minutes: 20
         run: |
           xvfb-run pwsh -Command '
@@ -65,7 +52,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: testapp-desktop-logs-${{ inputs.os }}-${{ inputs.unity-version }}
+          name: testapp-desktop-logs-linux-${{ inputs.unity-version }}
           path: |
             test/IntegrationTest/results/
           retention-days: 14
