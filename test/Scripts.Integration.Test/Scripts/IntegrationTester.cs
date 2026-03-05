@@ -17,10 +17,10 @@ public class IntegrationTester : MonoBehaviour
         switch (arg)
         {
             case "message-capture":
-                MessageCapture();
+                StartCoroutine(MessageCapture());
                 break;
             case "exception-capture":
-                ExceptionCapture();
+                StartCoroutine(ExceptionCapture());
                 break;
             case "crash-capture":
                 StartCoroutine(CrashCapture());
@@ -56,21 +56,17 @@ public class IntegrationTester : MonoBehaviour
         SentrySdk.AddBreadcrumb("Context configuration finished");
     }
 
-    private void MessageCapture()
+    private IEnumerator MessageCapture()
     {
         AddIntegrationTestContext("message-capture");
 
         var eventId = SentrySdk.CaptureMessage("Integration test message");
         Debug.Log($"EVENT_CAPTURED: {eventId}");
 
-        SentrySdk.FlushAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
-        Debug.Log("INTEGRATION_TEST_COMPLETE");
-#if !UNITY_WEBGL
-        Application.Quit(0);
-#endif
+        yield return CompleteAndQuit();
     }
 
-    private void ExceptionCapture()
+    private IEnumerator ExceptionCapture()
     {
         AddIntegrationTestContext("exception-capture");
 
@@ -84,10 +80,21 @@ public class IntegrationTester : MonoBehaviour
             Debug.Log($"EVENT_CAPTURED: {eventId}");
         }
 
-        SentrySdk.FlushAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+        yield return CompleteAndQuit();
+    }
+
+    private IEnumerator CompleteAndQuit()
+    {
+#if UNITY_WEBGL
+        // On WebGL, envelope sends are coroutine-based and need additional frames to
+        // complete. Wait to avoid a race where the test harness shuts down the browser
+        // before the send finishes.
+        yield return new WaitForSeconds(3);
         Debug.Log("INTEGRATION_TEST_COMPLETE");
-#if !UNITY_WEBGL
+#else
+        Debug.Log("INTEGRATION_TEST_COMPLETE");
         Application.Quit(0);
+        yield break;
 #endif
     }
 
