@@ -74,7 +74,7 @@ jobs:
 
       - name: Build without Sentry SDK
         if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -CheckSymbols:$false -BuildDirName "Build-NoSentry"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -BuildDirName "Build-NoSentry"
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
@@ -94,7 +94,7 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Build with Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
 
       - name: Compare build sizes
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform Linux -UnityVersion "$env:UNITY_VERSION"

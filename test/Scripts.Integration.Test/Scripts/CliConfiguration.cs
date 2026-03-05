@@ -1,7 +1,6 @@
 using System;
 using Sentry.Unity;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public class CliConfiguration : SentryCliOptionsConfiguration
 {
@@ -10,20 +9,9 @@ public class CliConfiguration : SentryCliOptionsConfiguration
         Debug.Log("Sentry: CliConfiguration::Configure() called");
 
         var authToken = Environment.GetEnvironmentVariable("SENTRY_AUTH_TOKEN");
-        if (!string.IsNullOrEmpty(authToken))
-        {
-            // Upload to real Sentry using the auth token from the environment.
-            cliOptions.UploadSymbols = true;
-            cliOptions.UploadSources = true;
-            cliOptions.Auth = authToken;
-        }
-        else
-        {
-            // Upload to a local symbol server for verification (smoke tests).
-            cliOptions.UploadSymbols = !string.IsNullOrEmpty(cliOptions.UrlOverride);
-            cliOptions.UploadSources = cliOptions.UploadSymbols;
-            cliOptions.Auth = "dummy-token";
-        }
+        cliOptions.UploadSymbols = !string.IsNullOrEmpty(authToken);
+        cliOptions.UploadSources = cliOptions.UploadSymbols;
+        cliOptions.Auth = authToken;
 
         cliOptions.Organization = "sentry-sdks";
         cliOptions.Project = "sentry-unity";

@@ -11,8 +11,7 @@ param(
     [string] $NativeSDKPath,
     [switch] $Recreate,
     [switch] $Rebuild,
-    [switch] $SkipTests,
-    [switch] $CheckSymbols
+    [switch] $SkipTests
 )
 
 if (-not $Global:NewProjectPathCache) {
@@ -47,7 +46,7 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)")) {
     Write-PhaseSuccess "Sentry added"
 
     Write-PhaseHeader "Configuring Sentry"
-    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols:$CheckSymbols
+    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform
     Write-PhaseSuccess "Sentry configured"
 }
 
@@ -71,10 +70,10 @@ If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath))) {
     If ("iOS" -eq $Platform) {
         # We're exporting an Xcode project and building that in a separate step.
         ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
-        & "./scripts/smoke-test-ios.ps1" Build -IsIntegrationTest -UnityVersion $UnityVersion
+        & "./scripts/compile-xcode-project.ps1"
     }
     Else {
-        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -CheckSymbols:$CheckSymbols -UnityVersion $UnityVersion -Platform $Platform
+        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
     }
     Write-PhaseSuccess "Project built"
 }

@@ -111,7 +111,6 @@ jobs:
         platform: ["WebGL"]
         include:
           - platform: WebGL
-            check_symbols: true
             build_platform: WebGL
     env:
       UNITY_PATH: docker exec unity unity-editor
@@ -172,7 +171,7 @@ jobs:
 
       - name: Build without Sentry SDK
         if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false -BuildDirName "Build-NoSentry"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -BuildDirName "Build-NoSentry"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
@@ -189,16 +188,15 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Build Project
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$([System.Convert]::ToBoolean($env:CHECK_SYMBOLS)) -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
-          CHECK_SYMBOLS: ${{ matrix.check_symbols }}
           UNITY_VERSION: ${{ matrix.unity-version }}
 
       - name: Compare build sizes
