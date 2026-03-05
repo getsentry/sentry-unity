@@ -1,4 +1,4 @@
-name: "SmokeTest: Run iOS"
+name: "IntegrationTest: Run iOS"
 on:
   workflow_call:
     inputs:
@@ -14,7 +14,7 @@ on:
     # Map the workflow outputs to job outputs
     outputs:
       status:
-        description: "Smoke test status"
+        description: "Integration test status"
         value: ${{ jobs.run.outputs.status }}
 
 defaults:
@@ -27,15 +27,22 @@ jobs:
     runs-on: macos-14 # Pinning to get the oldest, supported version of iOS simulator
     # Map the job outputs to step outputs
     outputs:
-      status: ${{ steps.smoke-test.outputs.status }}
+      status: ${{ steps.integration-test.outputs.status }}
     env:
       UNITY_VERSION: ${{ inputs.unity-version }}
       IOS_VERSION: ${{ inputs.ios-version }}
       INIT_TYPE: ${{ inputs.init-type }}
+      ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+
+      - name: Initialize app-runner submodule
+        run: git submodule update --init modules/app-runner
+        shell: bash
 
       - name: Download app artifact
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -53,13 +60,21 @@ jobs:
         with:
           xcode-version: '15.0' # to run iOS 17.0 we need Xcode 15.0
 
-      - name: Run iOS Smoke Tests
-        id: smoke-test
+      - name: Run iOS Integration Tests
+        id: integration-test
         timeout-minutes: 20
         run: |
-          $runtime = "${env:IOS_VERSION}"
-          If ($runtime -ne "latest")
-          {
-            $runtime = "iOS " + $runtime
-          }
-          ./Scripts/smoke-test-ios.ps1 Test "$runtime" -IsIntegrationTest
+          $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/IntegrationTest.app"
+          $env:SENTRY_IOS_VERSION = "${{ inputs.ios-version }}"
+          Invoke-Pester -Path test/IntegrationTest/Integration.Tests.iOS.ps1 -CI
+          echo "status=success" >> $env:GITHUB_OUTPUT
+
+      - name: Upload test results on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: testapp-ios-logs-${{ env.IOS_VERSION }}-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
+          path: |
+            ${{ env.ARTIFACTS_PATH }}
+            test/IntegrationTest/results/
+          retention-days: 14

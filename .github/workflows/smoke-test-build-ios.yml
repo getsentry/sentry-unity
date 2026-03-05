@@ -96,9 +96,10 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols -TestMode "integration"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
+          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Build Project with runtime initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
@@ -122,9 +123,9 @@ jobs:
           path: test-app-runtime.tar.gz
           retention-days: 14
 
-      - name: Overwrite OptionsConfiguration for build-time initialization
+      - name: Overwrite IntegrationOptionsConfiguration for build-time initialization
         run: |
-          $optionsPath = "samples/IntegrationTest/Assets/Scripts/OptionsConfiguration.cs"
+          $optionsPath = "samples/IntegrationTest/Assets/Scripts/IntegrationOptionsConfiguration.cs"
           $content = Get-Content $optionsPath -Raw
           $content = $content -replace 'IosNativeInitializationType = NativeInitializationType.Runtime', 'IosNativeInitializationType = NativeInitializationType.BuildTime'
           Set-Content $optionsPath $content
