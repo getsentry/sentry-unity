@@ -130,8 +130,10 @@ def run_test(app_dir, test_action, timeout_seconds):
         driver.quit()
         server.shutdown()
 
-    # Output collected lines as JSON array for easy parsing by PowerShell
-    print(json.dumps(collected_lines))
+        # Output collected lines as JSON array for easy parsing by PowerShell.
+        # This must be in the finally block so partial output is emitted even
+        # when the polling loop fails (e.g. Chrome crash).
+        print(json.dumps(collected_lines))
 
     return 0 if complete else 1
 
