@@ -12,9 +12,9 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v9.4.0 to v9.5.1 ([#2540](https://github.com/getsentry/sentry-unity/pull/2540), [#2558](https://github.com/getsentry/sentry-unity/pull/2558), [#2565](https://github.com/getsentry/sentry-unity/pull/2565))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#951)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.4.0...9.5.1)
+- Bump Cocoa SDK from v9.4.0 to v9.6.0 ([#2540](https://github.com/getsentry/sentry-unity/pull/2540), [#2558](https://github.com/getsentry/sentry-unity/pull/2558), [#2565](https://github.com/getsentry/sentry-unity/pull/2565), [#2575](https://github.com/getsentry/sentry-unity/pull/2575))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#960)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.4.0...9.6.0)
 - Bump Native SDK from v0.12.6 to v0.13.1 ([#2543](https://github.com/getsentry/sentry-unity/pull/2543), [#2550](https://github.com/getsentry/sentry-unity/pull/2550), [#2560](https://github.com/getsentry/sentry-unity/pull/2560), [#2567](https://github.com/getsentry/sentry-unity/pull/2567))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0131)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.12.6...0.13.1)
