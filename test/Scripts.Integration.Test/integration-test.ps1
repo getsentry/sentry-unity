@@ -96,7 +96,8 @@ Else {
             ./scripts/smoke-test-ios.ps1 Test "latest" -IsIntegrationTest
         }
         "^WebGL$" {
-            python3 scripts/smoke-test-webgl.py $(GetNewProjectBuildPath)
+            $env:SENTRY_WEBGL_BUILD_PATH = GetNewProjectBuildPath
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.WebGL.ps1 -CI
         }
         "^Switch$" {
             Write-PhaseSuccess "Switch build completed - no automated test execution available"
