@@ -1,9 +1,10 @@
 #!/usr/bin/env pwsh
 #
-# Integration tests for Sentry Unity SDK (Android)
+# Integration tests for Sentry Unity SDK (iOS Simulator)
 #
 # Environment variables:
-#   SENTRY_TEST_APK: path to the test APK file
+#   SENTRY_TEST_APP: path to the test .app bundle
+#   SENTRY_IOS_VERSION: iOS simulator version (e.g. "17.0" or "latest")
 #   SENTRY_TEST_DSN: test DSN
 #   SENTRY_AUTH_TOKEN: authentication token for Sentry API
 
@@ -18,7 +19,7 @@ $ErrorActionPreference = "Stop"
 
 
 BeforeAll {
-    $script:PackageName = "io.sentry.unity.integrationtest"
+    $script:BundleId = "com.DefaultCompany.IntegrationTest"
 
     # Run integration test action on device
     function Invoke-TestAction {
@@ -29,9 +30,9 @@ BeforeAll {
 
         Write-Host "Running $Action..."
 
-        $extras = @("-e", "test", $Action)
+        $appArgs = @("--test", $Action)
 
-        $runResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $extras
+        $runResult = Invoke-DeviceApp -ExecutablePath $script:BundleId -Arguments $appArgs
 
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
@@ -40,8 +41,8 @@ BeforeAll {
         if ($Action -eq "crash-capture") {
             Write-Host "Running crash-send to ensure crash report is sent..."
 
-            $sendExtras = @("-e", "test", "crash-send")
-            $sendResult = Invoke-DeviceApp -ExecutablePath $script:AndroidComponent -Arguments $sendExtras
+            $sendArgs = @("--test", "crash-send")
+            $sendResult = Invoke-DeviceApp -ExecutablePath $script:BundleId -Arguments $sendArgs
 
             # Save crash-send result to JSON for debugging
             $sendResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "crash-send-result.json")
@@ -69,18 +70,22 @@ BeforeAll {
 
     # Initialize test parameters
     $script:TestSetup = [PSCustomObject]@{
-        Platform = "Android"
-        ApkPath = $env:SENTRY_TEST_APK
+        Platform = "iOS"
+        AppPath = $env:SENTRY_TEST_APP
+        iOSVersion = $env:SENTRY_IOS_VERSION
         Dsn = $env:SENTRY_TEST_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
     }
 
     # Validate environment
-    if ([string]::IsNullOrEmpty($script:TestSetup.ApkPath)) {
-        throw "SENTRY_TEST_APK environment variable is not set."
+    if ([string]::IsNullOrEmpty($script:TestSetup.AppPath)) {
+        throw "SENTRY_TEST_APP environment variable is not set."
     }
-    if (-not (Test-Path $script:TestSetup.ApkPath)) {
-        throw "APK not found at: $($script:TestSetup.ApkPath)"
+    if (-not (Test-Path $script:TestSetup.AppPath)) {
+        throw "App not found at: $($script:TestSetup.AppPath)"
+    }
+    if ([string]::IsNullOrEmpty($script:TestSetup.iOSVersion)) {
+        throw "SENTRY_IOS_VERSION environment variable is not set."
     }
     if ([string]::IsNullOrEmpty($script:TestSetup.Dsn)) {
         throw "SENTRY_TEST_DSN environment variable is not set."
@@ -93,17 +98,13 @@ BeforeAll {
         -ApiToken $script:TestSetup.AuthToken `
         -DSN $script:TestSetup.Dsn
 
-    Connect-Device -Platform "Adb"
-    Install-DeviceApp -Path $script:TestSetup.ApkPath
-
-    # Detect the launcher activity from the installed package
-    $dumpOutput = & adb shell dumpsys package $script:PackageName 2>&1 | Out-String
-    if ($dumpOutput -match "com.unity3d.player.UnityPlayerGameActivity") {
-        $script:AndroidComponent = "$($script:PackageName)/com.unity3d.player.UnityPlayerGameActivity"
-    } else {
-        $script:AndroidComponent = "$($script:PackageName)/com.unity3d.player.UnityPlayerActivity"
+    $target = $script:TestSetup.iOSVersion
+    # Convert bare version numbers (e.g. "17.0") to "iOS 17.0" format expected by iOSSimulatorProvider
+    if ($target -match '^\d+\.\d+$') {
+        $target = "iOS $target"
     }
-    Write-Host "Detected activity: $($script:AndroidComponent)"
+    Connect-Device -Platform "iOSSimulator" -Target $target
+    Install-DeviceApp -Path $script:TestSetup.AppPath
 }
 
 
@@ -113,7 +114,7 @@ AfterAll {
 }
 
 
-Describe "Unity Android Integration Tests" {
+Describe "Unity iOS Integration Tests" {
 
     Context "Message Capture" {
         BeforeAll {

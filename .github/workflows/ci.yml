@@ -303,7 +303,7 @@ jobs:
       init-type: ${{ matrix.init-type }}
 
   smoke-test-run-ios:
-    name: Run iOS ${{ matrix.unity-version }} Smoke Test
+    name: Run iOS ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-compile-ios, create-unity-matrix]
     uses: ./.github/workflows/smoke-test-run-ios.yml
@@ -311,6 +311,7 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       ios-version: ${{ matrix.ios-version }}
       init-type: ${{ matrix.init-type }}
+    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
