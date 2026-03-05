@@ -9,11 +9,24 @@ public class CliConfiguration : SentryCliOptionsConfiguration
     {
         Debug.Log("Sentry: CliConfiguration::Configure() called");
 
-        cliOptions.UploadSymbols = !string.IsNullOrEmpty(cliOptions.UrlOverride);
-        cliOptions.UploadSources = cliOptions.UploadSymbols;
+        var authToken = Environment.GetEnvironmentVariable("SENTRY_AUTH_TOKEN");
+        if (!string.IsNullOrEmpty(authToken))
+        {
+            // Upload to real Sentry using the auth token from the environment.
+            cliOptions.UploadSymbols = true;
+            cliOptions.UploadSources = true;
+            cliOptions.Auth = authToken;
+        }
+        else
+        {
+            // Upload to a local symbol server for verification (smoke tests).
+            cliOptions.UploadSymbols = !string.IsNullOrEmpty(cliOptions.UrlOverride);
+            cliOptions.UploadSources = cliOptions.UploadSymbols;
+            cliOptions.Auth = "dummy-token";
+        }
+
         cliOptions.Organization = "sentry-sdks";
         cliOptions.Project = "sentry-unity";
-        cliOptions.Auth = "dummy-token";
 
         Debug.Log("Sentry: CliConfiguration::Configure() finished");
     }

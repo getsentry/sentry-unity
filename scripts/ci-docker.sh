@@ -43,6 +43,7 @@ docker run -td --name $container \
     -v /opt/microsoft/powershell/7:/opt/microsoft/powershell/7 \
     -e UNITY_VERSION=$unityVersion \
     -e GITHUB_ACTIONS="${GITHUB_ACTIONS}" \
+    -e SENTRY_AUTH_TOKEN="${SENTRY_AUTH_TOKEN:-}" \
     --workdir /sentry-unity $image
 
 # Generate unique machine-id to avoid any hardcoded values and license-fetch congestion

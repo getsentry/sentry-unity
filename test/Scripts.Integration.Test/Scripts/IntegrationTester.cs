@@ -114,9 +114,9 @@ public class IntegrationTester : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         Debug.Log($"EVENT_CAPTURED: {crashId}");
-        Debug.Log("CRASH TEST: Issuing a native crash (Abort)");
+        Debug.Log("CRASH TEST: Issuing a native crash (AccessViolation)");
 
-        Utils.ForceCrash(ForcedCrashCategory.Abort);
+        Utils.ForceCrash(ForcedCrashCategory.AccessViolation);
 
         // Should not reach here
         Debug.LogError("CRASH TEST: FAIL - unexpected code executed after crash");

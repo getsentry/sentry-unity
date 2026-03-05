@@ -1,0 +1,123 @@
+name: "IntegrationTest: Build Windows"
+on:
+  workflow_call:
+    inputs:
+      unity-version:
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+    name: Windows ${{ inputs.unity-version }}
+    runs-on: windows-latest
+    env:
+      UNITY_VERSION: ${{ inputs.unity-version }}
+      BUILD_PLATFORM: Windows
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+
+      - name: Load env
+        id: env
+        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity$env:UNITY_VERSION")" >> $env:GITHUB_OUTPUT
+
+      - name: Setup Unity
+        uses: getsentry/setup-unity@3bdc8c022b6d30ecf2d21d12a564bfa55a54fa2e
+        with:
+          unity-version: ${{ steps.env.outputs.unityVersion }}
+          unity-modules: windows-il2cpp
+
+      - name: Create Unity license config
+        run: |
+          New-Item -Path "C:/ProgramData/Unity/config/" -ItemType Directory -Force
+          Set-Content -Path "C:/ProgramData/Unity/config/services-config.json" -Value "$env:UNITY_LICENSE_SERVER_CONFIG"
+        env:
+          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+
+      - name: Download IntegrationTest project
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: smoke-test-${{ env.UNITY_VERSION }}
+
+      - name: Extract project archive
+        run: tar -xvzf test-project.tar.gz
+
+      - name: Cache Unity Library
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: samples/IntegrationTest/Library
+          key: Library-IntegrationTest-windows-${{ env.UNITY_VERSION }}-v1
+          restore-keys: |
+            Library-IntegrationTest-windows-${{ env.UNITY_VERSION }}-
+            Library-IntegrationTest-windows-
+
+      - name: Restore cached build without Sentry
+        id: cache-build-nosentry
+        uses: actions/cache@v4
+        with:
+          path: samples/IntegrationTest/Build-NoSentry
+          key: build-nosentry-Windows-${{ inputs.unity-version }}
+
+      - name: Build without Sentry SDK
+        if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows -CheckSymbols:$false -BuildDirName "Build-NoSentry"
+
+      - name: Download UPM package
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
+        with:
+          name: package-release
+          wait-timeout: 3600
+
+      - name: Extract UPM package
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
+
+      - name: Add Sentry to the project
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
+
+      - name: Configure Sentry
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows -TestMode "integration"
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+
+      - name: Build with Sentry SDK
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
+
+      - name: Compare build sizes
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform Windows -UnityVersion "$env:UNITY_VERSION"
+
+      - name: Upload build size measurement
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-size-Windows-${{ env.UNITY_VERSION }}
+          path: build-size-measurements/*.json
+          retention-days: 1
+
+      # We create tar explicitly because upload-artifact is slow for many files.
+      - name: Create archive
+        run: |
+          Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
+          tar -cvzf test-app-desktop.tar.gz samples/IntegrationTest/Build
+
+      - name: Upload test app
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: testapp-desktop-compiled-${{ env.UNITY_VERSION }}-windows
+          if-no-files-found: error
+          path: test-app-desktop.tar.gz
+          retention-days: 14
+
+      - name: Upload IntegrationTest project on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: failed-project-desktop-windows-${{ env.UNITY_VERSION }}
+          path: |
+            samples/IntegrationTest
+            unity.log
+            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          retention-days: 14

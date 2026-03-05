@@ -1,4 +1,4 @@
-name: "SmokeTest: Build Android"
+name: "IntegrationTest: Build Linux"
 on:
   workflow_call:
     inputs:
@@ -12,18 +12,29 @@ defaults:
 
 jobs:
   build:
-    name: ${{ inputs.unity-version }}
-    runs-on: ubuntu-latest-4-cores
+    name: Linux ${{ inputs.unity-version }}
+    runs-on: ubuntu-latest
     env:
       GITHUB_ACTOR: ${{ github.actor }}
       UNITY_PATH: docker exec unity unity-editor
       UNITY_VERSION: ${{ inputs.unity-version }}
-    
+      BUILD_PLATFORM: Linux
+
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
-      - name: Docker Login
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8 # v1.3.0
+        with:
+          android: true
+          dotnet: false
+          haskell: true
+          large-packages: false
+          docker-images: false
+          swap-storage: true
+
+      - name: Log into Docker
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
         with:
           registry: ghcr.io
@@ -31,7 +42,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh "$UNITY_VERSION" 'android' "$UNITY_LICENSE_SERVER_CONFIG"
+        run: ./scripts/ci-docker.sh "$UNITY_VERSION" "Linux-il2cpp" "$UNITY_LICENSE_SERVER_CONFIG"
         shell: bash
         env:
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
@@ -49,21 +60,21 @@ jobs:
         uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: samples/IntegrationTest/Library
-          key: Library-IntegrationTest-Android-${{ env.UNITY_VERSION }}-v1
+          key: Library-IntegrationTest-linux-${{ env.UNITY_VERSION }}-v1
           restore-keys: |
-            Library-IntegrationTest-Android-${{ env.UNITY_VERSION }}-
-            Library-IntegrationTest-Android-
+            Library-IntegrationTest-linux-${{ env.UNITY_VERSION }}-
+            Library-IntegrationTest-linux-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry
         uses: actions/cache@v4
         with:
           path: samples/IntegrationTest/Build-NoSentry
-          key: build-nosentry-Android-${{ inputs.unity-version }}
+          key: build-nosentry-Linux-${{ inputs.unity-version }}
 
       - name: Build without Sentry SDK
         if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols:$false -BuildDirName "Build-NoSentry"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -CheckSymbols:$false -BuildDirName "Build-NoSentry"
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
@@ -78,54 +89,57 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols -TestMode "integration"
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -TestMode "integration"
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
-      - name: Export APK - Runtime Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols:$true -UnityVersion "$env:UNITY_VERSION"
+      - name: Build with Sentry SDK
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
 
-      - name: Compare build sizes (Runtime)
-        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
+      - name: Compare build sizes
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
 
       - name: Upload build size measurement
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: build-size-Android-${{ env.UNITY_VERSION }}
+          name: build-size-Linux-${{ env.UNITY_VERSION }}
           path: build-size-measurements/*.json
           retention-days: 1
 
-      - name: Upload .apk
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: testapp-android-compiled-${{ env.UNITY_VERSION }}-runtime
-          path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
-          retention-days: 14 # Lower retention period - we only need this to retry CI.
-
-      - name: Overwrite IntegrationOptionsConfiguration for build-time initialization
+      # We create tar explicitly because upload-artifact is slow for many files.
+      - name: Create archive
         run: |
-          $optionsPath = "samples/IntegrationTest/Assets/Scripts/IntegrationOptionsConfiguration.cs"
-          $content = Get-Content $optionsPath -Raw
-          $content = $content -replace 'AndroidNativeInitializationType = NativeInitializationType.Runtime', 'AndroidNativeInitializationType = NativeInitializationType.BuildTime'
-          Set-Content $optionsPath $content
+          Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
+          tar -cvzf test-app-desktop.tar.gz samples/IntegrationTest/Build
 
-      - name: Export APK - Build-Time Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -CheckSymbols:$true -UnityVersion "$env:UNITY_VERSION"
-
-      - name: Upload .apk
+      - name: Upload test app
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: testapp-android-compiled-${{ env.UNITY_VERSION }}-buildtime
-          path: samples/IntegrationTest/Build/*.apk
+          name: testapp-desktop-compiled-${{ env.UNITY_VERSION }}-linux
+          if-no-files-found: error
+          path: test-app-desktop.tar.gz
           retention-days: 14
+
+      - name: Docker diagnostics on failure
+        if: ${{ failure() }}
+        run: |
+          Write-Host "=== Docker container status ==="
+          docker ps -a --filter "name=^/unity$"
+
+          Write-Host "`n=== Working directory ==="
+          docker exec unity pwd
+
+          Write-Host "`n=== Unity log from container ==="
+          docker exec unity cat /sentry-unity/unity.log 2>&1 || echo "unity.log not found"
+        continue-on-error: true
 
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: failed-project-android-${{ env.UNITY_VERSION }}
+          name: failed-project-desktop-linux-${{ env.UNITY_VERSION }}
           path: |
             samples/IntegrationTest
+            unity.log
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          retention-days: 14 # Lower retention period - we only need this to retry CI.
-
+          retention-days: 14
