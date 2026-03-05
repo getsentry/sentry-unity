@@ -89,7 +89,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -TestMode "integration"
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 

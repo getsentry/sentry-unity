@@ -64,7 +64,7 @@ Else {
     Write-Log "No NativeSDKPath provided (native features disabled)" -ForegroundColor Yellow
 }
 
-# Support rebuilding the integration test project. I.e. if you make changes to the SmokeTester.cs during
+# Support rebuilding the integration test project.
 If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath))) {
     Write-PhaseHeader "Building Project"
 
@@ -87,13 +87,16 @@ Else {
 
     Switch -Regex ($Platform) {
         "^(Windows|MacOS|Linux)$" {
-            ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash
+            $env:SENTRY_TEST_APP = GetNewProjectBuildPath
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.Desktop.ps1 -CI
         }
         "^(Android)$" {
-            ./scripts/smoke-test-android.ps1
+            $env:SENTRY_TEST_APK = "$(GetNewProjectBuildPath)/test.apk"
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
         }
         "^iOS$" {
-            ./scripts/smoke-test-ios.ps1 Test "latest" -IsIntegrationTest
+            $env:SENTRY_TEST_APP = "$(GetNewProjectBuildPath)/IntegrationTest.app"
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.iOS.ps1 -CI
         }
         "^WebGL$" {
             $env:SENTRY_WEBGL_BUILD_PATH = GetNewProjectBuildPath
