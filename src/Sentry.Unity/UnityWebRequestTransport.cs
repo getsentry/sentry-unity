@@ -32,8 +32,14 @@ internal class WebBackgroundWorker : IBackgroundWorker
 
     private IEnumerator SendAndTrack(Envelope envelope)
     {
-        yield return _transport.SendEnvelopeAsync(envelope);
-        _pendingItems--;
+        try
+        {
+            yield return _transport.SendEnvelopeAsync(envelope);
+        }
+        finally
+        {
+            _pendingItems--;
+        }
     }
 
     public Task FlushAsync(TimeSpan timeout) => Task.CompletedTask;
