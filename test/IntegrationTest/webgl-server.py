@@ -72,6 +72,17 @@ def create_handler(app_dir):
     return Handler
 
 
+def parse_console_message(raw_msg):
+    """Extract the actual message from a Chrome console log entry.
+
+    Chrome formats console messages as: 'URL LINE:COL "actual message"'
+    """
+    quote_start = raw_msg.find('"')
+    if quote_start >= 0:
+        raw_msg = raw_msg[quote_start:].strip('" ')
+    return raw_msg.replace("\\n", "\n")
+
+
 def run_test(app_dir, test_action, timeout_seconds):
     # Start HTTP server
     handler_class = create_handler(app_dir)
@@ -101,14 +112,7 @@ def run_test(app_dir, test_action, timeout_seconds):
     try:
         while time.time() - start_time < timeout_seconds:
             for entry in driver.get_log("browser"):
-                msg = entry["message"]
-                # Chrome console messages are formatted as: "URL LINE:COL \"actual message\""
-                # Extract the actual message content
-                quote_start = msg.find('"')
-                if quote_start >= 0:
-                    msg = msg[quote_start:].strip('" ')
-                msg = msg.replace("\\n", "\n")
-
+                msg = parse_console_message(entry["message"])
                 collected_lines.append(msg)
 
                 if "INTEGRATION_TEST_COMPLETE" in msg:
@@ -118,12 +122,7 @@ def run_test(app_dir, test_action, timeout_seconds):
                 # Give a brief moment for any final console messages
                 time.sleep(1)
                 for entry in driver.get_log("browser"):
-                    msg = entry["message"]
-                    quote_start = msg.find('"')
-                    if quote_start >= 0:
-                        msg = msg[quote_start:].strip('" ')
-                    msg = msg.replace("\\n", "\n")
-                    collected_lines.append(msg)
+                    collected_lines.append(parse_console_message(entry["message"]))
                 break
 
             time.sleep(0.5)
