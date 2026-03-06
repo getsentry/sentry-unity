@@ -308,7 +308,6 @@ jobs:
     secrets: inherit
     strategy:
       fail-fast: false
-      max-parallel: 2
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         ios-version: ["17.0", "latest"]
