@@ -38,12 +38,6 @@ public static class SentryEditorWindowInstrumentation
             OptionsConfigurationItem.SetScript(value);
         }
 
-        if (args.TryGetValue("cliOptions.UrlOverride", out value))
-        {
-            Debug.LogFormat("{0}: Configuring symbol-upload UrlOverride to {1}", functionName, value);
-            cliOptions.UrlOverride = value;
-        }
-
         if (args.TryGetValue("cliOptionsScript", out value))
         {
             Debug.LogFormat("{0}: Configuring CliOptions Script to {1}", functionName, value);

@@ -1,4 +1,4 @@
-name: "IntegrationTest: Run Desktop"
+name: "Test: Run Desktop"
 on:
   workflow_call:
     inputs:

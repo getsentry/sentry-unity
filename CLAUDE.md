@@ -113,12 +113,12 @@ The CI system uses modular, reusable workflows in `.github/workflows/`:
 | `ci.yml`                       | Main pipeline - triggers on push/PR                |
 | `build.yml`                    | Reusable build workflow                            |
 | `sdk.yml`                      | Native SDK builds (Android, Linux, Windows, Cocoa) |
-| `smoke-test-create.yml`        | Creates integration test projects                  |
-| `smoke-test-build-android.yml` | Builds Android test apps                           |
-| `smoke-test-run-android.yml`   | Runs Android tests on emulator                     |
-| `smoke-test-build-ios.yml`     | Builds iOS test apps                               |
-| `smoke-test-compile-ios.yml`   | Compiles iOS Xcode projects                        |
-| `smoke-test-run-ios.yml`       | Runs iOS tests on simulator                        |
+| `test-create.yml`              | Creates integration test projects                  |
+| `test-build-android.yml`       | Builds Android test apps                           |
+| `test-run-android.yml`         | Runs Android tests on emulator                     |
+| `test-build-ios.yml`           | Builds iOS test apps                               |
+| `test-compile-ios.yml`         | Compiles iOS Xcode projects                        |
+| `test-run-ios.yml`             | Runs iOS tests on simulator                        |
 | `release.yml`                  | Manual release preparation                         |
 | `update-deps.yml`              | Scheduled dependency updates (daily)               |
 | `create-unity-matrix.yml`      | Generates test matrix                              |
@@ -160,7 +160,6 @@ Key targets defined in `Directory.Build.targets`:
 | `BuildCocoaSDK`                        | Downloads iOS/macOS SDKs from releases  |
 | `UnityEditModeTest`                    | Runs edit-mode unit tests               |
 | `UnityPlayModeTest`                    | Runs play-mode tests                    |
-| `UnitySmokeTestStandalonePlayerIL2CPP` | Runs smoke tests                        |
 
 ### Artifact Caching
 
@@ -177,7 +176,7 @@ Key targets defined in `Directory.Build.targets`:
 3. Validate UPM package contents
 4. Create integration test projects
 5. Build for WebGL, Linux, Android, iOS, Windows
-6. Run smoke tests and crash tests
+6. Run integration tests and crash tests
 7. Measure build sizes
 
 **On Main Branch:**
@@ -506,7 +505,6 @@ Key options:
 | Edit Mode    | `dotnet msbuild /t:UnityEditModeTest`                    | `test/Sentry.Unity.Tests/`        |
 | Play Mode    | `dotnet msbuild /t:UnityPlayModeTest`                    | `test/Sentry.Unity.Tests/`        |
 | Editor Tests | `dotnet msbuild /t:UnityEditModeTest`                    | `test/Sentry.Unity.Editor.Tests/` |
-| Smoke Tests  | `dotnet msbuild /t:UnitySmokeTestStandalonePlayerIL2CPP` | Integration tests                 |
 | Integration  | `integration-test.ps1`                                   | `test/Scripts.Integration.Test/`  |
 
 ### Running All Tests
@@ -532,7 +530,6 @@ Located in `test/Scripts.Integration.Test/`:
 | `add-sentry.ps1`         | Adds Sentry package to project       |
 | `configure-sentry.ps1`   | Configures Sentry in test project    |
 | `build-project.ps1`      | Builds for target platform           |
-| `run-smoke-test.ps1`     | Executes smoke and crash tests       |
 | `measure-build-size.ps1` | Compares build size with/without SDK |
 | `integration-test.ps1`   | Full local integration test          |
 

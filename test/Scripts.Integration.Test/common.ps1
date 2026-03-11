@@ -1,4 +1,4 @@
-# Note: this is currently used by integration test scripts as well as "smoke-test-*.ps1" scripts.
+# Note: this is currently used by integration test scripts.
 # If/when those are merged to some extent, maybe this file could be merged into `globals.ps1`.
 
 Set-StrictMode -Version latest

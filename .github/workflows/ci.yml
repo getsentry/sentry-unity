@@ -85,24 +85,24 @@ jobs:
         # ./test/Scripts.Tests/test-pack-contents.ps1 accept
         run: ./test/Scripts.Tests/test-pack-contents.ps1
 
-  # This produces the `samples/IntegrationTest` as `smoke-test-${{ matrix.unity-version }}`.
-  smoke-test-create:
-    name: Create ${{ matrix.unity-version }} Smoke Test Project
+  # This produces the `samples/IntegrationTest` as `test-${{ matrix.unity-version }}`.
+  test-create:
+    name: Create ${{ matrix.unity-version }} Test Project
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
-    uses: ./.github/workflows/smoke-test-create.yml
+    uses: ./.github/workflows/test-create.yml
     with:
       unity-version: ${{ matrix.unity-version }}
-    
-  # A Linux, docker-based build to prepare a WebGL player. The tests run in `smoke-test-run`.
-  smoke-test-build-webgl:
-    name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Smoke Test
+
+  # A Linux, docker-based build to prepare a WebGL player. The tests run in `test-run-webgl`.
+  test-build-webgl:
+    name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-create, create-unity-matrix]
+    needs: [test-create, create-unity-matrix]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -148,7 +148,7 @@ jobs:
       - name: Download IntegrationTest project
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: smoke-test-${{ matrix.unity-version }}
+          name: test-${{ matrix.unity-version }}
 
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
@@ -239,24 +239,24 @@ jobs:
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
-  smoke-test-build-android:
-    name: Build Android ${{ matrix.unity-version }} Smoke Test
+  test-build-android:
+    name: Build Android ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-create, create-unity-matrix]
+    needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
-    uses: ./.github/workflows/smoke-test-build-android.yml
+    uses: ./.github/workflows/test-build-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  smoke-test-run-android:
+  test-run-android:
     name: Run Android ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build-android, create-unity-matrix]
+    needs: [test-build-android, create-unity-matrix]
     secrets: inherit
-    uses: ./.github/workflows/smoke-test-run-android.yml
+    uses: ./.github/workflows/test-run-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       api-level: ${{ matrix.api-level }}
@@ -269,38 +269,38 @@ jobs:
         api-level: [30]
         init-type: ["runtime", "buildtime"]
 
-  smoke-test-build-ios:
-    name: Build iOS ${{ matrix.unity-version }} Smoke Test
+  test-build-ios:
+    name: Build iOS ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-create, create-unity-matrix]
+    needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
-    uses: ./.github/workflows/smoke-test-build-ios.yml
+    uses: ./.github/workflows/test-build-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  smoke-test-compile-ios:
-    name: Compile iOS ${{ matrix.unity-version }} Smoke Test
+  test-compile-ios:
+    name: Compile iOS ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build-ios, create-unity-matrix]
+    needs: [test-build-ios, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         init-type: ["runtime", "buildtime"]
-    uses: ./.github/workflows/smoke-test-compile-ios.yml
+    uses: ./.github/workflows/test-compile-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       init-type: ${{ matrix.init-type }}
 
-  smoke-test-run-ios:
+  test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-compile-ios, create-unity-matrix]
-    uses: ./.github/workflows/smoke-test-run-ios.yml
+    needs: [test-compile-ios, create-unity-matrix]
+    uses: ./.github/workflows/test-run-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       ios-version: ${{ matrix.ios-version }}
@@ -322,69 +322,69 @@ jobs:
         # Also make sure to match the versions available here:
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
 
-  smoke-test-run-webgl:
+  test-run-webgl:
     name: Run WebGL ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build-webgl, create-unity-matrix]
+    needs: [test-build-webgl, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-    uses: ./.github/workflows/smoke-test-run-webgl.yml
+    uses: ./.github/workflows/test-run-webgl.yml
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  smoke-test-build-linux:
+  test-build-linux:
     name: Build Linux ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-create, create-unity-matrix]
+    needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-    uses: ./.github/workflows/smoke-test-build-linux.yml
+    uses: ./.github/workflows/test-build-linux.yml
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  smoke-test-build-windows:
+  test-build-windows:
     name: Build Windows ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-create, create-unity-matrix]
+    needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-    uses: ./.github/workflows/smoke-test-build-windows.yml
+    uses: ./.github/workflows/test-build-windows.yml
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  smoke-test-run-linux:
+  test-run-linux:
     name: Run Linux ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build-linux, create-unity-matrix]
+    needs: [test-build-linux, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-    uses: ./.github/workflows/smoke-test-run-desktop.yml
+    uses: ./.github/workflows/test-run-desktop.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       platform: linux
 
-  smoke-test-run-windows:
+  test-run-windows:
     name: Run Windows ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build-windows, create-unity-matrix]
+    needs: [test-build-windows, create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-    uses: ./.github/workflows/smoke-test-run-desktop.yml
+    uses: ./.github/workflows/test-run-desktop.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       platform: windows
@@ -393,7 +393,7 @@ jobs:
     name: Build Size
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [smoke-test-build-webgl, smoke-test-build-android, smoke-test-compile-ios, smoke-test-build-linux, smoke-test-build-windows]
+    needs: [test-build-webgl, test-build-android, test-compile-ios, test-build-linux, test-build-windows]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
