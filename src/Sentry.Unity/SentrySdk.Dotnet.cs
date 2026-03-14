@@ -315,21 +315,37 @@ public static partial class SentrySdk
     /// Captures feedback from the user.
     /// </summary>
     [DebuggerStepThrough]
-    public static void CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
+    public static SentryId CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
         => Sentry.SentrySdk.CaptureFeedback(feedback, configureScope, hint);
 
     /// <summary>
     /// Captures feedback from the user.
     /// </summary>
     [DebuggerStepThrough]
-    public static void CaptureFeedback(SentryFeedback feedback, Scope? scope = null, SentryHint? hint = null)
+    public static SentryId CaptureFeedback(SentryFeedback feedback, out CaptureFeedbackResult result,
+        Action<Scope> configureScope, SentryHint? hint = null)
+        => Sentry.SentrySdk.CaptureFeedback(feedback, out result, configureScope, hint);
+
+    /// <summary>
+    /// Captures feedback from the user.
+    /// </summary>
+    [DebuggerStepThrough]
+    public static SentryId CaptureFeedback(SentryFeedback feedback, Scope? scope = null, SentryHint? hint = null)
         => Sentry.SentrySdk.CaptureFeedback(feedback, scope, hint);
 
     /// <summary>
     /// Captures feedback from the user.
     /// </summary>
     [DebuggerStepThrough]
-    public static void CaptureFeedback(string message, string? contactEmail = null, string? name = null,
+    public static SentryId CaptureFeedback(SentryFeedback feedback, out CaptureFeedbackResult result,
+        Scope? scope = null, SentryHint? hint = null)
+        => Sentry.SentrySdk.CaptureFeedback(feedback, out result, scope, hint);
+
+    /// <summary>
+    /// Captures feedback from the user.
+    /// </summary>
+    [DebuggerStepThrough]
+    public static SentryId CaptureFeedback(string message, string? contactEmail = null, string? name = null,
         string? replayId = null, string? url = null, SentryId? associatedEventId = null, Scope? scope = null,
         SentryHint? hint = null)
         => Sentry.SentrySdk.CaptureFeedback(new SentryFeedback(message, contactEmail, name, replayId, url, associatedEventId),
