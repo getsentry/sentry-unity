@@ -113,12 +113,12 @@ internal class SentryUnitySdk
             : SentrySdk.CrashedLastRun.DidNotCrash;
     }
 
-    public void CaptureFeedback(string message, string? email, string? name, bool addScreenshot)
+    public SentryId CaptureFeedback(string message, string? email, string? name, bool addScreenshot)
     {
         if (string.IsNullOrWhiteSpace(message))
         {
             _options.LogError("To submit a feedback, you must provide a message.");
-            return;
+            return SentryId.Empty;
         }
 
         SentryHint? hint = null;
@@ -150,7 +150,7 @@ internal class SentryUnitySdk
             }
         }
 
-        Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
+        return Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
     }
 
     internal static void SetUpWindowsPlayerCaching(SentryUnitySdk unitySdk, SentryUnityOptions options)

@@ -36,7 +36,7 @@ internal sealed class TestHub : IHub
         throw new NotImplementedException();
     }
 
-    public void CaptureFeedback(SentryFeedback feedback, Scope? scope = null, SentryHint? hint = null)
+    public SentryId CaptureFeedback(SentryFeedback feedback, Scope? scope = null, SentryHint? hint = null)
     {
         throw new NotImplementedException();
     }
@@ -202,7 +202,7 @@ internal sealed class TestHub : IHub
         throw new NotImplementedException();
     }
 
-    public void CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
+    public SentryId CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
     {
         throw new NotImplementedException();
     }

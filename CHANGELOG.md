@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- `CaptureFeedback` now returns a `SentryId` and exposes a `CaptureFeedbackResult` out parameter to indicate whether feedback was captured successfully ([#2589](https://github.com/getsentry/sentry-unity/pull/2579))
 - When exporting a NSP ROM File for Switch the SKD now correctly uploads the debug symbols ([#2580](https://github.com/getsentry/sentry-unity/pull/2580))  
 - The SDK now also uses `.sentry-native` as a subdirectory for native support on desktop platforms. It now also falls back to `Application.persistentDataPath` instead of the current working directory. Note: `crashedLastRun` may report `false` for the first time after upgrading. ([#2547](https://github.com/getsentry/sentry-unity/pull/2547))
 - The currently experimental Metrics are now opt-in by default ([#2546](https://github.com/getsentry/sentry-unity/pull/2546))
