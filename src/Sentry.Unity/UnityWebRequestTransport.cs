@@ -15,6 +15,7 @@ internal class WebBackgroundWorker : IBackgroundWorker
 {
     private readonly SentryMonoBehaviour _behaviour;
     private readonly UnityWebRequestTransport _transport;
+    private int _pendingItems;
 
     public WebBackgroundWorker(SentryUnityOptions options, SentryMonoBehaviour behaviour)
     {
@@ -24,13 +25,26 @@ internal class WebBackgroundWorker : IBackgroundWorker
 
     public bool EnqueueEnvelope(Envelope envelope)
     {
-        _behaviour.QueueCoroutine(_transport.SendEnvelopeAsync(envelope));
+        _pendingItems++;
+        _behaviour.QueueCoroutine(SendAndTrack(envelope));
         return true;
+    }
+
+    private IEnumerator SendAndTrack(Envelope envelope)
+    {
+        try
+        {
+            yield return _transport.SendEnvelopeAsync(envelope);
+        }
+        finally
+        {
+            _pendingItems--;
+        }
     }
 
     public Task FlushAsync(TimeSpan timeout) => Task.CompletedTask;
 
-    public int QueuedItems { get; }
+    public int QueuedItems => _pendingItems;
 }
 
 internal class UnityWebRequestTransport : HttpTransportBase

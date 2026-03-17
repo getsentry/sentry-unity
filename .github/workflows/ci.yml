@@ -189,9 +189,10 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols -TestMode "integration"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
+          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Build Project
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$([System.Convert]::ToBoolean($env:CHECK_SYMBOLS)) -UnityVersion "$env:UNITY_VERSION"
@@ -219,15 +220,14 @@ jobs:
         run: |
           # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
           rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
-          tar -cvzf test-app-runtime.tar.gz samples/IntegrationTest/Build
+          tar -cvzf test-app-webgl.tar.gz samples/IntegrationTest/Build
 
-      # Upload runtime initialization build
       - name: Upload test app
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}-runtime
+          name: testapp-webgl-compiled-${{ matrix.unity-version }}
           if-no-files-found: error
-          path: test-app-runtime.tar.gz
+          path: test-app-webgl.tar.gz
           retention-days: 14
           
       - name: Upload IntegrationTest project on failure
@@ -325,33 +325,17 @@ jobs:
         #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
 
   smoke-test-run-webgl:
-    name: Run ${{ matrix.platform }} ${{ matrix.unity-version }} Smoke Test
+    name: Run WebGL ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [smoke-test-build-webgl, create-unity-matrix]
-    runs-on: ubuntu-latest
+    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-        platform: ["WebGL"]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Download test app artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        id: download
-        with:
-          name: testapp-${{ matrix.platform }}-${{ matrix.unity-version }}-runtime
-
-      - name: Extract test app
-        run: tar -xvzf test-app-runtime.tar.gz
-
-      - name: Run (WebGL)
-        timeout-minutes: 10
-        run: |
-          pip3 install --upgrade --user selenium urllib3 requests
-          python3 scripts/smoke-test-webgl.py "samples/IntegrationTest/Build"
+    uses: ./.github/workflows/smoke-test-run-webgl.yml
+    with:
+      unity-version: ${{ matrix.unity-version }}
 
   smoke-test-build-linux:
     name: Build Linux ${{ matrix.unity-version }} Integration Test
