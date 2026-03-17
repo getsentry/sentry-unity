@@ -49,7 +49,7 @@ BeforeAll {
             -NoNewWindow -PassThru -RedirectStandardOutput "$PSScriptRoot/results/${Action}-stdout.txt" `
             -RedirectStandardError "$PSScriptRoot/results/${Action}-stderr.txt"
 
-        $process | Wait-Process -Timeout ($timeoutSeconds + 30)
+        $process | Wait-Process -Timeout ($timeoutSeconds + 30) -ErrorAction SilentlyContinue
 
         $exitCode = $process.ExitCode
         $stdoutContent = Get-Content "$PSScriptRoot/results/${Action}-stdout.txt" -Raw -ErrorAction SilentlyContinue
