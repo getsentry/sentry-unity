@@ -40,7 +40,7 @@ body:
       required: true
 
   - type: dropdown
-    id: other_error_monitoring
+    id: other-error-monitoring
     attributes:
       description: Are you using any other error monitoring solution alongside Sentry?
       label: Other Error Monitoring Solution
