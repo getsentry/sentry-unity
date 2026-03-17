@@ -188,7 +188,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -TestMode "integration"
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}

@@ -2,21 +2,51 @@ name: 🐞 Bug Report
 description: Report a bug in this repo
 labels: ["Unity", "Bug"]
 body:
-  - type: textarea
-    id: environment
+  - type: input
+    id: sdk-version
     attributes:
-      label: Environment
-      description: |
-        How do you use Sentry?
-        Sentry SaaS (sentry.io) or self-hosted/on-premise (which version?)
+      label: SDK Version
+      placeholder: e.g. 4.0.0
+    validations:
+      required: true
 
-        Which version of the SDK?
+  - type: input
+    id: unity-version
+    attributes:
+      label: Unity Version
+      placeholder: e.g. 2022.3.70f1
+    validations:
+      required: true
 
-        How did you install the package? (Git-URL, Assetstore)
+  - type: checkboxes
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - label: Editor
+        - label: Mobile (Android, iOS)
+        - label: Desktop (Windows, macOS, Linux)
+        - label: WebGL
+        - label: Console
 
-        Which version of Unity?
+  - type: dropdown
+    id: sentry-environment
+    attributes:
+      label: Sentry Environment
+      options:
+        - Sentry SaaS (sentry.io)
+        - Self-hosted
+    validations:
+      required: true
 
-        Is this happening in Unity (editor) or on a player like Android, iOS, Windows?
+  - type: dropdown
+    id: other-error-monitoring
+    attributes:
+      description: Are you using any other error monitoring solution alongside Sentry?
+      label: Other Error Monitoring Solution
+      options:
+        - "Yes"
+        - "No"
     validations:
       required: true
 
@@ -24,7 +54,7 @@ body:
     id: steps-to-reproduce
     attributes:
       label: Steps to Reproduce
-      description: |
+      placeholder: |
         1. What
         2. you
         3. did.
@@ -32,24 +62,13 @@ body:
       required: true
 
   - type: textarea
-    id: expected-result
+    id: expected-actual
     attributes:
-      label: Expected Result
-      description: What you thought would happen.
+      label: Expected vs Actual Result
+      placeholder: |
+        Expected: ...
+        Actual: ...
+
+        Include any logs, screenshots, or recordings if available.
     validations:
       required: true
-
-  - type: textarea
-    id: actual-result
-    attributes:
-      label: Actual Result
-      description: What actually happened. Maybe a screenshot/recording? Maybe some logs?
-    validations:
-      required: true
-
-  - type: textarea
-    id: logs-screenshots
-    attributes:
-      label: Any logs or screenshots
-    validations:
-      required: false 

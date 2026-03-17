@@ -106,6 +106,6 @@ public static partial class SentrySdk
     /// <summary>
     /// Captures a User Feedback
     /// </summary>
-    public static void CaptureFeedback(string message, string? email, string? name, bool addScreenshot) =>
-        UnitySdk?.CaptureFeedback(message, email, name, addScreenshot);
+    public static SentryId CaptureFeedback(string message, string? email, string? name, bool addScreenshot) =>
+        UnitySdk?.CaptureFeedback(message, email, name, addScreenshot) ?? SentryId.Empty;
 }
