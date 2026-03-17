@@ -41,8 +41,9 @@ jobs:
       - name: Run Integration Tests
         timeout-minutes: 20
         run: |
-          $env:SENTRY_WEBGL_BUILD_PATH = "samples/IntegrationTest/Build"
-          Invoke-Pester -Path test/IntegrationTest/Integration.Tests.WebGL.ps1 -CI
+          $env:SENTRY_TEST_PLATFORM = "WebGL"
+          $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build"
+          Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
 
       - name: Upload test results on failure
         if: ${{ failure() }}

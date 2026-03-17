@@ -48,16 +48,18 @@ jobs:
         timeout-minutes: 20
         run: |
           xvfb-run pwsh -Command '
+            $env:SENTRY_TEST_PLATFORM = "Desktop";
             $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test";
-            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.Desktop.ps1 -CI'
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI'
         shell: bash
 
       - name: Run Integration Tests (Windows)
         if: inputs.platform == 'windows'
         timeout-minutes: 20
         run: |
+          $env:SENTRY_TEST_PLATFORM = "Desktop"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.exe"
-          Invoke-Pester -Path test/IntegrationTest/Integration.Tests.Desktop.ps1 -CI
+          Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
 
       - name: Upload test results on failure
         if: ${{ failure() }}
