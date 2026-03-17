@@ -1,4 +1,4 @@
-name: "SmokeTest: Build iOS"
+name: "Test: Build iOS"
 on:
   workflow_call:
     inputs:
@@ -46,7 +46,7 @@ jobs:
       - name: Download IntegrationTest project
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          name: smoke-test-${{ env.UNITY_VERSION }}
+          name: test-${{ env.UNITY_VERSION }}
 
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
@@ -69,7 +69,7 @@ jobs:
 
       - name: Build without Sentry SDK
         if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "iOS" -CheckSymbols:$false -BuildDirName "Build-NoSentry"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "iOS" -BuildDirName "Build-NoSentry"
 
       - name: Create archive for build without Sentry
         shell: bash
@@ -97,13 +97,13 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols -TestMode "integration"
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Build Project with runtime initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
@@ -132,7 +132,7 @@ jobs:
           Set-Content $optionsPath $content
 
       - name: Build Project with build-time initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -CheckSymbols:$false -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 

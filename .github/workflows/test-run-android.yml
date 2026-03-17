@@ -1,4 +1,4 @@
-name: "SmokeTest: Run Android"
+name: "Test: Run Android"
 on:
   workflow_call:
     inputs:

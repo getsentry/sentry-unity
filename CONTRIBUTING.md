@@ -99,7 +99,7 @@ dotnet msbuild /t:"UnityPlayModeTest;UnityEditModeTest" /p:Configuration=Release
 
 Or use the TestRunner window inside the Unity Editor.
 
-### Integration and Smoke Tests
+### Integration Tests
 
 Run integration tests locally using the same scripts as CI:
 

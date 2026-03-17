@@ -2,7 +2,6 @@ param(
     [string] $UnityPath,
     [string] $Platform = "",
     [string] $UnityVersion = "",
-    [Switch] $CheckSymbols,
     [string] $BuildDirName = "Build"
 )
 
@@ -22,15 +21,7 @@ Write-Log "Build method: $buildMethod"
 Write-Detail "Output path: $outputPath"
 $unityArgs = @("-batchmode", "-projectPath ", "$(GetNewProjectPath)", "-executeMethod", $buildMethod , "-buildPath", $outputPath, "-quit")
 
-if ($CheckSymbols)
-{
-    $symbolServerOutput = RunWithSymbolServer -Callback { RunUnityCustom $unityPath $unityArgs }
-    CheckSymbolServerOutput $buildMethod $symbolServerOutput $UnityVersion
-}
-else
-{
-    RunUnityCustom $unityPath $unityArgs
-}
+RunUnityCustom $unityPath $unityArgs
 
 if ($Platform -eq "Android-Export")
 {

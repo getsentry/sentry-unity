@@ -2,16 +2,30 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Sentry;
 using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.Diagnostics;
 
+#if UNITY_WEBGL
+using System.Web;
+#endif
+
 public class IntegrationTester : MonoBehaviour
 {
+    private void Awake()
+    {
+        Debug.Log("IntegrationTester, awake!");
+        Application.quitting += () =>
+        {
+            Debug.Log("IntegrationTester is quitting.");
+        };
+    }
+
     public void Start()
     {
-        var arg = TestLauncher.GetTestArg();
+        var arg = GetTestArg();
         Debug.Log($"IntegrationTester arg: '{arg}'");
 
         switch (arg)
@@ -36,6 +50,36 @@ public class IntegrationTester : MonoBehaviour
                 break;
         }
     }
+
+#if UNITY_IOS && !UNITY_EDITOR
+    // .NET `Environment.GetCommandLineArgs()` doesn't seem to work on iOS so we get the test arg in Objective-C
+    [DllImport("__Internal", EntryPoint="getTestArgObjectiveC")]
+    private static extern string GetTestArg();
+#else
+    private static string GetTestArg()
+    {
+        string arg = null;
+#if UNITY_EDITOR
+#elif UNITY_ANDROID
+        using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+        using (var intent = currentActivity.Call<AndroidJavaObject>("getIntent"))
+        {
+            arg = intent.Call<String>("getStringExtra", "test");
+        }
+#elif UNITY_WEBGL
+        var uri = new Uri(Application.absoluteURL);
+        arg = HttpUtility.ParseQueryString(uri.Query).Get("test");
+#else
+        var args = Environment.GetCommandLineArgs();
+        if (args.Length > 2 && args[1] == "--test")
+        {
+            arg = args[2];
+        }
+#endif
+        return arg;
+    }
+#endif
 
     private void AddIntegrationTestContext(string testType)
     {

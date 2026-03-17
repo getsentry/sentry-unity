@@ -53,7 +53,7 @@ public class Builder
         };
 
         Debug.Log("Builder: Disabling optimizations to reduce build time");
-        // TODO Linux fails with `free(): invalid pointer` in the smoke-test, after everthing seems to have shut down.
+        // TODO Linux fails with `free(): invalid pointer` in the test, after everything seems to have shut down.
         if (target != BuildTarget.StandaloneLinux64)
         {
             PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.FromBuildTargetGroup(group), Il2CppCompilerConfiguration.Debug);
@@ -84,11 +84,11 @@ public class Builder
 #endif
         }
 
-        Debug.Log("Builder: Checking for SmokeTest scene");
-        if (File.Exists("Assets/Scenes/SmokeTest.unity"))
+        Debug.Log("Builder: Checking for Test scene");
+        if (File.Exists("Assets/Scenes/Test.unity"))
         {
-            Debug.Log("Builder: Adding SmokeTest.unity to scenes");
-            buildPlayerOptions.scenes = new[] { "Assets/Scenes/SmokeTest.unity" };
+            Debug.Log("Builder: Adding Test.unity to scenes");
+            buildPlayerOptions.scenes = new[] { "Assets/Scenes/Test.unity" };
         }
 
         Debug.Log("Builder: Starting build");

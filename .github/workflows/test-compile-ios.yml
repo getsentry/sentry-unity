@@ -1,4 +1,4 @@
-name: "SmokeTest: Compile iOS"
+name: "Test: Compile iOS"
 on:
   workflow_call:
     inputs:
@@ -47,7 +47,7 @@ jobs:
 
       - name: Compile Xcode project without Sentry
         if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
-        run: ./scripts/smoke-test-ios.ps1 Build -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
+        run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
         timeout-minutes: 20
 
       - name: Save compiled app without Sentry
@@ -65,8 +65,8 @@ jobs:
       - name: Extract app project
         run: tar -xvzf "test-app-$env:INIT_TYPE.tar.gz"
 
-      - name: iOS smoke test
-        run: ./scripts/smoke-test-ios.ps1 Build -IsIntegrationTest -UnityVersion "${env:UNITY_VERSION}" -iOSMinVersion "17.0"
+      - name: iOS test
+        run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
         timeout-minutes: 20
 
       - name: Upload integration-test project on failure

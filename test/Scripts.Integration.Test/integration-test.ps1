@@ -11,8 +11,7 @@ param(
     [string] $NativeSDKPath,
     [switch] $Recreate,
     [switch] $Rebuild,
-    [switch] $SkipTests,
-    [switch] $CheckSymbols
+    [switch] $SkipTests
 )
 
 if (-not $Global:NewProjectPathCache) {
@@ -47,7 +46,7 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)")) {
     Write-PhaseSuccess "Sentry added"
 
     Write-PhaseHeader "Configuring Sentry"
-    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform -CheckSymbols:$CheckSymbols
+    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform
     Write-PhaseSuccess "Sentry configured"
 }
 
@@ -64,17 +63,17 @@ Else {
     Write-Log "No NativeSDKPath provided (native features disabled)" -ForegroundColor Yellow
 }
 
-# Support rebuilding the integration test project. I.e. if you make changes to the SmokeTester.cs during
+# Support rebuilding the integration test project.
 If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath))) {
     Write-PhaseHeader "Building Project"
 
     If ("iOS" -eq $Platform) {
         # We're exporting an Xcode project and building that in a separate step.
         ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
-        & "./scripts/smoke-test-ios.ps1" Build -IsIntegrationTest -UnityVersion $UnityVersion
+        & "./scripts/compile-xcode-project.ps1"
     }
     Else {
-        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -CheckSymbols:$CheckSymbols -UnityVersion $UnityVersion -Platform $Platform
+        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
     }
     Write-PhaseSuccess "Project built"
 }
@@ -87,13 +86,16 @@ Else {
 
     Switch -Regex ($Platform) {
         "^(Windows|MacOS|Linux)$" {
-            ./test/Scripts.Integration.Test/run-smoke-test.ps1 -Smoke -Crash
+            $env:SENTRY_TEST_APP = GetNewProjectBuildPath
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.Desktop.ps1 -CI
         }
         "^(Android)$" {
-            ./scripts/smoke-test-android.ps1
+            $env:SENTRY_TEST_APK = "$(GetNewProjectBuildPath)/test.apk"
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
         }
         "^iOS$" {
-            ./scripts/smoke-test-ios.ps1 Test "latest" -IsIntegrationTest
+            $env:SENTRY_TEST_APP = "$(GetNewProjectBuildPath)/IntegrationTest.app"
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.iOS.ps1 -CI
         }
         "^WebGL$" {
             $env:SENTRY_WEBGL_BUILD_PATH = GetNewProjectBuildPath

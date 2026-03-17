@@ -1,4 +1,4 @@
-name: "SmokeTest: Create Project"
+name: "Test: Create Project"
 on:
   workflow_call:
     inputs:
@@ -57,7 +57,7 @@ jobs:
     - name: Upload project
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
-        name: smoke-test-${{ env.UNITY_VERSION }}
+        name: test-${{ env.UNITY_VERSION }}
         if-no-files-found: error
         path: test-project.tar.gz
         # Lower retention period - we only need this to retry CI.

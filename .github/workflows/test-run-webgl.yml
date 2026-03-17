@@ -1,4 +1,4 @@
-name: "IntegrationTest: Run WebGL"
+name: "Test: Run WebGL"
 on:
   workflow_call:
     inputs:
