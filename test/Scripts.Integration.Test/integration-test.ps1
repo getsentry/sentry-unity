@@ -86,20 +86,24 @@ Else {
 
     Switch -Regex ($Platform) {
         "^(Windows|MacOS|Linux)$" {
+            $env:SENTRY_TEST_PLATFORM = "Desktop"
             $env:SENTRY_TEST_APP = GetNewProjectBuildPath
-            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.Desktop.ps1 -CI
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
         }
         "^(Android)$" {
-            $env:SENTRY_TEST_APK = "$(GetNewProjectBuildPath)/test.apk"
+            $env:SENTRY_TEST_PLATFORM = "Android"
+            $env:SENTRY_TEST_APP = "$(GetNewProjectBuildPath)/test.apk"
             Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
         }
         "^iOS$" {
+            $env:SENTRY_TEST_PLATFORM = "iOS"
             $env:SENTRY_TEST_APP = "$(GetNewProjectBuildPath)/IntegrationTest.app"
-            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.iOS.ps1 -CI
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
         }
         "^WebGL$" {
-            $env:SENTRY_WEBGL_BUILD_PATH = GetNewProjectBuildPath
-            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.WebGL.ps1 -CI
+            $env:SENTRY_TEST_PLATFORM = "WebGL"
+            $env:SENTRY_TEST_APP = GetNewProjectBuildPath
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
         }
         "^Switch$" {
             Write-PhaseSuccess "Switch build completed - no automated test execution available"

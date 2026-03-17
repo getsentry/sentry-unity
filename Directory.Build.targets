@@ -379,7 +379,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
 
   <!-- Run smoke test on the WebGL player: dotnet msbuild /t:UnitySmokeTestPlayerWebGL src/Sentry.Unity -->
   <Target Name="UnitySmokeTestPlayerWebGL" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <Exec Command="pwsh -Command &quot;Invoke-Pester -Path '$(RepoRoot)test/IntegrationTest/Integration.Tests.WebGL.ps1' -CI&quot;" IgnoreStandardErrorWarningFormat="true"/>
+    <Exec Command="pwsh -Command &quot;$$env:SENTRY_TEST_PLATFORM = 'WebGL'; Invoke-Pester -Path '$(RepoRoot)test/IntegrationTest/Integration.Tests.ps1' -CI&quot;" IgnoreStandardErrorWarningFormat="true"/>
   </Target>
 
 
