@@ -321,6 +321,10 @@ public static class BuildPostProcess
                     AddPath(paths, dir, logger);
                 }
 
+                // When exporting as an NSP the assemblies are bundled inside the package. So we're also checking the build cache.
+                var beePath = Path.Combine(projectDir, "Library", "Bee", "artifacts", "SwitchPlayerBuildProgram");
+                AddPath(paths, beePath, logger);
+
                 // User-provided Sentry plugin
                 AddPath(paths, Path.GetFullPath("Assets/Plugins/Sentry/"), logger);
                 break;
