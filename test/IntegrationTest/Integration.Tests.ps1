@@ -299,6 +299,13 @@ if ($env:SENTRY_TEST_PLATFORM -ne "WebGL") {
                 $script:runEvent = $null
                 $script:runResult = Invoke-TestAction -Action "crash-capture"
 
+                # Validate crash-send completed before polling Sentry (avoids a 300s blind wait)
+                $flushLine = $runResult.CrashSendOutput | Where-Object { $_ -match "Flush complete" }
+                if (-not $flushLine) {
+                    $crashSendOutput = ($runResult.CrashSendOutput | Out-String)
+                    throw "crash-send did not complete flush. The crash envelope was likely not sent. Output:`n$crashSendOutput"
+                }
+
                 $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
                 if ($eventId) {
                     Write-Host "::group::Getting event content"
