@@ -21,125 +21,125 @@ $ErrorActionPreference = "Stop"
 # Import shared test cases and utility functions
 . $PSScriptRoot/CommonTestCases.ps1
 
-# Build app arguments for a given test action
-function Get-AppArguments {
-    param([string]$Action)
-
-    switch ($script:Platform) {
-        "Android" { return @("-e", "test", $Action) }
-        "Desktop" { return @("--test", $Action, "-logFile", "-") }
-        "iOS"     { return @("--test", $Action) }
-    }
-}
-
-# Run a WebGL test action via headless Chrome
-function Invoke-WebGLTestAction {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$Action
-    )
-
-    $serverScript = Join-Path $PSScriptRoot "webgl-server.py"
-    $buildPath = $env:SENTRY_TEST_APP
-    $timeoutSeconds = 120
-
-    $process = Start-Process -FilePath "python3" `
-        -ArgumentList @($serverScript, $buildPath, $Action, $timeoutSeconds) `
-        -NoNewWindow -PassThru -RedirectStandardOutput "$PSScriptRoot/results/${Action}-stdout.txt" `
-        -RedirectStandardError "$PSScriptRoot/results/${Action}-stderr.txt"
-
-    $process | Wait-Process -Timeout ($timeoutSeconds + 30)
-
-    $exitCode = $process.ExitCode
-    $stdoutContent = Get-Content "$PSScriptRoot/results/${Action}-stdout.txt" -Raw -ErrorAction SilentlyContinue
-    $stderrContent = Get-Content "$PSScriptRoot/results/${Action}-stderr.txt" -Raw -ErrorAction SilentlyContinue
-
-    # Parse the JSON array of console lines from stdout
-    $output = @()
-    if ($stdoutContent) {
-        try {
-            $output = $stdoutContent | ConvertFrom-Json
-        }
-        catch {
-            Write-Host "Failed to parse webgl-server.py output as JSON: $_"
-            Write-Host "Raw stdout: $stdoutContent"
-            $output = @($stdoutContent)
-        }
-    }
-
-    if ($stderrContent) {
-        Write-Host "::group::Server stderr ($Action)"
-        Write-Host $stderrContent
-        Write-Host "::endgroup::"
-    }
-
-    $runResult = [PSCustomObject]@{
-        Output = $output
-        ExitCode = $exitCode
-    }
-
-    # Save result to JSON file
-    $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
-
-    # Print app output so it's visible in CI logs
-    Write-Host "::group::Browser console output ($Action)"
-    $runResult.Output | ForEach-Object { Write-Host $_ }
-    Write-Host "::endgroup::"
-
-    if ($exitCode -ne 0) {
-        Write-Warning "WebGL test action '$Action' did not complete (exit code: $exitCode)"
-    }
-
-    return $runResult
-}
-
-# Run integration test action
-function Invoke-TestAction {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$Action
-    )
-
-    Write-Host "Running $Action..."
-
-    if ($script:Platform -eq "WebGL") {
-        return Invoke-WebGLTestAction -Action $Action
-    }
-
-    $appArgs = Get-AppArguments -Action $Action
-    $runResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $appArgs
-
-    # Save result to JSON file
-    $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
-
-    # Launch app again to ensure crash report is sent
-    if ($Action -eq "crash-capture") {
-        Write-Host "Running crash-send to ensure crash report is sent..."
-
-        $sendArgs = Get-AppArguments -Action "crash-send"
-        $sendResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $sendArgs
-
-        # Save crash-send result to JSON for debugging
-        $sendResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "crash-send-result.json")
-
-        # Print crash-send output
-        Write-Host "::group::App output (crash-send)"
-        $sendResult.Output | ForEach-Object { Write-Host $_ }
-        Write-Host "::endgroup::"
-
-        # Attach to runResult for test access
-        $runResult | Add-Member -NotePropertyName "CrashSendOutput" -NotePropertyValue $sendResult.Output
-    }
-
-    # Print app output so it's visible in CI logs
-    Write-Host "::group::App output ($Action)"
-    $runResult.Output | ForEach-Object { Write-Host $_ }
-    Write-Host "::endgroup::"
-
-    return $runResult
-}
-
 BeforeAll {
+    # Build app arguments for a given test action
+    function Get-AppArguments {
+        param([string]$Action)
+
+        switch ($script:Platform) {
+            "Android" { return @("-e", "test", $Action) }
+            "Desktop" { return @("--test", $Action, "-logFile", "-") }
+            "iOS"     { return @("--test", $Action) }
+        }
+    }
+
+    # Run a WebGL test action via headless Chrome
+    function Invoke-WebGLTestAction {
+        param (
+            [Parameter(Mandatory=$true)]
+            [string]$Action
+        )
+
+        $serverScript = Join-Path $PSScriptRoot "webgl-server.py"
+        $buildPath = $env:SENTRY_TEST_APP
+        $timeoutSeconds = 120
+
+        $process = Start-Process -FilePath "python3" `
+            -ArgumentList @($serverScript, $buildPath, $Action, $timeoutSeconds) `
+            -NoNewWindow -PassThru -RedirectStandardOutput "$PSScriptRoot/results/${Action}-stdout.txt" `
+            -RedirectStandardError "$PSScriptRoot/results/${Action}-stderr.txt"
+
+        $process | Wait-Process -Timeout ($timeoutSeconds + 30)
+
+        $exitCode = $process.ExitCode
+        $stdoutContent = Get-Content "$PSScriptRoot/results/${Action}-stdout.txt" -Raw -ErrorAction SilentlyContinue
+        $stderrContent = Get-Content "$PSScriptRoot/results/${Action}-stderr.txt" -Raw -ErrorAction SilentlyContinue
+
+        # Parse the JSON array of console lines from stdout
+        $output = @()
+        if ($stdoutContent) {
+            try {
+                $output = $stdoutContent | ConvertFrom-Json
+            }
+            catch {
+                Write-Host "Failed to parse webgl-server.py output as JSON: $_"
+                Write-Host "Raw stdout: $stdoutContent"
+                $output = @($stdoutContent)
+            }
+        }
+
+        if ($stderrContent) {
+            Write-Host "::group::Server stderr ($Action)"
+            Write-Host $stderrContent
+            Write-Host "::endgroup::"
+        }
+
+        $runResult = [PSCustomObject]@{
+            Output = $output
+            ExitCode = $exitCode
+        }
+
+        # Save result to JSON file
+        $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
+
+        # Print app output so it's visible in CI logs
+        Write-Host "::group::Browser console output ($Action)"
+        $runResult.Output | ForEach-Object { Write-Host $_ }
+        Write-Host "::endgroup::"
+
+        if ($exitCode -ne 0) {
+            Write-Warning "WebGL test action '$Action' did not complete (exit code: $exitCode)"
+        }
+
+        return $runResult
+    }
+
+    # Run integration test action
+    function Invoke-TestAction {
+        param (
+            [Parameter(Mandatory=$true)]
+            [string]$Action
+        )
+
+        Write-Host "Running $Action..."
+
+        if ($script:Platform -eq "WebGL") {
+            return Invoke-WebGLTestAction -Action $Action
+        }
+
+        $appArgs = Get-AppArguments -Action $Action
+        $runResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $appArgs
+
+        # Save result to JSON file
+        $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
+
+        # Launch app again to ensure crash report is sent
+        if ($Action -eq "crash-capture") {
+            Write-Host "Running crash-send to ensure crash report is sent..."
+
+            $sendArgs = Get-AppArguments -Action "crash-send"
+            $sendResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $sendArgs
+
+            # Save crash-send result to JSON for debugging
+            $sendResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "crash-send-result.json")
+
+            # Print crash-send output
+            Write-Host "::group::App output (crash-send)"
+            $sendResult.Output | ForEach-Object { Write-Host $_ }
+            Write-Host "::endgroup::"
+
+            # Attach to runResult for test access
+            $runResult | Add-Member -NotePropertyName "CrashSendOutput" -NotePropertyValue $sendResult.Output
+        }
+
+        # Print app output so it's visible in CI logs
+        Write-Host "::group::App output ($Action)"
+        $runResult.Output | ForEach-Object { Write-Host $_ }
+        Write-Host "::endgroup::"
+
+        return $runResult
+    }
+
     $script:Platform = $env:SENTRY_TEST_PLATFORM
     if ([string]::IsNullOrEmpty($script:Platform)) {
         throw "SENTRY_TEST_PLATFORM environment variable is not set. Expected: Android, Desktop, iOS, or WebGL"
