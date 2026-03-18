@@ -228,7 +228,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             AddBreadcrumbsWithStructuredLogs = AddBreadcrumbsWithStructuredLogs
         };
 
-        options.Experimental.EnableMetrics = EnableMetrics;
+        options.EnableMetrics = EnableMetrics;
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
         if (!EnableOfflineCaching)
