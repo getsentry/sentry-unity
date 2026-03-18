@@ -86,4 +86,27 @@ public abstract class ScopeObserver : IScopeObserver
     }
 
     public abstract void SetTraceImpl(SentryId traceId, SpanId spanId);
+
+    public void AddAttachment(SentryAttachment attachment)
+    {
+        if (attachment.Content is FileAttachmentContent fileContent)
+        {
+            _options.LogDebug("{0} Scope Sync - Adding file attachment \"{1}\"", _name, fileContent.FilePath);
+            AddFileAttachmentImpl(fileContent.FilePath, attachment.FileName, attachment.ContentType);
+        }
+        else
+        {
+            _options.LogDebug("{0} Scope Sync - Skipping non-file attachment \"{1}\" (only file-path attachments sync to native)", _name, attachment.FileName);
+        }
+    }
+
+    public abstract void AddFileAttachmentImpl(string filePath, string fileName, string? contentType);
+
+    public void ClearAttachments()
+    {
+        _options.LogDebug("{0} Scope Sync - Clearing attachments", _name);
+        ClearAttachmentsImpl();
+    }
+
+    public abstract void ClearAttachmentsImpl();
 }

@@ -54,4 +54,8 @@ internal class TestSentryJava : ISentryJava
     public void UnsetUser() { }
 
     public void SetTrace(SentryId traceId, SpanId spanId) { }
+
+    public void AddAttachment(string path, string fileName, string? contentType) { }
+
+    public void ClearAttachments() { }
 }
