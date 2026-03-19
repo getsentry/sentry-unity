@@ -54,20 +54,13 @@ public static partial class SentrySdk
     /// <summary>
     /// Gets the structured logger instance for creating and sending logs to Sentry.
     /// </summary>
+    /// <remarks>
+    /// Use this property to access structured logging functionality. Logs are only sent when
+    /// <see cref="SentryUnityOptions.Experimental"/>'s <see cref="SentryOptions.SentryExperimentalOptions.EnableLogs"/>
+    /// is set to true.
+    /// </remarks>
     /// <seealso href="https://develop.sentry.dev/sdk/telemetry/logs/"/>
     public static SentryStructuredLogger Logger { [DebuggerStepThrough] get => Sentry.SentrySdk.Logger; }
-
-    /// <summary>
-    /// Generates and sends metrics to Sentry.
-    /// </summary>
-    /// <remarks>
-    /// Available options:
-    /// <list type="bullet">
-    /// <item><see cref="Sentry.SentryOptions.EnableMetrics"/></item>
-    /// <item><see cref="Sentry.SentryOptions.SetBeforeSendMetric(System.Func{SentryMetric, SentryMetric})"/></item>
-    /// </list>
-    /// </remarks>
-    public static SentryMetricEmitter Metrics { [DebuggerStepThrough] get => Sentry.SentrySdk.Metrics; }
 
     /// <summary>
     /// Creates a new scope that will terminate when disposed.
@@ -553,4 +546,34 @@ public static partial class SentrySdk
     /// </remarks>
     [Obsolete("WARNING: This method deliberately causes a crash, and should not be used in a real application.")]
     public static void CauseCrash(CrashType crashType) => Sentry.SentrySdk.CauseCrash(crashType);
+
+    /// <summary>
+    /// Sentry features that are currently in an experimental state.
+    /// </summary>
+    /// <remarks>
+    /// Experimental features are subject to binary, source and behavioral breaking changes in future updates.
+    /// </remarks>
+    public static ExperimentalSentrySdk Experimental { get; } = new();
+
+    /// <summary>
+    /// Sentry features that are currently in an experimental state.
+    /// </summary>
+    /// <remarks>
+    /// Experimental features are subject to binary, source and behavioral breaking changes in future updates.
+    /// </remarks>
+    public sealed class ExperimentalSentrySdk
+    {
+        internal ExperimentalSentrySdk()
+        {
+        }
+
+        /// <summary>
+        /// Gets the metric emitter for emitting counters, gauges, and distributions connected to traces.
+        /// </summary>
+        public SentryMetricEmitter Metrics
+        {
+            [DebuggerStepThrough]
+            get => Sentry.SentrySdk.Experimental.Metrics;
+        }
+    }
 }
