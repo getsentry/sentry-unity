@@ -13,6 +13,8 @@ on:
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
+  PR_UNITY_VERSIONS: '["2022.3", "6000.0", "6000.3"]'
+  FULL_UNITY_VERSIONS: '["2021.3", "2022.3", "6000.0", "6000.3"]'
 
 defaults:
   run:
@@ -26,11 +28,6 @@ jobs:
         uses: styfle/cancel-workflow-action@b173b6ec0100793626c2d9e6b90435061f4fc3e5 # pin@0.11.0
         with:
           access_token: ${{ github.token }}
-
-  create-unity-matrix:
-    uses: ./.github/workflows/create-unity-matrix.yml
-    with:
-      event-name: ${{ github.event_name }}
 
   sdk:
     strategy:
@@ -89,11 +86,11 @@ jobs:
   test-create:
     name: Create ${{ matrix.unity-version }} Test Project
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [create-unity-matrix]
     secrets: inherit
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
+      matrix:
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
     uses: ./.github/workflows/test-create.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -102,12 +99,12 @@ jobs:
   test-build-webgl:
     name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-create, create-unity-matrix]
+    needs: [test-create]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
         platform: ["WebGL"]
         include:
           - platform: WebGL
@@ -242,11 +239,12 @@ jobs:
   test-build-android:
     name: Build Android ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-create, create-unity-matrix]
+    needs: [test-create]
     secrets: inherit
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
+      matrix:
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
     uses: ./.github/workflows/test-build-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -254,7 +252,7 @@ jobs:
   test-run-android:
     name: Run Android ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-build-android, create-unity-matrix]
+    needs: [test-build-android]
     secrets: inherit
     uses: ./.github/workflows/test-run-android.yml
     with:
@@ -264,7 +262,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
         # api-level: [30, 31, 34]
         api-level: [30]
         init-type: ["runtime", "buildtime"]
@@ -272,11 +270,12 @@ jobs:
   test-build-ios:
     name: Build iOS ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-create, create-unity-matrix]
+    needs: [test-create]
     secrets: inherit
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
+      matrix:
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
     uses: ./.github/workflows/test-build-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -284,12 +283,12 @@ jobs:
   test-compile-ios:
     name: Compile iOS ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-build-ios, create-unity-matrix]
+    needs: [test-build-ios]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
         init-type: ["runtime", "buildtime"]
     uses: ./.github/workflows/test-compile-ios.yml
     with:
@@ -299,7 +298,7 @@ jobs:
   test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-compile-ios, create-unity-matrix]
+    needs: [test-compile-ios]
     uses: ./.github/workflows/test-run-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -309,7 +308,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
         ios-version: ["17.0", "latest"]
         init-type: ["runtime", "buildtime"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
@@ -325,12 +324,12 @@ jobs:
   test-run-webgl:
     name: Run WebGL ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-build-webgl, create-unity-matrix]
+    needs: [test-build-webgl]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
     uses: ./.github/workflows/test-run-webgl.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -338,12 +337,12 @@ jobs:
   test-build-linux:
     name: Build Linux ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-create, create-unity-matrix]
+    needs: [test-create]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
     uses: ./.github/workflows/test-build-linux.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -351,12 +350,12 @@ jobs:
   test-build-windows:
     name: Build Windows ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-create, create-unity-matrix]
+    needs: [test-create]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
     uses: ./.github/workflows/test-build-windows.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -364,12 +363,12 @@ jobs:
   test-run-linux:
     name: Run Linux ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-build-linux, create-unity-matrix]
+    needs: [test-build-linux]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
     uses: ./.github/workflows/test-run-desktop.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -378,12 +377,12 @@ jobs:
   test-run-windows:
     name: Run Windows ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-build-windows, create-unity-matrix]
+    needs: [test-build-windows]
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        unity-version: ${{ github.event_name == 'pull_request' && fromJSON(env.PR_UNITY_VERSIONS) || fromJSON(env.FULL_UNITY_VERSIONS) }}
     uses: ./.github/workflows/test-run-desktop.yml
     with:
       unity-version: ${{ matrix.unity-version }}
