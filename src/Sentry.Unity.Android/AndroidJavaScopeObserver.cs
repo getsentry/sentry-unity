@@ -36,4 +36,13 @@ internal class AndroidJavaScopeObserver : ScopeObserver
 
     public override void SetTraceImpl(SentryId traceId, SpanId spanId) =>
         _sentryJava.SetTrace(traceId, spanId);
+
+    public override void AddFileAttachmentImpl(string filePath, string fileName, string? contentType) =>
+        _sentryJava.AddAttachment(filePath, fileName, contentType);
+
+    public override void AddByteAttachmentImpl(byte[] data, string fileName, string? contentType) =>
+        _sentryJava.AddAttachmentBytes(data, fileName, contentType);
+
+    public override void ClearAttachmentsImpl() =>
+        _sentryJava.ClearAttachments();
 }
