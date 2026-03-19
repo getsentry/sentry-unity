@@ -34,6 +34,11 @@ public class NativeScopeObserver : ScopeObserver
         // iOS/macOS attachment sync to sentry-cocoa is not yet supported.
     }
 
+    public override void AddByteAttachmentImpl(byte[] data, string fileName, string? contentType)
+    {
+        // iOS/macOS attachment sync to sentry-cocoa is not yet supported.
+    }
+
     public override void ClearAttachmentsImpl()
     {
         // iOS/macOS attachment sync to sentry-cocoa is not yet supported.

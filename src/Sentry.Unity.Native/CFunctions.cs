@@ -169,6 +169,9 @@ internal static class C
     internal static extern IntPtr sentry_attach_file(string path);
 
     [DllImport(SentryLib)]
+    internal static extern IntPtr sentry_attach_bytes(byte[] buf, UIntPtr buf_len, string filename);
+
+    [DllImport(SentryLib)]
     internal static extern void sentry_clear_attachments();
 
     internal static readonly Lazy<IEnumerable<DebugImage>> DebugImages = new(LoadDebugImages);

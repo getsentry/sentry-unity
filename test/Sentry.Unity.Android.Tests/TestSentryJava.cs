@@ -57,5 +57,7 @@ internal class TestSentryJava : ISentryJava
 
     public void AddAttachment(string path, string fileName, string? contentType) { }
 
+    public void AddAttachmentBytes(byte[] data, string fileName, string? contentType) { }
+
     public void ClearAttachments() { }
 }

@@ -46,6 +46,9 @@ public class NativeScopeObserver : ScopeObserver
     public override void AddFileAttachmentImpl(string filePath, string fileName, string? contentType) =>
         C.sentry_attach_file(filePath);
 
+    public override void AddByteAttachmentImpl(byte[] data, string fileName, string? contentType) =>
+        C.sentry_attach_bytes(data, (UIntPtr)data.Length, fileName);
+
     public override void ClearAttachmentsImpl() =>
         C.sentry_clear_attachments();
 

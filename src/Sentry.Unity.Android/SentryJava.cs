@@ -43,6 +43,7 @@ internal interface ISentryJava
     public void UnsetUser();
     public void SetTrace(SentryId traceId, SpanId spanId);
     void AddAttachment(string path, string fileName, string? contentType);
+    void AddAttachmentBytes(byte[] data, string fileName, string? contentType);
     void ClearAttachments();
 }
 
@@ -370,6 +371,20 @@ internal class SentryJava : ISentryJava
             using var attachment = contentType is not null
                 ? new AndroidJavaObject("io.sentry.Attachment", path, fileName, contentType)
                 : new AndroidJavaObject("io.sentry.Attachment", path, fileName);
+
+            using var sentry = GetSentryJava();
+            sentry.CallStatic("configureScope", new ScopeCallback(scope =>
+                scope.Call("addAttachment", attachment)));
+        });
+    }
+
+    public void AddAttachmentBytes(byte[] data, string fileName, string? contentType)
+    {
+        RunJniSafe(() =>
+        {
+            using var attachment = contentType is not null
+                ? new AndroidJavaObject("io.sentry.Attachment", data, fileName, contentType)
+                : new AndroidJavaObject("io.sentry.Attachment", data, fileName);
 
             using var sentry = GetSentryJava();
             sentry.CallStatic("configureScope", new ScopeCallback(scope =>
