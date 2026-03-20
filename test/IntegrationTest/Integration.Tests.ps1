@@ -3,14 +3,16 @@
 # Integration tests for Sentry Unity SDK
 #
 # Environment variables:
-#   SENTRY_TEST_PLATFORM: target platform (Android, Desktop, iOS, WebGL)
+#   SENTRY_TEST_PLATFORM: target platform (Android, Desktop, iOS, WebGL, Xbox)
 #   SENTRY_TEST_DSN: test DSN
 #   SENTRY_AUTH_TOKEN: authentication token for Sentry API
 #
-#   SENTRY_TEST_APP: path to the test app (APK, executable, .app bundle, or WebGL build directory)
+#   SENTRY_TEST_APP: path to the test app (APK, executable, .app bundle, WebGL build directory,
+#                    or Xbox package directory containing .xvc)
 #
 # Platform-specific environment variables:
 #   iOS:     SENTRY_IOS_VERSION - iOS simulator version (e.g. "17.0" or "latest")
+#   Xbox:    XBCONNECT_TARGET - Xbox devkit IP address
 
 Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
@@ -30,6 +32,7 @@ BeforeAll {
             "Android" { return @("-e", "test", $Action) }
             "Desktop" { return @("--test", $Action, "-logFile", "-") }
             "iOS"     { return @("--test", $Action) }
+            "Xbox"    { return @("--test", $Action) }
         }
     }
 
@@ -142,7 +145,7 @@ BeforeAll {
 
     $script:Platform = $env:SENTRY_TEST_PLATFORM
     if ([string]::IsNullOrEmpty($script:Platform)) {
-        throw "SENTRY_TEST_PLATFORM environment variable is not set. Expected: Android, Desktop, iOS, or WebGL"
+        throw "SENTRY_TEST_PLATFORM environment variable is not set. Expected: Android, Desktop, iOS, WebGL, or Xbox"
     }
 
     # Validate common environment
@@ -195,10 +198,26 @@ BeforeAll {
             Connect-Device -Platform "iOSSimulator" -Target $target
             Install-DeviceApp -Path $env:SENTRY_TEST_APP
         }
+        "Xbox" {
+            if ([string]::IsNullOrEmpty($env:XBCONNECT_TARGET)) {
+                throw "XBCONNECT_TARGET environment variable is not set."
+            }
+
+            Connect-Device -Platform "Xbox" -Target $env:XBCONNECT_TARGET
+
+            # Xbox uses packaged .xvc flow — SENTRY_TEST_APP points to the package directory
+            $xvcFile = Get-ChildItem -Path $env:SENTRY_TEST_APP -Filter "*.xvc" | Select-Object -First 1
+            if (-not $xvcFile) {
+                throw "No .xvc package found in: $env:SENTRY_TEST_APP"
+            }
+            Install-DeviceApp -Path $xvcFile.FullName
+            $script:ExecutablePath = Get-PackageAumid -PackagePath $env:SENTRY_TEST_APP
+            Write-Host "Using AUMID: $($script:ExecutablePath)"
+        }
         "WebGL" {
         }
         default {
-            throw "Unknown platform: $($script:Platform). Expected: Android, Desktop, iOS, or WebGL"
+            throw "Unknown platform: $($script:Platform). Expected: Android, Desktop, iOS, WebGL, or Xbox"
         }
     }
 
