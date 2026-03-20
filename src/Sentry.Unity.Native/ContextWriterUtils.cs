@@ -2,9 +2,10 @@ namespace Sentry.Unity.Native;
 
 internal static class ContextWriterUtils
 {
-    internal static void WriteApp(string? AppStartTime, string? AppBuildType)
+    internal static void WriteApp(string? AppName, string? AppStartTime, string? AppBuildType)
     {
         var obj = C.sentry_value_new_object();
+        C.SetValueIfNotNull(obj, "app_name", AppName);
         C.SetValueIfNotNull(obj, "app_start_time", AppStartTime);
         C.SetValueIfNotNull(obj, "build_type", AppBuildType);
         C.sentry_set_context(Sentry.Protocol.App.Type, obj);

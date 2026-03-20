@@ -88,6 +88,7 @@ public sealed class ContextWriterTests
         Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
 
         // assert
+        Assert.AreEqual(_testApplication.ProductName, context.AppName);
         Assert.AreEqual(sysInfo.StartTime?.Value.ToString("o"), context.AppStartTime);
         Assert.AreEqual("debug", context.AppBuildType);
         Assert.AreEqual(sysInfo.OperatingSystem, context.OperatingSystemRawDescription);
@@ -128,6 +129,7 @@ internal sealed class MockContextWriter : ContextWriter
 {
     public AutoResetEvent SyncFinished = new AutoResetEvent(false);
 
+    public string? AppName = null;
     public string? AppStartTime = null;
     public string? AppBuildType = null;
     public string? OperatingSystemRawDescription = null;
@@ -163,6 +165,7 @@ internal sealed class MockContextWriter : ContextWriter
     public string? UnityRenderingThreadingMode = null;
 
     protected override void WriteScope(
+        string? AppName,
         string? AppStartTime,
         string? AppBuildType,
         string? OperatingSystemRawDescription,
@@ -198,6 +201,7 @@ internal sealed class MockContextWriter : ContextWriter
         string? UnityRenderingThreadingMode
     )
     {
+        this.AppName = AppName;
         this.AppStartTime = AppStartTime;
         this.AppBuildType = AppBuildType;
         this.OperatingSystemRawDescription = OperatingSystemRawDescription;

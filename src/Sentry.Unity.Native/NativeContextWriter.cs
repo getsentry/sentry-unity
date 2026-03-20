@@ -3,6 +3,7 @@ namespace Sentry.Unity.Native;
 internal class NativeContextWriter : ContextWriter
 {
     protected override void WriteScope(
+        string? AppName,
         string? AppStartTime,
         string? AppBuildType,
         string? OperatingSystemRawDescription,
@@ -38,7 +39,7 @@ internal class NativeContextWriter : ContextWriter
         string? UnityRenderingThreadingMode
     )
     {
-        ContextWriterUtils.WriteApp(AppStartTime, AppBuildType);
+        ContextWriterUtils.WriteApp(AppName, AppStartTime, AppBuildType);
 
         ContextWriterUtils.WriteOS(OperatingSystemRawDescription);
 

@@ -12,6 +12,7 @@ internal class NativeContextWriter : ContextWriter
     }
 
     protected override void WriteScope(
+        string? AppName,
         string? AppStartTime,
         string? AppBuildType,
         string? OperatingSystemRawDescription,
@@ -48,6 +49,7 @@ internal class NativeContextWriter : ContextWriter
     )
     {
         _sentryJava.WriteScope(
+            AppName,
             AppStartTime,
             AppBuildType,
             GpuId,
@@ -66,7 +68,7 @@ internal class NativeContextWriter : ContextWriter
             GpuMultiThreadedRendering,
             GpuGraphicsShaderLevel);
 
-        CWUtil.WriteApp(AppStartTime, AppBuildType);
+        CWUtil.WriteApp(AppName, AppStartTime, AppBuildType);
 
         CWUtil.WriteGpu(
             GpuId,

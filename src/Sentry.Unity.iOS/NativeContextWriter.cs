@@ -5,6 +5,7 @@ namespace Sentry.Unity.iOS;
 internal class NativeContextWriter : ContextWriter
 {
     protected override void WriteScope(
+        string? AppName,
         string? AppStartTime,
         string? AppBuildType,
         string? OperatingSystemRawDescription,

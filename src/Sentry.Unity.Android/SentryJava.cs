@@ -15,6 +15,7 @@ internal interface ISentryJava
     public bool? CrashedLastRun();
     public void Close();
     public void WriteScope(
+        string? AppName,
         string? AppStartTime,
         string? AppBuildType,
         int? GpuId,
@@ -214,6 +215,7 @@ internal class SentryJava : ISentryJava
     }
 
     public void WriteScope(
+        string? AppName,
         string? AppStartTime,
         string? AppBuildType,
         int? GpuId,
@@ -235,6 +237,7 @@ internal class SentryJava : ISentryJava
         RunJniSafe(() =>
         {
             using var app = new AndroidJavaObject("io.sentry.protocol.App");
+            app.SetIfNotNull("appName", AppName);
             if (AppStartTime is not null)
             {
                 var epochMs = DateTimeOffset.Parse(AppStartTime).ToUnixTimeMilliseconds();

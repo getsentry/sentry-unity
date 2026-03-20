@@ -22,6 +22,7 @@ internal class TestSentryJava : ISentryJava
     public void Close() { }
 
     public void WriteScope(
+        string? AppName,
         string? AppStartTime,
         string? AppBuildType,
         int? GpuId,

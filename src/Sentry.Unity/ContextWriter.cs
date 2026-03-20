@@ -20,6 +20,7 @@ internal abstract class ContextWriter
         var unityContext = (Protocol.Unity)getThatUnityContext;
 
         WriteScope(
+            scope.Contexts.App.Name,
             scope.Contexts.App.StartTime?.ToString("o"),
             scope.Contexts.App.BuildType,
             scope.Contexts.OperatingSystem.RawDescription,
@@ -57,6 +58,7 @@ internal abstract class ContextWriter
     }
 
     protected abstract void WriteScope(
+        string? AppName,
         string? AppStartTime,
         string? AppBuildType,
         string? OperatingSystemRawDescription,
