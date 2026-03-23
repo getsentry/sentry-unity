@@ -21,6 +21,7 @@ public class Builder
 
         // Make sure the configuration is right.
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
+        EditorUserBuildSettings.development = false;
         EditorUserBuildSettings.allowDebugging = false;
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.FromBuildTargetGroup(group), ScriptingImplementation.IL2CPP);
         // Making sure that the app keeps on running in the background. Linux CI is very unhappy with coroutines otherwise.
