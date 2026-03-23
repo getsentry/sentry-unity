@@ -32,7 +32,7 @@ BeforeAll {
             "Android" { return @("-e", "test", $Action) }
             "Desktop" { return @("--test", $Action, "-logFile", "-") }
             "iOS"     { return @("--test", $Action) }
-            "Xbox"    { return @("--test", $Action) }
+            "Xbox"    { return @("--test", $Action, "-logFile", "D:\Logs\UnityIntegrationTest.log") }
         }
     }
 
@@ -113,6 +113,25 @@ BeforeAll {
         $appArgs = Get-AppArguments -Action $Action
         $runResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $appArgs
 
+        # On Xbox, console output is not available in non-development builds.
+        # Instead, Unity writes to a log file on the device which we retrieve and use as output.
+        if ($script:Platform -eq "Xbox") {
+            $logLocalDir = "$PSScriptRoot/results/xbox-logs/$Action"
+            New-Item -ItemType Directory -Path $logLocalDir -Force | Out-Null
+            try {
+                Copy-DeviceItem -DevicePath "D:\Logs\UnityIntegrationTest.log" -Destination $logLocalDir
+                $logContent = Get-Content "$logLocalDir/UnityIntegrationTest.log" -ErrorAction SilentlyContinue
+                if ($logContent -and $logContent.Count -gt 0) {
+                    Write-Host "Retrieved Unity log file from Xbox ($($logContent.Count) lines)"
+                    $runResult.Output = $logContent
+                } else {
+                    Write-Warning "Unity log file was empty or not found on Xbox."
+                }
+            } catch {
+                Write-Warning "Failed to retrieve Unity log file from Xbox: $_"
+            }
+        }
+
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
 
@@ -122,6 +141,22 @@ BeforeAll {
 
             $sendArgs = Get-AppArguments -Action "crash-send"
             $sendResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $sendArgs
+
+            # On Xbox, retrieve the log file for crash-send output too
+            if ($script:Platform -eq "Xbox") {
+                $sendLogDir = "$PSScriptRoot/results/xbox-logs/crash-send"
+                New-Item -ItemType Directory -Path $sendLogDir -Force | Out-Null
+                try {
+                    Copy-DeviceItem -DevicePath "D:\Logs\UnityIntegrationTest.log" -Destination $sendLogDir
+                    $sendLogContent = Get-Content "$sendLogDir/UnityIntegrationTest.log" -ErrorAction SilentlyContinue
+                    if ($sendLogContent -and $sendLogContent.Count -gt 0) {
+                        Write-Host "Retrieved Unity crash-send log file from Xbox ($($sendLogContent.Count) lines)"
+                        $sendResult.Output = $sendLogContent
+                    }
+                } catch {
+                    Write-Warning "Failed to retrieve Unity crash-send log file from Xbox: $_"
+                }
+            }
 
             # Save crash-send result to JSON for debugging
             $sendResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "crash-send-result.json")
@@ -205,18 +240,14 @@ BeforeAll {
 
             Connect-Device -Platform "Xbox" -Target $env:XBCONNECT_TARGET
 
-            $xvcFile = Get-ChildItem -Path $env:SENTRY_TEST_APP -Filter "*.xvc" -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($xvcFile) {
-                # Packaged .xvc flow — install and launch via AUMID
-                Install-DeviceApp -Path $xvcFile.FullName
-                $script:ExecutablePath = Get-PackageAumid -PackagePath $env:SENTRY_TEST_APP
-                Write-Host "Using AUMID: $($script:ExecutablePath)"
-            } else {
-                # Loose file deployment (e.g. development builds that can't be packaged) —
-                # pass the directory to Invoke-DeviceApp which mirrors it to the Xbox via xbrun.
-                $script:ExecutablePath = $env:SENTRY_TEST_APP
-                Write-Host "Using loose deployment: $($script:ExecutablePath)"
+            # Xbox uses packaged .xvc flow — SENTRY_TEST_APP points to the package directory
+            $xvcFile = Get-ChildItem -Path $env:SENTRY_TEST_APP -Filter "*.xvc" | Select-Object -First 1
+            if (-not $xvcFile) {
+                throw "No .xvc package found in: $env:SENTRY_TEST_APP"
             }
+            Install-DeviceApp -Path $xvcFile.FullName
+            $script:ExecutablePath = Get-PackageAumid -PackagePath $env:SENTRY_TEST_APP
+            Write-Host "Using AUMID: $($script:ExecutablePath)"
         }
         "WebGL" {
         }
