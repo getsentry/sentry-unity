@@ -30,7 +30,7 @@ try {
 
     if (-not (Test-Path $iOSXcframeworkPath)) {
         Write-Host "Building iOS xcframework..." -ForegroundColor Yellow
-        & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "iOSOnly" "arm64e"
+        & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "iOSOnly" ""
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to build iOS xcframework"
             exit 1
@@ -81,8 +81,13 @@ try {
 
     Write-Host "Setting up macOS support..." -ForegroundColor Yellow
 
-    $macOSFrameworkPath = Join-Path $macOSXcframeworkPath "macos-arm64_x86_64/Sentry.framework/Versions/A/Sentry"
-    $macOSdSYMPath = Join-Path $macOSXcframeworkPath "macos-arm64_x86_64/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry"
+    $macOSSlice = Get-ChildItem -Path $macOSXcframeworkPath -Directory | Where-Object { $_.Name -like "macos-*" } | Select-Object -First 1
+    if (-not $macOSSlice) {
+        Write-Error "No macOS slice found in xcframework at: $macOSXcframeworkPath"
+        exit 1
+    }
+    $macOSFrameworkPath = Join-Path $macOSSlice.FullName "Sentry.framework/Versions/A/Sentry"
+    $macOSdSYMPath = Join-Path $macOSSlice.FullName "dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry"
 
     $macOSDestDir = Split-Path $macOSDestination -Parent
     if (-not (Test-Path $macOSDestDir)) {
