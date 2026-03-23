@@ -182,14 +182,20 @@ public class Builder
 
     public static void BuildXSXIL2CPPPlayer()
     {
-        Debug.Log("Builder: Building Xbox Series X|S IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxSeries, BuildTargetGroup.GameCoreXboxSeries, BuildOptions.StrictMode);
+        Debug.Log("Builder: Building Xbox Series X|S IL2CPP Player (Development)");
+        // Development build required on Xbox: console security disables Debug.Log output
+        // in non-development builds, which prevents the test harness from capturing
+        // EVENT_CAPTURED markers and other diagnostic output.
+        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxSeries, BuildTargetGroup.GameCoreXboxSeries, BuildOptions.StrictMode | BuildOptions.Development);
     }
 
     public static void BuildXB1IL2CPPPlayer()
     {
-        Debug.Log("Builder: Building Xbox One IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxOne, BuildTargetGroup.GameCoreXboxOne, BuildOptions.StrictMode);
+        Debug.Log("Builder: Building Xbox One IL2CPP Player (Development)");
+        // Development build required on Xbox: console security disables Debug.Log output
+        // in non-development builds, which prevents the test harness from capturing
+        // EVENT_CAPTURED markers and other diagnostic output.
+        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxOne, BuildTargetGroup.GameCoreXboxOne, BuildOptions.StrictMode | BuildOptions.Development);
     }
 
     public static void BuildPS5IL2CPPPlayer()
