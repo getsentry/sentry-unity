@@ -205,14 +205,18 @@ BeforeAll {
 
             Connect-Device -Platform "Xbox" -Target $env:XBCONNECT_TARGET
 
-            # Xbox uses packaged .xvc flow — SENTRY_TEST_APP points to the package directory
-            $xvcFile = Get-ChildItem -Path $env:SENTRY_TEST_APP -Filter "*.xvc" | Select-Object -First 1
-            if (-not $xvcFile) {
-                throw "No .xvc package found in: $env:SENTRY_TEST_APP"
+            $xvcFile = Get-ChildItem -Path $env:SENTRY_TEST_APP -Filter "*.xvc" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($xvcFile) {
+                # Packaged .xvc flow — install and launch via AUMID
+                Install-DeviceApp -Path $xvcFile.FullName
+                $script:ExecutablePath = Get-PackageAumid -PackagePath $env:SENTRY_TEST_APP
+                Write-Host "Using AUMID: $($script:ExecutablePath)"
+            } else {
+                # Loose file deployment (e.g. development builds that can't be packaged) —
+                # pass the directory to Invoke-DeviceApp which mirrors it to the Xbox via xbrun.
+                $script:ExecutablePath = $env:SENTRY_TEST_APP
+                Write-Host "Using loose deployment: $($script:ExecutablePath)"
             }
-            Install-DeviceApp -Path $xvcFile.FullName
-            $script:ExecutablePath = Get-PackageAumid -PackagePath $env:SENTRY_TEST_APP
-            Write-Host "Using AUMID: $($script:ExecutablePath)"
         }
         "WebGL" {
         }
