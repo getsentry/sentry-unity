@@ -28,16 +28,12 @@ jobs:
           if [[ "${TARGET}" == "Android" ]]; then
             submodules="modules/sentry-java"
           elif [[ "${TARGET}" == "Cocoa" ]]; then
-            submodules=""
+            submodules="modules/sentry-cocoa"
           else
             submodules="modules/sentry-native"
           fi
           echo "submodulesPath=$submodules" >> $GITHUB_OUTPUT
-          if [[ "$submodules" == "" ]]; then
-            echo "submodules=src/sentry-dotnet" >> $GITHUB_OUTPUT
-          else
-            echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
-          fi
+          echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
       
       - name: Get submodule status
         run: git submodule status --cached $SUBMODULES | tee submodules-status
@@ -66,7 +62,7 @@ jobs:
           # hash of package/package.json for cache busting on release builds (version bump)
           path: |
             package-dev/Plugins
-          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}${{ env.TARGET == 'Cocoa' && hashFiles('modules/sentry-cocoa.properties') || '' }}
+          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**') }}
 
       - name: Installing Linux Dependencies
         if: ${{ env.TARGET == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
@@ -95,7 +91,6 @@ jobs:
         run: dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
 
       - name: Upload build logs on failure
-        # No build logs for Cocoa SDK as we assemble the xcframework from a downloaded release artifact
         if: ${{ failure() && env.TARGET != 'Cocoa' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

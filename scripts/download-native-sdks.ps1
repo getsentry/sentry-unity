@@ -28,13 +28,30 @@ $SDKs = @(
         Destination = Join-Path $ArtifactsDestination "Android"
         CheckDir = "Sentry~"
         ExpectedFileCount = 4
+    },
+    @{
+        Name = "Cocoa"
+        Destination = $ArtifactsDestination
+        CheckFiles = @(
+            "iOS/Sentry.xcframework~/Info.plist",
+            "macOS/Sentry/Sentry.dylib"
+        )
     }
 )
 
 function Test-SDKPresent {
     param($SDK)
 
-    if ($SDK.ContainsKey('CheckFile')) {
+    if ($SDK.ContainsKey('CheckFiles')) {
+        foreach ($file in $SDK.CheckFiles) {
+            $checkPath = Join-Path $SDK.Destination $file
+            if (-not (Test-Path $checkPath)) {
+                return $false
+            }
+        }
+        return $true
+    }
+    elseif ($SDK.ContainsKey('CheckFile')) {
         $checkPath = Join-Path $SDK.Destination $SDK.CheckFile
         return Test-Path $checkPath
     }
@@ -75,19 +92,27 @@ function Download-SDK {
 
     Write-Host "Downloading $Name SDK..." -ForegroundColor Yellow
 
-    # Remove existing directory if present (partial download)
-    if (Test-Path $Destination) {
-        Write-Host "  Removing existing directory..." -ForegroundColor Gray
-        Remove-Item -Path $Destination -Recurse -Force
+    $artifactName = "$Name-sdk"
+
+    # Download to a temp directory, then move contents into destination
+    $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "sentry-$Name-sdk-download"
+    if (Test-Path $tempDir) {
+        Remove-Item -Path $tempDir -Recurse -Force
     }
 
-    $artifactName = "$Name-sdk"
-    gh run download $RunId -n $artifactName -D $Destination
+    gh run download $RunId -n $artifactName -D $tempDir
 
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Failed to download $Name SDK"
         exit 1
     }
+
+    # Move downloaded contents into the destination
+    if (-not (Test-Path $Destination)) {
+        New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+    }
+    Copy-Item -Path (Join-Path $tempDir "*") -Destination $Destination -Recurse -Force
+    Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
 
     Write-Host "  Downloaded $Name SDK successfully" -ForegroundColor Green
 }
