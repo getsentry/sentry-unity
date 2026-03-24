@@ -30,7 +30,7 @@ try {
 
     if (-not (Test-Path $iOSXcframeworkPath)) {
         Write-Host "Building iOS xcframework..." -ForegroundColor Yellow
-        & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "iOSOnly" ""
+        & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "iOSOnly" "arm64e"
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to build iOS xcframework"
             exit 1
@@ -54,6 +54,9 @@ try {
         Remove-Item -Path $iOSDestination -Recurse -Force
     }
     Copy-Item -Path $iOSXcframeworkPath -Destination $iOSDestination -Recurse -Force
+
+    # Remove dSYMs from the iOS xcframework - they bloat the package and debug symbols are uploaded separately via sentry-cli
+    Get-ChildItem -Path $iOSDestination -Directory -Recurse -Filter "dSYMs" | Remove-Item -Recurse -Force
 
     $iOSInfoPlist = Join-Path $iOSDestination "Info.plist"
     if (-not (Test-Path $iOSInfoPlist)) {
