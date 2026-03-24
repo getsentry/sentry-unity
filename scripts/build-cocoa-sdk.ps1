@@ -50,13 +50,39 @@ try {
         exit 1
     }
 
+    # Reassemble the xcframework from just the framework slices (without dSYMs).
+    # The build produces an xcframework with dSYMs bundled and referenced in its Info.plist.
+    # Shipping those would bloat the package and Xcode validates the Info.plist references,
+    # so we create a clean xcframework with only -framework arguments.
+    $xcodebuildArgs = @("-create-xcframework")
+    foreach ($framework in $iOSFrameworks) {
+        $frameworkPath = Join-Path $framework.FullName "Sentry.framework"
+        if (Test-Path $frameworkPath) {
+            $xcodebuildArgs += "-framework"
+            $xcodebuildArgs += $frameworkPath
+        }
+    }
+
+    # Remove the ~ suffix from destination - xcodebuild requires the output path to end with `.xcframework`
+    $xcframeworkOutput = $iOSDestination.TrimEnd('~', '/')
+    if (Test-Path $xcframeworkOutput) {
+        Remove-Item -Path $xcframeworkOutput -Recurse -Force
+    }
     if (Test-Path $iOSDestination) {
         Remove-Item -Path $iOSDestination -Recurse -Force
     }
-    Copy-Item -Path $iOSXcframeworkPath -Destination $iOSDestination -Recurse -Force
 
-    # Remove dSYMs from the iOS xcframework - they bloat the package and debug symbols are uploaded separately via sentry-cli
-    Get-ChildItem -Path $iOSDestination -Directory -Recurse -Filter "dSYMs" | Remove-Item -Recurse -Force
+    $xcodebuildArgs += "-output"
+    $xcodebuildArgs += $xcframeworkOutput
+
+    & xcodebuild $xcodebuildArgs
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to create iOS xcframework"
+        exit 1
+    }
+
+    # Append '~' so Unity ignores the framework during import
+    Move-Item -Path $xcframeworkOutput -Destination $iOSDestination -Force
 
     $iOSInfoPlist = Join-Path $iOSDestination "Info.plist"
     if (-not (Test-Path $iOSInfoPlist)) {
