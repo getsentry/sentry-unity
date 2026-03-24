@@ -30,10 +30,18 @@ try {
 
     if (-not (Test-Path $iOSXcframeworkPath)) {
         Write-Host "Building iOS xcframework..." -ForegroundColor Yellow
-        & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "iOSOnly" "arm64e"
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to build iOS xcframework"
-            exit 1
+        # Exclude arm64e: inject EXCLUDED_ARCHS via xcconfig so xcodebuild never builds it.
+        # We can't modify the submodule's xcodebuild calls directly, but xcodebuild respects
+        # the XCODE_XCCONFIG_FILE environment variable for additional build settings.
+        $xcconfig = Join-Path $CocoaRoot "sentry-unity.xcconfig"
+        "EXCLUDED_ARCHS = arm64e" | Set-Content $xcconfig
+        $env:XCODE_XCCONFIG_FILE = $xcconfig
+        try {
+            & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "iOSOnly"
+        }
+        finally {
+            $env:XCODE_XCCONFIG_FILE = $null
+            Remove-Item $xcconfig -ErrorAction SilentlyContinue
         }
         # build-xcframework-variant.sh produces Sentry-Dynamic.xcframework — rename to keep iOS and macOS separate
         Move-Item -Path "Sentry-Dynamic.xcframework" -Destination $iOSXcframeworkPath -Force
