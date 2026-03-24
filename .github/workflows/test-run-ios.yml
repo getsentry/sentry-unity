@@ -63,10 +63,11 @@ jobs:
       - name: Run iOS Integration Tests
         id: integration-test
         timeout-minutes: 20
+        env:
+          SENTRY_IOS_VERSION: ${{ inputs.ios-version }}
         run: |
           $env:SENTRY_TEST_PLATFORM = "iOS"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/IntegrationTest.app"
-          $env:SENTRY_IOS_VERSION = "${{ inputs.ios-version }}"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
           echo "status=success" >> $env:GITHUB_OUTPUT
 
