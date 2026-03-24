@@ -44,45 +44,14 @@ try {
 
     Write-Host "Setting up iOS frameworks..." -ForegroundColor Yellow
 
-    $iOSFrameworks = Get-ChildItem -Path $iOSXcframeworkPath -Directory | Where-Object { $_.Name -like "ios-*" -and $_.Name -notlike "*maccatalyst*" }
-    if ($iOSFrameworks.Count -eq 0) {
-        Write-Error "No iOS frameworks found in xcframework at: $iOSXcframeworkPath"
-        exit 1
-    }
-
-    # Reassemble the xcframework from just the framework slices (without dSYMs).
-    # The build produces an xcframework with dSYMs bundled and referenced in its Info.plist.
-    # Shipping those would bloat the package and Xcode validates the Info.plist references,
-    # so we create a clean xcframework with only -framework arguments.
-    $xcodebuildArgs = @("-create-xcframework")
-    foreach ($framework in $iOSFrameworks) {
-        $frameworkPath = Join-Path $framework.FullName "Sentry.framework"
-        if (Test-Path $frameworkPath) {
-            $xcodebuildArgs += "-framework"
-            $xcodebuildArgs += $frameworkPath
-        }
-    }
-
-    # Remove the ~ suffix from destination - xcodebuild requires the output path to end with `.xcframework`
-    $xcframeworkOutput = $iOSDestination.TrimEnd('~', '/')
-    if (Test-Path $xcframeworkOutput) {
-        Remove-Item -Path $xcframeworkOutput -Recurse -Force
-    }
     if (Test-Path $iOSDestination) {
         Remove-Item -Path $iOSDestination -Recurse -Force
     }
 
-    $xcodebuildArgs += "-output"
-    $xcodebuildArgs += $xcframeworkOutput
-
-    & xcodebuild $xcodebuildArgs
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to create iOS xcframework"
-        exit 1
-    }
-
-    # Append '~' so Unity ignores the framework during import
-    Move-Item -Path $xcframeworkOutput -Destination $iOSDestination -Force
+    # Copy the xcframework as-is, including dSYMs. Since we build from source, the debug symbols
+    # won't be on Sentry's symbol server — they need to ship in the package so the Xcode build phase
+    # can upload them via sentry-cli, consistent with how all other native SDKs ship their debug symbols.
+    Copy-Item -Path $iOSXcframeworkPath -Destination $iOSDestination -Recurse -Force
 
     $iOSInfoPlist = Join-Path $iOSDestination "Info.plist"
     if (-not (Test-Path $iOSInfoPlist)) {
