@@ -20,34 +20,27 @@ if (-not (Test-Path (Join-Path $CocoaRoot "Sentry.xcodeproj"))) {
     exit 1
 }
 
+# Build intermediates are stored inside the submodule directory. Clean them to avoid stale builds
+# when the submodule is updated to a new version.
+$buildPath = Join-Path $CocoaRoot "XCFrameworkBuildPath"
+$iOSXcframeworkPath = Join-Path $CocoaRoot "Sentry-Dynamic-iOS.xcframework"
+$macOSXcframeworkPath = Join-Path $CocoaRoot "Sentry-Dynamic-macOS.xcframework"
+
 Write-Host "Building Cocoa SDK from source..." -ForegroundColor Yellow
 
 Push-Location $CocoaRoot
 try {
     ################ Build and set up iOS support ################
 
-    $iOSXcframeworkPath = Join-Path $CocoaRoot "Sentry-Dynamic-iOS.xcframework"
-
     if (-not (Test-Path $iOSXcframeworkPath)) {
         Write-Host "Building iOS xcframework..." -ForegroundColor Yellow
-        # Exclude arm64e: inject EXCLUDED_ARCHS via xcconfig so xcodebuild never builds it.
-        # We can't modify the submodule's xcodebuild calls directly, but xcodebuild respects
-        # the XCODE_XCCONFIG_FILE environment variable for additional build settings.
-        $xcconfig = Join-Path $CocoaRoot "sentry-unity.xcconfig"
-        "EXCLUDED_ARCHS = arm64e" | Set-Content $xcconfig
-        $env:XCODE_XCCONFIG_FILE = $xcconfig
-        try {
-            & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "iOSOnly"
-        }
-        finally {
-            $env:XCODE_XCCONFIG_FILE = $null
-            Remove-Item $xcconfig -ErrorAction SilentlyContinue
-        }
+        # Exclude arm64e from the binary. Since Xcode 26, apps without arm64e in the main binary
+        # can't include frameworks with arm64e slices (App Store rejection). The sentry-cocoa SDK
+        # ships separate "-WithARM64e" variants for apps that need it; Unity games don't.
+        & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "iOSOnly" "arm64e"
+        & ./scripts/validate-xcframework-format.sh "Sentry-Dynamic.xcframework"
         # build-xcframework-variant.sh produces Sentry-Dynamic.xcframework — rename to keep iOS and macOS separate
         Move-Item -Path "Sentry-Dynamic.xcframework" -Destination $iOSXcframeworkPath -Force
-        if (Test-Path "XCFrameworkBuildPath/archive") {
-            Remove-Item -Path "XCFrameworkBuildPath/archive" -Recurse -Force
-        }
     }
 
     Write-Host "Setting up iOS frameworks..." -ForegroundColor Yellow
@@ -70,19 +63,16 @@ try {
 
     ################ Build and set up macOS support ################
 
-    $macOSXcframeworkPath = Join-Path $CocoaRoot "Sentry-Dynamic-macOS.xcframework"
-
     if (-not (Test-Path $macOSXcframeworkPath)) {
         Write-Host "Building macOS xcframework..." -ForegroundColor Yellow
         & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "macOSOnly" ""
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to build macOS xcframework"
-            exit 1
-        }
+        & ./scripts/validate-xcframework-format.sh "Sentry-Dynamic.xcframework"
         Move-Item -Path "Sentry-Dynamic.xcframework" -Destination $macOSXcframeworkPath -Force
-        if (Test-Path "XCFrameworkBuildPath") {
-            Remove-Item -Path "XCFrameworkBuildPath" -Recurse -Force
-        }
+    }
+
+    # Clean up build intermediates after both builds complete
+    if (Test-Path $buildPath) {
+        Remove-Item -Path $buildPath -Recurse -Force
     }
 
     Write-Host "Setting up macOS support..." -ForegroundColor Yellow

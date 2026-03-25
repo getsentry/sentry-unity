@@ -200,10 +200,15 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/Sentry.swiftm
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-ios.private.swiftinterface
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-ios.swiftdoc
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/Sentry.swiftmodule/arm64-apple-ios.swiftinterface
+Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-ios.abi.json
+Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-ios.private.swiftinterface
+Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-ios.swiftdoc
+Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/Modules/Sentry.swiftmodule/arm64e-apple-ios.swiftinterface
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Resources/
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Info.plist
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Resources/Relocations/
+Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Resources/Relocations/arm64e/Sentry.yml
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Resources/Relocations/aarch64/Sentry.yml
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry
 Plugins/Linux/Sentry.meta

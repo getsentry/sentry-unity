@@ -161,6 +161,8 @@ Expected to exist:
 
   <Target Name="CleanCocoaSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <RemoveDir Directories="$(SentryCocoaRoot)XCFrameworkBuildPath" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryCocoaRoot)Sentry-Dynamic-iOS.xcframework" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryCocoaRoot)Sentry-Dynamic-macOS.xcframework" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryiOSArtifactsDestination)" ContinueOnError="true" />
     <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib" ContinueOnError="true" />
     <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" ContinueOnError="true" />
