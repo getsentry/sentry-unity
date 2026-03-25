@@ -20,11 +20,10 @@ if (-not (Test-Path (Join-Path $CocoaRoot "Sentry.xcodeproj"))) {
     exit 1
 }
 
-# Build intermediates are stored inside the submodule directory. Clean them to avoid stale builds
-# when the submodule is updated to a new version.
+# All build artifacts go under XCFrameworkBuildPath/ which is already in sentry-cocoa's .gitignore.
 $buildPath = Join-Path $CocoaRoot "XCFrameworkBuildPath"
-$iOSXcframeworkPath = Join-Path $CocoaRoot "Sentry-Dynamic-iOS.xcframework"
-$macOSXcframeworkPath = Join-Path $CocoaRoot "Sentry-Dynamic-macOS.xcframework"
+$iOSXcframeworkPath = Join-Path $buildPath "Sentry-Dynamic-iOS.xcframework"
+$macOSXcframeworkPath = Join-Path $buildPath "Sentry-Dynamic-macOS.xcframework"
 
 Write-Host "Building Cocoa SDK from source..." -ForegroundColor Yellow
 
@@ -39,8 +38,13 @@ try {
         # ships separate "-WithARM64e" variants for apps that need it; Unity games don't.
         & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "iOSOnly" "arm64e"
         & ./scripts/validate-xcframework-format.sh "Sentry-Dynamic.xcframework"
-        # build-xcframework-variant.sh produces Sentry-Dynamic.xcframework — rename to keep iOS and macOS separate
+        # build-xcframework-variant.sh outputs to the working directory — move into our build cache
         Move-Item -Path "Sentry-Dynamic.xcframework" -Destination $iOSXcframeworkPath -Force
+        # Clean up intermediate archives, keep the final xcframework
+        $archivePath = Join-Path $buildPath "archive"
+        if (Test-Path $archivePath) {
+            Remove-Item -Path $archivePath -Recurse -Force
+        }
     }
 
     Write-Host "Setting up iOS frameworks..." -ForegroundColor Yellow
@@ -68,11 +72,13 @@ try {
         & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "macOSOnly" ""
         & ./scripts/validate-xcframework-format.sh "Sentry-Dynamic.xcframework"
         Move-Item -Path "Sentry-Dynamic.xcframework" -Destination $macOSXcframeworkPath -Force
-    }
-
-    # Clean up build intermediates after both builds complete
-    if (Test-Path $buildPath) {
-        Remove-Item -Path $buildPath -Recurse -Force
+        # Clean up all remaining build intermediates
+        foreach ($dir in @("archive", "DerivedData")) {
+            $dirPath = Join-Path $buildPath $dir
+            if (Test-Path $dirPath) {
+                Remove-Item -Path $dirPath -Recurse -Force
+            }
+        }
     }
 
     Write-Host "Setting up macOS support..." -ForegroundColor Yellow
