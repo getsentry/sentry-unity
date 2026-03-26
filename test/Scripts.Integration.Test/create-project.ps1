@@ -45,6 +45,27 @@ $projectSettings = $projectSettings -replace "AndroidTargetArchitectures: ?[0-9]
 $projectSettings = $projectSettings -replace "iPhoneSdkVersion: ?[0-9]+", "iPhoneSdkVersion: 989"
 $projectSettings | Out-File $projectSettingsPath
 
+# Set Xbox GameCore builds to Master (non-development) when the GameCore module is present.
+# The build type is stored in Library/BuildProfiles and is only written to disk when the editor closes,
+# so we patch the files directly after project creation while Unity is not running.
+$buildProfilesPath = "$(GetNewProjectPath)/Library/BuildProfiles"
+If (Test-Path -Path $buildProfilesPath)
+{
+    foreach ($profileFile in Get-ChildItem "$buildProfilesPath/PlatformProfile.*.asset")
+    {
+        $content = Get-Content $profileFile.FullName -Raw
+        If ($content -match "GameCoreXboxOne|GameCoreScarlett")
+        {
+            $updated = $content -replace "m_Development: 1", "m_Development: 0"
+            If ($updated -ne $content)
+            {
+                $updated | Out-File $profileFile.FullName -Encoding utf8 -NoNewline
+                Write-Detail "Set Master build profile: $($profileFile.Name)"
+            }
+        }
+    }
+}
+
 # Add Unity UI package to manifest.json if not already present
 # Creating a new project via command line doesn't include the Unity UI package by default while creating it via the Hub does.
 Write-Log "Checking Unity UI package in manifest.json..."

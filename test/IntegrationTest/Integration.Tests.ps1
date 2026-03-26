@@ -130,6 +130,16 @@ BeforeAll {
             } catch {
                 Write-Warning "Failed to retrieve Unity log file from Xbox: $_"
             }
+            try {
+                Copy-DeviceItem -DevicePath "D:\Logs\sentry-sdk.log" -Destination $logLocalDir
+                $sdkLogContent = Get-Content "$logLocalDir/sentry-sdk.log" -ErrorAction SilentlyContinue
+                if ($sdkLogContent -and $sdkLogContent.Count -gt 0) {
+                    Write-Host "Retrieved SDK log file from Xbox ($($sdkLogContent.Count) lines)"
+                    $runResult.Output = @($runResult.Output) + @($sdkLogContent)
+                }
+            } catch {
+                Write-Warning "Failed to retrieve SDK log file from Xbox: $_"
+            }
         }
 
         # Save result to JSON file
@@ -155,6 +165,16 @@ BeforeAll {
                     }
                 } catch {
                     Write-Warning "Failed to retrieve Unity crash-send log file from Xbox: $_"
+                }
+                try {
+                    Copy-DeviceItem -DevicePath "D:\Logs\sentry-sdk.log" -Destination $sendLogDir
+                    $sdkLogContent = Get-Content "$sendLogDir/sentry-sdk.log" -ErrorAction SilentlyContinue
+                    if ($sdkLogContent -and $sdkLogContent.Count -gt 0) {
+                        Write-Host "Retrieved SDK log file from Xbox for crash-send ($($sdkLogContent.Count) lines)"
+                        $sendResult.Output = @($sendResult.Output) + @($sdkLogContent)
+                    }
+                } catch {
+                    Write-Warning "Failed to retrieve SDK log file from Xbox for crash-send: $_"
                 }
             }
 
