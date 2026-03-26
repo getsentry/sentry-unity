@@ -26,9 +26,9 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
 
 #if UNITY_GAMECORE
         // On Xbox, Debug.Log output is suppressed in non-development builds, so SDK diagnostic
-        // logs must be written to a known file path for the test harness to retrieve them.
+        // logs are written to the app's persistent data path for the test harness to retrieve.
         options.DiagnosticLogger = new SdkFileLogger(
-            "D:\\Logs\\sentry-sdk.log",
+            @"D:\SystemScratch\Logs\sentry-sdk.log",
             options.DiagnosticLevel);
 #endif
 
