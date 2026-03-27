@@ -56,7 +56,7 @@ public static partial class SentrySdk
     /// </summary>
     /// <remarks>
     /// Use this property to access structured logging functionality. Logs are only sent when
-    /// <see cref="SentryUnityOptions.Experimental"/>'s <see cref="SentryOptions.SentryExperimentalOptions.EnableLogs"/>
+    /// <see cref="SentryOptions.EnableLogs"/>
     /// is set to true.
     /// </remarks>
     /// <seealso href="https://develop.sentry.dev/sdk/telemetry/logs/"/>
@@ -548,32 +548,11 @@ public static partial class SentrySdk
     public static void CauseCrash(CrashType crashType) => Sentry.SentrySdk.CauseCrash(crashType);
 
     /// <summary>
-    /// Sentry features that are currently in an experimental state.
+    /// Gets the metric emitter for emitting counters, gauges, and distributions connected to traces.
     /// </summary>
-    /// <remarks>
-    /// Experimental features are subject to binary, source and behavioral breaking changes in future updates.
-    /// </remarks>
-    public static ExperimentalSentrySdk Experimental { get; } = new();
-
-    /// <summary>
-    /// Sentry features that are currently in an experimental state.
-    /// </summary>
-    /// <remarks>
-    /// Experimental features are subject to binary, source and behavioral breaking changes in future updates.
-    /// </remarks>
-    public sealed class ExperimentalSentrySdk
+    public static SentryMetricEmitter Metrics
     {
-        internal ExperimentalSentrySdk()
-        {
-        }
-
-        /// <summary>
-        /// Gets the metric emitter for emitting counters, gauges, and distributions connected to traces.
-        /// </summary>
-        public SentryMetricEmitter Metrics
-        {
-            [DebuggerStepThrough]
-            get => Sentry.SentrySdk.Experimental.Metrics;
-        }
+        [DebuggerStepThrough]
+        get => Sentry.SentrySdk.Metrics;
     }
 }
