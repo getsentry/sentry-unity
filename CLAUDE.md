@@ -82,7 +82,6 @@ src/
 Each platform follows a consistent architecture:
 
 1. **Native Bridge** - Platform-specific interface to native SDK
-
    - Android: JNI via `AndroidJavaClass`/`AndroidJavaObject`
    - iOS/macOS: Objective-C via `DllImport("__Internal")`
    - Windows/Linux: P/Invoke via `DllImport("sentry")`
@@ -108,20 +107,20 @@ Each platform follows a consistent architecture:
 
 The CI system uses modular, reusable workflows in `.github/workflows/`:
 
-| Workflow                       | Purpose                                            |
-| ------------------------------ | -------------------------------------------------- |
-| `ci.yml`                       | Main pipeline - triggers on push/PR                |
-| `build.yml`                    | Reusable build workflow                            |
-| `sdk.yml`                      | Native SDK builds (Android, Linux, Windows, Cocoa) |
-| `test-create.yml`              | Creates integration test projects                  |
-| `test-build-android.yml`       | Builds Android test apps                           |
-| `test-run-android.yml`         | Runs Android tests on emulator                     |
-| `test-build-ios.yml`           | Builds iOS test apps                               |
-| `test-compile-ios.yml`         | Compiles iOS Xcode projects                        |
-| `test-run-ios.yml`             | Runs iOS tests on simulator                        |
-| `release.yml`                  | Manual release preparation                         |
-| `update-deps.yml`              | Scheduled dependency updates (daily)               |
-| `create-unity-matrix.yml`      | Generates test matrix                              |
+| Workflow                  | Purpose                                            |
+| ------------------------- | -------------------------------------------------- |
+| `ci.yml`                  | Main pipeline - triggers on push/PR                |
+| `build.yml`               | Reusable build workflow                            |
+| `sdk.yml`                 | Native SDK builds (Android, Linux, Windows, Cocoa) |
+| `test-create.yml`         | Creates integration test projects                  |
+| `test-build-android.yml`  | Builds Android test apps                           |
+| `test-run-android.yml`    | Runs Android tests on emulator                     |
+| `test-build-ios.yml`      | Builds iOS test apps                               |
+| `test-compile-ios.yml`    | Compiles iOS Xcode projects                        |
+| `test-run-ios.yml`        | Runs iOS tests on simulator                        |
+| `release.yml`             | Manual release preparation                         |
+| `update-deps.yml`         | Scheduled dependency updates (daily)               |
+| `create-unity-matrix.yml` | Generates test matrix                              |
 
 ### Unity Version Matrix
 
@@ -151,15 +150,15 @@ Builds run in Docker containers using `ghcr.io/unityci/editor` images:
 
 Key targets defined in `Directory.Build.targets`:
 
-| Target                                 | Purpose                                 |
-| -------------------------------------- | --------------------------------------- |
-| `DownloadNativeSDKs`                   | Downloads prebuilt native SDKs from CI  |
-| `BuildAndroidSDK`                      | Builds Android SDK via Gradle           |
-| `BuildLinuxSDK`                        | Builds Linux SDK via CMake              |
-| `BuildWindowsSDK`                      | Builds Windows SDK via CMake (Crashpad) |
-| `BuildCocoaSDK`                        | Downloads iOS/macOS SDKs from releases  |
-| `UnityEditModeTest`                    | Runs edit-mode unit tests               |
-| `UnityPlayModeTest`                    | Runs play-mode tests                    |
+| Target               | Purpose                                 |
+| -------------------- | --------------------------------------- |
+| `DownloadNativeSDKs` | Downloads prebuilt native SDKs from CI  |
+| `BuildAndroidSDK`    | Builds Android SDK via Gradle           |
+| `BuildLinuxSDK`      | Builds Linux SDK via CMake              |
+| `BuildWindowsSDK`    | Builds Windows SDK via CMake (Crashpad) |
+| `BuildCocoaSDK`      | Downloads iOS/macOS SDKs from releases  |
+| `UnityEditModeTest`  | Runs edit-mode unit tests               |
+| `UnityPlayModeTest`  | Runs play-mode tests                    |
 
 ### Artifact Caching
 
@@ -253,6 +252,49 @@ Scripts involved:
 ### Package Validation
 
 `test/Scripts.Tests/test-pack-contents.ps1` validates package contents against a snapshot to detect unintended changes.
+
+### Release Process (Craft)
+
+Releases are managed by [craft](https://github.com/getsentry/craft). The process has two phases:
+
+**Phase 1 — Prepare (`.github/workflows/release.yml`):**
+
+1. Triggered manually via `workflow_dispatch` with optional version input (or `"auto"`)
+2. Runs `craft prepare` which:
+   - Resolves the version (auto-detects from commits when `versioning.policy: auto`)
+   - Creates a `release/<version>` branch from main
+   - Stamps `## Unreleased` → `## <version>` in `CHANGELOG.md`
+   - Runs `scripts/bump-version.sh` to update version in `Directory.Build.props`, `package/package.json`, and READMEs
+   - Commits as `release: <version>`, pushes the branch
+3. CI (`ci.yml`) triggers on the release branch push, building the `package-release.zip` artifact
+4. Craft creates a publish request issue on `getsentry/publish`
+
+**Phase 2 — Publish (triggered from `getsentry/publish`):**
+
+1. The publish issue is accepted (labeled `accepted`)
+2. `craft publish` checks out the release branch, downloads the `package-release.zip` artifact
+3. Publishes to targets defined in `.craft.yml`:
+   - **`upm`**: Clones `getsentry/unity`, replaces content with `package-release.zip`, pushes, creates GitHub release
+   - **`github`**: Creates GitHub release on `sentry-unity` with artifacts and changelog
+   - **`registry`**: Publishes to Sentry's package registry
+4. Merges the release branch back to main, then deletes it
+
+**Key configuration (`.craft.yml`):**
+
+```yaml
+minVersion: 2.21.4
+changelogPolicy: auto
+artifactProvider:
+  name: github
+  config:
+    artifacts: package-release # Must match the artifact name in build.yml
+```
+
+**How the UPM package gets its CHANGELOG:**
+
+- `scripts/pack.ps1` copies root `CHANGELOG.md` into `package-release/`
+- CI on the release branch runs `pack.ps1`, so the artifact contains the stamped changelog
+- The UPM target extracts this artifact into `getsentry/unity`
 
 ---
 
@@ -500,12 +542,12 @@ Key options:
 
 ### Test Types
 
-| Type         | Command                                                  | Location                          |
-| ------------ | -------------------------------------------------------- | --------------------------------- |
-| Edit Mode    | `dotnet msbuild /t:UnityEditModeTest`                    | `test/Sentry.Unity.Tests/`        |
-| Play Mode    | `dotnet msbuild /t:UnityPlayModeTest`                    | `test/Sentry.Unity.Tests/`        |
-| Editor Tests | `dotnet msbuild /t:UnityEditModeTest`                    | `test/Sentry.Unity.Editor.Tests/` |
-| Integration  | `integration-test.ps1`                                   | `test/Scripts.Integration.Test/`  |
+| Type         | Command                               | Location                          |
+| ------------ | ------------------------------------- | --------------------------------- |
+| Edit Mode    | `dotnet msbuild /t:UnityEditModeTest` | `test/Sentry.Unity.Tests/`        |
+| Play Mode    | `dotnet msbuild /t:UnityPlayModeTest` | `test/Sentry.Unity.Tests/`        |
+| Editor Tests | `dotnet msbuild /t:UnityEditModeTest` | `test/Sentry.Unity.Editor.Tests/` |
+| Integration  | `integration-test.ps1`                | `test/Scripts.Integration.Test/`  |
 
 ### Running All Tests
 
@@ -625,3 +667,6 @@ Configured through Editor window (Debug Symbols tab):
 This section captures learnings discovered during development sessions.
 Format: - [YYYY-MM-DD] Category: Note
 -->
+
+- [2026-03-27] Release: Releases 4.1.1 and 4.1.2 had broken changelogs. Root causes: (1) artifact naming was changed from SHA-based to `package-release` in CI before `.craft.yml` was updated to match, breaking craft's artifact lookup for 4.1.1; (2) release branch merge-back to main failed silently, leaving CHANGELOG.md on main permanently stuck at `## Unreleased`. Fixed by manually partitioning the changelog and adding the missing 4.1.1/4.1.2 sections.
+- [2026-03-27] Release: The `CHANGELOG.md merge=union` gitattribute prevents merge conflicts in the changelog during release branch merge-back, but other files modified by `bump-version.sh` can still conflict. When merging main into feature branches, `merge=union` can produce duplicate entries that need manual cleanup.
