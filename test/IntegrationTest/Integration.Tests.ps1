@@ -131,17 +131,19 @@ BeforeAll {
             Write-Host "No breadcrumb file found at D:\Logs\ ($_)" -ForegroundColor Gray
         }
 
-        # Fallback: try candidate paths where Application.persistentDataPath might map on the devkit.
-        # We try each one via xbcopy and stop at the first success.
+        # Fallback: try candidate paths matching the C# candidate order in IntegrationTester.cs.
+        # D:\Logs is first because it's the primary candidate on the C# side and is known to be
+        # xbcopy-accessible. Then try paths where persistentDataPath/temporaryCachePath might
+        # resolve, plus the D:\ root as a last resort.
 
         $candidateDirs = @(
+            "D:\Logs"
             "D:\DevelopmentFiles\$packageFamilyName\LocalState"
             "D:\DevelopmentFiles\$packageFamilyName\AC\LocalState"
             "D:\DevelopmentFiles\$packageFamilyName\TempState"
             "D:\DevelopmentFiles\$packageFamilyName\AC\TempState"
             "D:\DevelopmentFiles\$packageFamilyName\AC\Temp"
-            "D:\Logs"
-            "T:"
+            "D:\"
         )
 
         $logContent = $null
@@ -173,9 +175,39 @@ BeforeAll {
         }
 
         if (-not $logContent -or $logContent.Count -eq 0) {
-            # Log file not found — dump directory listings to help diagnose the correct path
-            Write-Warning "Log file not found at any candidate path. Listing directories for diagnostics:"
-            Write-Host "::group::Xbox directory diagnostics"
+            # Log file not found — try to retrieve the diagnostic file the app writes before crashing
+            Write-Warning "Log file not found at any candidate path. Checking for diagnostic files..."
+            Write-Host "::group::Xbox diagnostics"
+
+            # The C# code writes D:\unity-integration-test-diag.txt when all candidates fail
+            try {
+                $diagDest = "$logLocalDir/diag"
+                New-Item -ItemType Directory -Path $diagDest -Force | Out-Null
+                Copy-DeviceItem -DevicePath "D:\unity-integration-test-diag.txt" -Destination $diagDest
+                $diagFile = Join-Path $diagDest "unity-integration-test-diag.txt"
+                if (Test-Path $diagFile) {
+                    Write-Host "`n--- App diagnostic output (D:\unity-integration-test-diag.txt) ---" -ForegroundColor Red
+                    Get-Content $diagFile | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+                }
+            } catch {
+                Write-Host "No diagnostic file found at D:\unity-integration-test-diag.txt ($_)" -ForegroundColor Gray
+            }
+
+            # Also retrieve the Xbox crash log file if present
+            try {
+                $crashLogDest = "$logLocalDir/crash"
+                New-Item -ItemType Directory -Path $crashLogDest -Force | Out-Null
+                Copy-DeviceItem -DevicePath "D:\FullExceptionLogFile.txt" -Destination $crashLogDest
+                $crashLogFile = Join-Path $crashLogDest "FullExceptionLogFile.txt"
+                if (Test-Path $crashLogFile) {
+                    Write-Host "`n--- Xbox crash log (D:\FullExceptionLogFile.txt) ---" -ForegroundColor Red
+                    Get-Content $crashLogFile | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+                }
+            } catch {
+                Write-Host "No crash log at D:\FullExceptionLogFile.txt ($_)" -ForegroundColor Gray
+            }
+
+            Write-Host "`nDirectory listings for diagnostics:"
 
             Write-Host "`n--- D:\ root ---" -ForegroundColor Cyan
             Invoke-XboxDirListing "D:\"
@@ -192,15 +224,12 @@ BeforeAll {
             Write-Host "`n--- D:\Logs\ ---" -ForegroundColor Cyan
             Invoke-XboxDirListing "D:\Logs\"
 
-            Write-Host "`n--- T:\ root ---" -ForegroundColor Cyan
-            Invoke-XboxDirListing "T:\"
-
             Write-Host "`n--- S:\ root ---" -ForegroundColor Cyan
             Invoke-XboxDirListing "S:\"
 
             Write-Host "::endgroup::"
 
-            throw "Failed to retrieve Xbox log file ($logFileName). See directory diagnostics above."
+            throw "Failed to retrieve Xbox log file ($logFileName). See diagnostics above."
         }
 
         $RunResult.Output = $logContent

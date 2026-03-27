@@ -19,16 +19,26 @@ public class IntegrationTester : MonoBehaviour
     {
 #if UNITY_GAMECORE
         // On Xbox, Debug.Log output is suppressed in non-development (master) builds.
-        // Write to a file so the test harness can retrieve the output.
-        // Try several candidate paths — we don't know which ones are writable in a packaged master build.
+        // Write to a file so the test harness can retrieve the output via xbcopy.
+        //
+        // Candidate paths are ordered by likelihood of working on a retail devkit:
+        //   1. D:\Logs\ — known to be xbcopy-accessible, other apps (SentryPlayground) write here
+        //   2. persistentDataPath — may resolve to a sandbox path that doesn't exist in master builds
+        //   3. temporaryCachePath — same concern as persistentDataPath
+        //   4. D:\ root — crash dumps land here, so it's writable
         var logFileName = "unity-integration-test.log";
-        var candidatePaths = new[]
-        {
-            Path.Combine(Application.persistentDataPath, logFileName),
-            Path.Combine(Application.temporaryCachePath, logFileName),
-            @"D:\Logs\" + logFileName,
-            @"T:\" + logFileName,
-        };
+        string persistentPath = null;
+        string tempCachePath = null;
+        try { persistentPath = Application.persistentDataPath; } catch { /* may throw on some configs */ }
+        try { tempCachePath = Application.temporaryCachePath; } catch { /* may throw on some configs */ }
+
+        var candidatePaths = new List<string>();
+        candidatePaths.Add(@"D:\Logs\" + logFileName);
+        if (!string.IsNullOrEmpty(persistentPath))
+            candidatePaths.Add(Path.Combine(persistentPath, logFileName));
+        if (!string.IsNullOrEmpty(tempCachePath))
+            candidatePaths.Add(Path.Combine(tempCachePath, logFileName));
+        candidatePaths.Add(@"D:\" + logFileName);
 
         string openedPath = null;
         string allErrors = "";
@@ -42,18 +52,17 @@ public class IntegrationTester : MonoBehaviour
             }
             catch (Exception ex)
             {
-                allErrors += $"  {candidate}: {ex.Message}\n";
+                allErrors += $"  {candidate}: {ex.GetType().Name}: {ex.Message}\n";
             }
         }
 
         if (openedPath != null)
         {
             Logger.Log($"Log file opened at: {openedPath}");
-            Logger.Log($"persistentDataPath: {Application.persistentDataPath}");
-            Logger.Log($"temporaryCachePath: {Application.temporaryCachePath}");
+            Logger.Log($"persistentDataPath: {persistentPath ?? "(null)"}");
+            Logger.Log($"temporaryCachePath: {tempCachePath ?? "(null)"}");
 
             // Write a breadcrumb file to D:\Logs so the test harness can discover where the log ended up.
-            // D:\Logs is known to be accessible via xbcopy even if the app can't write the main log there.
             try
             {
                 Directory.CreateDirectory(@"D:\Logs");
@@ -61,13 +70,23 @@ public class IntegrationTester : MonoBehaviour
             }
             catch
             {
-                // Best-effort — if D:\Logs isn't writable either, we'll rely on candidate search.
+                // Best-effort — if D:\Logs isn't writable, the test harness will use candidate search.
             }
         }
         else
         {
-            // None of the paths worked — crash so the test harness sees a non-zero exit code.
-            throw new IOException($"Failed to open log file at any candidate path:\n{allErrors}");
+            // None of the paths worked. Write diagnostics to D:\ before crashing so the test
+            // harness can retrieve the file via xbcopy and see what went wrong.
+            var diagMessage = $"Failed to open log file at any candidate path:\n{allErrors}";
+            try
+            {
+                File.WriteAllText(@"D:\unity-integration-test-diag.txt", diagMessage);
+            }
+            catch
+            {
+                // If even D:\ root isn't writable, the crash dump is our only clue.
+            }
+            throw new IOException(diagMessage);
         }
 #endif
 
