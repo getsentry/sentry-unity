@@ -24,14 +24,6 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.DiagnosticLevel = SentryLevel.Debug;
         options.TracesSampleRate = 1.0d;
 
-#if UNITY_GAMECORE
-        // On Xbox, Debug.Log output is suppressed in non-development builds, so SDK diagnostic
-        // logs are written to the app's persistent data path for the test harness to retrieve.
-        options.DiagnosticLogger = new SdkFileLogger(
-            @"D:\Logs\unity-integration-test.log",
-            options.DiagnosticLevel);
-#endif
-
         // No custom HTTP handler -- events go to real sentry.io
 
         // Filtering test output from breadcrumbs
@@ -52,52 +44,5 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 
         Debug.Log("Sentry: IntegrationOptionsConfig::Configure() finished");
-    }
-
-    private class SdkFileLogger : IDiagnosticLogger
-    {
-        private readonly StreamWriter _writer;
-        private readonly SentryLevel _minLevel;
-
-        public SdkFileLogger(string logFilePath, SentryLevel minLevel)
-        {
-            _minLevel = minLevel;
-            try
-            {
-                var directory = Path.GetDirectoryName(logFilePath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-                _writer = new StreamWriter(logFilePath, append: true) { AutoFlush = true };
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"SdkFileLogger: Failed to open log file '{logFilePath}': {ex.Message}");
-            }
-        }
-
-        public bool IsEnabled(SentryLevel level) => level >= _minLevel;
-
-        public void Log(SentryLevel logLevel, string message, Exception? exception = null, params object?[] args)
-        {
-            if (!IsEnabled(logLevel) || _writer == null)
-            {
-                return;
-            }
-
-            try
-            {
-                var text = args.Length == 0 ? message : string.Format(message, args);
-                var line = exception == null
-                    ? $"[Sentry] {logLevel}: {text}"
-                    : $"[Sentry] {logLevel}: {text}{Environment.NewLine}{exception}";
-                _writer.WriteLine(line);
-            }
-            catch
-            {
-                // Don't let file writing errors break the app.
-            }
-        }
     }
 }
