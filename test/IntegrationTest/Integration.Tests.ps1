@@ -36,6 +36,107 @@ BeforeAll {
         }
     }
 
+    # Run xbdir.exe to list a directory on the Xbox devkit. Returns the output lines.
+    # Errors are caught and logged rather than thrown — this is a diagnostic tool.
+    function Invoke-XboxDirListing {
+        param(
+            [Parameter(Mandatory=$true)]
+            [string]$DevicePath
+        )
+
+        Write-Host "  xbdir x$DevicePath" -ForegroundColor Gray
+        try {
+            $output = & xbdir.exe "x$DevicePath" 2>&1
+            $output | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
+            return $output
+        } catch {
+            Write-Host "    (xbdir failed: $_)" -ForegroundColor Yellow
+            return @()
+        }
+    }
+
+    # Retrieve the integration test log file from Xbox and attach it to the run result.
+    # The Unity app writes to Application.persistentDataPath/unity-integration-test.log.
+    # We don't know the exact devkit-accessible path yet, so we search several candidates
+    # and log directory listings for diagnostics.
+    function Get-XboxLogOutput {
+        param(
+            [Parameter(Mandatory=$true)]
+            $RunResult,
+
+            [Parameter(Mandatory=$true)]
+            [string]$Action
+        )
+
+        $logFileName = "unity-integration-test.log"
+        $logLocalDir = "$PSScriptRoot/results/xbox-logs/$Action"
+        New-Item -ItemType Directory -Path $logLocalDir -Force | Out-Null
+
+        # Check if the app exited with a non-zero code (Logger.Open likely failed)
+        if ($RunResult.ExitCode -and $RunResult.ExitCode -ne 0) {
+            Write-Warning "Xbox app exited with code $($RunResult.ExitCode) — the log file may not have been created."
+        }
+
+        # Candidate paths where Application.persistentDataPath might map on the devkit.
+        # We try each one via xbcopy and stop at the first success.
+        $packageFamilyName = $script:ExecutablePath -replace '!.*$', ''
+
+        $candidateDirs = @(
+            "D:\DevelopmentFiles\$packageFamilyName\LocalState"
+            "D:\DevelopmentFiles\$packageFamilyName\AC\LocalState"
+            "D:\Logs"
+        )
+
+        $logContent = $null
+
+        foreach ($candidateDir in $candidateDirs) {
+            Write-Host "Trying to retrieve log from: $candidateDir" -ForegroundColor Yellow
+            try {
+                $copyDest = "$logLocalDir/$($candidateDir -replace '[:\\]', '_')"
+                New-Item -ItemType Directory -Path $copyDest -Force | Out-Null
+                Copy-DeviceItem -DevicePath "$candidateDir\$logFileName" -Destination $copyDest
+                $localFile = Join-Path $copyDest $logFileName
+                if (Test-Path $localFile) {
+                    $logContent = Get-Content $localFile -ErrorAction SilentlyContinue
+                    if ($logContent -and $logContent.Count -gt 0) {
+                        Write-Host "Retrieved log file from $candidateDir ($($logContent.Count) lines)" -ForegroundColor Green
+                        break
+                    }
+                }
+            } catch {
+                Write-Host "  Not found at $candidateDir ($_)" -ForegroundColor Gray
+            }
+        }
+
+        if (-not $logContent -or $logContent.Count -eq 0) {
+            # Log file not found — dump directory listings to help diagnose the correct path
+            Write-Warning "Log file not found at any candidate path. Listing directories for diagnostics:"
+            Write-Host "::group::Xbox directory diagnostics"
+
+            Write-Host "`n--- D:\ root ---" -ForegroundColor Cyan
+            Invoke-XboxDirListing "D:\"
+
+            Write-Host "`n--- D:\DevelopmentFiles\ ---" -ForegroundColor Cyan
+            Invoke-XboxDirListing "D:\DevelopmentFiles\"
+
+            Write-Host "`n--- D:\DevelopmentFiles\$packageFamilyName\ ---" -ForegroundColor Cyan
+            Invoke-XboxDirListing "D:\DevelopmentFiles\$packageFamilyName\"
+
+            Write-Host "`n--- D:\DevelopmentFiles\$packageFamilyName\AC\ ---" -ForegroundColor Cyan
+            Invoke-XboxDirListing "D:\DevelopmentFiles\$packageFamilyName\AC\"
+
+            Write-Host "`n--- S:\ root ---" -ForegroundColor Cyan
+            Invoke-XboxDirListing "S:\"
+
+            Write-Host "::endgroup::"
+
+            throw "Failed to retrieve Xbox log file ($logFileName). See directory diagnostics above."
+        }
+
+        $RunResult.Output = $logContent
+        return $RunResult
+    }
+
     # Run a WebGL test action via headless Chrome
     function Invoke-WebGLTestAction {
         param (
@@ -116,20 +217,7 @@ BeforeAll {
         # On Xbox, console output is not available in non-development builds.
         # Instead, Unity writes to a log file on the device which we retrieve and use as output.
         if ($script:Platform -eq "Xbox") {
-            $logLocalDir = "$PSScriptRoot/results/xbox-logs/$Action"
-            New-Item -ItemType Directory -Path $logLocalDir -Force | Out-Null
-            try {
-                Copy-DeviceItem -DevicePath "D:\Logs\unity-integration-test.log" -Destination $logLocalDir
-                $logContent = Get-Content "$logLocalDir/unity-integration-test.log" -ErrorAction SilentlyContinue
-                if ($logContent -and $logContent.Count -gt 0) {
-                    Write-Host "Retrieved SDK log file from Xbox ($($logContent.Count) lines)"
-                    $runResult.Output = $logContent
-                } else {
-                    Write-Warning "SDK log file was empty or not found on Xbox."
-                }
-            } catch {
-                Write-Warning "Failed to retrieve SDK log file from Xbox: $_"
-            }
+            $runResult = Get-XboxLogOutput -RunResult $runResult -Action $Action
         }
 
         # Save result to JSON file
@@ -144,18 +232,7 @@ BeforeAll {
 
             # On Xbox, retrieve the log file for crash-send output too
             if ($script:Platform -eq "Xbox") {
-                $sendLogDir = "$PSScriptRoot/results/xbox-logs/crash-send"
-                New-Item -ItemType Directory -Path $sendLogDir -Force | Out-Null
-                try {
-                    Copy-DeviceItem -DevicePath "D:\Logs\unity-integration-test.log" -Destination $sendLogDir
-                    $sendLogContent = Get-Content "$sendLogDir/unity-integration-test.log" -ErrorAction SilentlyContinue
-                    if ($sendLogContent -and $sendLogContent.Count -gt 0) {
-                        Write-Host "Retrieved SDK crash-send log file from Xbox ($($sendLogContent.Count) lines)"
-                        $sendResult.Output = $sendLogContent
-                    }
-                } catch {
-                    Write-Warning "Failed to retrieve SDK crash-send log file from Xbox: $_"
-                }
+                $sendResult = Get-XboxLogOutput -RunResult $sendResult -Action "crash-send"
             }
 
             # Save crash-send result to JSON for debugging

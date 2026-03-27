@@ -16,10 +16,12 @@ public static class Logger
 {
     private static StreamWriter s_writer;
     private static readonly object s_lock = new();
+    private static string s_logFilePath;
 
     /// <summary>
     /// Opens the log file. Call once during initialization.
-    /// Subsequent calls are ignored if a writer is already open.
+    /// Throws if the file cannot be created — the caller should let the app crash
+    /// so the test harness can detect the non-zero exit code.
     /// </summary>
     public static void Open(string logFilePath)
     {
@@ -30,22 +32,23 @@ public static class Logger
                 return;
             }
 
-            try
+            var directory = Path.GetDirectoryName(logFilePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
-                var directory = Path.GetDirectoryName(logFilePath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
+                Directory.CreateDirectory(directory);
+            }
 
-                s_writer = new StreamWriter(logFilePath, append: false) { AutoFlush = true };
-            }
-            catch (Exception ex)
-            {
-                // If we can't write to the file, don't break the app.
-                Debug.LogWarning($"Logger: Failed to open '{logFilePath}': {ex.Message}");
-            }
+            s_writer = new StreamWriter(logFilePath, append: false) { AutoFlush = true };
+            s_logFilePath = logFilePath;
         }
+    }
+
+    /// <summary>
+    /// Returns the path that was opened, or null if not opened.
+    /// </summary>
+    public static string GetLogFilePath()
+    {
+        return s_logFilePath;
     }
 
     /// <summary>
@@ -54,9 +57,7 @@ public static class Logger
     /// </summary>
     public static void Log(string message)
     {
-        // Always attempt Debug.Log — on platforms where it works, this gives us console output.
         Debug.Log(message);
-
         WriteToFile(message);
     }
 
@@ -66,8 +67,16 @@ public static class Logger
     public static void LogWarning(string message)
     {
         Debug.LogWarning(message);
-
         WriteToFile($"[WARNING] {message}");
+    }
+
+    /// <summary>
+    /// Writes an error to the log file and Debug.LogError.
+    /// </summary>
+    public static void LogError(string message)
+    {
+        Debug.LogError(message);
+        WriteToFile($"[ERROR] {message}");
     }
 
     private static void WriteToFile(string message)

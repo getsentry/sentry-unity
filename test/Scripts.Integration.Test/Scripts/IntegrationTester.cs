@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Sentry;
@@ -17,9 +18,12 @@ public class IntegrationTester : MonoBehaviour
     private void Awake()
     {
 #if UNITY_GAMECORE
-        // On Xbox, Debug.Log output is suppressed in non-development builds.
-        // Open a log file so test output is written to a retrievable location on disk.
-        Logger.Open(@"D:\Logs\unity-integration-test.log");
+        // On Xbox, Debug.Log output is suppressed in non-development (master) builds.
+        // Write to a file so the test harness can retrieve the output.
+        var logPath = Path.Combine(Application.persistentDataPath, "unity-integration-test.log");
+        Logger.Open(logPath); // Throws on failure — let the app crash so the test harness sees a non-zero exit code.
+        Logger.Log($"persistentDataPath: {Application.persistentDataPath}");
+        Logger.Log($"Log file: {logPath}");
 #endif
 
         Logger.Log("IntegrationTester, awake!");
@@ -49,7 +53,7 @@ public class IntegrationTester : MonoBehaviour
                 CrashSend();
                 break;
             default:
-                Logger.Log($"ERROR: IntegrationTester: Unknown command: {arg}");
+                Logger.LogError($"IntegrationTester: Unknown command: {arg}");
 #if !UNITY_WEBGL
                 Application.Quit(1);
 #endif
