@@ -46,10 +46,11 @@ BeforeAll {
 
         Write-Host "  Listing x$DevicePath" -ForegroundColor Gray
         $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "xbox-diag-$([System.IO.Path]::GetRandomFileName())"
+        $xbcopyPath = if ($env:GameDK) { Join-Path $env:GameDK 'bin\xbcopy.exe' } else { 'xbcopy.exe' }
         try {
             New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
             # xbcopy mirrors the directory — even if it fails, the output shows the error/path info
-            $output = & xbcopy.exe "x$DevicePath" "$tempDir" /mirror 2>&1
+            $output = & $xbcopyPath "x$DevicePath" "$tempDir" /mirror 2>&1
             $output | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
 
             # List whatever got copied locally
@@ -94,13 +95,51 @@ BeforeAll {
             Write-Warning "Xbox app exited with code $($RunResult.ExitCode) — the log file may not have been created."
         }
 
-        # Candidate paths where Application.persistentDataPath might map on the devkit.
-        # We try each one via xbcopy and stop at the first success.
+        # First, check if the app wrote a breadcrumb file telling us where the log is.
         $packageFamilyName = $script:ExecutablePath -replace '!.*$', ''
+        try {
+            $breadcrumbDest = "$logLocalDir/breadcrumb"
+            New-Item -ItemType Directory -Path $breadcrumbDest -Force | Out-Null
+            Copy-DeviceItem -DevicePath "D:\Logs\unity-integration-test-path.txt" -Destination $breadcrumbDest
+            $breadcrumbFile = Join-Path $breadcrumbDest "unity-integration-test-path.txt"
+            if (Test-Path $breadcrumbFile) {
+                $discoveredPath = (Get-Content $breadcrumbFile -Raw).Trim()
+                if ($discoveredPath) {
+                    Write-Host "Breadcrumb says log file is at: $discoveredPath" -ForegroundColor Cyan
+                    # Extract the directory from the discovered path
+                    $discoveredDir = Split-Path $discoveredPath -Parent
+                    # Try to retrieve using this exact path
+                    try {
+                        $directDest = "$logLocalDir/discovered"
+                        New-Item -ItemType Directory -Path $directDest -Force | Out-Null
+                        Copy-DeviceItem -DevicePath $discoveredPath -Destination $directDest
+                        $localFile = Join-Path $directDest $logFileName
+                        if (Test-Path $localFile) {
+                            $logContent = Get-Content $localFile -ErrorAction SilentlyContinue
+                            if ($logContent -and $logContent.Count -gt 0) {
+                                Write-Host "Retrieved log file via breadcrumb ($($logContent.Count) lines)" -ForegroundColor Green
+                                $RunResult.Output = $logContent
+                                return $RunResult
+                            }
+                        }
+                    } catch {
+                        Write-Host "  Could not retrieve from breadcrumb path: $_" -ForegroundColor Yellow
+                    }
+                }
+            }
+        } catch {
+            Write-Host "No breadcrumb file found at D:\Logs\ ($_)" -ForegroundColor Gray
+        }
+
+        # Fallback: try candidate paths where Application.persistentDataPath might map on the devkit.
+        # We try each one via xbcopy and stop at the first success.
 
         $candidateDirs = @(
             "D:\DevelopmentFiles\$packageFamilyName\LocalState"
             "D:\DevelopmentFiles\$packageFamilyName\AC\LocalState"
+            "D:\DevelopmentFiles\$packageFamilyName\TempState"
+            "D:\DevelopmentFiles\$packageFamilyName\AC\TempState"
+            "D:\DevelopmentFiles\$packageFamilyName\AC\Temp"
             "D:\Logs"
             "T:"
         )
@@ -114,6 +153,13 @@ BeforeAll {
                 New-Item -ItemType Directory -Path $copyDest -Force | Out-Null
                 Copy-DeviceItem -DevicePath "$candidateDir\$logFileName" -Destination $copyDest
                 $localFile = Join-Path $copyDest $logFileName
+                # Show what we got locally
+                $localItems = Get-ChildItem $copyDest -ErrorAction SilentlyContinue
+                if ($localItems) {
+                    Write-Host "  Copied files: $($localItems | ForEach-Object { "$($_.Name) ($($_.Length) bytes)" })" -ForegroundColor Gray
+                } else {
+                    Write-Host "  Copy succeeded but directory is empty" -ForegroundColor Gray
+                }
                 if (Test-Path $localFile) {
                     $logContent = Get-Content $localFile -ErrorAction SilentlyContinue
                     if ($logContent -and $logContent.Count -gt 0) {
@@ -142,6 +188,12 @@ BeforeAll {
 
             Write-Host "`n--- D:\DevelopmentFiles\$packageFamilyName\AC\ ---" -ForegroundColor Cyan
             Invoke-XboxDirListing "D:\DevelopmentFiles\$packageFamilyName\AC\"
+
+            Write-Host "`n--- D:\Logs\ ---" -ForegroundColor Cyan
+            Invoke-XboxDirListing "D:\Logs\"
+
+            Write-Host "`n--- T:\ root ---" -ForegroundColor Cyan
+            Invoke-XboxDirListing "T:\"
 
             Write-Host "`n--- S:\ root ---" -ForegroundColor Cyan
             Invoke-XboxDirListing "S:\"

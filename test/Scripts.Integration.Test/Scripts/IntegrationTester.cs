@@ -51,6 +51,18 @@ public class IntegrationTester : MonoBehaviour
             Logger.Log($"Log file opened at: {openedPath}");
             Logger.Log($"persistentDataPath: {Application.persistentDataPath}");
             Logger.Log($"temporaryCachePath: {Application.temporaryCachePath}");
+
+            // Write a breadcrumb file to D:\Logs so the test harness can discover where the log ended up.
+            // D:\Logs is known to be accessible via xbcopy even if the app can't write the main log there.
+            try
+            {
+                Directory.CreateDirectory(@"D:\Logs");
+                File.WriteAllText(@"D:\Logs\unity-integration-test-path.txt", openedPath);
+            }
+            catch
+            {
+                // Best-effort — if D:\Logs isn't writable either, we'll rely on candidate search.
+            }
         }
         else
         {
