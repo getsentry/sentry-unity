@@ -32,7 +32,7 @@ BeforeAll {
             "Android" { return @("-e", "test", $Action) }
             "Desktop" { return @("--test", $Action, "-logFile", "-") }
             "iOS"     { return @("--test", $Action) }
-            "Xbox"    { return @("--test", $Action, "-logFile", "D:\Logs\UnityIntegrationTest.log") }
+            "Xbox"    { return @("--test", $Action) }
         }
     }
 
@@ -119,23 +119,13 @@ BeforeAll {
             $logLocalDir = "$PSScriptRoot/results/xbox-logs/$Action"
             New-Item -ItemType Directory -Path $logLocalDir -Force | Out-Null
             try {
-                Copy-DeviceItem -DevicePath "D:\Logs\UnityIntegrationTest.log" -Destination $logLocalDir
-                $logContent = Get-Content "$logLocalDir/UnityIntegrationTest.log" -ErrorAction SilentlyContinue
+                Copy-DeviceItem -DevicePath "D:\Logs\unity-integration-test.log" -Destination $logLocalDir
+                $logContent = Get-Content "$logLocalDir/unity-integration-test.log" -ErrorAction SilentlyContinue
                 if ($logContent -and $logContent.Count -gt 0) {
-                    Write-Host "Retrieved Unity log file from Xbox ($($logContent.Count) lines)"
+                    Write-Host "Retrieved SDK log file from Xbox ($($logContent.Count) lines)"
                     $runResult.Output = $logContent
                 } else {
-                    Write-Warning "Unity log file was empty or not found on Xbox."
-                }
-            } catch {
-                Write-Warning "Failed to retrieve Unity log file from Xbox: $_"
-            }
-            try {
-                Copy-DeviceItem -DevicePath "D:\Logs\sentry-sdk.log" -Destination $logLocalDir
-                $sdkLogContent = Get-Content "$logLocalDir/sentry-sdk.log" -ErrorAction SilentlyContinue
-                if ($sdkLogContent -and $sdkLogContent.Count -gt 0) {
-                    Write-Host "Retrieved SDK log file from Xbox ($($sdkLogContent.Count) lines)"
-                    $runResult.Output = @($runResult.Output) + @($sdkLogContent)
+                    Write-Warning "SDK log file was empty or not found on Xbox."
                 }
             } catch {
                 Write-Warning "Failed to retrieve SDK log file from Xbox: $_"
@@ -157,24 +147,14 @@ BeforeAll {
                 $sendLogDir = "$PSScriptRoot/results/xbox-logs/crash-send"
                 New-Item -ItemType Directory -Path $sendLogDir -Force | Out-Null
                 try {
-                    Copy-DeviceItem -DevicePath "D:\Logs\UnityIntegrationTest.log" -Destination $sendLogDir
-                    $sendLogContent = Get-Content "$sendLogDir/UnityIntegrationTest.log" -ErrorAction SilentlyContinue
+                    Copy-DeviceItem -DevicePath "D:\Logs\unity-integration-test.log" -Destination $sendLogDir
+                    $sendLogContent = Get-Content "$sendLogDir/unity-integration-test.log" -ErrorAction SilentlyContinue
                     if ($sendLogContent -and $sendLogContent.Count -gt 0) {
-                        Write-Host "Retrieved Unity crash-send log file from Xbox ($($sendLogContent.Count) lines)"
+                        Write-Host "Retrieved SDK crash-send log file from Xbox ($($sendLogContent.Count) lines)"
                         $sendResult.Output = $sendLogContent
                     }
                 } catch {
-                    Write-Warning "Failed to retrieve Unity crash-send log file from Xbox: $_"
-                }
-                try {
-                    Copy-DeviceItem -DevicePath "D:\Logs\sentry-sdk.log" -Destination $sendLogDir
-                    $sdkLogContent = Get-Content "$sendLogDir/sentry-sdk.log" -ErrorAction SilentlyContinue
-                    if ($sdkLogContent -and $sdkLogContent.Count -gt 0) {
-                        Write-Host "Retrieved SDK log file from Xbox for crash-send ($($sdkLogContent.Count) lines)"
-                        $sendResult.Output = @($sendResult.Output) + @($sdkLogContent)
-                    }
-                } catch {
-                    Write-Warning "Failed to retrieve SDK log file from Xbox for crash-send: $_"
+                    Write-Warning "Failed to retrieve SDK crash-send log file from Xbox: $_"
                 }
             }
 
