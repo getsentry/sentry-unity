@@ -21,6 +21,7 @@ public class Builder
 
         // Make sure the configuration is right.
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
+        EditorUserBuildSettings.development = false;
         EditorUserBuildSettings.allowDebugging = false;
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.FromBuildTargetGroup(group), ScriptingImplementation.IL2CPP);
         // Making sure that the app keeps on running in the background. Linux CI is very unhappy with coroutines otherwise.
@@ -183,12 +184,14 @@ public class Builder
     public static void BuildXSXIL2CPPPlayer()
     {
         Debug.Log("Builder: Building Xbox Series X|S IL2CPP Player");
+        SetXboxSubtargetToMaster();
         BuildIl2CPPPlayer(BuildTarget.GameCoreXboxSeries, BuildTargetGroup.GameCoreXboxSeries, BuildOptions.StrictMode);
     }
 
     public static void BuildXB1IL2CPPPlayer()
     {
         Debug.Log("Builder: Building Xbox One IL2CPP Player");
+        SetXboxSubtargetToMaster();
         BuildIl2CPPPlayer(BuildTarget.GameCoreXboxOne, BuildTargetGroup.GameCoreXboxOne, BuildOptions.StrictMode);
     }
 
@@ -196,6 +199,50 @@ public class Builder
     {
         Debug.Log("Builder: Building PS5 IL2CPP Player");
         BuildIl2CPPPlayer(BuildTarget.PS5, BuildTargetGroup.PS5, BuildOptions.StrictMode);
+    }
+
+    // We'll likely extend this to also work with PS and Switch
+    private static void SetXboxSubtargetToMaster()
+    {
+        // The actual editor API to set this has bee deprecated: https://docs.unity3d.com/6000.3/Documentation/ScriptReference/XboxBuildSubtarget.html
+        // Modifying the build profiles and build setting assets on disk does not work. Some of the properties are
+        // stored inside a binary. Instead we're setting the properties via reflection and then saving the asset.
+        var buildProfileType = Type.GetType("UnityEditor.Build.Profile.BuildProfile, UnityEditor.CoreModule");
+        if (buildProfileType == null)
+            return;
+
+        foreach (var profile in Resources.FindObjectsOfTypeAll(buildProfileType))
+        {
+            // BuildTarget.GameCoreXboxSeries = 42, BuildTarget.GameCoreXboxOne = 43.
+            var buildTarget = new SerializedObject(profile).FindProperty("m_BuildTarget")?.intValue ?? -1;
+            if (buildTarget != 42 && buildTarget != 43)
+                continue;
+
+            var platformSettings = buildProfileType
+                .GetProperty("platformBuildProfile", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.GetValue(profile);
+            var settingsData = platformSettings?.GetType()
+                .GetField("m_settingsData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.GetValue(platformSettings);
+
+            GetFieldInHierarchy(settingsData?.GetType(), "buildSubtarget")?.SetValue(settingsData, 1); // 1 = Master
+            GetFieldInHierarchy(platformSettings?.GetType(), "m_Development")?.SetValue(platformSettings, false);
+            EditorUtility.SetDirty(profile);
+            Debug.Log($"Builder: Xbox Build Profile (BuildTarget {buildTarget}) set to Master");
+        }
+        AssetDatabase.SaveAssets();
+    }
+
+    private static FieldInfo GetFieldInHierarchy(Type type, string fieldName)
+    {
+        while (type != null)
+        {
+            var field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            if (field != null)
+                return field;
+            type = type.BaseType;
+        }
+        return null;
     }
 
     private static void ValidateArguments(Dictionary<string, string> args)

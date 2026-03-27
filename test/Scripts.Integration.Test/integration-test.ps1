@@ -108,9 +108,10 @@ Else {
         "^Switch$" {
             Write-PhaseSuccess "Switch build completed - no automated test execution available"
         }
-        "^(XSX|XB1)$"
-        {
-            Write-PhaseSuccess "Xbox build completed - no automated test execution available"
+        "^(XSX|XB1)$" {
+            $env:SENTRY_TEST_PLATFORM = "Xbox"
+            $env:SENTRY_TEST_APP = GetNewProjectBuildPath
+            Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
         }
         "^PS5$"
         {
