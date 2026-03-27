@@ -20,10 +20,43 @@ public class IntegrationTester : MonoBehaviour
 #if UNITY_GAMECORE
         // On Xbox, Debug.Log output is suppressed in non-development (master) builds.
         // Write to a file so the test harness can retrieve the output.
-        var logPath = Path.Combine(Application.persistentDataPath, "unity-integration-test.log");
-        Logger.Open(logPath); // Throws on failure — let the app crash so the test harness sees a non-zero exit code.
-        Logger.Log($"persistentDataPath: {Application.persistentDataPath}");
-        Logger.Log($"Log file: {logPath}");
+        // Try several candidate paths — we don't know which ones are writable in a packaged master build.
+        var logFileName = "unity-integration-test.log";
+        var candidatePaths = new[]
+        {
+            Path.Combine(Application.persistentDataPath, logFileName),
+            Path.Combine(Application.temporaryCachePath, logFileName),
+            @"D:\Logs\" + logFileName,
+            @"T:\" + logFileName,
+        };
+
+        string openedPath = null;
+        string allErrors = "";
+        foreach (var candidate in candidatePaths)
+        {
+            try
+            {
+                Logger.Open(candidate);
+                openedPath = candidate;
+                break;
+            }
+            catch (Exception ex)
+            {
+                allErrors += $"  {candidate}: {ex.Message}\n";
+            }
+        }
+
+        if (openedPath != null)
+        {
+            Logger.Log($"Log file opened at: {openedPath}");
+            Logger.Log($"persistentDataPath: {Application.persistentDataPath}");
+            Logger.Log($"temporaryCachePath: {Application.temporaryCachePath}");
+        }
+        else
+        {
+            // None of the paths worked — crash so the test harness sees a non-zero exit code.
+            throw new IOException($"Failed to open log file at any candidate path:\n{allErrors}");
+        }
 #endif
 
         Logger.Log("IntegrationTester, awake!");

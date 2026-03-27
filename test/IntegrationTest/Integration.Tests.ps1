@@ -36,7 +36,7 @@ BeforeAll {
         }
     }
 
-    # Run xbdir.exe to list a directory on the Xbox devkit. Returns the output lines.
+    # List a directory on the Xbox devkit by mirroring it to a local temp folder.
     # Errors are caught and logged rather than thrown — this is a diagnostic tool.
     function Invoke-XboxDirListing {
         param(
@@ -44,14 +44,31 @@ BeforeAll {
             [string]$DevicePath
         )
 
-        Write-Host "  xbdir x$DevicePath" -ForegroundColor Gray
+        Write-Host "  Listing x$DevicePath" -ForegroundColor Gray
+        $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "xbox-diag-$([System.IO.Path]::GetRandomFileName())"
         try {
-            $output = & xbdir.exe "x$DevicePath" 2>&1
+            New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+            # xbcopy mirrors the directory — even if it fails, the output shows the error/path info
+            $output = & xbcopy.exe "x$DevicePath" "$tempDir" /mirror 2>&1
             $output | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
+
+            # List whatever got copied locally
+            if (Test-Path $tempDir) {
+                $items = Get-ChildItem $tempDir -Recurse -ErrorAction SilentlyContinue
+                if ($items) {
+                    Write-Host "    Contents:" -ForegroundColor Gray
+                    $items | ForEach-Object {
+                        $rel = $_.FullName.Substring($tempDir.Length)
+                        Write-Host "      $rel ($($_.Length) bytes)" -ForegroundColor Gray
+                    }
+                }
+            }
             return $output
         } catch {
-            Write-Host "    (xbdir failed: $_)" -ForegroundColor Yellow
+            Write-Host "    (listing failed: $_)" -ForegroundColor Yellow
             return @()
+        } finally {
+            Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 
@@ -85,6 +102,7 @@ BeforeAll {
             "D:\DevelopmentFiles\$packageFamilyName\LocalState"
             "D:\DevelopmentFiles\$packageFamilyName\AC\LocalState"
             "D:\Logs"
+            "T:"
         )
 
         $logContent = $null
