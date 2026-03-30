@@ -36,47 +36,8 @@ BeforeAll {
         }
     }
 
-    # List a directory on the Xbox devkit by mirroring it to a local temp folder.
-    # Errors are caught and logged rather than thrown — this is a diagnostic tool.
-    function Invoke-XboxDirListing {
-        param(
-            [Parameter(Mandatory=$true)]
-            [string]$DevicePath
-        )
-
-        Write-Host "  Listing x$DevicePath" -ForegroundColor Gray
-        $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "xbox-diag-$([System.IO.Path]::GetRandomFileName())"
-        $xbcopyPath = if ($env:GameDK) { Join-Path $env:GameDK 'bin\xbcopy.exe' } else { 'xbcopy.exe' }
-        try {
-            New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
-            # xbcopy mirrors the directory — even if it fails, the output shows the error/path info
-            $output = & $xbcopyPath "x$DevicePath" "$tempDir" /mirror 2>&1
-            $output | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
-
-            # List whatever got copied locally
-            if (Test-Path $tempDir) {
-                $items = Get-ChildItem $tempDir -Recurse -ErrorAction SilentlyContinue
-                if ($items) {
-                    Write-Host "    Contents:" -ForegroundColor Gray
-                    $items | ForEach-Object {
-                        $rel = $_.FullName.Substring($tempDir.Length)
-                        Write-Host "      $rel ($($_.Length) bytes)" -ForegroundColor Gray
-                    }
-                }
-            }
-            return $output
-        } catch {
-            Write-Host "    (listing failed: $_)" -ForegroundColor Yellow
-            return @()
-        } finally {
-            Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-        }
-    }
-
     # Retrieve the integration test log file from Xbox and attach it to the run result.
-    # The Unity app writes to Application.persistentDataPath/unity-integration-test.log.
-    # We don't know the exact devkit-accessible path yet, so we search several candidates
-    # and log directory listings for diagnostics.
+    # The Unity app writes to D:\Logs\UnityIntegrationTest.log on Xbox (UNITY_GAMECORE).
     function Get-XboxLogOutput {
         param(
             [Parameter(Mandatory=$true)]
@@ -86,152 +47,23 @@ BeforeAll {
             [string]$Action
         )
 
-        $logFileName = "unity-integration-test.log"
+        $logFileName = "UnityIntegrationTest.log"
         $logLocalDir = "$PSScriptRoot/results/xbox-logs/$Action"
         New-Item -ItemType Directory -Path $logLocalDir -Force | Out-Null
 
-        # Check if the app exited with a non-zero code (Logger.Open likely failed)
-        if ($RunResult.ExitCode -and $RunResult.ExitCode -ne 0) {
-            Write-Warning "Xbox app exited with code $($RunResult.ExitCode) — the log file may not have been created."
-        }
-
-        # First, check if the app wrote a breadcrumb file telling us where the log is.
-        $packageFamilyName = $script:ExecutablePath -replace '!.*$', ''
         try {
-            $breadcrumbDest = "$logLocalDir/breadcrumb"
-            New-Item -ItemType Directory -Path $breadcrumbDest -Force | Out-Null
-            Copy-DeviceItem -DevicePath "D:\Logs\unity-integration-test-path.txt" -Destination $breadcrumbDest
-            $breadcrumbFile = Join-Path $breadcrumbDest "unity-integration-test-path.txt"
-            if (Test-Path $breadcrumbFile) {
-                $discoveredPath = (Get-Content $breadcrumbFile -Raw).Trim()
-                if ($discoveredPath) {
-                    Write-Host "Breadcrumb says log file is at: $discoveredPath" -ForegroundColor Cyan
-                    # Extract the directory from the discovered path
-                    $discoveredDir = Split-Path $discoveredPath -Parent
-                    # Try to retrieve using this exact path
-                    try {
-                        $directDest = "$logLocalDir/discovered"
-                        New-Item -ItemType Directory -Path $directDest -Force | Out-Null
-                        Copy-DeviceItem -DevicePath $discoveredPath -Destination $directDest
-                        $localFile = Join-Path $directDest $logFileName
-                        if (Test-Path $localFile) {
-                            $logContent = Get-Content $localFile -ErrorAction SilentlyContinue
-                            if ($logContent -and $logContent.Count -gt 0) {
-                                Write-Host "Retrieved log file via breadcrumb ($($logContent.Count) lines)" -ForegroundColor Green
-                                $RunResult.Output = $logContent
-                                return $RunResult
-                            }
-                        }
-                    } catch {
-                        Write-Host "  Could not retrieve from breadcrumb path: $_" -ForegroundColor Yellow
-                    }
-                }
-            }
+            Copy-DeviceItem -DevicePath "D:\Logs\$logFileName" -Destination $logLocalDir
         } catch {
-            Write-Host "No breadcrumb file found at D:\Logs\ ($_)" -ForegroundColor Gray
+            throw "Failed to retrieve Xbox log file (D:\Logs\$logFileName): $_"
         }
 
-        # Fallback: try candidate paths matching the C# candidate order in IntegrationTester.cs.
-        # D:\Logs is first because it's the primary candidate on the C# side and is known to be
-        # xbcopy-accessible. Then try paths where persistentDataPath/temporaryCachePath might
-        # resolve, plus the D:\ root as a last resort.
-
-        $candidateDirs = @(
-            "D:\Logs"
-            "D:\DevelopmentFiles\$packageFamilyName\LocalState"
-            "D:\DevelopmentFiles\$packageFamilyName\AC\LocalState"
-            "D:\DevelopmentFiles\$packageFamilyName\TempState"
-            "D:\DevelopmentFiles\$packageFamilyName\AC\TempState"
-            "D:\DevelopmentFiles\$packageFamilyName\AC\Temp"
-            "D:\"
-        )
-
-        $logContent = $null
-
-        foreach ($candidateDir in $candidateDirs) {
-            Write-Host "Trying to retrieve log from: $candidateDir" -ForegroundColor Yellow
-            try {
-                $copyDest = "$logLocalDir/$($candidateDir -replace '[:\\]', '_')"
-                New-Item -ItemType Directory -Path $copyDest -Force | Out-Null
-                Copy-DeviceItem -DevicePath "$candidateDir\$logFileName" -Destination $copyDest
-                $localFile = Join-Path $copyDest $logFileName
-                # Show what we got locally
-                $localItems = Get-ChildItem $copyDest -ErrorAction SilentlyContinue
-                if ($localItems) {
-                    Write-Host "  Copied files: $($localItems | ForEach-Object { "$($_.Name) ($($_.Length) bytes)" })" -ForegroundColor Gray
-                } else {
-                    Write-Host "  Copy succeeded but directory is empty" -ForegroundColor Gray
-                }
-                if (Test-Path $localFile) {
-                    $logContent = Get-Content $localFile -ErrorAction SilentlyContinue
-                    if ($logContent -and $logContent.Count -gt 0) {
-                        Write-Host "Retrieved log file from $candidateDir ($($logContent.Count) lines)" -ForegroundColor Green
-                        break
-                    }
-                }
-            } catch {
-                Write-Host "  Not found at $candidateDir ($_)" -ForegroundColor Gray
-            }
-        }
-
+        $localFile = Join-Path $logLocalDir $logFileName
+        $logContent = Get-Content $localFile -ErrorAction SilentlyContinue
         if (-not $logContent -or $logContent.Count -eq 0) {
-            # Log file not found — try to retrieve the diagnostic file the app writes before crashing
-            Write-Warning "Log file not found at any candidate path. Checking for diagnostic files..."
-            Write-Host "::group::Xbox diagnostics"
-
-            # The C# code writes D:\unity-integration-test-diag.txt when all candidates fail
-            try {
-                $diagDest = "$logLocalDir/diag"
-                New-Item -ItemType Directory -Path $diagDest -Force | Out-Null
-                Copy-DeviceItem -DevicePath "D:\unity-integration-test-diag.txt" -Destination $diagDest
-                $diagFile = Join-Path $diagDest "unity-integration-test-diag.txt"
-                if (Test-Path $diagFile) {
-                    Write-Host "`n--- App diagnostic output (D:\unity-integration-test-diag.txt) ---" -ForegroundColor Red
-                    Get-Content $diagFile | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
-                }
-            } catch {
-                Write-Host "No diagnostic file found at D:\unity-integration-test-diag.txt ($_)" -ForegroundColor Gray
-            }
-
-            # Also retrieve the Xbox crash log file if present
-            try {
-                $crashLogDest = "$logLocalDir/crash"
-                New-Item -ItemType Directory -Path $crashLogDest -Force | Out-Null
-                Copy-DeviceItem -DevicePath "D:\FullExceptionLogFile.txt" -Destination $crashLogDest
-                $crashLogFile = Join-Path $crashLogDest "FullExceptionLogFile.txt"
-                if (Test-Path $crashLogFile) {
-                    Write-Host "`n--- Xbox crash log (D:\FullExceptionLogFile.txt) ---" -ForegroundColor Red
-                    Get-Content $crashLogFile | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
-                }
-            } catch {
-                Write-Host "No crash log at D:\FullExceptionLogFile.txt ($_)" -ForegroundColor Gray
-            }
-
-            Write-Host "`nDirectory listings for diagnostics:"
-
-            Write-Host "`n--- D:\ root ---" -ForegroundColor Cyan
-            Invoke-XboxDirListing "D:\"
-
-            Write-Host "`n--- D:\DevelopmentFiles\ ---" -ForegroundColor Cyan
-            Invoke-XboxDirListing "D:\DevelopmentFiles\"
-
-            Write-Host "`n--- D:\DevelopmentFiles\$packageFamilyName\ ---" -ForegroundColor Cyan
-            Invoke-XboxDirListing "D:\DevelopmentFiles\$packageFamilyName\"
-
-            Write-Host "`n--- D:\DevelopmentFiles\$packageFamilyName\AC\ ---" -ForegroundColor Cyan
-            Invoke-XboxDirListing "D:\DevelopmentFiles\$packageFamilyName\AC\"
-
-            Write-Host "`n--- D:\Logs\ ---" -ForegroundColor Cyan
-            Invoke-XboxDirListing "D:\Logs\"
-
-            Write-Host "`n--- S:\ root ---" -ForegroundColor Cyan
-            Invoke-XboxDirListing "S:\"
-
-            Write-Host "::endgroup::"
-
-            throw "Failed to retrieve Xbox log file ($logFileName). See diagnostics above."
+            throw "Xbox log file was empty or missing (D:\Logs\$logFileName)."
         }
 
+        Write-Host "Retrieved log file from Xbox ($($logContent.Count) lines)" -ForegroundColor Green
         $RunResult.Output = $logContent
         return $RunResult
     }
@@ -314,7 +146,7 @@ BeforeAll {
         $runResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $appArgs
 
         # On Xbox, console output is not available in non-development builds.
-        # Instead, Unity writes to a log file on the device which we retrieve and use as output.
+        # Retrieve the log file the app writes directly to disk.
         if ($script:Platform -eq "Xbox") {
             $runResult = Get-XboxLogOutput -RunResult $runResult -Action $Action
         }
@@ -329,7 +161,6 @@ BeforeAll {
             $sendArgs = Get-AppArguments -Action "crash-send"
             $sendResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $sendArgs
 
-            # On Xbox, retrieve the log file for crash-send output too
             if ($script:Platform -eq "Xbox") {
                 $sendResult = Get-XboxLogOutput -RunResult $sendResult -Action "crash-send"
             }
