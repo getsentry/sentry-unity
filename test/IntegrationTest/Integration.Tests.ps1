@@ -60,7 +60,9 @@ BeforeAll {
         $localFile = Join-Path $logLocalDir $logFileName
         $logContent = Get-Content $localFile -ErrorAction SilentlyContinue
         if (-not $logContent -or $logContent.Count -eq 0) {
-            throw "Xbox log file was empty or missing (D:\Logs\$logFileName)."
+            $localFiles = Get-ChildItem -Path $logLocalDir -ErrorAction SilentlyContinue
+            $localContents = if ($localFiles) { ($localFiles | ForEach-Object { $_.Name }) -join ", " } else { "(empty — D:\Logs\ likely did not exist on device)" }
+            throw "Xbox log file was empty or missing (D:\Logs\$logFileName). Copied directory contains: $localContents"
         }
 
         Write-Host "Retrieved log file from Xbox ($($logContent.Count) lines)" -ForegroundColor Green
@@ -148,6 +150,10 @@ BeforeAll {
         # On Xbox, console output is not available in non-development builds.
         # Retrieve the log file the app writes directly to disk.
         if ($script:Platform -eq "Xbox") {
+            Write-Host "xbrun exit code: $($runResult.ExitCode)"
+            Write-Host "::group::xbrun raw output ($Action)"
+            $runResult.Output | ForEach-Object { Write-Host $_ }
+            Write-Host "::endgroup::"
             $runResult = Get-XboxLogOutput -RunResult $runResult -Action $Action
         }
 
