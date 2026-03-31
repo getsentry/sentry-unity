@@ -56,8 +56,7 @@ public static partial class SentrySdk
     /// </summary>
     /// <remarks>
     /// Use this property to access structured logging functionality. Logs are only sent when
-    /// <see cref="SentryOptions.EnableLogs"/>
-    /// is set to true.
+    /// <see cref="SentryOptions.EnableLogs"/> is set to true.
     /// </remarks>
     /// <seealso href="https://develop.sentry.dev/sdk/telemetry/logs/"/>
     public static SentryStructuredLogger Logger { [DebuggerStepThrough] get => Sentry.SentrySdk.Logger; }
