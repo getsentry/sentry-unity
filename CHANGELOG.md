@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Features
+
+- The _Metrics_ APIs are now stable: removed `Experimental` from `SentrySdk` and `SentryOptions` ([#2615](https://github.com/getsentry/sentry-unity/pull/2615))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.7.0 to v9.8.0 ([#2596](https://github.com/getsentry/sentry-unity/pull/2596))
