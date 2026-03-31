@@ -191,6 +191,7 @@ public class Builder
     public static void BuildSwitchIL2CPPPlayer()
     {
         Debug.Log("Builder: Building Switch IL2CPP Player");
+        SetSwitchCreateNspRomFile();
         BuildIl2CPPPlayer(BuildTarget.Switch, BuildTargetGroup.Switch, BuildOptions.StrictMode);
     }
 
@@ -214,13 +215,13 @@ public class Builder
     public static void BuildPS5IL2CPPPlayer()
     {
         Debug.Log("Builder: Building PS5 IL2CPP Player");
+        SetPS5BuildTypeToPackage();
         BuildIl2CPPPlayer(BuildTarget.PS5, BuildTargetGroup.PS5, BuildOptions.StrictMode);
     }
 
-    // We'll likely extend this to also work with PS and Switch
     private static void SetXboxSubtargetToMaster()
     {
-        // The actual editor API to set this has bee deprecated: https://docs.unity3d.com/6000.3/Documentation/ScriptReference/XboxBuildSubtarget.html
+        // The actual editor API to set this has been deprecated: https://docs.unity3d.com/6000.3/Documentation/ScriptReference/XboxBuildSubtarget.html
         // Modifying the build profiles and build setting assets on disk does not work. Some of the properties are
         // stored inside a binary. Instead we're setting the properties via reflection and then saving the asset.
         var buildProfileType = Type.GetType("UnityEditor.Build.Profile.BuildProfile, UnityEditor.CoreModule");
@@ -249,6 +250,64 @@ public class Builder
 
             EditorUtility.SetDirty(profile);
             Debug.Log($"Builder: Xbox Build Profile (BuildTarget {buildTarget}) set to Master, deploy method set to Package");
+        }
+
+        AssetDatabase.SaveAssets();
+    }
+
+    private static void SetPS5BuildTypeToPackage()
+    {
+        var buildProfileType = Type.GetType("UnityEditor.Build.Profile.BuildProfile, UnityEditor.CoreModule");
+        if (buildProfileType == null)
+        {
+            return;
+        }
+
+        foreach (var profile in Resources.FindObjectsOfTypeAll(buildProfileType))
+        {
+            // BuildTarget.PS5 = 44.
+            var buildTarget = new SerializedObject(profile).FindProperty("m_BuildTarget")?.intValue ?? -1;
+            if (buildTarget != 44)
+                continue;
+
+            var platformSettings = buildProfileType
+                .GetProperty("platformBuildProfile", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.GetValue(profile);
+
+            GetFieldInHierarchy(platformSettings?.GetType(), "m_Development")?.SetValue(platformSettings, false);
+            GetFieldInHierarchy(platformSettings?.GetType(), "m_BuildSubtarget")?.SetValue(platformSettings, 1); // 1 = Package
+
+            EditorUtility.SetDirty(profile);
+            Debug.Log("Builder: PS5 Build Profile set to Package");
+        }
+
+        AssetDatabase.SaveAssets();
+    }
+
+    private static void SetSwitchCreateNspRomFile()
+    {
+        var buildProfileType = Type.GetType("UnityEditor.Build.Profile.BuildProfile, UnityEditor.CoreModule");
+        if (buildProfileType == null)
+        {
+            return;
+        }
+
+        foreach (var profile in Resources.FindObjectsOfTypeAll(buildProfileType))
+        {
+            // BuildTarget.Switch = 38.
+            var buildTarget = new SerializedObject(profile).FindProperty("m_BuildTarget")?.intValue ?? -1;
+            if (buildTarget != 38)
+                continue;
+
+            var platformSettings = buildProfileType
+                .GetProperty("platformBuildProfile", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.GetValue(profile);
+
+            GetFieldInHierarchy(platformSettings?.GetType(), "m_Development")?.SetValue(platformSettings, false);
+            GetFieldInHierarchy(platformSettings?.GetType(), "m_SwitchCreateRomFile")?.SetValue(platformSettings, 1); // 1 = enabled
+
+            EditorUtility.SetDirty(profile);
+            Debug.Log("Builder: Switch Build Profile set to Create NSP ROM File");
         }
 
         AssetDatabase.SaveAssets();
