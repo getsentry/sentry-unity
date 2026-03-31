@@ -4,7 +4,7 @@
 #
 # Environment variables:
 #   SENTRY_TEST_PLATFORM: target platform (Android, Desktop, iOS, WebGL, Xbox)
-#   SENTRY_TEST_DSN: test DSN
+#   SENTRY_DSN: test DSN
 #   SENTRY_AUTH_TOKEN: authentication token for Sentry API
 #
 #   SENTRY_TEST_APP: path to the test app (APK, executable, .app bundle, WebGL build directory,
@@ -194,8 +194,8 @@ BeforeAll {
     }
 
     # Validate common environment
-    if ([string]::IsNullOrEmpty($env:SENTRY_TEST_DSN)) {
-        throw "SENTRY_TEST_DSN environment variable is not set."
+    if ([string]::IsNullOrEmpty($env:SENTRY_DSN)) {
+        throw "SENTRY_DSN environment variable is not set."
     }
     if ([string]::IsNullOrEmpty($env:SENTRY_AUTH_TOKEN)) {
         throw "SENTRY_AUTH_TOKEN environment variable is not set."
@@ -272,7 +272,7 @@ BeforeAll {
     # Initialize test parameters
     $script:TestSetup = [PSCustomObject]@{
         Platform = $script:Platform
-        Dsn = $env:SENTRY_TEST_DSN
+        Dsn = $env:SENTRY_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
     }
 
