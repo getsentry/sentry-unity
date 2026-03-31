@@ -24,7 +24,9 @@ public class Logger : IDiagnosticLogger
 
     private static Logger CreateInstance()
     {
-#if UNITY_GAMECORE
+#if UNITY_EDITOR
+
+#elif UNITY_GAMECORE
         Open(Path.Combine(@"D:\Logs", "UnityIntegrationTest.log"));
 #endif
         return new Logger();
@@ -40,7 +42,7 @@ public class Logger : IDiagnosticLogger
     /// Throws if the file cannot be created — the caller should let the app crash
     /// so the test harness can detect the non-zero exit code.
     /// </summary>
-    public static void Open(string logFilePath)
+    private static void Open(string logFilePath)
     {
         lock (s_lock)
         {
