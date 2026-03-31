@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## Features
+
+- The _Metrics_ APIs are now stable: removed `Experimental` from `SentrySdk` and `SentryOptions` ([#2615](https://github.com/getsentry/sentry-unity/pull/2615))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.7.0 to v9.8.0 ([#2596](https://github.com/getsentry/sentry-unity/pull/2596))
@@ -16,6 +20,9 @@
 - Bump CLI from v3.3.3 to v3.3.5 ([#2604](https://github.com/getsentry/sentry-unity/pull/2604), [#2614](https://github.com/getsentry/sentry-unity/pull/2614))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#335)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.3.3...3.3.5)
+- Bump .NET SDK from v6.2.0 to v6.3.0 ([#2615](https://github.com/getsentry/sentry-unity/pull/2615))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#630)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.2.0...6.3.0)
 
 ## 4.1.2
 
