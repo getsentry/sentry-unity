@@ -66,6 +66,11 @@ BeforeAll {
         }
 
         Write-Host "Retrieved log file from Xbox ($($logContent.Count) lines)" -ForegroundColor Green
+
+        Write-Host "::group::Xbox device log ($Action)"
+        $logContent | ForEach-Object { Write-Host $_ }
+        Write-Host "::endgroup::"
+
         $RunResult.Output = $logContent
         return $RunResult
     }
