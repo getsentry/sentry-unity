@@ -1,22 +1,39 @@
 using System;
 using System.IO;
+using Sentry;
+using Sentry.Extensibility;
 using UnityEngine;
 
 /// <summary>
-/// Shared log writer for integration tests.
+/// Unified logger for integration tests and the Sentry SDK.
 ///
 /// On Xbox master (non-development) builds, Debug.Log output is suppressed entirely.
 /// This class writes directly to a file via StreamWriter, bypassing Unity's logger
-/// so that test output (EVENT_CAPTURED lines, status messages) ends up in a
-/// retrievable file.
+/// so that test output (EVENT_CAPTURED lines, status messages) and Sentry SDK
+/// diagnostic messages all end up in a retrievable file.
 ///
 /// On other platforms, messages go through Debug.Log as usual.
+///
+/// Implements <see cref="IDiagnosticLogger"/> so it can be assigned to
+/// <c>options.DiagnosticLogger</c>, routing SDK diagnostic output through the same
+/// log file without needing a separate logger.
 /// </summary>
-public static class Logger
+public class Logger : IDiagnosticLogger
 {
+    public static readonly Logger Instance = CreateInstance();
+
+    private static Logger CreateInstance()
+    {
+#if UNITY_GAMECORE
+        Open(Path.Combine(@"D:\Logs", "UnityIntegrationTest.log"));
+#endif
+        return new Logger();
+    }
+
     private static StreamWriter s_writer;
     private static readonly object s_lock = new();
     private static string s_logFilePath;
+    private SentryLevel _minLevel = SentryLevel.Debug;
 
     /// <summary>
     /// Opens the log file. Call once during initialization.
@@ -96,6 +113,40 @@ public static class Logger
             {
                 // Don't let file writing errors break the app.
             }
+        }
+    }
+
+    // --- IDiagnosticLogger (explicit implementation to avoid collision with static Log) ---
+
+    bool IDiagnosticLogger.IsEnabled(SentryLevel level) => level >= _minLevel;
+
+    void IDiagnosticLogger.Log(SentryLevel logLevel, string message, Exception exception, params object[] args)
+    {
+        if (!((IDiagnosticLogger)this).IsEnabled(logLevel))
+        {
+            return;
+        }
+
+        var formatted = args?.Length > 0 ? string.Format(message, args) : message;
+        if (exception != null)
+        {
+            formatted = $"{formatted} {exception}";
+        }
+
+        var line = $"[Sentry] ({logLevel}) {formatted}";
+
+        switch (logLevel)
+        {
+            case SentryLevel.Error:
+            case SentryLevel.Fatal:
+                LogError(line);
+                break;
+            case SentryLevel.Warning:
+                LogWarning(line);
+                break;
+            default:
+                Log(line);
+                break;
         }
     }
 }

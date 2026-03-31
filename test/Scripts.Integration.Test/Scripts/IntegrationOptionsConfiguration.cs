@@ -22,6 +22,7 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.AttachScreenshot = true;
         options.Debug = true;
         options.DiagnosticLevel = SentryLevel.Debug;
+        options.DiagnosticLogger = Logger.Instance;
         options.TracesSampleRate = 1.0d;
 
         // No custom HTTP handler -- events go to real sentry.io

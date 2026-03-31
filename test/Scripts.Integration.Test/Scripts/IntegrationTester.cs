@@ -17,9 +17,6 @@ public class IntegrationTester : MonoBehaviour
 {
     private void Awake()
     {
-#if UNITY_GAMECORE
-        Logger.Open(Path.Combine(@"D:\Logs", "UnityIntegrationTest.log"));
-#endif
         Logger.Log("IntegrationTester, awake!");
         Application.quitting += () =>
         {
