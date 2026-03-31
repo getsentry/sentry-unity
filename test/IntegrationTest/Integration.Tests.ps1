@@ -8,7 +8,7 @@
 #   SENTRY_AUTH_TOKEN: authentication token for Sentry API
 #
 #   SENTRY_TEST_APP: path to the test app (APK, executable, .app bundle, WebGL build directory,
-#                    or Xbox package directory containing .xvc)
+#                    or Xbox packaged build directory containing a .xvc)
 #
 # Platform-specific environment variables:
 #   iOS:     SENTRY_IOS_VERSION - iOS simulator version (e.g. "17.0" or "latest")
@@ -253,20 +253,13 @@ BeforeAll {
 
             Connect-Device -Platform "Xbox" -Target $env:XBCONNECT_TARGET
 
-            # Support both loose directory (no .xvc) and packaged directory (contains .xvc).
-            # Loose runs via xbrun: the app has full devkit filesystem access and can write to
-            # D:\Logs\ (required for capturing test output on non-development builds).
-            # Packaged runs via xbapp launch: the app is sandboxed and cannot write to D:\Logs\.
-            $xvcFile = Get-ChildItem -Path $env:SENTRY_TEST_APP -Filter "*.xvc" -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($xvcFile) {
-                Install-DeviceApp -Path $xvcFile.FullName
-                $script:ExecutablePath = Get-PackageAumid -PackagePath $env:SENTRY_TEST_APP
-                Write-Host "Using AUMID: $($script:ExecutablePath)"
-            } else {
-                # Loose flow: RunApplication mirrors the directory to the devkit and launches via xbrun
-                $script:ExecutablePath = $env:SENTRY_TEST_APP
-                Write-Host "Using loose executable directory: $($script:ExecutablePath)"
+            $xvcFile = Get-ChildItem -Path $env:SENTRY_TEST_APP -Filter "*.xvc" | Select-Object -First 1
+            if (-not $xvcFile) {
+                throw "No .xvc found in SENTRY_TEST_APP: $env:SENTRY_TEST_APP"
             }
+            Install-DeviceApp -Path $xvcFile.FullName
+            $script:ExecutablePath = Get-PackageAumid -PackagePath $env:SENTRY_TEST_APP
+            Write-Host "Using AUMID: $($script:ExecutablePath)"
         }
         "WebGL" {
         }
