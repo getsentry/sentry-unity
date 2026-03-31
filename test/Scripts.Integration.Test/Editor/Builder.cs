@@ -114,16 +114,21 @@ public class Builder
         }
     }
 
+    [MenuItem("Tools/Builder/Windows")]
     public static void BuildWindowsIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Windows IL2CPP Player");
         BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
     }
+
+    [MenuItem("Tools/Builder/macOS")]
     public static void BuildMacIl2CPPPlayer()
     {
         Debug.Log("Builder: Building macOS IL2CPP Player");
         BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
     }
+
+    [MenuItem("Tools/Builder/Linux")]
     public static void BuildLinuxIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Linux IL2CPP Player");
@@ -133,6 +138,8 @@ public class Builder
         PlayerSettings.graphicsJobs = false;
         BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
     }
+
+    [MenuItem("Tools/Builder/Android")]
     public static void BuildAndroidIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Android IL2CPP Player");
@@ -157,17 +164,22 @@ public class Builder
 
         BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.StrictMode);
     }
+    [MenuItem("Tools/Builder/Android Project")]
     public static void BuildAndroidIl2CPPProject()
     {
         Debug.Log("Builder: Building Android IL2CPP Project");
         EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
         BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.AcceptExternalModificationsToPlayer);
     }
+
+    [MenuItem("Tools/Builder/iOS")]
     public static void BuildIOSProject()
     {
         Debug.Log("Builder: Building iOS Project");
         BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS, BuildOptions.StrictMode);
     }
+
+    [MenuItem("Tools/Builder/WebGL")]
     public static void BuildWebGLPlayer()
     {
         Debug.Log("Builder: Building WebGL Player");
@@ -175,12 +187,14 @@ public class Builder
         BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL, BuildOptions.StrictMode);
     }
 
+    [MenuItem("Tools/Builder/Switch")]
     public static void BuildSwitchIL2CPPPlayer()
     {
         Debug.Log("Builder: Building Switch IL2CPP Player");
         BuildIl2CPPPlayer(BuildTarget.Switch, BuildTargetGroup.Switch, BuildOptions.StrictMode);
     }
 
+    [MenuItem("Tools/Builder/Xbox Series X|S")]
     public static void BuildXSXIL2CPPPlayer()
     {
         Debug.Log("Builder: Building Xbox Series X|S IL2CPP Player");
@@ -188,6 +202,7 @@ public class Builder
         BuildIl2CPPPlayer(BuildTarget.GameCoreXboxSeries, BuildTargetGroup.GameCoreXboxSeries, BuildOptions.StrictMode);
     }
 
+    [MenuItem("Tools/Builder/Xbox One")]
     public static void BuildXB1IL2CPPPlayer()
     {
         Debug.Log("Builder: Building Xbox One IL2CPP Player");
@@ -195,6 +210,7 @@ public class Builder
         BuildIl2CPPPlayer(BuildTarget.GameCoreXboxOne, BuildTargetGroup.GameCoreXboxOne, BuildOptions.StrictMode);
     }
 
+    [MenuItem("Tools/Builder/PS5")]
     public static void BuildPS5IL2CPPPlayer()
     {
         Debug.Log("Builder: Building PS5 IL2CPP Player");
@@ -209,7 +225,9 @@ public class Builder
         // stored inside a binary. Instead we're setting the properties via reflection and then saving the asset.
         var buildProfileType = Type.GetType("UnityEditor.Build.Profile.BuildProfile, UnityEditor.CoreModule");
         if (buildProfileType == null)
+        {
             return;
+        }
 
         foreach (var profile in Resources.FindObjectsOfTypeAll(buildProfileType))
         {
@@ -227,9 +245,12 @@ public class Builder
 
             GetFieldInHierarchy(settingsData?.GetType(), "buildSubtarget")?.SetValue(settingsData, 1); // 1 = Master
             GetFieldInHierarchy(platformSettings?.GetType(), "m_Development")?.SetValue(platformSettings, false);
+            GetFieldInHierarchy(settingsData?.GetType(), "deploymentMethod")?.SetValue(settingsData, 2); // 2 = Package
+
             EditorUtility.SetDirty(profile);
-            Debug.Log($"Builder: Xbox Build Profile (BuildTarget {buildTarget}) set to Master");
+            Debug.Log($"Builder: Xbox Build Profile (BuildTarget {buildTarget}) set to Master, deploy method set to Package");
         }
+
         AssetDatabase.SaveAssets();
     }
 
@@ -250,7 +271,8 @@ public class Builder
         Debug.Log("Builder: Validating command line arguments");
         if (!args.ContainsKey("buildPath") || string.IsNullOrWhiteSpace(args["buildPath"]))
         {
-            throw new Exception("No valid '-buildPath' has been provided.");
+            args["buildPath"] = "./Builds/";
+            Debug.Log("Builder: No '-buildPath' provided, defaulting to './Builds/'");
         }
     }
 
