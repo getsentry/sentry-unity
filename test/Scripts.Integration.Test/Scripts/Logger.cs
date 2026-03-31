@@ -20,22 +20,21 @@ using UnityEngine;
 /// </summary>
 public class Logger : IDiagnosticLogger
 {
-    public static readonly Logger Instance = CreateInstance();
-
-    private static Logger CreateInstance()
-    {
-#if UNITY_EDITOR
-
-#elif UNITY_GAMECORE
-        Open(Path.Combine(@"D:\Logs", "UnityIntegrationTest.log"));
-#endif
-        return new Logger();
-    }
-
     private static StreamWriter s_writer;
     private static readonly object s_lock = new();
     private static string s_logFilePath;
     private SentryLevel _minLevel = SentryLevel.Debug;
+
+    // Instance must be declared after s_lock — static fields initialize in textual order.
+    public static readonly Logger Instance = CreateInstance();
+
+    private static Logger CreateInstance()
+    {
+#if UNITY_GAMECORE && !UNITY_EDITOR
+        Open(Path.Combine(@"D:\Logs", "UnityIntegrationTest.log"));
+#endif
+        return new Logger();
+    }
 
     /// <summary>
     /// Opens the log file. Call once during initialization.
