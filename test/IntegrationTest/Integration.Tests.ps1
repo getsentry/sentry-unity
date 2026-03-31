@@ -67,10 +67,6 @@ BeforeAll {
 
         Write-Host "Retrieved log file from Xbox ($($logContent.Count) lines)" -ForegroundColor Green
 
-        Write-Host "::group::Xbox device log ($Action)"
-        $logContent | ForEach-Object { Write-Host $_ }
-        Write-Host "::endgroup::"
-
         $RunResult.Output = $logContent
         return $RunResult
     }
@@ -155,10 +151,6 @@ BeforeAll {
         # On Xbox, console output is not available in non-development builds.
         # Retrieve the log file the app writes directly to disk.
         if ($script:Platform -eq "Xbox") {
-            Write-Host "xbrun exit code: $($runResult.ExitCode)"
-            Write-Host "::group::xbrun raw output ($Action)"
-            $runResult.Output | ForEach-Object { Write-Host $_ }
-            Write-Host "::endgroup::"
             $runResult = Get-XboxLogOutput -RunResult $runResult -Action $Action
         }
 
