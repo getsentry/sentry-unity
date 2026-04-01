@@ -71,6 +71,10 @@ internal static class SentryNativeBridge
             sentry_options_set_attach_screenshot(cOptions, options.AttachScreenshot ? 1 : 0);
         }
 
+#if SENTRY_NATIVE_XBOX
+        SentryNativeXbox.ResolveStoragePath(options, Logger);
+#endif
+
         var databasePath = GetDatabasePath(options);
 #if SENTRY_NATIVE_SWITCH
         Logger?.LogDebug("Setting DatabasePath: {0}", databasePath);
@@ -121,6 +125,8 @@ internal static class SentryNativeBridge
             return Path.Combine(options.CacheDirectoryPath, ".sentry-native");
         }
 
+        // This is a fallback attempting to provide native crash support in case of CacheDirectoryPath not being set.
+        // Xbox and Switch rely on their own mechanisms to resolve storage, see SentryNativeXbox and SentryNativeSwitch.
         application ??= ApplicationAdapter.Instance;
         return Path.Combine(application.PersistentDataPath, ".sentry-native");
     }

@@ -24,10 +24,16 @@ internal static class SentryNativeXbox
     /// <remarks>
     /// Called from <see cref="SentryNative.Configure"/> before native SDK initialization.
     /// If PLS is not available (e.g. not configured in MicrosoftGame.config), the cache directory
-    /// is left unset and the SDK will operate without offline caching or session persistence.
+    /// is left unset. The SDK will operate without offline caching, session persistence, or native crash reporting.
     /// </remarks>
     internal static void ResolveStoragePath(SentryUnityOptions options, IDiagnosticLogger? logger)
     {
+        if (!string.IsNullOrEmpty(options.CacheDirectoryPath))
+        {
+            logger?.LogWarning("The 'CacheDirectoryPath' has already been set by the user. " +
+                "Storgage path resolution will be skipped.";)
+        }
+
         string? plsPath = null;
         try
         {
@@ -36,22 +42,19 @@ internal static class SentryNativeXbox
         }
         catch (EntryPointNotFoundException)
         {
-            logger?.LogWarning(
-                "sentry_xbox_utils_get_pls_path not found in sentry.dll. " +
-                "Update the sentry-xbox native library to enable Persistent Local Storage support.");
+            logger?.LogWarning("Failed to find 'sentry_xbox_utils_get_pls_path' in sentry.dll.");
         }
 
         if (!string.IsNullOrEmpty(plsPath))
         {
-            logger?.LogDebug("Using Xbox Persistent Local Storage path: {0}", plsPath);
+            logger?.LogDebug("Setting Persistent Local Storage as cache directory path: '{0}'"., plsPath);
             options.CacheDirectoryPath = plsPath;
         }
         else
         {
-            logger?.LogWarning(
-                "Failed to retrieve Xbox Persistent Local Storage path. " +
+            logger?.LogWarning("Failed to retrieve Xbox Persistent Local Storage path. " +
                 "Ensure 'PersistentLocalStorage' is configured in MicrosoftGame.config. " +
-                "Offline caching and session persistence will be disabled.");
+                "Offline caching, session persistence, and native crash support will be disabled.");
         }
     }
 }

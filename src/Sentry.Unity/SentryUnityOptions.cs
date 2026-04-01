@@ -501,10 +501,8 @@ public sealed class SentryUnityOptions : SentryOptions
         };
 
         // Only assign the cache directory path if we're on a "known" platform.
-        // Special casing Switch here: Accessing `Application.persistentDataPath` implicitly creates a directory 
-        // and leads to a crash.
-        // Special casing Xbox here: `Application.persistentDataPath` returns an empty string on packaged builds.
-        // The writable path is resolved via Xbox Persistent Local Storage in SentryNativeXbox.ResolveStoragePath.
+        // Special casing Switch:   `Application.persistentDataPath` implicitly creates a directory and crashes.
+        // Special casing Xbox:     `Application.persistentDataPath` returns an empty string on packaged builds.
         if (IsKnownPlatform(application.Platform)
             && application.Platform is not RuntimePlatform.Switch
             && application.Platform is not RuntimePlatform.GameCoreXboxSeries
