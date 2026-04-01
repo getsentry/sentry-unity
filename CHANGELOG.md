@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-## Features
+### Fixes
+
+- When targeting iOS or macOS, the SDK now correctly passes on the `CaptureFailedRequests` flag and set status code ranged ([#2619](https://github.com/getsentry/sentry-unity/pull/2619))
+
+### Features
 
 - The _Metrics_ APIs are now stable: removed `Experimental` from `SentrySdk` and `SentryOptions` ([#2615](https://github.com/getsentry/sentry-unity/pull/2615))
 
