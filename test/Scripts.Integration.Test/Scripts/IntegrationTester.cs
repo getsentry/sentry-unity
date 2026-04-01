@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Sentry;
@@ -16,17 +17,17 @@ public class IntegrationTester : MonoBehaviour
 {
     private void Awake()
     {
-        Debug.Log("IntegrationTester, awake!");
+        Logger.Log("IntegrationTester, awake!");
         Application.quitting += () =>
         {
-            Debug.Log("IntegrationTester is quitting.");
+            Logger.Log("IntegrationTester is quitting.");
         };
     }
 
     public void Start()
     {
         var arg = GetTestArg();
-        Debug.Log($"IntegrationTester arg: '{arg}'");
+        Logger.Log($"IntegrationTester arg: '{arg}'");
 
         switch (arg)
         {
@@ -43,7 +44,7 @@ public class IntegrationTester : MonoBehaviour
                 CrashSend();
                 break;
             default:
-                Debug.LogError($"IntegrationTester: Unknown command: {arg}");
+                Logger.LogError($"IntegrationTester: Unknown command: {arg}");
 #if !UNITY_WEBGL
                 Application.Quit(1);
 #endif
@@ -105,7 +106,7 @@ public class IntegrationTester : MonoBehaviour
         AddIntegrationTestContext("message-capture");
 
         var eventId = SentrySdk.CaptureMessage("Integration test message");
-        Debug.Log($"EVENT_CAPTURED: {eventId}");
+        Logger.Log($"EVENT_CAPTURED: {eventId}");
 
         yield return CompleteAndQuit();
     }
@@ -121,7 +122,7 @@ public class IntegrationTester : MonoBehaviour
         catch (Exception ex)
         {
             var eventId = SentrySdk.CaptureException(ex);
-            Debug.Log($"EVENT_CAPTURED: {eventId}");
+            Logger.Log($"EVENT_CAPTURED: {eventId}");
         }
 
         yield return CompleteAndQuit();
@@ -134,9 +135,9 @@ public class IntegrationTester : MonoBehaviour
         // complete. Wait to avoid a race where the test harness shuts down the browser
         // before the send finishes.
         yield return new WaitForSeconds(3);
-        Debug.Log("INTEGRATION_TEST_COMPLETE");
+        Logger.Log("INTEGRATION_TEST_COMPLETE");
 #else
-        Debug.Log("INTEGRATION_TEST_COMPLETE");
+        Logger.Log("INTEGRATION_TEST_COMPLETE");
         Application.Quit(0);
         yield break;
 #endif
@@ -174,22 +175,22 @@ public class IntegrationTester : MonoBehaviour
         // Wait for the scope sync to complete on platforms that use a background thread (e.g. Android JNI)
         yield return new WaitForSeconds(0.5f);
 
-        Debug.Log($"EVENT_CAPTURED: {crashId}");
-        Debug.Log("CRASH TEST: Issuing a native crash (AccessViolation)");
+        Logger.Log($"EVENT_CAPTURED: {crashId}");
+        Logger.Log("CRASH TEST: Issuing a native crash (AccessViolation)");
 
         Utils.ForceCrash(ForcedCrashCategory.AccessViolation);
 
         // Should not reach here
-        Debug.LogError("CRASH TEST: FAIL - unexpected code executed after crash");
+        Logger.Log("ERROR: CRASH TEST: FAIL - unexpected code executed after crash");
         Application.Quit(1);
     }
 
     private void CrashSend()
     {
-        Debug.Log("CrashSend: Initializing Sentry to flush cached crash report...");
+        Logger.Log("CrashSend: Initializing Sentry to flush cached crash report...");
 
         var lastRunState = SentrySdk.GetLastRunState();
-        Debug.Log($"CrashSend: crashedLastRun={lastRunState}");
+        Logger.Log($"CrashSend: crashedLastRun={lastRunState}");
 
         // Sentry is already initialized by IntegrationOptionsConfiguration.
         // Just wait a bit for the queued crash report to be sent, then quit.
@@ -203,7 +204,7 @@ public class IntegrationTester : MonoBehaviour
 
         SentrySdk.FlushAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
 
-        Debug.Log("CrashSend: Flush complete, quitting.");
+        Logger.Log("CrashSend: Flush complete, quitting.");
         Application.Quit(0);
     }
 }
