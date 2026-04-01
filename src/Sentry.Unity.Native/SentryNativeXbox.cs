@@ -31,7 +31,7 @@ internal static class SentryNativeXbox
         if (!string.IsNullOrEmpty(options.CacheDirectoryPath))
         {
             logger?.LogWarning("The 'CacheDirectoryPath' has already been set by the user. " +
-                "Storgage path resolution will be skipped.";)
+                "Storage path resolution will be skipped.");
         }
 
         string? plsPath = null;
@@ -47,7 +47,7 @@ internal static class SentryNativeXbox
 
         if (!string.IsNullOrEmpty(plsPath))
         {
-            logger?.LogDebug("Setting Persistent Local Storage as cache directory path: '{0}'"., plsPath);
+            logger?.LogDebug("Setting Persistent Local Storage as cache directory path: '{0}'", plsPath);
             options.CacheDirectoryPath = plsPath;
         }
         else
