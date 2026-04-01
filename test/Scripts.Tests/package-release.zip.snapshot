@@ -267,6 +267,10 @@ Runtime/Sentry.Unity.Native.Switch.dll
 Runtime/Sentry.Unity.Native.Switch.dll.meta
 Runtime/Sentry.Unity.Native.Switch.pdb
 Runtime/Sentry.Unity.Native.Switch.pdb.meta
+Runtime/Sentry.Unity.Native.Xbox.dll
+Runtime/Sentry.Unity.Native.Xbox.dll.meta
+Runtime/Sentry.Unity.Native.Xbox.pdb
+Runtime/Sentry.Unity.Native.Xbox.pdb.meta
 Runtime/Sentry.Unity.pdb
 Runtime/Sentry.Unity.pdb.meta
 Runtime/Sentry.xml

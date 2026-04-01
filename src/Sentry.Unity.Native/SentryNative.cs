@@ -43,6 +43,12 @@ public static class SentryNative
             return;
         }
 
+#if SENTRY_NATIVE_XBOX
+        // Xbox's Application.persistentDataPath returns an empty string for packaged builds.
+        // Resolve the writable Persistent Local Storage path before native initialization.
+        SentryNativeXbox.ResolveStoragePath(options, Logger);
+#endif
+
         try
         {
             if (!SentryNativeBridge.Init(options))

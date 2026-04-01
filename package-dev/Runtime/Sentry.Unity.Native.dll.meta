@@ -18,8 +18,8 @@ PluginImporter:
       settings:
         Exclude Android: 0
         Exclude Editor: 1
-        Exclude GameCoreScarlett: 0
-        Exclude GameCoreXboxOne: 0
+        Exclude GameCoreScarlett: 1
+        Exclude GameCoreXboxOne: 1
         Exclude Linux64: 0
         Exclude OSXUniversal: 1
         Exclude WebGL: 1
@@ -52,13 +52,13 @@ PluginImporter:
   - first:
       GameCoreScarlett: GameCoreScarlett
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
   - first:
       GameCoreXboxOne: GameCoreXboxOne
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
   - first:

@@ -31,7 +31,9 @@ internal static class SentryNativeBridge
         UseLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
             or RuntimePlatform.PS5 or RuntimePlatform.Switch;
-        IsWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
+        IsWindows = Application.platform
+            is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer
+            or RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne;
 
         var cOptions = sentry_options_new();
 
