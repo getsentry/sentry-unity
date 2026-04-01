@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Xml;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -401,5 +402,81 @@ public class AllowInsecureHttp : IPostprocessBuildWithReport, IPreprocessBuildWi
 
             File.WriteAllText(plistPath, contents);
         }
+    }
+}
+
+/// <summary>
+/// Ensures Xbox builds have PersistentLocalStorage enabled in MicrosoftGame.config.
+/// This is required for sentry-native to write its crash database and for integration
+/// test logging to D:\Logs.
+/// </summary>
+public class XboxPersistentLocalStorage : IPostprocessBuildWithReport
+{
+    public int callbackOrder { get; }
+
+    public void OnPostprocessBuild(BuildReport report)
+    {
+        if (report.summary.platform != BuildTarget.GameCoreXboxSeries
+            && report.summary.platform != BuildTarget.GameCoreXboxOne)
+        {
+            return;
+        }
+
+        var configPath = Path.Combine(report.summary.outputPath, "MicrosoftGame.config");
+        if (!File.Exists(configPath))
+        {
+            Debug.LogError($"XboxPersistentLocalStorage: MicrosoftGame.config not found at '{configPath}'");
+            return;
+        }
+
+        var doc = new XmlDocument();
+        doc.Load(configPath);
+
+        var game = doc.DocumentElement;
+        if (game == null)
+        {
+            Debug.LogError("XboxPersistentLocalStorage: MicrosoftGame.config has no root element");
+            return;
+        }
+
+        // Find or create ExtendedAttributeList
+        var ns = game.NamespaceURI;
+        var nsMgr = new XmlNamespaceManager(doc.NameTable);
+        nsMgr.AddNamespace("ms", ns);
+
+        var extList = game.SelectSingleNode("ms:ExtendedAttributeList", nsMgr)
+                     ?? game.SelectSingleNode("ExtendedAttributeList");
+        if (extList == null)
+        {
+            extList = doc.CreateElement("ExtendedAttributeList", ns);
+            game.AppendChild(extList);
+        }
+
+        // Check if PersistentLocalStorage already exists
+        var found = false;
+        foreach (XmlNode child in extList.ChildNodes)
+        {
+            if (child is XmlElement el
+                && el.GetAttribute("Name") == "PersistentLocalStorage")
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            var attr = doc.CreateElement("ExtendedAttribute", ns);
+            attr.SetAttribute("Name", "PersistentLocalStorage");
+            attr.SetAttribute("Value", "true");
+            extList.AppendChild(attr);
+            Debug.Log("XboxPersistentLocalStorage: Added PersistentLocalStorage to MicrosoftGame.config");
+        }
+        else
+        {
+            Debug.Log("XboxPersistentLocalStorage: PersistentLocalStorage already present in MicrosoftGame.config");
+        }
+
+        doc.Save(configPath);
     }
 }
