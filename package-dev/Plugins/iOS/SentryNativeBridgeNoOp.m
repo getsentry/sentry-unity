@@ -6,6 +6,7 @@ int SentryNativeBridgeIsEnabled() { return 0; }
 void *_Nullable SentryNativeBridgeOptionsNew() { return nil; }
 void SentryNativeBridgeOptionsSetString(void *options, const char *name, const char *value) { }
 void SentryNativeBridgeOptionsSetInt(void *options, const char *name, int32_t value) { }
+void SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange(void *options, int32_t min, int32_t max) { }
 int SentryNativeBridgeStartWithOptions(void *options) { return 0; }
 
 void SentryNativeBridgeSetSdkName() { }
