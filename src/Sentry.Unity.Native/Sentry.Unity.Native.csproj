@@ -46,4 +46,23 @@
     />
   </Target>
 
+  <!-- Build Xbox version after the Switch build -->
+  <Target Name="BuildXboxAssembly" AfterTargets="BuildSwitchAssembly">
+    <Message Importance="High" Text="Building Xbox-specific native assembly." />
+
+    <Csc
+      Sources="@(Compile)"
+      References="@(ReferencePath)"
+      OutputAssembly="$(OutDir)Sentry.Unity.Native.Xbox.dll"
+      DefineConstants="$(DefineConstants);SENTRY_NATIVE_XBOX"
+      TargetType="library"
+      EmitDebugInformation="true"
+      DebugType="portable"
+      Nullable="$(Nullable)"
+      LangVersion="$(LangVersion)"
+      TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
+      WarningLevel="$(WarningLevel)"
+    />
+  </Target>
+
 </Project>
