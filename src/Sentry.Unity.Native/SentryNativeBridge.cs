@@ -31,7 +31,9 @@ internal static class SentryNativeBridge
         UseLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
             or RuntimePlatform.PS5 or RuntimePlatform.Switch;
-        IsWindows = Application.platform is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer;
+        IsWindows = Application.platform
+            is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer
+            or RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne;
 
         var cOptions = sentry_options_new();
 
@@ -68,6 +70,10 @@ internal static class SentryNativeBridge
             Logger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
             sentry_options_set_attach_screenshot(cOptions, options.AttachScreenshot ? 1 : 0);
         }
+
+#if SENTRY_NATIVE_XBOX
+        SentryNativeXbox.ResolveStoragePath(options, Logger);
+#endif
 
         var databasePath = GetDatabasePath(options);
 #if SENTRY_NATIVE_SWITCH
@@ -119,6 +125,8 @@ internal static class SentryNativeBridge
             return Path.Combine(options.CacheDirectoryPath, ".sentry-native");
         }
 
+        // This is a fallback attempting to provide native crash support in case of CacheDirectoryPath not being set.
+        // Xbox and Switch rely on their own mechanisms to resolve storage, see SentryNativeXbox and SentryNativeSwitch.
         application ??= ApplicationAdapter.Instance;
         return Path.Combine(application.PersistentDataPath, ".sentry-native");
     }
