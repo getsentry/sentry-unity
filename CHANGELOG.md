@@ -4,7 +4,7 @@
 
 ### Behavioral Changes
 
-- The SDK no longer relies on UnityEngine.Analytics.AnalyticsSessionInfo to determine unique users but uses SDK-internal mechanisms instead. ([#2617](https://github.com/getsentry/sentry-unity/pull/2625))
+- The SDK no longer relies on UnityEngine.Analytics.AnalyticsSessionInfo to determine unique users but uses SDK-internal mechanisms instead. ([#2625](https://github.com/getsentry/sentry-unity/pull/2625))
 
 ### Fixes
 
