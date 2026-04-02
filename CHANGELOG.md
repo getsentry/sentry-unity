@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Behavioral Changes
+
+- The SDK no longer relies on UnityEngine.Analytics.AnalyticsSessionInfo to determine unique users but uses SDK-internal mechanisms instead. ([#2617](https://github.com/getsentry/sentry-unity/pull/2625))
+
 ### Fixes
 
 - The SDK now correctly resolves the storage path on Xbox during initialization, enabling offline caching and native crash capturing without user setup out of the box. ([#2617](https://github.com/getsentry/sentry-unity/pull/2617))
