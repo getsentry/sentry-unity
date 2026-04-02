@@ -62,14 +62,6 @@ public class Logger : IDiagnosticLogger
     }
 
     /// <summary>
-    /// Returns the path that was opened, or null if not opened.
-    /// </summary>
-    public static string GetLogFilePath()
-    {
-        return s_logFilePath;
-    }
-
-    /// <summary>
     /// Writes a line to the log file and Debug.Log.
     /// Safe to call even if the file was never opened — the message still goes to Debug.Log.
     /// </summary>
