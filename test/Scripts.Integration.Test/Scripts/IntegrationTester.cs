@@ -181,7 +181,7 @@ public class IntegrationTester : MonoBehaviour
         Utils.ForceCrash(ForcedCrashCategory.AccessViolation);
 
         // Should not reach here
-        Logger.Log("ERROR: CRASH TEST: FAIL - unexpected code executed after crash");
+        Logger.LogError("CRASH TEST: FAIL - unexpected code executed after crash");
         Application.Quit(1);
     }
 

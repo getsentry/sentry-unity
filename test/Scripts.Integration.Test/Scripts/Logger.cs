@@ -134,7 +134,7 @@ public class Logger : IDiagnosticLogger
             formatted = $"{formatted} {exception}";
         }
 
-        var line = $"[Sentry] ({logLevel}) {formatted}";
+        var line = $"Sentry ({logLevel}) {formatted}";
 
         switch (logLevel)
         {
