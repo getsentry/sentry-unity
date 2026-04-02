@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #include <dlfcn.h>
+#include <objc/message.h>
 
 static NSDateFormatter *_Nullable sentry_cachedISO8601Formatter(void) {
     static NSDateFormatter *formatter = nil;
@@ -45,6 +46,7 @@ static Class SentryOptionsInternal;
 static Class SentryId;
 static Class SentrySpanId;
 static Class PrivateSentrySDKOnly;
+static Class SentryHttpStatusCodeRange;
 
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
     name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #name);                                    \
@@ -87,6 +89,7 @@ int SentryNativeBridgeLoadLibrary()
             LOAD_CLASS_OR_BREAK(SentryId)
             LOAD_CLASS_OR_BREAK(SentrySpanId)
             LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
+            LOAD_CLASS_OR_BREAK(SentryHttpStatusCodeRange)
 
             // everything above passed - mark as successfully loaded
             loadStatus = 1;
@@ -116,6 +119,23 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
 {
     NSMutableDictionary *dictOptions = (__bridge NSMutableDictionary *)options;
     dictOptions[[NSString stringWithUTF8String:name]] = [NSNumber numberWithInt:value];
+}
+
+void SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange(const void *options, int32_t min, int32_t max)
+{
+    NSMutableDictionary *dictOptions = (__bridge NSMutableDictionary *)options;
+    NSMutableArray *ranges = dictOptions[@"failedRequestStatusCodes"];
+    if (!ranges) {
+        ranges = [[NSMutableArray alloc] init];
+        dictOptions[@"failedRequestStatusCodes"] = ranges;
+    }
+    id instance = [SentryHttpStatusCodeRange alloc];
+    // initWithMin:max: takes NSInteger args - use objc_msgSend directly
+    id range = ((id (*)(id, SEL, NSInteger, NSInteger))objc_msgSend)(
+        instance, @selector(initWithMin:max:), (NSInteger)min, (NSInteger)max);
+    if (range) {
+        [ranges addObject:range];
+    }
 }
 
 int SentryNativeBridgeStartWithOptions(const void *options)

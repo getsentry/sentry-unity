@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- When targeting iOS or macOS, the SDK now correctly passes on the `CaptureFailedRequests` flag and set status code ranged ([#2619](https://github.com/getsentry/sentry-unity/pull/2619))
 - The SDK now correctly resolves the storage path on Xbox during initialization, enabling offline caching and native crash capturing without user setup out of the box. ([#2617](https://github.com/getsentry/sentry-unity/pull/2617))
 
 ### Features
