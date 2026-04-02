@@ -54,7 +54,7 @@ jobs:
         shell: bash
 
       - name: Restore from cache
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: cache
         with:
           # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
