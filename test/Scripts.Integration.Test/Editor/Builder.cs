@@ -228,7 +228,7 @@ public class Builder
         Debug.Log("Builder: Building PS5 IL2CPP Player");
         ConsoleBuildProfiles.SetPS5BuildTypeToPackage();
         BuildIl2CPPPlayer(BuildTarget.PS5, BuildTargetGroup.PS5, BuildOptions.StrictMode,
-            defaultBuildPath: "./Builds/PS5/test.pvx");
+            defaultBuildPath: "./Builds/PS5/test.prx");
     }
 
     private static void ValidateArguments(Dictionary<string, string> args, string defaultBuildPath)
