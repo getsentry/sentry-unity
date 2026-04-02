@@ -14,6 +14,7 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
 
         // DSN is baked into SentryOptions.asset at build time by configure-sentry.ps1
         // which passes the SENTRY_DSN env var to ConfigureOptions via the -dsn argument.
+        // At test-run time, Integration.Tests.ps1 also reads SENTRY_DSN to verify events.
 
         options.Environment = "integration-test";
         options.Release = "sentry-unity-test@1.0.0";

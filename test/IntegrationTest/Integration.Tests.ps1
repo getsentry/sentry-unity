@@ -4,7 +4,7 @@
 #
 # Environment variables:
 #   SENTRY_TEST_PLATFORM: target platform (Android, Desktop, iOS, WebGL, Xbox)
-#   SENTRY_TEST_DSN: test DSN
+#   SENTRY_DSN: test DSN
 #   SENTRY_AUTH_TOKEN: authentication token for Sentry API
 #
 #   SENTRY_TEST_APP: path to the test app (APK, executable, .app bundle, WebGL build directory,
@@ -66,6 +66,7 @@ BeforeAll {
         }
 
         Write-Host "Retrieved log file from Xbox ($($logContent.Count) lines)" -ForegroundColor Green
+
         $RunResult.Output = $logContent
         return $RunResult
     }
@@ -150,10 +151,6 @@ BeforeAll {
         # On Xbox, console output is not available in non-development builds.
         # Retrieve the log file the app writes directly to disk.
         if ($script:Platform -eq "Xbox") {
-            Write-Host "xbrun exit code: $($runResult.ExitCode)"
-            Write-Host "::group::xbrun raw output ($Action)"
-            $runResult.Output | ForEach-Object { Write-Host $_ }
-            Write-Host "::endgroup::"
             $runResult = Get-XboxLogOutput -RunResult $runResult -Action $Action
         }
 
@@ -197,8 +194,8 @@ BeforeAll {
     }
 
     # Validate common environment
-    if ([string]::IsNullOrEmpty($env:SENTRY_TEST_DSN)) {
-        throw "SENTRY_TEST_DSN environment variable is not set."
+    if ([string]::IsNullOrEmpty($env:SENTRY_DSN)) {
+        throw "SENTRY_DSN environment variable is not set."
     }
     if ([string]::IsNullOrEmpty($env:SENTRY_AUTH_TOKEN)) {
         throw "SENTRY_AUTH_TOKEN environment variable is not set."
@@ -275,7 +272,7 @@ BeforeAll {
     # Initialize test parameters
     $script:TestSetup = [PSCustomObject]@{
         Platform = $script:Platform
-        Dsn = $env:SENTRY_TEST_DSN
+        Dsn = $env:SENTRY_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
     }
 

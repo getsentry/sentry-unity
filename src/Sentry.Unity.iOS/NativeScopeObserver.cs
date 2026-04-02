@@ -34,6 +34,10 @@ public class NativeScopeObserver : ScopeObserver
         // https://docs.microsoft.com/en-gb/dotnet/standard/base-types/standard-date-and-time-format-strings#Roundtrip
         timestamp.ToString("o");
 
+    public override void AddAttachmentImpl(SentryAttachment attachment) { }
+
+    public override void ClearAttachmentsImpl() { }
+
     internal static int GetBreadcrumbLevel(BreadcrumbLevel breadcrumbLevel) =>
         // https://github.com/getsentry/sentry-cocoa/blob/50f955aeb214601dd62b5dae7abdaddc8a1f24d9/Sources/Sentry/Public/SentryDefines.h#L99-L105
         breadcrumbLevel switch

@@ -86,4 +86,20 @@ public abstract class ScopeObserver : IScopeObserver
     }
 
     public abstract void SetTraceImpl(SentryId traceId, SpanId spanId);
+
+    public void AddAttachment(SentryAttachment attachment)
+    {
+        _options.LogDebug("{0} Scope Sync - Adding attachment", _name);
+        AddAttachmentImpl(attachment);
+    }
+
+    public abstract void AddAttachmentImpl(SentryAttachment attachment);
+
+    public void ClearAttachments()
+    {
+        _options.LogDebug("{0} Scope Sync - Clearing attachments", _name);
+        ClearAttachmentsImpl();
+    }
+
+    public abstract void ClearAttachmentsImpl();
 }
