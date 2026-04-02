@@ -111,14 +111,25 @@ public class SentryNativeAndroidTests
     }
 
     [Test]
-    public void Configure_NoInstallationIdReturned_SetsNewDefaultUserId()
+    public void Configure_InstallationIdReturned_SetsDefaultUserId()
+    {
+        var options = new SentryUnityOptions();
+        _testSentryJava.InstallationId = "test-installation-id";
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.AreEqual("test-installation-id", options.DefaultUserId);
+    }
+
+    [Test]
+    public void Configure_NoInstallationIdReturned_DoesNotSetDefaultUserId()
     {
         var options = new SentryUnityOptions();
         _testSentryJava.InstallationId = string.Empty;
 
         SentryNativeAndroid.Configure(options);
 
-        Assert.False(string.IsNullOrEmpty(options.DefaultUserId));
+        Assert.IsNull(options.DefaultUserId);
     }
 
     [Test]

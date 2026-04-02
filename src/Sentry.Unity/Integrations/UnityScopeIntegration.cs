@@ -159,12 +159,16 @@ internal class UnityScopeUpdater
 
     private void PopulateUser(Scope scope)
     {
-        if (_options.DefaultUserId is not null)
+        if (scope.User.Id is not null)
         {
-            if (scope.User.Id is null)
-            {
-                scope.User.Id = _options.DefaultUserId;
-            }
+            return;
+        }
+
+        // Prefer the native installation ID set by platform Configure methods
+        var userId = _options.DefaultUserId ?? _options.InstallationId;
+        if (userId is not null)
+        {
+            scope.User.Id = userId;
         }
     }
 }
