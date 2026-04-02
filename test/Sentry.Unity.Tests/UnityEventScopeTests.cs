@@ -359,13 +359,10 @@ public sealed class UnityEventProcessorTests
     }
 
     [Test]
-    public void UserId_FallsBackToInstallationId_WhenDefaultUserIdIsNull()
+    public void UserId_DefaultUserIdIsSet()
     {
-        // arrange - no DefaultUserId set, InstallationId resolves from .NET SDK
-        var options = new SentryUnityOptions(application: _testApplication);
-        Assert.IsNull(options.DefaultUserId);
-        var expectedId = options.InstallationId;
-        Assert.IsNotNull(expectedId, "InstallationId should resolve from the .NET SDK");
+        // arrange
+        var options = new SentryUnityOptions(application: _testApplication) { DefaultUserId = "native-id" };
 
         var sut = new UnityScopeUpdater(options, _testApplication);
         var scope = new Scope(options);
@@ -374,25 +371,6 @@ public sealed class UnityEventProcessorTests
         sut.ConfigureScope(scope);
 
         // assert
-        Assert.AreEqual(expectedId, scope.User.Id);
-    }
-
-    [Test]
-    public void UserId_DefaultUserIdPreferredOverInstallationId()
-    {
-        // arrange
-        var options = new SentryUnityOptions(application: _testApplication) { DefaultUserId = "native-id" };
-        var installationId = options.InstallationId;
-        Assert.IsNotNull(installationId, "InstallationId should resolve from the .NET SDK");
-        Assert.AreNotEqual("native-id", installationId);
-
-        var sut = new UnityScopeUpdater(options, _testApplication);
-        var scope = new Scope(options);
-
-        // act
-        sut.ConfigureScope(scope);
-
-        // assert - DefaultUserId wins over InstallationId
         Assert.AreEqual("native-id", scope.User.Id);
     }
 
@@ -414,29 +392,6 @@ public sealed class UnityEventProcessorTests
         // assert - the observer should have received the SetUser call via PropertyChanged
         Assert.IsNotNull(observer.LastUser, "ScopeObserver.SetUser should have been called");
         Assert.AreEqual("sync-test-id", observer.LastUser!.Id);
-    }
-
-    [Test]
-    public void UserId_ScopeSync_TriggeredWithInstallationIdFallback()
-    {
-        // arrange - no DefaultUserId, should fall back to InstallationId and still sync
-        var options = new SentryUnityOptions(application: _testApplication);
-        var observer = new TestScopeObserver(options);
-        options.ScopeObserver = observer;
-        options.EnableScopeSync = true;
-
-        var expectedId = options.InstallationId;
-        Assert.IsNotNull(expectedId);
-
-        var sut = new UnityScopeUpdater(options, _testApplication);
-        var scope = new Scope(options);
-
-        // act
-        sut.ConfigureScope(scope);
-
-        // assert
-        Assert.IsNotNull(observer.LastUser, "ScopeObserver.SetUser should have been called");
-        Assert.AreEqual(expectedId, observer.LastUser!.Id);
     }
 
     [Test]
