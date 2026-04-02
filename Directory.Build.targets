@@ -218,7 +218,10 @@ Expected to exist:
 
     <Message Importance="High" Text="Building Sentry Android SDK." />
 
-    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none" />
+    <!-- IgnoreExitCode: Gradle may report BUILD SUCCESSFUL yet the JVM exits with code -1 due to
+         the Kotlin compiler daemon terminating unexpectedly. The Error checks below validate the
+         actual build outputs, so we can safely ignore the exit code here. -->
+    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none" IgnoreExitCode="true" />
 
     <ItemGroup>
       <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" />

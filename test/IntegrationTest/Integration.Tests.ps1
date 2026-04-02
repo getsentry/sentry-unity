@@ -3,14 +3,16 @@
 # Integration tests for Sentry Unity SDK
 #
 # Environment variables:
-#   SENTRY_TEST_PLATFORM: target platform (Android, Desktop, iOS, WebGL)
-#   SENTRY_TEST_DSN: test DSN
+#   SENTRY_TEST_PLATFORM: target platform (Android, Desktop, iOS, WebGL, Xbox)
+#   SENTRY_DSN: test DSN
 #   SENTRY_AUTH_TOKEN: authentication token for Sentry API
 #
-#   SENTRY_TEST_APP: path to the test app (APK, executable, .app bundle, or WebGL build directory)
+#   SENTRY_TEST_APP: path to the test app (APK, executable, .app bundle, WebGL build directory,
+#                    or Xbox packaged build directory containing a .xvc)
 #
 # Platform-specific environment variables:
 #   iOS:     SENTRY_IOS_VERSION - iOS simulator version (e.g. "17.0" or "latest")
+#   Xbox:    XBCONNECT_TARGET - Xbox devkit IP address
 
 Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
@@ -30,7 +32,43 @@ BeforeAll {
             "Android" { return @("-e", "test", $Action) }
             "Desktop" { return @("--test", $Action, "-logFile", "-") }
             "iOS"     { return @("--test", $Action) }
+            "Xbox"    { return @("--test", $Action) }
         }
+    }
+
+    # Retrieve the integration test log file from Xbox and attach it to the run result.
+    # The Unity app writes to D:\Logs\UnityIntegrationTest.log on Xbox (UNITY_GAMECORE).
+    function Get-XboxLogOutput {
+        param(
+            [Parameter(Mandatory=$true)]
+            $RunResult,
+
+            [Parameter(Mandatory=$true)]
+            [string]$Action
+        )
+
+        $logFileName = "UnityIntegrationTest.log"
+        $logLocalDir = "$PSScriptRoot/results/xbox-logs/$Action"
+        New-Item -ItemType Directory -Path $logLocalDir -Force | Out-Null
+
+        try {
+            Copy-DeviceItem -DevicePath "D:\Logs\$logFileName" -Destination $logLocalDir
+        } catch {
+            throw "Failed to retrieve Xbox log file (D:\Logs\$logFileName): $_"
+        }
+
+        $localFile = Join-Path $logLocalDir $logFileName
+        $logContent = Get-Content $localFile -ErrorAction SilentlyContinue
+        if (-not $logContent -or $logContent.Count -eq 0) {
+            $localFiles = Get-ChildItem -Path $logLocalDir -ErrorAction SilentlyContinue
+            $localContents = if ($localFiles) { ($localFiles | ForEach-Object { $_.Name }) -join ", " } else { "(empty — D:\Logs\ likely did not exist on device)" }
+            throw "Xbox log file was empty or missing (D:\Logs\$logFileName). Copied directory contains: $localContents"
+        }
+
+        Write-Host "Retrieved log file from Xbox ($($logContent.Count) lines)" -ForegroundColor Green
+
+        $RunResult.Output = $logContent
+        return $RunResult
     }
 
     # Run a WebGL test action via headless Chrome
@@ -110,6 +148,12 @@ BeforeAll {
         $appArgs = Get-AppArguments -Action $Action
         $runResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $appArgs
 
+        # On Xbox, console output is not available in non-development builds.
+        # Retrieve the log file the app writes directly to disk.
+        if ($script:Platform -eq "Xbox") {
+            $runResult = Get-XboxLogOutput -RunResult $runResult -Action $Action
+        }
+
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
 
@@ -119,6 +163,10 @@ BeforeAll {
 
             $sendArgs = Get-AppArguments -Action "crash-send"
             $sendResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $sendArgs
+
+            if ($script:Platform -eq "Xbox") {
+                $sendResult = Get-XboxLogOutput -RunResult $sendResult -Action "crash-send"
+            }
 
             # Save crash-send result to JSON for debugging
             $sendResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "crash-send-result.json")
@@ -142,12 +190,12 @@ BeforeAll {
 
     $script:Platform = $env:SENTRY_TEST_PLATFORM
     if ([string]::IsNullOrEmpty($script:Platform)) {
-        throw "SENTRY_TEST_PLATFORM environment variable is not set. Expected: Android, Desktop, iOS, or WebGL"
+        throw "SENTRY_TEST_PLATFORM environment variable is not set. Expected: Android, Desktop, iOS, WebGL, or Xbox"
     }
 
     # Validate common environment
-    if ([string]::IsNullOrEmpty($env:SENTRY_TEST_DSN)) {
-        throw "SENTRY_TEST_DSN environment variable is not set."
+    if ([string]::IsNullOrEmpty($env:SENTRY_DSN)) {
+        throw "SENTRY_DSN environment variable is not set."
     }
     if ([string]::IsNullOrEmpty($env:SENTRY_AUTH_TOKEN)) {
         throw "SENTRY_AUTH_TOKEN environment variable is not set."
@@ -195,10 +243,25 @@ BeforeAll {
             Connect-Device -Platform "iOSSimulator" -Target $target
             Install-DeviceApp -Path $env:SENTRY_TEST_APP
         }
+        "Xbox" {
+            if ([string]::IsNullOrEmpty($env:XBCONNECT_TARGET)) {
+                throw "XBCONNECT_TARGET environment variable is not set."
+            }
+
+            Connect-Device -Platform "Xbox" -Target $env:XBCONNECT_TARGET
+
+            $xvcFile = Get-ChildItem -Path $env:SENTRY_TEST_APP -Filter "*.xvc" | Select-Object -First 1
+            if (-not $xvcFile) {
+                throw "No .xvc found in SENTRY_TEST_APP: $env:SENTRY_TEST_APP"
+            }
+            Install-DeviceApp -Path $xvcFile.FullName
+            $script:ExecutablePath = Get-PackageAumid -PackagePath $env:SENTRY_TEST_APP
+            Write-Host "Using AUMID: $($script:ExecutablePath)"
+        }
         "WebGL" {
         }
         default {
-            throw "Unknown platform: $($script:Platform). Expected: Android, Desktop, iOS, or WebGL"
+            throw "Unknown platform: $($script:Platform). Expected: Android, Desktop, iOS, WebGL, or Xbox"
         }
     }
 
@@ -209,7 +272,7 @@ BeforeAll {
     # Initialize test parameters
     $script:TestSetup = [PSCustomObject]@{
         Platform = $script:Platform
-        Dsn = $env:SENTRY_TEST_DSN
+        Dsn = $env:SENTRY_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
     }
 

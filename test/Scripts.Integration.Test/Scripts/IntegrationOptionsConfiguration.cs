@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using Sentry;
+using Sentry.Extensibility;
 using Sentry.Unity;
 using UnityEngine;
 
@@ -11,6 +14,7 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
 
         // DSN is baked into SentryOptions.asset at build time by configure-sentry.ps1
         // which passes the SENTRY_DSN env var to ConfigureOptions via the -dsn argument.
+        // At test-run time, Integration.Tests.ps1 also reads SENTRY_DSN to verify events.
 
         options.Environment = "integration-test";
         options.Release = "sentry-unity-test@1.0.0";
@@ -19,6 +23,7 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.AttachScreenshot = true;
         options.Debug = true;
         options.DiagnosticLevel = SentryLevel.Debug;
+        options.DiagnosticLogger = Logger.Instance;
         options.TracesSampleRate = 1.0d;
 
         // No custom HTTP handler -- events go to real sentry.io

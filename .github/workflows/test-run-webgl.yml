@@ -15,7 +15,7 @@ jobs:
     name: WebGL ${{ inputs.unity-version }}
     runs-on: ubuntu-latest
     env:
-      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+      SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
     steps:

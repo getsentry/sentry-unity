@@ -66,6 +66,17 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
     dictOptions[[NSString stringWithUTF8String:name]] = [NSNumber numberWithInt:value];
 }
 
+void SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange(const void *options, int32_t min, int32_t max)
+{
+    NSMutableDictionary *dictOptions = (__bridge NSMutableDictionary *)options;
+    NSMutableArray *ranges = dictOptions[@"failedRequestStatusCodes"];
+    if (!ranges) {
+        ranges = [[NSMutableArray alloc] init];
+        dictOptions[@"failedRequestStatusCodes"] = ranges;
+    }
+    [ranges addObject:[[SentryHttpStatusCodeRange alloc] initWithMin:min max:max]];
+}
+
 int SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;

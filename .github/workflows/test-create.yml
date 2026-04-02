@@ -32,7 +32,7 @@ jobs:
 
     - name: Cache IntegrationTest Project
       id: cache-project
-      uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
       with:
         path: samples/IntegrationTest
         key: IntegrationTest-Project-${{ env.UNITY_VERSION }}-${{ hashFiles('test/Scripts.Integration.Test/**') }}-v1

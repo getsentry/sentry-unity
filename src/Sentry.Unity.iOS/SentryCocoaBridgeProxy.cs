@@ -69,6 +69,15 @@ internal static class SentryCocoaBridgeProxy
         Logger?.LogDebug("Setting EnableWatchdogTerminationTracking: {0}", options.IosWatchdogTerminationIntegrationEnabled);
         OptionsSetInt(cOptions, "enableWatchdogTerminationTracking", options.IosWatchdogTerminationIntegrationEnabled ? 1 : 0);
 
+        Logger?.LogDebug("Setting CaptureFailedRequests: {0}", options.CaptureFailedRequests);
+        OptionsSetInt(cOptions, "enableCaptureFailedRequests", options.CaptureFailedRequests ? 1 : 0);
+
+        foreach (var range in options.FailedRequestStatusCodes)
+        {
+            Logger?.LogDebug("Adding FailedRequestStatusCodeRange: {0}-{1}", range.Start, range.End);
+            OptionsAddFailedRequestStatusCodeRange(cOptions, range.Start, range.End);
+        }
+
         var result = StartWithOptions(cOptions);
         return result is 1;
     }
@@ -87,6 +96,9 @@ internal static class SentryCocoaBridgeProxy
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsSetInt")]
     private static extern void OptionsSetInt(IntPtr options, string name, int value);
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange")]
+    private static extern void OptionsAddFailedRequestStatusCodeRange(IntPtr options, int min, int max);
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeStartWithOptions")]
     private static extern int StartWithOptions(IntPtr options);

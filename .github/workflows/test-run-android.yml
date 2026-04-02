@@ -28,7 +28,7 @@ jobs:
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
-      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+      SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     # Map the job outputs to step outputs
     outputs:
