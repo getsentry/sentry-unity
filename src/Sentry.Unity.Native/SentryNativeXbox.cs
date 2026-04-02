@@ -32,6 +32,7 @@ internal static class SentryNativeXbox
         {
             logger?.LogWarning("The 'CacheDirectoryPath' has already been set by the user. " +
                 "Storage path resolution will be skipped.");
+            return;
         }
 
         string? plsPath = null;
