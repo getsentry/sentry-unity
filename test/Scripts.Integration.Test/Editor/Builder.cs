@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -9,18 +8,20 @@ using UnityEngine;
 
 public class Builder
 {
-    public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group, BuildOptions buildOptions)
+    public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group, BuildOptions buildOptions,
+        string defaultBuildPath = "./Builds/")
     {
         Debug.Log("Builder: Starting to build");
 
         Debug.Log("Builder: Parsing command line arguments");
         var args = CommandLineArguments.Parse();
-        ValidateArguments(args);
+        ValidateArguments(args, defaultBuildPath);
 
         Debug.Log($"Builder: Starting build. Output will be '{args["buildPath"]}'.");
 
         // Make sure the configuration is right.
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
+        EditorUserBuildSettings.development = false;
         EditorUserBuildSettings.allowDebugging = false;
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.FromBuildTargetGroup(group), ScriptingImplementation.IL2CPP);
         // Making sure that the app keeps on running in the background. Linux CI is very unhappy with coroutines otherwise.
@@ -113,16 +114,23 @@ public class Builder
         }
     }
 
+    [MenuItem("Tools/Builder/Windows")]
     public static void BuildWindowsIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Windows IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Windows/test.exe");
     }
+
+    [MenuItem("Tools/Builder/macOS")]
     public static void BuildMacIl2CPPPlayer()
     {
         Debug.Log("Builder: Building macOS IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/macOS/test.app");
     }
+
+    [MenuItem("Tools/Builder/Linux")]
     public static void BuildLinuxIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Linux IL2CPP Player");
@@ -130,8 +138,11 @@ public class Builder
         PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneLinux64, new[] { UnityEngine.Rendering.GraphicsDeviceType.OpenGLCore });
         PlayerSettings.gpuSkinning = false;
         PlayerSettings.graphicsJobs = false;
-        BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Linux/test");
     }
+
+    [MenuItem("Tools/Builder/Android")]
     public static void BuildAndroidIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Android IL2CPP Player");
@@ -154,56 +165,79 @@ public class Builder
         }
 #endif
 
-        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Android/test.apk");
     }
+
+    [MenuItem("Tools/Builder/Android Project")]
     public static void BuildAndroidIl2CPPProject()
     {
         Debug.Log("Builder: Building Android IL2CPP Project");
         EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
-        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.AcceptExternalModificationsToPlayer);
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.AcceptExternalModificationsToPlayer,
+            defaultBuildPath: "./Builds/AndroidProject/");
     }
+
+    [MenuItem("Tools/Builder/iOS")]
     public static void BuildIOSProject()
     {
         Debug.Log("Builder: Building iOS Project");
-        BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/iOS/");
     }
+
+    [MenuItem("Tools/Builder/WebGL")]
     public static void BuildWebGLPlayer()
     {
         Debug.Log("Builder: Building WebGL Player");
         PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
-        BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/WebGL/");
     }
 
+    [MenuItem("Tools/Builder/Switch")]
     public static void BuildSwitchIL2CPPPlayer()
     {
         Debug.Log("Builder: Building Switch IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.Switch, BuildTargetGroup.Switch, BuildOptions.StrictMode);
+        ConsoleBuildProfiles.SetSwitchCreateNspRomFile();
+        BuildIl2CPPPlayer(BuildTarget.Switch, BuildTargetGroup.Switch, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Switch/test.nsp");
     }
 
+    [MenuItem("Tools/Builder/Xbox Series X|S")]
     public static void BuildXSXIL2CPPPlayer()
     {
         Debug.Log("Builder: Building Xbox Series X|S IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxSeries, BuildTargetGroup.GameCoreXboxSeries, BuildOptions.StrictMode);
+        ConsoleBuildProfiles.SetXboxSubtargetToMaster();
+        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxSeries, BuildTargetGroup.GameCoreXboxSeries, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/GameCoreXboxSeries/test");
     }
 
+    [MenuItem("Tools/Builder/Xbox One")]
     public static void BuildXB1IL2CPPPlayer()
     {
         Debug.Log("Builder: Building Xbox One IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxOne, BuildTargetGroup.GameCoreXboxOne, BuildOptions.StrictMode);
+        ConsoleBuildProfiles.SetXboxSubtargetToMaster();
+        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxOne, BuildTargetGroup.GameCoreXboxOne, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/GameCoreXboxOne/test");
     }
 
+    [MenuItem("Tools/Builder/PS5")]
     public static void BuildPS5IL2CPPPlayer()
     {
         Debug.Log("Builder: Building PS5 IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.PS5, BuildTargetGroup.PS5, BuildOptions.StrictMode);
+        ConsoleBuildProfiles.SetPS5BuildTypeToPackage();
+        BuildIl2CPPPlayer(BuildTarget.PS5, BuildTargetGroup.PS5, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/PS5/");
     }
 
-    private static void ValidateArguments(Dictionary<string, string> args)
+    private static void ValidateArguments(Dictionary<string, string> args, string defaultBuildPath)
     {
         Debug.Log("Builder: Validating command line arguments");
         if (!args.ContainsKey("buildPath") || string.IsNullOrWhiteSpace(args["buildPath"]))
         {
-            throw new Exception("No valid '-buildPath' has been provided.");
+            args["buildPath"] = defaultBuildPath;
+            Debug.Log($"Builder: No '-buildPath' provided, defaulting to '{defaultBuildPath}'");
         }
     }
 
@@ -226,52 +260,5 @@ public class Builder
             bakedGI = false
         };
 #endif
-    }
-}
-
-public class AllowInsecureHttp : IPostprocessBuildWithReport, IPreprocessBuildWithReport
-{
-    public int callbackOrder { get; }
-    public void OnPreprocessBuild(BuildReport report)
-    {
-#if UNITY_2022_1_OR_NEWER
-        PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
-#endif
-    }
-
-    // The `allow insecure http always` options don't seem to work. This is why we modify the info.plist directly.
-    // Using reflection to get around the iOS module requirement on non-iOS platforms
-    public void OnPostprocessBuild(BuildReport report)
-    {
-        var pathToBuiltProject = report.summary.outputPath;
-        if (report.summary.platform == BuildTarget.iOS)
-        {
-            var plistPath = Path.Combine(pathToBuiltProject, "Info.plist");
-            if (!File.Exists(plistPath))
-            {
-                Debug.LogError("Failed to find the plist.");
-                return;
-            }
-
-            var xcodeAssembly = Assembly.Load("UnityEditor.iOS.Extensions.Xcode");
-            var plistType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.PlistDocument");
-            var plistElementDictType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.PlistElementDict");
-
-            var plist = Activator.CreateInstance(plistType);
-            plistType.GetMethod("ReadFromString", BindingFlags.Public | BindingFlags.Instance)
-                ?.Invoke(plist, new object[] { File.ReadAllText(plistPath) });
-
-            var root = plistType.GetField("root", BindingFlags.Public | BindingFlags.Instance);
-            var allowDict = plistElementDictType.GetMethod("CreateDict", BindingFlags.Public | BindingFlags.Instance)
-                ?.Invoke(root?.GetValue(plist), new object[] { "NSAppTransportSecurity" });
-
-            plistElementDictType.GetMethod("SetBoolean", BindingFlags.Public | BindingFlags.Instance)
-                ?.Invoke(allowDict, new object[] { "NSAllowsArbitraryLoads", true });
-
-            var contents = (string)plistType.GetMethod("WriteToString", BindingFlags.Public | BindingFlags.Instance)
-                ?.Invoke(plist, null);
-
-            File.WriteAllText(plistPath, contents);
-        }
     }
 }

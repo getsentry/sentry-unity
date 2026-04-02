@@ -33,7 +33,7 @@ jobs:
       IOS_VERSION: ${{ inputs.ios-version }}
       INIT_TYPE: ${{ inputs.init-type }}
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
-      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+      SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
     steps:

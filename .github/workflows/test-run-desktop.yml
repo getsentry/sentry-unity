@@ -19,7 +19,7 @@ jobs:
     name: ${{ inputs.platform }} ${{ inputs.unity-version }}
     runs-on: ${{ inputs.platform == 'linux' && 'ubuntu-latest' || 'windows-latest' }}
     env:
-      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+      SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
     steps:
