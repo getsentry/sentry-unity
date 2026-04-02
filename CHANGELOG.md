@@ -8,7 +8,8 @@
 
 ### Features
 
-- The _Metrics_ APIs are now stable: removed `Experimental` from `SentrySdk` and `SentryOptions`. ([#2615](https://github.com/getsentry/sentry-unity/pull/2615))
+- The _Metrics_ APIs are now stable: removed `Experimental` from `SentrySdk` and `SentryOptions` ([#2615](https://github.com/getsentry/sentry-unity/pull/2615))
+- Attachments added to the scope are now included in native crash reports on Android, Windows, and Linux ([#2609](https://github.com/getsentry/sentry-unity/pull/2609))
 
 ### Dependencies
 

@@ -89,11 +89,25 @@ public abstract class ScopeObserver : IScopeObserver
 
     public void AddAttachment(SentryAttachment attachment)
     {
-        _options.LogDebug("{0} Scope Sync - Adding attachment", _name);
-        AddAttachmentImpl(attachment);
+        if (attachment.Content is FileAttachmentContent fileContent)
+        {
+            _options.LogDebug("{0} Scope Sync - Adding file attachment \"{1}\"", _name, fileContent.FilePath);
+            AddFileAttachmentImpl(fileContent.FilePath, attachment.FileName, attachment.ContentType);
+        }
+        else if (attachment.Content is ByteAttachmentContent byteContent)
+        {
+            _options.LogDebug("{0} Scope Sync - Adding byte attachment \"{1}\" ({2} bytes)", _name, attachment.FileName, byteContent.Bytes.Length);
+            AddByteAttachmentImpl(byteContent.Bytes, attachment.FileName, attachment.ContentType);
+        }
+        else
+        {
+            _options.LogDebug("{0} Scope Sync - Skipping attachment \"{1}\" (unsupported content type for native sync)", _name, attachment.FileName);
+        }
     }
 
-    public abstract void AddAttachmentImpl(SentryAttachment attachment);
+    public abstract void AddFileAttachmentImpl(string filePath, string fileName, string? contentType);
+
+    public abstract void AddByteAttachmentImpl(byte[] data, string fileName, string? contentType);
 
     public void ClearAttachments()
     {

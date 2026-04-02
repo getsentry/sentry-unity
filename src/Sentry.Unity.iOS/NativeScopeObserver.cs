@@ -29,14 +29,25 @@ public class NativeScopeObserver : ScopeObserver
     public override void SetTraceImpl(SentryId traceId, SpanId spanId) =>
         SentryCocoaBridgeProxy.SetTrace(traceId.ToString(), spanId.ToString());
 
+    public override void AddFileAttachmentImpl(string filePath, string fileName, string? contentType)
+    {
+        // iOS/macOS attachment sync to sentry-cocoa is not yet supported.
+    }
+
+    public override void AddByteAttachmentImpl(byte[] data, string fileName, string? contentType)
+    {
+        // iOS/macOS attachment sync to sentry-cocoa is not yet supported.
+    }
+
+    public override void ClearAttachmentsImpl()
+    {
+        // iOS/macOS attachment sync to sentry-cocoa is not yet supported.
+    }
+
     internal static string GetTimestamp(DateTimeOffset timestamp) =>
         // "o": Using ISO 8601 to make sure the timestamp makes it to the bridge correctly.
         // https://docs.microsoft.com/en-gb/dotnet/standard/base-types/standard-date-and-time-format-strings#Roundtrip
         timestamp.ToString("o");
-
-    public override void AddAttachmentImpl(SentryAttachment attachment) { }
-
-    public override void ClearAttachmentsImpl() { }
 
     internal static int GetBreadcrumbLevel(BreadcrumbLevel breadcrumbLevel) =>
         // https://github.com/getsentry/sentry-cocoa/blob/50f955aeb214601dd62b5dae7abdaddc8a1f24d9/Sources/Sentry/Public/SentryDefines.h#L99-L105
