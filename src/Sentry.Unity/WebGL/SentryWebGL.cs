@@ -1,6 +1,5 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
-using UnityEngine.Analytics;
 
 namespace Sentry.Unity.WebGL;
 
@@ -45,9 +44,6 @@ public static class SentryWebGL
             options.Il2CppLineNumberSupportEnabled = false;
             options.LogWarning("IL2CPP line number support is unsupported on WebGL - disabling.");
         }
-
-        // Use AnalyticsSessionInfo.userId as the default UserID
-        options.DefaultUserId = AnalyticsSessionInfo.userId;
 
         // Indicate that this platform doesn't support running background threads.
         options.MultiThreading = false;

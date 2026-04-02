@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Behavioral Changes
+
+- The SDK no longer relies on UnityEngine.Analytics.AnalyticsSessionInfo to determine unique users but uses SDK-internal mechanisms instead. ([#2625](https://github.com/getsentry/sentry-unity/pull/2625))
+
 ### Fixes
 
 - When targeting iOS or macOS, the SDK now correctly passes on the `CaptureFailedRequests` flag and set status code ranged ([#2619](https://github.com/getsentry/sentry-unity/pull/2619))
