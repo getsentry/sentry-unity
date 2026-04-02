@@ -71,6 +71,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          ref: ${{ github.head_ref || github.ref }}
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
       - name: Download UPM package
         uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
@@ -78,12 +81,32 @@ jobs:
           name: package-release
           wait-timeout: 3600
 
-      - name: Verify package content against snapshot
-        # If this step fails, you can accept the new file content by
-        # running the following script locally with 'accept' as an argument
-        # and committing the new snapshot file to your branch. i.e:
-        # ./test/Scripts.Tests/test-pack-contents.ps1 accept
-        run: ./test/Scripts.Tests/test-pack-contents.ps1
+      - name: Check snapshot
+        id: snapshot-check
+        run: |
+          $exitCode = 0
+          try {
+            ./test/Scripts.Tests/test-pack-contents.ps1
+          } catch {
+            $exitCode = 1
+          }
+          "result=$exitCode" >> $env:GITHUB_OUTPUT
+
+      - name: Update snapshot for dependency bumps
+        if: steps.snapshot-check.outputs.result != '0' && github.event_name == 'pull_request' && startsWith(github.head_ref, 'deps/')
+        run: |
+          ./test/Scripts.Tests/test-pack-contents.ps1 accept
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test/Scripts.Tests/package-release.zip.snapshot
+          git commit -m "Update package release snapshot"
+          git push
+
+      - name: Fail on unexpected snapshot changes
+        if: steps.snapshot-check.outputs.result != '0' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'deps/'))
+        run: |
+          Write-Error "Package contents do not match snapshot. Run './test/Scripts.Tests/test-pack-contents.ps1 accept' locally and commit the update."
+          exit 1
 
   # This produces the `samples/IntegrationTest` as `test-${{ matrix.unity-version }}`.
   test-create:
