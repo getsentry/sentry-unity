@@ -164,11 +164,12 @@ internal class UnityScopeUpdater
             return;
         }
 
-        // Prefer the native installation ID set by platform Configure methods
-        var userId = _options.DefaultUserId ?? _options.InstallationId;
-        if (userId is not null)
+        // Only set the native installation ID here. The .NET SDK's Enricher handles
+        // the fallback to InstallationId after the HasUser() check, which allows
+        // IsEnvironmentUser/SendDefaultPii to set the Username first.
+        if (_options.DefaultUserId is not null)
         {
-            scope.User.Id = userId;
+            scope.User.Id = _options.DefaultUserId;
         }
     }
 }
