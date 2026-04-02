@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
-using System.Xml;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -10,13 +8,14 @@ using UnityEngine;
 
 public class Builder
 {
-    public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group, BuildOptions buildOptions)
+    public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group, BuildOptions buildOptions,
+        string defaultBuildPath = "./Builds/")
     {
         Debug.Log("Builder: Starting to build");
 
         Debug.Log("Builder: Parsing command line arguments");
         var args = CommandLineArguments.Parse();
-        ValidateArguments(args);
+        ValidateArguments(args, defaultBuildPath);
 
         Debug.Log($"Builder: Starting build. Output will be '{args["buildPath"]}'.");
 
@@ -119,14 +118,16 @@ public class Builder
     public static void BuildWindowsIl2CPPPlayer()
     {
         Debug.Log("Builder: Building Windows IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Windows/test.exe");
     }
 
     [MenuItem("Tools/Builder/macOS")]
     public static void BuildMacIl2CPPPlayer()
     {
         Debug.Log("Builder: Building macOS IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/macOS/test.app");
     }
 
     [MenuItem("Tools/Builder/Linux")]
@@ -137,7 +138,8 @@ public class Builder
         PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneLinux64, new[] { UnityEngine.Rendering.GraphicsDeviceType.OpenGLCore });
         PlayerSettings.gpuSkinning = false;
         PlayerSettings.graphicsJobs = false;
-        BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Linux/test");
     }
 
     [MenuItem("Tools/Builder/Android")]
@@ -163,21 +165,25 @@ public class Builder
         }
 #endif
 
-        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Android/test.apk");
     }
+
     [MenuItem("Tools/Builder/Android Project")]
     public static void BuildAndroidIl2CPPProject()
     {
         Debug.Log("Builder: Building Android IL2CPP Project");
         EditorUserBuildSettings.exportAsGoogleAndroidProject = true;
-        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.AcceptExternalModificationsToPlayer);
+        BuildIl2CPPPlayer(BuildTarget.Android, BuildTargetGroup.Android, BuildOptions.AcceptExternalModificationsToPlayer,
+            defaultBuildPath: "./Builds/AndroidProject/");
     }
 
     [MenuItem("Tools/Builder/iOS")]
     public static void BuildIOSProject()
     {
         Debug.Log("Builder: Building iOS Project");
-        BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/iOS/");
     }
 
     [MenuItem("Tools/Builder/WebGL")]
@@ -185,154 +191,53 @@ public class Builder
     {
         Debug.Log("Builder: Building WebGL Player");
         PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
-        BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL, BuildOptions.StrictMode);
+        BuildIl2CPPPlayer(BuildTarget.WebGL, BuildTargetGroup.WebGL, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/WebGL/");
     }
 
     [MenuItem("Tools/Builder/Switch")]
     public static void BuildSwitchIL2CPPPlayer()
     {
         Debug.Log("Builder: Building Switch IL2CPP Player");
-        SetSwitchCreateNspRomFile();
-        BuildIl2CPPPlayer(BuildTarget.Switch, BuildTargetGroup.Switch, BuildOptions.StrictMode);
+        ConsoleBuildProfiles.SetSwitchCreateNspRomFile();
+        BuildIl2CPPPlayer(BuildTarget.Switch, BuildTargetGroup.Switch, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Switch/test.nsp");
     }
 
     [MenuItem("Tools/Builder/Xbox Series X|S")]
     public static void BuildXSXIL2CPPPlayer()
     {
         Debug.Log("Builder: Building Xbox Series X|S IL2CPP Player");
-        SetXboxSubtargetToMaster();
-        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxSeries, BuildTargetGroup.GameCoreXboxSeries, BuildOptions.StrictMode);
+        ConsoleBuildProfiles.SetXboxSubtargetToMaster();
+        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxSeries, BuildTargetGroup.GameCoreXboxSeries, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/GameCoreXboxSeries/test");
     }
 
     [MenuItem("Tools/Builder/Xbox One")]
     public static void BuildXB1IL2CPPPlayer()
     {
         Debug.Log("Builder: Building Xbox One IL2CPP Player");
-        SetXboxSubtargetToMaster();
-        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxOne, BuildTargetGroup.GameCoreXboxOne, BuildOptions.StrictMode);
+        ConsoleBuildProfiles.SetXboxSubtargetToMaster();
+        BuildIl2CPPPlayer(BuildTarget.GameCoreXboxOne, BuildTargetGroup.GameCoreXboxOne, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/GameCoreXboxOne/test");
     }
 
     [MenuItem("Tools/Builder/PS5")]
     public static void BuildPS5IL2CPPPlayer()
     {
         Debug.Log("Builder: Building PS5 IL2CPP Player");
-        SetPS5BuildTypeToPackage();
-        BuildIl2CPPPlayer(BuildTarget.PS5, BuildTargetGroup.PS5, BuildOptions.StrictMode);
+        ConsoleBuildProfiles.SetPS5BuildTypeToPackage();
+        BuildIl2CPPPlayer(BuildTarget.PS5, BuildTargetGroup.PS5, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/PS5/test.pvx");
     }
 
-    private static void SetXboxSubtargetToMaster()
-    {
-        // The actual editor API to set this has been deprecated: https://docs.unity3d.com/6000.3/Documentation/ScriptReference/XboxBuildSubtarget.html
-        // Modifying the build profiles and build setting assets on disk does not work. Some of the properties are
-        // stored inside a binary. Instead we're setting the properties via reflection and then saving the asset.
-        var buildProfileType = Type.GetType("UnityEditor.Build.Profile.BuildProfile, UnityEditor.CoreModule");
-        if (buildProfileType == null)
-        {
-            return;
-        }
-
-        foreach (var profile in Resources.FindObjectsOfTypeAll(buildProfileType))
-        {
-            // BuildTarget.GameCoreXboxSeries = 42, BuildTarget.GameCoreXboxOne = 43.
-            var buildTarget = new SerializedObject(profile).FindProperty("m_BuildTarget")?.intValue ?? -1;
-            if (buildTarget != 42 && buildTarget != 43)
-                continue;
-
-            var platformSettings = buildProfileType
-                .GetProperty("platformBuildProfile", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                ?.GetValue(profile);
-            var settingsData = platformSettings?.GetType()
-                .GetField("m_settingsData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                ?.GetValue(platformSettings);
-
-            GetFieldInHierarchy(settingsData?.GetType(), "buildSubtarget")?.SetValue(settingsData, 1); // 1 = Master
-            GetFieldInHierarchy(platformSettings?.GetType(), "m_Development")?.SetValue(platformSettings, false);
-            GetFieldInHierarchy(settingsData?.GetType(), "deploymentMethod")?.SetValue(settingsData, 2); // 2 = Package
-
-            EditorUtility.SetDirty(profile);
-            Debug.Log($"Builder: Xbox Build Profile (BuildTarget {buildTarget}) set to Master, deploy method set to Package");
-        }
-
-        AssetDatabase.SaveAssets();
-    }
-
-    private static void SetPS5BuildTypeToPackage()
-    {
-        var buildProfileType = Type.GetType("UnityEditor.Build.Profile.BuildProfile, UnityEditor.CoreModule");
-        if (buildProfileType == null)
-        {
-            return;
-        }
-
-        foreach (var profile in Resources.FindObjectsOfTypeAll(buildProfileType))
-        {
-            // BuildTarget.PS5 = 44.
-            var buildTarget = new SerializedObject(profile).FindProperty("m_BuildTarget")?.intValue ?? -1;
-            if (buildTarget != 44)
-                continue;
-
-            var platformSettings = buildProfileType
-                .GetProperty("platformBuildProfile", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                ?.GetValue(profile);
-
-            GetFieldInHierarchy(platformSettings?.GetType(), "m_Development")?.SetValue(platformSettings, false);
-            GetFieldInHierarchy(platformSettings?.GetType(), "m_BuildSubtarget")?.SetValue(platformSettings, 1); // 1 = Package
-
-            EditorUtility.SetDirty(profile);
-            Debug.Log("Builder: PS5 Build Profile set to Package");
-        }
-
-        AssetDatabase.SaveAssets();
-    }
-
-    private static void SetSwitchCreateNspRomFile()
-    {
-        var buildProfileType = Type.GetType("UnityEditor.Build.Profile.BuildProfile, UnityEditor.CoreModule");
-        if (buildProfileType == null)
-        {
-            return;
-        }
-
-        foreach (var profile in Resources.FindObjectsOfTypeAll(buildProfileType))
-        {
-            // BuildTarget.Switch = 38.
-            var buildTarget = new SerializedObject(profile).FindProperty("m_BuildTarget")?.intValue ?? -1;
-            if (buildTarget != 38)
-                continue;
-
-            var platformSettings = buildProfileType
-                .GetProperty("platformBuildProfile", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                ?.GetValue(profile);
-
-            GetFieldInHierarchy(platformSettings?.GetType(), "m_Development")?.SetValue(platformSettings, false);
-            GetFieldInHierarchy(platformSettings?.GetType(), "m_SwitchCreateRomFile")?.SetValue(platformSettings, 1); // 1 = enabled
-
-            EditorUtility.SetDirty(profile);
-            Debug.Log("Builder: Switch Build Profile set to Create NSP ROM File");
-        }
-
-        AssetDatabase.SaveAssets();
-    }
-
-    private static FieldInfo GetFieldInHierarchy(Type type, string fieldName)
-    {
-        while (type != null)
-        {
-            var field = type.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-            if (field != null)
-                return field;
-            type = type.BaseType;
-        }
-        return null;
-    }
-
-    private static void ValidateArguments(Dictionary<string, string> args)
+    private static void ValidateArguments(Dictionary<string, string> args, string defaultBuildPath)
     {
         Debug.Log("Builder: Validating command line arguments");
         if (!args.ContainsKey("buildPath") || string.IsNullOrWhiteSpace(args["buildPath"]))
         {
-            args["buildPath"] = "./Builds/";
-            Debug.Log("Builder: No '-buildPath' provided, defaulting to './Builds/'");
+            args["buildPath"] = defaultBuildPath;
+            Debug.Log($"Builder: No '-buildPath' provided, defaulting to '{defaultBuildPath}'");
         }
     }
 
@@ -355,90 +260,5 @@ public class Builder
             bakedGI = false
         };
 #endif
-    }
-}
-
-public class AllowInsecureHttp : IPostprocessBuildWithReport, IPreprocessBuildWithReport
-{
-    public int callbackOrder { get; }
-    public void OnPreprocessBuild(BuildReport report)
-    {
-#if UNITY_2022_1_OR_NEWER
-        PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
-#endif
-    }
-
-    // The `allow insecure http always` options don't seem to work. This is why we modify the info.plist directly.
-    // Using reflection to get around the iOS module requirement on non-iOS platforms
-    public void OnPostprocessBuild(BuildReport report)
-    {
-        var pathToBuiltProject = report.summary.outputPath;
-        if (report.summary.platform == BuildTarget.iOS)
-        {
-            var plistPath = Path.Combine(pathToBuiltProject, "Info.plist");
-            if (!File.Exists(plistPath))
-            {
-                Debug.LogError("Failed to find the plist.");
-                return;
-            }
-
-            var xcodeAssembly = Assembly.Load("UnityEditor.iOS.Extensions.Xcode");
-            var plistType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.PlistDocument");
-            var plistElementDictType = xcodeAssembly.GetType("UnityEditor.iOS.Xcode.PlistElementDict");
-
-            var plist = Activator.CreateInstance(plistType);
-            plistType.GetMethod("ReadFromString", BindingFlags.Public | BindingFlags.Instance)
-                ?.Invoke(plist, new object[] { File.ReadAllText(plistPath) });
-
-            var root = plistType.GetField("root", BindingFlags.Public | BindingFlags.Instance);
-            var allowDict = plistElementDictType.GetMethod("CreateDict", BindingFlags.Public | BindingFlags.Instance)
-                ?.Invoke(root?.GetValue(plist), new object[] { "NSAppTransportSecurity" });
-
-            plistElementDictType.GetMethod("SetBoolean", BindingFlags.Public | BindingFlags.Instance)
-                ?.Invoke(allowDict, new object[] { "NSAllowsArbitraryLoads", true });
-
-            var contents = (string)plistType.GetMethod("WriteToString", BindingFlags.Public | BindingFlags.Instance)
-                ?.Invoke(plist, null);
-
-            File.WriteAllText(plistPath, contents);
-        }
-    }
-}
-
-/// <summary>
-/// Ensures Xbox builds have PersistentLocalStorage configured in the project's game config.
-/// Required for sentry-native to write its crash database and for integration test logging.
-/// </summary>
-public class XboxPersistentLocalStorage : IPreprocessBuildWithReport
-{
-    public int callbackOrder { get; }
-
-    public void OnPreprocessBuild(BuildReport report)
-    {
-        if (report.summary.platform != BuildTarget.GameCoreXboxSeries
-            && report.summary.platform != BuildTarget.GameCoreXboxOne)
-        {
-            return;
-        }
-
-        var configName = report.summary.platform == BuildTarget.GameCoreXboxSeries
-            ? "ScarlettGame.config"
-            : "XboxOneGame.config";
-        var configPath = Path.Combine("ProjectSettings", configName);
-
-        var doc = new XmlDocument();
-        doc.Load(configPath);
-
-        var game = doc.DocumentElement;
-        var pls = game["PersistentLocalStorage"] ?? doc.CreateElement("PersistentLocalStorage");
-        if (pls.ParentNode == null)
-        {
-            game.AppendChild(pls);
-        }
-
-        pls.InnerXml = "<SizeMB>11</SizeMB><GrowableToMB>22</GrowableToMB>";
-
-        doc.Save(configPath);
-        Debug.Log($"XboxPersistentLocalStorage: Configured PersistentLocalStorage in {configName}");
     }
 }
