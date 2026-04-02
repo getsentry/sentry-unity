@@ -673,6 +673,7 @@ internal sealed class TestScopeObserver : ScopeObserver
     public override void SetUserImpl(SentryUser user) => LastUser = user;
     public override void UnsetUserImpl() => LastUser = null;
     public override void SetTraceImpl(SentryId traceId, SpanId spanId) { }
-    public override void AddAttachmentImpl(SentryAttachment attachment) { }
+    public override void AddFileAttachmentImpl(string filePath, string fileName, string? contentType) { }
+    public override void AddByteAttachmentImpl(byte[] data, string fileName, string? contentType) { }
     public override void ClearAttachmentsImpl() { }
 }

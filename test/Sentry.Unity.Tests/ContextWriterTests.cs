@@ -78,6 +78,9 @@ public sealed class ContextWriterTests
             Debug = true,
             DiagnosticLogger = new TestLogger(),
             NativeContextWriter = context,
+            CreateHttpMessageHandler = () => new TestHttpClientHandler(),
+            AutoSessionTracking = false,
+            CacheDirectoryPath = null,
         };
 
         // act
