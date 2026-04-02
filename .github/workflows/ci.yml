@@ -83,14 +83,11 @@ jobs:
 
       - name: Check snapshot
         id: snapshot-check
+        shell: pwsh
         run: |
-          $exitCode = 0
-          try {
-            ./test/Scripts.Tests/test-pack-contents.ps1
-          } catch {
-            $exitCode = 1
-          }
-          "result=$exitCode" >> $env:GITHUB_OUTPUT
+          $ErrorActionPreference = 'Continue'
+          & ./test/Scripts.Tests/test-pack-contents.ps1
+          "result=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
 
       - name: Update snapshot for dependency bumps
         if: steps.snapshot-check.outputs.result != '0' && github.event_name == 'pull_request' && startsWith(github.head_ref, 'deps/')
