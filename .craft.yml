@@ -1,4 +1,5 @@
 minVersion: 2.21.4
+preReleaseCommand: pwsh ./scripts/bump-version.ps1
 changelogPolicy: auto
 artifactProvider:
   name: github
