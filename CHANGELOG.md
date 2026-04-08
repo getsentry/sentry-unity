@@ -5,7 +5,7 @@
 ### Behavioral Changes
 
 - The SDK no longer relies on UnityEngine.Analytics.AnalyticsSessionInfo to determine unique users but uses SDK-internal mechanisms instead. ([#2625](https://github.com/getsentry/sentry-unity/pull/2625))
-- Metrics are now enabled by default, matching the cross-SDK standard. The `EnableMetrics` setting is now also synced to the native SDK on Windows, Linux, and consoles. ([#XXXX](https://github.com/getsentry/sentry-unity/pull/XXXX))
+- Metrics are now enabled by default, matching the cross-SDK standard. The `EnableMetrics` setting is now also synced to the native SDK on Windows, Linux, and consoles. ([#2635](https://github.com/getsentry/sentry-unity/pull/2635))
 
 ### Fixes
 
