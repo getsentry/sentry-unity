@@ -2,7 +2,7 @@ fileFormatVersion: 2
 guid: e5a8c7f6d3b94e5a9c2d1f0e8b7a6543
 PluginImporter:
   externalObjects: {}
-  serializedVersion: 2
+  serializedVersion: 3
   iconMap: {}
   executionOrder: {}
   defineConstraints: []
@@ -11,108 +11,64 @@ PluginImporter:
   isExplicitlyReferenced: 0
   validateReferences: 1
   platformData:
-  - first:
-      : Any
-    second:
+    Android:
+      enabled: 0
+      settings:
+        AndroidLibraryDependee: UnityLibrary
+        AndroidSharedLibraryType: Executable
+        CPU: ARMv7
+    Any:
       enabled: 0
       settings:
         Exclude Android: 1
         Exclude Editor: 1
-        Exclude GameCoreScarlett: 1
-        Exclude GameCoreXboxOne: 1
         Exclude Linux64: 1
         Exclude OSXUniversal: 1
-        Exclude PS4: 1
         Exclude PS5: 1
         Exclude Switch: 0
         Exclude WebGL: 1
         Exclude Win: 1
         Exclude Win64: 1
         Exclude iOS: 1
-        Exclude tvOS: 1
-  - first:
-      Android: Android
-    second:
-      enabled: 0
-      settings:
-        CPU: ARMv7
-  - first:
-      Editor: Editor
-    second:
+    Editor:
       enabled: 0
       settings:
         CPU: AnyCPU
         DefaultValueInitialized: true
         OS: AnyOS
-  - first:
-      GameCoreScarlett: GameCoreScarlett
-    second:
+    Linux64:
       enabled: 0
       settings:
-        CPU: AnyCPU
-  - first:
-      GameCoreXboxOne: GameCoreXboxOne
-    second:
+        CPU: None
+    OSXUniversal:
       enabled: 0
       settings:
-        CPU: AnyCPU
-  - first:
-      PS5: PS5
-    second:
+        CPU: None
+    PS5:
       enabled: 0
       settings: {}
-  - first:
-      Standalone: Linux64
-    second:
-      enabled: 0
-      settings:
-        CPU: None
-  - first:
-      Standalone: OSXUniversal
-    second:
-      enabled: 0
-      settings:
-        CPU: None
-  - first:
-      Standalone: Win
-    second:
-      enabled: 0
-      settings:
-        CPU: None
-  - first:
-      Standalone: Win64
-    second:
-      enabled: 0
-      settings:
-        CPU: None
-  - first:
-      Switch: Switch
-    second:
+    Switch:
       enabled: 1
       settings: {}
-  - first:
-      Windows Store Apps: WindowsStoreApps
-    second:
+    Win:
+      enabled: 0
+      settings:
+        CPU: None
+    Win64:
+      enabled: 0
+      settings:
+        CPU: None
+    WindowsStoreApps:
       enabled: 0
       settings:
         CPU: AnyCPU
-  - first:
-      iPhone: iOS
-    second:
+    iOS:
       enabled: 0
       settings:
         AddToEmbeddedBinaries: false
         CPU: AnyCPU
-        CompileFlags:
-        FrameworkDependencies:
-  - first:
-      tvOS: tvOS
-    second:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-        CompileFlags:
-        FrameworkDependencies:
-  userData:
-  assetBundleName:
-  assetBundleVariant:
+        CompileFlags: 
+        FrameworkDependencies: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
