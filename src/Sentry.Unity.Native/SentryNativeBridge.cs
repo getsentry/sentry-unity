@@ -93,6 +93,9 @@ internal static class SentryNativeBridge
         }
 #endif
 
+        Logger?.LogDebug("Setting EnableMetrics: {0}", options.EnableMetrics);
+        sentry_options_set_enable_metrics(cOptions, options.EnableMetrics ? 1 : 0);
+
         if (options.UnityInfo.IL2CPP)
         {
             Logger?.LogDebug("Setting the native logger");
@@ -165,6 +168,9 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_attach_screenshot(IntPtr options, int attachScreenshot);
+
+    [DllImport(SentryLib)]
+    private static extern void sentry_options_set_enable_metrics(IntPtr options, int enable_metrics);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
     private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
