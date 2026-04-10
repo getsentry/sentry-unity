@@ -50,6 +50,7 @@ public class SentryWindow : EditorWindow
     public event Action<ValidationError> OnValidationError = _ => { };
 
     private int _currentTab = 0;
+    private Vector2 _scrollPosition = Vector2.zero;
     private readonly string[] _tabs =
     {
         "Core",
@@ -134,6 +135,8 @@ public class SentryWindow : EditorWindow
         EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
         EditorGUILayout.Space();
 
+        _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
+
         switch (_currentTab)
         {
             case 0:
@@ -160,6 +163,8 @@ public class SentryWindow : EditorWindow
             default:
                 break;
         }
+
+        EditorGUILayout.EndScrollView();
 
         EditorGUI.EndDisabledGroup();
     }
