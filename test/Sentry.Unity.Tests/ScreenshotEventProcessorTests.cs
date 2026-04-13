@@ -10,6 +10,26 @@ namespace Sentry.Unity.Tests;
 
 public class ScreenshotEventProcessorTests
 {
+    /// <summary>
+    /// Subclass that mocks screenshot capture and WaitForEndOfFrame but uses the REAL
+    /// CaptureAttachment implementation (via Hub.CaptureAttachment), allowing us to verify
+    /// that the attachment envelope actually reaches the HTTP transport.
+    /// </summary>
+    private class RealCaptureScreenshotEventProcessor : ScreenshotEventProcessor
+    {
+        public RealCaptureScreenshotEventProcessor(SentryUnityOptions options, ISentryMonoBehaviour sentryMonoBehaviour)
+            : base(options, sentryMonoBehaviour) { }
+
+        internal override Texture2D CreateNewScreenshotTexture2D(SentryUnityOptions options)
+            => new Texture2D(1, 1);
+
+        internal override YieldInstruction WaitForEndOfFrame()
+            => new YieldInstruction();
+
+        // CaptureAttachment is intentionally NOT overridden — the base implementation
+        // calls Hub.CaptureAttachment which sends a standalone attachment envelope.
+    }
+
     private class TestScreenshotEventProcessor : ScreenshotEventProcessor
     {
         public Func<SentryUnityOptions, Texture2D> CreateScreenshotFunc { get; set; }
@@ -346,6 +366,51 @@ public class ScreenshotEventProcessorTests
 
         Assert.IsTrue(callbackInvoked);
         Assert.AreEqual(1, screenshotCaptureCallCount);
+    }
+
+    [UnityTest]
+    public IEnumerator Process_EventDroppedByBeforeSend_ScreenshotAttachmentIsNotSent()
+    {
+        // When before_send drops an event (returns null), the screenshot should NOT be sent.
+        // The screenshot processor's async coroutine must not send orphaned attachment envelopes
+        // that count against quota but have no associated event in Sentry.
+
+        var httpHandler = new TestHttpClientHandler("ScreenshotBeforeSendTest");
+        var sdkOptions = new SentryUnityOptions(application: new TestApplication())
+        {
+            Dsn = SentryTests.TestDsn,
+            CreateHttpMessageHandler = () => httpHandler
+        };
+        sdkOptions.SetBeforeSend((_, _) => null); // Drop all events
+        SentrySdk.Init(sdkOptions);
+
+        try
+        {
+            // Sanity check: verify before_send drops events
+            var capturedEventId = SentrySdk.CaptureMessage("test message");
+            Assert.AreEqual(SentryId.Empty, capturedEventId, "Sanity check: before_send should drop events");
+
+            // Create a processor that mocks screenshot capture but uses the real CaptureAttachment
+            // pathway (Hub.CaptureAttachment → Envelope.FromAttachment → HTTP transport)
+            var sentryMonoBehaviour = GetTestMonoBehaviour();
+            var processor = new RealCaptureScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
+
+            var sentryEvent = new SentryEvent();
+            processor.Process(sentryEvent);
+
+            // Wait for the coroutine to complete (fires at end of frame)
+            yield return null;
+            yield return null;
+
+            // The screenshot attachment must not be sent when the event was dropped by before_send
+            var screenshotRequest = httpHandler.GetEvent("screenshot.jpg", TimeSpan.FromSeconds(2));
+            Assert.IsEmpty(screenshotRequest,
+                "Screenshot attachment should not be sent when before_send drops the event");
+        }
+        finally
+        {
+            SentrySdk.Close();
+        }
     }
 
     private static TestSentryMonoBehaviour GetTestMonoBehaviour()
