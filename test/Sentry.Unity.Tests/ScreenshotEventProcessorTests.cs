@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
@@ -369,40 +370,89 @@ public class ScreenshotEventProcessorTests
     }
 
     [UnityTest]
-    public IEnumerator Process_EventDroppedByBeforeSend_ScreenshotAttachmentIsNotSent()
+    public IEnumerator Process_EventCapturedSuccessfully_ScreenshotAttachmentIsSent()
     {
-        // When before_send drops an event (returns null), the screenshot should NOT be sent.
-        // The screenshot processor's async coroutine must not send orphaned attachment envelopes
-        // that count against quota but have no associated event in Sentry.
+        // Positive control: when the event IS captured, the screenshot coroutine should send
+        // the attachment. This validates the test infrastructure so the negative test below
+        // is meaningful — if this test passes but the next one doesn't, the WasCaptured flag
+        // is doing its job.
 
-        var httpHandler = new TestHttpClientHandler("ScreenshotBeforeSendTest");
-        var sdkOptions = new SentryUnityOptions(application: new TestApplication())
+        var httpHandler = new TestHttpClientHandler("ScreenshotSuccessTest");
+        var sentryMonoBehaviour = GetTestMonoBehaviour();
+
+        var options = new SentryUnityOptions(application: new TestApplication())
         {
             Dsn = SentryTests.TestDsn,
             CreateHttpMessageHandler = () => httpHandler
         };
-        sdkOptions.SetBeforeSend((_, _) => null); // Drop all events
-        SentrySdk.Init(sdkOptions);
+
+        // Register test screenshot processor as an event processor — it will be called
+        // during DoSendEvent → ProcessEvent, just like the real ScreenshotEventProcessor.
+        options.AddEventProcessor(new RealCaptureScreenshotEventProcessor(options, sentryMonoBehaviour));
+
+        SentrySdk.Init(options);
 
         try
         {
-            // Sanity check: verify before_send drops events
-            var capturedEventId = SentrySdk.CaptureMessage("test message");
-            Assert.AreEqual(SentryId.Empty, capturedEventId, "Sanity check: before_send should drop events");
+            // Event goes through the full DoSendEvent pipeline and is captured successfully.
+            // DoSendEvent sets @event.WasCaptured = true after CaptureEnvelope succeeds.
+            var capturedId = SentrySdk.CaptureMessage("test message");
+            Assert.AreNotEqual(SentryId.Empty, capturedId, "Sanity check: event should be captured");
 
-            // Create a processor that mocks screenshot capture but uses the real CaptureAttachment
-            // pathway (Hub.CaptureAttachment → Envelope.FromAttachment → HTTP transport)
-            var sentryMonoBehaviour = GetTestMonoBehaviour();
-            var processor = new RealCaptureScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
-
-            var sentryEvent = new SentryEvent();
-            processor.Process(sentryEvent);
-
-            // Wait for the coroutine to complete (fires at end of frame)
+            // Wait for the screenshot coroutine to complete
             yield return null;
             yield return null;
 
-            // The screenshot attachment must not be sent when the event was dropped by before_send
+            // Screenshot envelope should reach the transport
+            var screenshotRequest = httpHandler.GetEvent("screenshot.jpg", TimeSpan.FromSeconds(2));
+            Assert.IsNotEmpty(screenshotRequest,
+                "Screenshot attachment should be sent when the event is captured successfully");
+        }
+        finally
+        {
+            SentrySdk.Close();
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator Process_EventDroppedByBeforeSend_ScreenshotAttachmentIsNotSent()
+    {
+        // Full pipeline test: the event goes through DoSendEvent where before_send drops it.
+        // The screenshot coroutine (queued during ProcessEvent, before the drop decision)
+        // must check WasCaptured and skip — no orphaned attachment envelope.
+
+        var httpHandler = new TestHttpClientHandler("ScreenshotBeforeSendTest");
+        var sentryMonoBehaviour = GetTestMonoBehaviour();
+
+        var options = new SentryUnityOptions(application: new TestApplication())
+        {
+            Dsn = SentryTests.TestDsn,
+            CreateHttpMessageHandler = () => httpHandler
+        };
+
+        // Register test screenshot processor — called during DoSendEvent → ProcessEvent
+        options.AddEventProcessor(new RealCaptureScreenshotEventProcessor(options, sentryMonoBehaviour));
+
+        // Drop all events via before_send
+        options.SetBeforeSend((_, _) => null);
+
+        SentrySdk.Init(options);
+
+        try
+        {
+            // CaptureMessage goes through the full DoSendEvent pipeline:
+            //   ProcessEvent → screenshot processor queues coroutine with @event in closure
+            //   DoBeforeSend → returns null → event dropped, WasCaptured stays false
+            var capturedId = SentrySdk.CaptureMessage("test message");
+            Assert.AreEqual(SentryId.Empty, capturedId, "Sanity check: before_send should drop events");
+
+            // Wait for the screenshot coroutine to complete
+            yield return null;
+            yield return null;
+
+            // No screenshot envelope should reach the transport.
+            // GetEvent logs Debug.LogError on timeout — tell the test runner this is expected.
+            LogAssert.Expect(LogType.Error, new Regex("timed out"));
             var screenshotRequest = httpHandler.GetEvent("screenshot.jpg", TimeSpan.FromSeconds(2));
             Assert.IsEmpty(screenshotRequest,
                 "Screenshot attachment should not be sent when before_send drops the event");
