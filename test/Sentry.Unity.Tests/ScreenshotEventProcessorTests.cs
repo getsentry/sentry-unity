@@ -59,7 +59,7 @@ public class ScreenshotEventProcessorTests
         };
 
         var eventId = SentryId.Create();
-        var sentryEvent = new SentryEvent(eventId: eventId);
+        var sentryEvent = new SentryEvent(eventId: eventId) { IsCaptured = true };
 
         screenshotProcessor.Process(sentryEvent);
 
@@ -95,9 +95,9 @@ public class ScreenshotEventProcessorTests
         };
 
         // Process multiple events quickly (before any coroutine can complete)
-        screenshotProcessor.Process(new SentryEvent());
-        screenshotProcessor.Process(new SentryEvent());
-        screenshotProcessor.Process(new SentryEvent());
+        screenshotProcessor.Process(new SentryEvent { IsCaptured = true });
+        screenshotProcessor.Process(new SentryEvent { IsCaptured = true });
+        screenshotProcessor.Process(new SentryEvent { IsCaptured = true });
 
         // Wait for the coroutine to complete - need to wait for processing
         yield return null;
@@ -121,7 +121,7 @@ public class ScreenshotEventProcessorTests
             attachmentCaptureCallCount++;
         };
 
-        var sentryEvent = new SentryEvent();
+        var sentryEvent = new SentryEvent { IsCaptured = true };
         screenshotProcessor.Process(sentryEvent);
 
         // Wait for the coroutine to complete - need to wait for processing
@@ -151,7 +151,7 @@ public class ScreenshotEventProcessorTests
         var screenshotProcessor = new TestScreenshotEventProcessor(options, sentryMonoBehaviour);
 
         var eventId = SentryId.Create();
-        var sentryEvent = new SentryEvent(eventId: eventId);
+        var sentryEvent = new SentryEvent(eventId: eventId) { IsCaptured = true };
 
         screenshotProcessor.Process(sentryEvent);
 
@@ -179,7 +179,7 @@ public class ScreenshotEventProcessorTests
             attachmentCaptureCallCount++;
         };
 
-        var sentryEvent = new SentryEvent();
+        var sentryEvent = new SentryEvent { IsCaptured = true };
         screenshotProcessor.Process(sentryEvent);
 
         yield return null;
@@ -221,7 +221,7 @@ public class ScreenshotEventProcessorTests
             }
         };
 
-        screenshotProcessor.Process(new SentryEvent());
+        screenshotProcessor.Process(new SentryEvent { IsCaptured = true });
 
         yield return null;
         yield return null;
@@ -279,7 +279,7 @@ public class ScreenshotEventProcessorTests
             }
         };
 
-        screenshotProcessor.Process(new SentryEvent());
+        screenshotProcessor.Process(new SentryEvent { IsCaptured = true });
 
         yield return null;
         yield return null;
@@ -308,7 +308,7 @@ public class ScreenshotEventProcessorTests
             return new Texture2D(1, 1);
         };
 
-        screenshotProcessor.Process(new SentryEvent());
+        screenshotProcessor.Process(new SentryEvent { IsCaptured = true });
 
         yield return null;
         yield return null;
@@ -339,13 +339,41 @@ public class ScreenshotEventProcessorTests
             return new Texture2D(1, 1);
         };
 
-        screenshotProcessor.Process(new SentryEvent());
+        screenshotProcessor.Process(new SentryEvent { IsCaptured = true });
 
         yield return null;
         yield return null;
 
         Assert.IsTrue(callbackInvoked);
         Assert.AreEqual(1, screenshotCaptureCallCount);
+    }
+
+    [UnityTest]
+    public IEnumerator Process_EventNotCaptured_SkipsAttachment()
+    {
+        var sentryMonoBehaviour = GetTestMonoBehaviour();
+        var screenshotProcessor = new TestScreenshotEventProcessor(new SentryUnityOptions(), sentryMonoBehaviour);
+
+        var screenshotCaptureCallCount = 0;
+        screenshotProcessor.CreateScreenshotFunc = _ =>
+        {
+            screenshotCaptureCallCount++;
+            return new Texture2D(1, 1);
+        };
+
+        var attachmentCaptureCallCount = 0;
+        screenshotProcessor.CaptureAttachmentAction = (_, _) =>
+        {
+            attachmentCaptureCallCount++;
+        };
+
+        screenshotProcessor.Process(new SentryEvent());
+
+        yield return null;
+        yield return null;
+
+        Assert.AreEqual(0, screenshotCaptureCallCount);
+        Assert.AreEqual(0, attachmentCaptureCallCount);
     }
 
     private static TestSentryMonoBehaviour GetTestMonoBehaviour()
