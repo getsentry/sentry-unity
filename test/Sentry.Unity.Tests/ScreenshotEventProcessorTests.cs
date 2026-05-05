@@ -402,7 +402,7 @@ public class ScreenshotEventProcessorTests
     {
         // Positive control: when the event IS captured, the screenshot coroutine should send
         // the attachment. This validates the test infrastructure so the negative test below
-        // is meaningful — if this test passes but the next one doesn't, the WasCaptured flag
+        // is meaningful — if this test passes but the next one doesn't, the IsCaptured flag
         // is doing its job.
 
         var httpHandler = new TestHttpClientHandler("ScreenshotSuccessTest");
@@ -423,7 +423,7 @@ public class ScreenshotEventProcessorTests
         try
         {
             // Event goes through the full DoSendEvent pipeline and is captured successfully.
-            // DoSendEvent sets @event.WasCaptured = true after CaptureEnvelope succeeds.
+            // DoSendEvent sets @event.IsCaptured = true after CaptureEnvelope succeeds.
             var capturedId = SentrySdk.CaptureMessage("test message");
             Assert.AreNotEqual(SentryId.Empty, capturedId, "Sanity check: event should be captured");
 
@@ -447,7 +447,7 @@ public class ScreenshotEventProcessorTests
     {
         // Full pipeline test: the event goes through DoSendEvent where before_send drops it.
         // The screenshot coroutine (queued during ProcessEvent, before the drop decision)
-        // must check WasCaptured and skip — no orphaned attachment envelope.
+        // must check IsCaptured and skip — no orphaned attachment envelope.
 
         var httpHandler = new TestHttpClientHandler("ScreenshotBeforeSendTest");
         var sentryMonoBehaviour = GetTestMonoBehaviour();
@@ -470,7 +470,7 @@ public class ScreenshotEventProcessorTests
         {
             // CaptureMessage goes through the full DoSendEvent pipeline:
             //   ProcessEvent → screenshot processor queues coroutine with @event in closure
-            //   DoBeforeSend → returns null → event dropped, WasCaptured stays false
+            //   DoBeforeSend → returns null → event dropped, IsCaptured stays false
             var capturedId = SentrySdk.CaptureMessage("test message");
             Assert.AreEqual(SentryId.Empty, capturedId, "Sanity check: before_send should drop events");
 
