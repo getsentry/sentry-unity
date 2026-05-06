@@ -77,10 +77,17 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <!-- Unity 6000.3+ relocated the editor's managed assemblies under Resources\Scripting\Managed.
+           Probe the new layout first within each slot so the legacy fallback only kicks in for older installs. -->
+      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Linux')) AND '$(UNITY_PATH)' != ''" Include="$(UNITY_PATH)\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll" />
       <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Linux')) AND '$(UNITY_PATH)' != ''" Include="$(UNITY_PATH)\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
+      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != ''" Include="$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll" />
       <_PotentialUnityPaths Condition="'$(HubInstallDir)' != ''" Include="$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
+      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != '' AND '$(HubDefaultEditor)' != '' AND '$(UnityVersion)' != '$(HubDefaultEditor)'" Include="$(HubInstallDir)\$(HubDefaultEditor)\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll" />
       <_PotentialUnityPaths Condition="'$(HubInstallDir)' != '' AND '$(HubDefaultEditor)' != '' AND '$(UnityVersion)' != '$(HubDefaultEditor)'" Include="$(HubInstallDir)\$(HubDefaultEditor)\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
+      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="C:\Program Files\Unity\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll" />
       <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="C:\Program Files\Unity\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
+      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('OSX'))" Include="\Applications\Unity\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll" />
       <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('OSX'))" Include="\Applications\Unity\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
       <_UnityPathsFound Include="@(_PotentialUnityPaths->Exists())" />
       <_UnityPathsFoundReversed Include="@(_UnityPathsFound->Reverse())" />
@@ -92,7 +99,10 @@
     </PropertyGroup>
 
     <Message
-      Condition="'$(UnityVersion)' != '' AND '$(HubInstallDir)' != '' AND !Exists('$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Managed\UnityEngine.dll') AND '$(_UnityPathProp)' != ''"
+      Condition="'$(UnityVersion)' != '' AND '$(HubInstallDir)' != ''
+        AND !Exists('$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Managed\UnityEngine.dll')
+        AND !Exists('$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll')
+        AND '$(_UnityPathProp)' != ''"
       Text="Unity version $(UnityVersion) is not installed. Falling back to default Unity installation."
       Importance="High" />
 
@@ -105,6 +115,9 @@
       <UnityManagedPath>@(_UnityPath->DirectoryName())\</UnityManagedPath>
       <UnityDataPath>@(_UnityPath->DirectoryName()->DirectoryName())\</UnityDataPath>
       <UnityRoot>@(_UnityPath->DirectoryName()->DirectoryName()->DirectoryName())\</UnityRoot>
+      <!-- Unity 6000.3+ nests Managed under Resources\Scripting (two extra levels deep). -->
+      <UnityDataPath Condition="$(UnityManagedPath.Contains('Resources/Scripting/Managed')) Or $(UnityManagedPath.Contains('Resources\Scripting\Managed'))">@(_UnityPath->DirectoryName()->DirectoryName()->DirectoryName()->DirectoryName())\</UnityDataPath>
+      <UnityRoot Condition="$(UnityManagedPath.Contains('Resources/Scripting/Managed')) Or $(UnityManagedPath.Contains('Resources\Scripting\Managed'))">@(_UnityPath->DirectoryName()->DirectoryName()->DirectoryName()->DirectoryName()->DirectoryName())\</UnityRoot>
       <UnityLibcache>$(UnityDataPath)Resources\PackageManager\ProjectTemplates\libcache\</UnityLibcache>
     </PropertyGroup>
 
