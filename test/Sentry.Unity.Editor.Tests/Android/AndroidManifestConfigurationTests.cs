@@ -151,6 +151,32 @@ public class AndroidManifestTests
     }
 
     [Test]
+    public void ModifyManifest_AndroidAnrV2Enabled_True_WritesAnrEnableTrue()
+    {
+        _fixture.SentryUnityOptions!.AndroidAnrV2Enabled = true;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains(
+            "<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"True\" />",
+            manifest);
+    }
+
+    [Test]
+    public void ModifyManifest_AndroidAnrV2Enabled_False_WritesAnrEnableFalse()
+    {
+        _fixture.SentryUnityOptions!.AndroidAnrV2Enabled = false;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains(
+            "<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"False\" />",
+            manifest);
+    }
+
+    [Test]
     public void ModifyManifest_ManifestHasDsn()
     {
         var expected = _fixture.SentryUnityOptions!.Dsn;
