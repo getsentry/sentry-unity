@@ -215,6 +215,16 @@ public sealed class SentryUnityOptions : SentryOptions
     public NativeInitializationType AndroidNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
     /// <summary>
+    /// (Experimental) Enables ANR detection on Android through the native (sentry-java) SDK.
+    /// On API ≥ 30 this uses Android's <c>ApplicationExitInfo</c> to report ANRs detected by the OS
+    /// in prior runs (ANR v2). On API &lt; 30, sentry-java falls back to its in-process watchdog,
+    /// which runs alongside the Unity SDK's C# ANR watchdog. The C# watchdog continues to run on all
+    /// API levels.
+    /// </summary>
+    /// <remarks>This option is experimental and may change without notice.</remarks>
+    public bool AndroidAnrV2Enabled { get; set; } = false;
+
+    /// <summary>
     /// Whether the SDK should add the NDK integration for Android
     /// </summary>
     public bool NdkIntegrationEnabled { get; set; } = true;
