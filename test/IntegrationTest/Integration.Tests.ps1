@@ -377,6 +377,7 @@ if ($env:SENTRY_TEST_PLATFORM -ne "WebGL") {
                     # We poll the events endpoint here and hand off to Get-SentryTestEvent for the
                     # full fetch + entry flattening; if the events endpoint never returns a hit we
                     # fall back to the original tag-via-issues path so the failure mode is unchanged.
+                    # Poll every 5 s to stay well under Sentry's API rate limit on this endpoint.
                     $pollBudgetSeconds = 300
                     $pollStart = Get-Date
                     $pollEnd = $pollStart.AddSeconds($pollBudgetSeconds)
@@ -391,7 +392,7 @@ if ($env:SENTRY_TEST_PLATFORM -ne "WebGL") {
                         } catch {
                             Write-Debug "Get-SentryEventsByTag poll failed: $($_.Exception.Message)"
                         }
-                        Start-Sleep -Milliseconds 500
+                        Start-Sleep -Seconds 5
                     } while ((Get-Date) -lt $pollEnd)
 
                     if ($resolvedEventId) {
