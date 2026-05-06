@@ -21,10 +21,10 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
     - name: Docker Login
-      uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # pinned v3
+      uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
       with:
         registry: ghcr.io
         username: ${{ env.GITHUB_ACTOR }}
@@ -32,7 +32,7 @@ jobs:
 
     - name: Cache IntegrationTest Project
       id: cache-project
-      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: samples/IntegrationTest
         key: IntegrationTest-Project-${{ env.UNITY_VERSION }}-${{ hashFiles('test/Scripts.Integration.Test/**') }}-v1
@@ -55,7 +55,7 @@ jobs:
       run: tar -cvzf test-project.tar.gz samples/IntegrationTest
 
     - name: Upload project
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: test-${{ env.UNITY_VERSION }}
         if-no-files-found: error

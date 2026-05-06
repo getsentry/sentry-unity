@@ -23,19 +23,19 @@ jobs:
             
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Restore cached compiled iOS build without Sentry
         if: ${{ inputs.init-type == 'runtime' }}
         id: cache-compiled-nosentry
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: IntegrationTest-NoSentry.app
           key: build-nosentry-iOS-compiled-${{ inputs.unity-version }}
 
       - name: Download build without Sentry (for size comparison)
         if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: testapp-ios-no-sentry-${{ env.UNITY_VERSION }}
 
@@ -58,7 +58,7 @@ jobs:
           Remove-Item -Path "samples/IntegrationTest/Build" -Recurse -Force
 
       - name: Download app project
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: testapp-ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
 
@@ -71,7 +71,7 @@ jobs:
 
       - name: Upload integration-test project on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: failed-project-ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}-compiled
           path: |
@@ -85,7 +85,7 @@ jobs:
           Get-ChildItem -Path "samples/IntegrationTest/Build" -Recurse
           
       - name: Upload app
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: testapp-ios-compiled-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
           # Collect app but ignore the files that are not required for the test.
@@ -107,7 +107,7 @@ jobs:
 
       - name: Upload build size measurement
         if: ${{ inputs.init-type == 'runtime' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: build-size-iOS-${{ env.UNITY_VERSION }}
           path: build-size-measurements/*.json
