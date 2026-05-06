@@ -85,10 +85,9 @@ jobs:
           retention-days: 1
 
       - name: Download UPM package
-        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
+        uses: ./.github/actions/wait-for-artifact
         with:
           name: package-release
-          wait-timeout: 3600
 
       - name: Extract UPM package
         run: ./test/Scripts.Integration.Test/extract-package.ps1

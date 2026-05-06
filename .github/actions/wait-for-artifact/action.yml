@@ -1,0 +1,33 @@
+name: 'Wait for and download artifact'
+description: 'Polls the run''s artifacts API until the named artifact appears, then downloads it.'
+inputs:
+  name:
+    description: 'Artifact name'
+    required: true
+  path:
+    description: 'Destination path for the artifact contents'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Wait for ${{ inputs.name }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+        NAME: ${{ inputs.name }}
+      shell: bash
+      run: |
+        for _ in $(seq 1 120); do
+          count=$(gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=$NAME" --jq .total_count)
+          if [[ "$count" -gt 0 ]]; then
+            exit 0
+          fi
+          sleep 30
+        done
+        echo "Timed out after 60 minutes waiting for artifact: $NAME" >&2
+        exit 1
+
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
