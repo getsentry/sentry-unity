@@ -140,6 +140,16 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setEnableScopeSync", options.NdkScopeSyncEnabled);
                 androidOptions.Call("setNativeSdkName", "sentry.native.android.unity");
 
+                using (var logsOptions = androidOptions.Call<AndroidJavaObject>("getLogs"))
+                {
+                    logsOptions.Call("setEnabled", options.EnableLogs);
+                }
+
+                using (var metricsOptions = androidOptions.Call<AndroidJavaObject>("getMetrics"))
+                {
+                    metricsOptions.Call("setEnabled", options.EnableMetrics);
+                }
+
                 // Options that are not to be set by the user
                 // We're disabling some integrations as to not duplicate event or because the SDK relies on the .NET SDK
                 // implementation of certain feature - i.e. Session Tracking
