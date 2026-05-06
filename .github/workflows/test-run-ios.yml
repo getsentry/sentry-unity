@@ -38,14 +38,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Initialize app-runner submodule
         run: git submodule update --init modules/app-runner
         shell: bash
 
       - name: Download app artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: testapp-ios-compiled-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
           path: samples/IntegrationTest/Build
@@ -56,7 +56,7 @@ jobs:
 
       - name: Set Xcode for iOS version ${{ env.IOS_VERSION }}
         if: ${{ env.IOS_VERSION != 'latest'}}
-        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # pin@v1.6
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
         with:
           xcode-version: '15.0' # to run iOS 17.0 we need Xcode 15.0
 
@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload test results on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: testapp-ios-logs-${{ env.IOS_VERSION }}-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
           path: |
