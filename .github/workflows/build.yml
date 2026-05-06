@@ -81,28 +81,32 @@ jobs:
         run: ./scripts/download-sentry-cli.ps1
 
       - name: Download Android SDK
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
           name: Android-sdk
           path: package-dev/Plugins/Android
+          wait-timeout: 3600
 
       - name: Download Cocoa SDK
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
           name: Cocoa-sdk
           path: package-dev/Plugins
+          wait-timeout: 3600
 
       - name: Download Linux SDK
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
           name: Linux-sdk
           path: package-dev/Plugins/Linux
+          wait-timeout: 3600
 
       - name: Download Windows SDK
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: vaind/download-artifact@e7141b6a94ef28aa3d828b52830cfa1f406a1848 # v4-with-wait-timeout
         with:
           name: Windows-sdk
           path: package-dev/Plugins/Windows
+          wait-timeout: 3600
 
       - name: Build Sentry.Unity Solution
         run: docker exec unity dotnet build -c Release -v:d
