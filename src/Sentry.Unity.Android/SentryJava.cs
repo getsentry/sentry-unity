@@ -139,6 +139,7 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setEnableNdk", options.NdkIntegrationEnabled);
                 androidOptions.Call("setEnableScopeSync", options.NdkScopeSyncEnabled);
                 androidOptions.Call("setNativeSdkName", "sentry.native.android.unity");
+                androidOptions.Call("setAnrEnabled", options.AndroidAnrV2Enabled);
 
                 // Options that are not to be set by the user
                 // We're disabling some integrations as to not duplicate event or because the SDK relies on the .NET SDK
@@ -148,7 +149,6 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setAttachScreenshot", false);
                 androidOptions.Call("setEnableAutoSessionTracking", false);
                 androidOptions.Call("setEnableActivityLifecycleBreadcrumbs", false);
-                androidOptions.Call("setAnrEnabled", options.AndroidAnrV2Enabled);
                 androidOptions.Call("setEnableScopePersistence", false);
                 // Disable user interaction tracking to prevent conflicts with VR platforms (e.g., Oculus InputHooks)
                 androidOptions.Call("setEnableUserInteractionBreadcrumbs", false);
