@@ -4,7 +4,8 @@
 
 ### Fixes
 
-- The SDK no longer sends screenshot attachments for events that were dropped during processing (e.g., by `BeforeSend` or sampling) ([#2661](https://github.com/getsentry/sentry-unity/pull/2661))
+- The SDK no longer sends screenshot attachments for events that were dropped during processing (e.g., by `BeforeSend` or sampling). ([#2661](https://github.com/getsentry/sentry-unity/pull/2661))
+- The SDK now forwards `EnableLogs` and `EnableMetrics` to the native layer. ([#2662](https://github.com/getsentry/sentry-unity/pull/2662))
 
 ### Dependencies
 
