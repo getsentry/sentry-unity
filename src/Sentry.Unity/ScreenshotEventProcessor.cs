@@ -13,9 +13,13 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
     private readonly ISentryMonoBehaviour _sentryMonoBehaviour;
     private volatile int _isCapturingScreenshot;
 
-    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
+    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions)
+        : this(sentryOptions, SentryMonoBehaviour.Instance) { }
 
-    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, ISentryMonoBehaviour sentryMonoBehaviour)
+    internal ScreenshotEventProcessor(
+        SentryUnityOptions sentryOptions,
+        ISentryMonoBehaviour sentryMonoBehaviour
+    )
     {
         _options = sentryOptions;
         _sentryMonoBehaviour = sentryMonoBehaviour;
@@ -27,6 +31,9 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
         if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
         {
             _options.LogDebug("Starting coroutine to capture a screenshot.");
+            // Capture must run on the main thread after WaitForEndOfFrame (ReadPixels needs a complete frame), but the
+            // event processor pipeline is synchronous and may run on any thread - blocking here would deadlock when
+            // called from the main thread. So we capture in a coroutine and ship the screenshot as a separate envelope.
             _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(@event));
         }
 
@@ -73,15 +80,19 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
             var screenshotBytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
             if (screenshotBytes is null || screenshotBytes.Length == 0)
             {
-                _options.LogWarning("Screenshot capture returned empty data for event {0}", @event.EventId);
+                _options.LogWarning(
+                    "Screenshot capture returned empty data for event {0}",
+                    @event.EventId
+                );
                 yield break;
             }
 
             var attachment = new SentryAttachment(
-                    AttachmentType.Default,
-                    new ByteAttachmentContent(screenshotBytes),
-                    "screenshot.jpg",
-                    "image/jpeg");
+                AttachmentType.Default,
+                new ByteAttachmentContent(screenshotBytes),
+                "screenshot.jpg",
+                "image/jpeg"
+            );
 
             _options.LogDebug("Screenshot captured for event {0}", @event.EventId);
 
@@ -102,12 +113,11 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
         }
     }
 
-    internal virtual Texture2D CreateNewScreenshotTexture2D(SentryUnityOptions options)
-        => SentryScreenshot.CreateNewScreenshotTexture2D(options);
+    internal virtual Texture2D CreateNewScreenshotTexture2D(SentryUnityOptions options) =>
+        SentryScreenshot.CreateNewScreenshotTexture2D(options);
 
-    internal virtual void CaptureAttachment(SentryId eventId, SentryAttachment attachment)
-        => (Sentry.SentrySdk.CurrentHub as Hub)?.CaptureAttachment(eventId, attachment);
+    internal virtual void CaptureAttachment(SentryId eventId, SentryAttachment attachment) =>
+        (Sentry.SentrySdk.CurrentHub as Hub)?.CaptureAttachment(eventId, attachment);
 
-    internal virtual YieldInstruction WaitForEndOfFrame()
-        => new WaitForEndOfFrame();
+    internal virtual YieldInstruction WaitForEndOfFrame() => new WaitForEndOfFrame();
 }
