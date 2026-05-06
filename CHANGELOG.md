@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added experimental `AndroidAnrV2Enabled` option to enable ANR detection on Android through the native SDK. On Android API ≥ 30 this uses `ApplicationExitInfo` to report OS-detected ANRs from prior runs ([sentry-java ANR v2](https://docs.sentry.io/platforms/android/configuration/app-not-respond/)). Defaults to `false`; opt in via the `OptionsConfiguration.Configure(options)` callback. ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
+
 ### Fixes
 
 - The SDK no longer sends screenshot attachments for events that were dropped during processing (e.g., by `BeforeSend` or sampling) ([#2661](https://github.com/getsentry/sentry-unity/pull/2661))
