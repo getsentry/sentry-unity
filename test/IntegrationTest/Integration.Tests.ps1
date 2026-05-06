@@ -371,7 +371,38 @@ if ($env:SENTRY_TEST_PLATFORM -ne "WebGL") {
                 $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
                 if ($eventId) {
                     Write-Host "::group::Getting event content"
-                    $script:runEvent = Get-SentryTestEvent -TagName "test.crash_id" -TagValue "$eventId" -TimeoutSeconds 300
+
+                    # Race two lookups: the project events endpoint resolves as soon as the event is
+                    # ingested + tag-indexed, while the issues endpoint also requires issue grouping.
+                    # We poll the events endpoint here and hand off to Get-SentryTestEvent for the
+                    # full fetch + entry flattening; if the events endpoint never returns a hit we
+                    # fall back to the original tag-via-issues path so the failure mode is unchanged.
+                    $pollBudgetSeconds = 300
+                    $pollStart = Get-Date
+                    $pollEnd = $pollStart.AddSeconds($pollBudgetSeconds)
+                    $resolvedEventId = $null
+                    do {
+                        try {
+                            $hits = Get-SentryEventsByTag -TagName "test.crash_id" -TagValue "$eventId" -Limit 1
+                            if ($hits -and @($hits).Count -ge 1) {
+                                $resolvedEventId = $hits[0].eventID
+                                break
+                            }
+                        } catch {
+                            Write-Debug "Get-SentryEventsByTag poll failed: $($_.Exception.Message)"
+                        }
+                        Start-Sleep -Milliseconds 500
+                    } while ((Get-Date) -lt $pollEnd)
+
+                    if ($resolvedEventId) {
+                        Write-Host "Resolved crash event $resolvedEventId via project events endpoint"
+                        $remaining = [Math]::Max(30, [int]($pollEnd - (Get-Date)).TotalSeconds)
+                        $script:runEvent = Get-SentryTestEvent -EventId $resolvedEventId -TimeoutSeconds $remaining
+                    } else {
+                        Write-Host "Project events endpoint did not return the crash within $pollBudgetSeconds s; falling back to tag-via-issues lookup"
+                        $script:runEvent = Get-SentryTestEvent -TagName "test.crash_id" -TagValue "$eventId" -TimeoutSeconds 30
+                    }
+
                     Write-Host "::endgroup::"
                 }
             }
