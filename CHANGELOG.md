@@ -2,8 +2,15 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK no longer sends screenshot attachments for events that were dropped during processing (e.g., by `BeforeSend` or sampling) ([#2661](https://github.com/getsentry/sentry-unity/pull/2661))
+
 ### Dependencies
 
+- Bump .NET SDK from v6.3.1 to v6.5.0 ([#2661](https://github.com/getsentry/sentry-unity/pull/2661))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#650)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.3.1...6.5.0)
 - Bump Native SDK from v0.13.5 to v0.14.0 ([#2660](https://github.com/getsentry/sentry-unity/pull/2660))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0140)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.13.5...0.14.0)

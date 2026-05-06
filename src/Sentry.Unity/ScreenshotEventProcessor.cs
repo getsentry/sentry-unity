@@ -44,6 +44,12 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
         Texture2D? screenshot = null;
         try
         {
+            if (!@event.IsCaptured)
+            {
+                _options.LogDebug("Skipping screenshot for event {0}. Event was not captured.", @event.EventId);
+                yield break;
+            }
+
             if (_options.BeforeCaptureScreenshotInternal?.Invoke(@event) is false)
             {
                 yield break;
