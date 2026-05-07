@@ -77,25 +77,52 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <!-- Unity 6000.3+ relocated the editor's managed assemblies under Resources\Scripting\Managed.
-           Probe the new layout first within each slot so the legacy fallback only kicks in for older installs. -->
-      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Linux')) AND '$(UNITY_PATH)' != ''" Include="$(UNITY_PATH)\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Linux')) AND '$(UNITY_PATH)' != ''" Include="$(UNITY_PATH)\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != ''" Include="$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != ''" Include="$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != '' AND '$(HubDefaultEditor)' != '' AND '$(UnityVersion)' != '$(HubDefaultEditor)'" Include="$(HubInstallDir)\$(HubDefaultEditor)\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != '' AND '$(HubDefaultEditor)' != '' AND '$(UnityVersion)' != '$(HubDefaultEditor)'" Include="$(HubInstallDir)\$(HubDefaultEditor)\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="C:\Program Files\Unity\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="C:\Program Files\Unity\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('OSX'))" Include="\Applications\Unity\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('OSX'))" Include="\Applications\Unity\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
+      <!-- Unity 6000.3+ relocated managed assemblies under Resources\Scripting\Managed.
+           Each candidate carries Root metadata so the post-selection block doesn't have
+           to reverse-engineer the layout. New layout is probed first within each slot. -->
+      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Linux')) AND '$(UNITY_PATH)' != ''"
+        Include="$(UNITY_PATH)\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll"
+        Root="$(UNITY_PATH)\" />
+      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Linux')) AND '$(UNITY_PATH)' != ''"
+        Include="$(UNITY_PATH)\$(_UnityInnerPath)\Managed\UnityEngine.dll"
+        Root="$(UNITY_PATH)\" />
+
+      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != ''"
+        Include="$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll"
+        Root="$(HubInstallDir)\$(UnityVersion)\" />
+      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != ''"
+        Include="$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Managed\UnityEngine.dll"
+        Root="$(HubInstallDir)\$(UnityVersion)\" />
+
+      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != '' AND '$(HubDefaultEditor)' != '' AND '$(UnityVersion)' != '$(HubDefaultEditor)'"
+        Include="$(HubInstallDir)\$(HubDefaultEditor)\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll"
+        Root="$(HubInstallDir)\$(HubDefaultEditor)\" />
+      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != '' AND '$(HubDefaultEditor)' != '' AND '$(UnityVersion)' != '$(HubDefaultEditor)'"
+        Include="$(HubInstallDir)\$(HubDefaultEditor)\$(_UnityInnerPath)\Managed\UnityEngine.dll"
+        Root="$(HubInstallDir)\$(HubDefaultEditor)\" />
+
+      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+        Include="C:\Program Files\Unity\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll"
+        Root="C:\Program Files\Unity\" />
+      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+        Include="C:\Program Files\Unity\$(_UnityInnerPath)\Managed\UnityEngine.dll"
+        Root="C:\Program Files\Unity\" />
+
+      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('OSX'))"
+        Include="\Applications\Unity\$(_UnityInnerPath)\Resources\Scripting\Managed\UnityEngine.dll"
+        Root="\Applications\Unity\" />
+      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('OSX'))"
+        Include="\Applications\Unity\$(_UnityInnerPath)\Managed\UnityEngine.dll"
+        Root="\Applications\Unity\" />
+
       <_UnityPathsFound Include="@(_PotentialUnityPaths->Exists())" />
       <_UnityPathsFoundReversed Include="@(_UnityPathsFound->Reverse())" />
     </ItemGroup>
 
     <PropertyGroup>
-      <!--This is a little hack to grab the first item found on the list - properties are repeatedly set for each item on the list, so they end up with the last one (we reversed the list so we get the first one) -->
+      <!-- "Last one wins" trick — reversed list yields the first match. Metadata rides along. -->
       <_UnityPathProp>%(_UnityPathsFoundReversed.Identity)</_UnityPathProp>
+      <_UnityRootProp>%(_UnityPathsFoundReversed.Root)</_UnityRootProp>
     </PropertyGroup>
 
     <Message
@@ -112,12 +139,9 @@
     </ItemGroup>
 
     <PropertyGroup Condition="'$(_UnityPathProp)' != ''">
+      <UnityRoot>$(_UnityRootProp)</UnityRoot>
+      <UnityDataPath>$(UnityRoot)$(_UnityInnerPath)\</UnityDataPath>
       <UnityManagedPath>@(_UnityPath->DirectoryName())\</UnityManagedPath>
-      <UnityDataPath>@(_UnityPath->DirectoryName()->DirectoryName())\</UnityDataPath>
-      <UnityRoot>@(_UnityPath->DirectoryName()->DirectoryName()->DirectoryName())\</UnityRoot>
-      <!-- Unity 6000.3+ nests Managed under Resources\Scripting (two extra levels deep). -->
-      <UnityDataPath Condition="$(UnityManagedPath.Contains('Resources/Scripting/Managed')) Or $(UnityManagedPath.Contains('Resources\Scripting\Managed'))">@(_UnityPath->DirectoryName()->DirectoryName()->DirectoryName()->DirectoryName())\</UnityDataPath>
-      <UnityRoot Condition="$(UnityManagedPath.Contains('Resources/Scripting/Managed')) Or $(UnityManagedPath.Contains('Resources\Scripting\Managed'))">@(_UnityPath->DirectoryName()->DirectoryName()->DirectoryName()->DirectoryName()->DirectoryName())\</UnityRoot>
       <UnityLibcache>$(UnityDataPath)Resources\PackageManager\ProjectTemplates\libcache\</UnityLibcache>
     </PropertyGroup>
 
