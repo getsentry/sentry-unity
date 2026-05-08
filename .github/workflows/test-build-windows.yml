@@ -24,12 +24,15 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "unity$env:UNITY_VERSION")" >> $env:GITHUB_OUTPUT
+        run: |
+          echo "unityVersion=$(./scripts/ci-env.ps1 "unity$env:UNITY_VERSION")" >> $env:GITHUB_OUTPUT
+          echo "unityChangeset=$(./scripts/ci-env.ps1 "unity$env:UNITY_VERSION-changeset")" >> $env:GITHUB_OUTPUT
 
       - name: Setup Unity
-        uses: getsentry/setup-unity@3bdc8c022b6d30ecf2d21d12a564bfa55a54fa2e
+        uses: getsentry/setup-unity@6c6b7257325c702ec93ac570a6213fd18202f038
         with:
           unity-version: ${{ steps.env.outputs.unityVersion }}
+          unity-version-changeset: ${{ steps.env.outputs.unityChangeset }}
           unity-modules: windows-il2cpp
 
       - name: Create Unity license config
