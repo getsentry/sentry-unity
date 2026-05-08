@@ -93,6 +93,9 @@ internal static class SentryNativeBridge
         }
 #endif
 
+        Logger?.LogDebug("Setting EnableLogs: {0}", options.EnableLogs);
+        sentry_options_set_enable_logs(cOptions, options.EnableLogs ? 1 : 0);
+
         Logger?.LogDebug("Setting EnableMetrics: {0}", options.EnableMetrics);
         sentry_options_set_enable_metrics(cOptions, options.EnableMetrics ? 1 : 0);
 
@@ -168,6 +171,9 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_attach_screenshot(IntPtr options, int attachScreenshot);
+
+    [DllImport(SentryLib)]
+    private static extern void sentry_options_set_enable_logs(IntPtr options, int enable_logs);
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_enable_metrics(IntPtr options, int enable_metrics);
