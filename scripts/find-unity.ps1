@@ -55,11 +55,11 @@ if (-not $HubDefaultEditor -and $HubInstallDir) {
 # --- Build the probe list ---------------------------------------------------
 
 # Layout pieces. macOS Unity ships as a .app bundle so the inner path differs.
-$inner    = if ($IsMacOS) { 'Unity.App/Contents' } else { 'Editor/Data' }
-$rootName = if ($IsMacOS) { 'Unity.App' }          else { 'Editor' }
+$inner    = if ($IsMacOS) { 'Unity.app/Contents' } else { 'Editor/Data' }
+$rootName = if ($IsMacOS) { 'Unity.app' }          else { 'Editor' }
 
 # Each "install" candidate is a directory like <hub>/<version>/ that contains
-# either Editor/ (win/linux) or Unity.App/ (mac).
+# either Editor/ (win/linux) or Unity.app/ (mac).
 $installs = [System.Collections.Generic.List[string]]::new()
 if ($IsLinux -and $env:UNITY_PATH) { $installs.Add($env:UNITY_PATH) }
 if ($HubInstallDir -and $UnityVersion) { $installs.Add((Join-Path $HubInstallDir $UnityVersion)) }
