@@ -215,18 +215,21 @@ public sealed class SentryUnityOptions : SentryOptions
     public NativeInitializationType AndroidNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
     /// <summary>
-    /// (Experimental) Enables ANR detection on Android through the native (sentry-java) SDK.
+    /// Enables ANR detection on Android through the native (sentry-java) SDK.
     /// On API ≥ 30 this uses Android's <c>ApplicationExitInfo</c> to report ANRs detected by the OS
-    /// in prior runs (ANR v2). On API &lt; 30, sentry-java falls back to its in-process watchdog,
-    /// which runs alongside the Unity SDK's C# ANR watchdog. The C# watchdog continues to run on all
-    /// API levels.
+    /// in prior runs (ANR v2). On API &lt; 30, sentry-java falls back to its in-process watchdog.
+    /// The Unity SDK's C# ANR watchdog continues to run on all API levels.
     /// </summary>
-    /// <remarks>This option is experimental and may change without notice.</remarks>
+    /// <remarks>
+    /// The Java and C# watchdogs observe different threads and are complementary: the Java watchdog
+    /// monitors the Android UI (Looper) main thread, while the C# watchdog monitors the Unity engine
+    /// main thread (the player loop). A hang that blocks both threads can produce one event from each.
+    /// </remarks>
     public bool AndroidAnrV2Enabled { get; set; } = false;
 
     /// <summary>
-    /// (Experimental) When ANR v2 is enabled, controls whether sentry-java reports historical ANRs
-    /// recorded by the OS (<c>ApplicationExitInfo</c>) from prior runs. Has no effect when
+    /// When ANR v2 is enabled, controls whether sentry-java reports historical ANRs recorded by the
+    /// OS (<c>ApplicationExitInfo</c>) from prior runs. Has no effect when
     /// <see cref="AndroidAnrV2Enabled"/> is <c>false</c>.
     /// </summary>
     /// <remarks>
@@ -236,8 +239,8 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool AndroidReportHistoricalAnrs { get; set; } = true;
 
     /// <summary>
-    /// (Experimental) When ANR v2 is enabled, controls whether sentry-java attaches a thread dump
-    /// to ANR events. Has no effect when <see cref="AndroidAnrV2Enabled"/> is <c>false</c>.
+    /// When ANR v2 is enabled, controls whether sentry-java attaches a thread dump to ANR events.
+    /// Has no effect when <see cref="AndroidAnrV2Enabled"/> is <c>false</c>.
     /// </summary>
     public bool AndroidAttachAnrThreadDump { get; set; } = true;
 
