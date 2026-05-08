@@ -151,29 +151,42 @@ public class AndroidManifestTests
     }
 
     [Test]
-    public void ModifyManifest_AndroidAnrV2Enabled_True_WritesAnrEnableTrue()
+    public void ModifyManifest_AndroidAnrV2Enabled_True_WritesAnrV2MetadataEnabled()
     {
         _fixture.SentryUnityOptions!.AndroidAnrV2Enabled = true;
         var sut = _fixture.GetSut();
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        StringAssert.Contains(
-            "<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"True\" />",
-            manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"True\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.enable-scope-persistence\" android:value=\"True\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.attach-thread-dumps\" android:value=\"True\" />", manifest);
     }
 
     [Test]
-    public void ModifyManifest_AndroidAnrV2Enabled_False_WritesAnrEnableFalse()
+    public void ModifyManifest_AndroidAnrV2Enabled_False_WritesAnrV2MetadataDisabled()
     {
         _fixture.SentryUnityOptions!.AndroidAnrV2Enabled = false;
         var sut = _fixture.GetSut();
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        StringAssert.Contains(
-            "<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"False\" />",
-            manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"False\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.enable-scope-persistence\" android:value=\"False\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.attach-thread-dumps\" android:value=\"False\" />", manifest);
+    }
+
+    [Test]
+    public void ModifyManifest_AndroidAttachAnrThreadDumpFalse_OverridesUmbrella()
+    {
+        _fixture.SentryUnityOptions!.AndroidAnrV2Enabled = true;
+        _fixture.SentryUnityOptions!.AndroidAttachAnrThreadDump = false;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"True\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.attach-thread-dumps\" android:value=\"False\" />", manifest);
     }
 
     [Test]

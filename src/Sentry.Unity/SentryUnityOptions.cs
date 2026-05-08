@@ -225,6 +225,23 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool AndroidAnrV2Enabled { get; set; } = false;
 
     /// <summary>
+    /// (Experimental) When ANR v2 is enabled, controls whether sentry-java reports historical ANRs
+    /// recorded by the OS (<c>ApplicationExitInfo</c>) from prior runs. Has no effect when
+    /// <see cref="AndroidAnrV2Enabled"/> is <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// Runtime-only. There is no <c>AndroidManifest</c> meta-data tag for this option, so it is only
+    /// applied when <see cref="AndroidNativeInitializationType"/> is <see cref="NativeInitializationType.Runtime"/>.
+    /// </remarks>
+    public bool AndroidReportHistoricalAnrs { get; set; } = true;
+
+    /// <summary>
+    /// (Experimental) When ANR v2 is enabled, controls whether sentry-java attaches a thread dump
+    /// to ANR events. Has no effect when <see cref="AndroidAnrV2Enabled"/> is <c>false</c>.
+    /// </summary>
+    public bool AndroidAttachAnrThreadDump { get; set; } = true;
+
+    /// <summary>
     /// Whether the SDK should add the NDK integration for Android
     /// </summary>
     public bool NdkIntegrationEnabled { get; set; } = true;
