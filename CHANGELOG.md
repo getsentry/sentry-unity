@@ -4,11 +4,23 @@
 
 ### Features
 
-- Added experimental `AndroidAnrV2Enabled` option to enable ANR detection on Android through the native SDK. On Android API ≥ 30 this uses `ApplicationExitInfo` to report OS-detected ANRs from prior runs ([sentry-java ANR v2](https://docs.sentry.io/platforms/android/configuration/app-not-respond/)). Defaults to `false`; opt in via the `OptionsConfiguration.Configure(options)` callback. ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
+- Added `AndroidNativeAnrEnabled` (default `false`) to enable ANR detection through the native (sentry-java) SDK, monitoring the Android UI (Looper) main thread. On API ≥ 30 this uses [ANR v2](https://docs.sentry.io/platforms/android/configuration/app-not-respond/) via `ApplicationExitInfo` to report OS-detected ANRs from prior runs; on API < 30 it falls back to an in-process watchdog. Complementary to the Unity SDK's C# watchdog, which monitors the Unity player loop. ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
+
+### Dependencies
+
+- Bump Cocoa SDK from v9.12.0 to v9.12.1 ([#2670](https://github.com/getsentry/sentry-unity/pull/2670))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9121)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.12.0...9.12.1)
+- Bump Java SDK from v8.40.0 to v8.41.0 ([#2669](https://github.com/getsentry/sentry-unity/pull/2669))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8410)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.40.0...8.41.0)
+
+## 4.3.1
 
 ### Fixes
 
-- The SDK no longer sends screenshot attachments for events that were dropped during processing (e.g., by `BeforeSend` or sampling) ([#2661](https://github.com/getsentry/sentry-unity/pull/2661))
+- The SDK no longer sends screenshot attachments for events that were dropped during processing (e.g., by `BeforeSend` or sampling). ([#2661](https://github.com/getsentry/sentry-unity/pull/2661))
+- The SDK now forwards `EnableLogs` and `EnableMetrics` to the native layer. ([#2662](https://github.com/getsentry/sentry-unity/pull/2662))
 
 ### Dependencies
 

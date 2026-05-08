@@ -140,10 +140,20 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setEnableScopeSync", options.NdkScopeSyncEnabled);
                 androidOptions.Call("setNativeSdkName", "sentry.native.android.unity");
 
-                androidOptions.Call("setAnrEnabled", options.AndroidAnrV2Enabled);
-                androidOptions.Call("setEnableScopePersistence", options.AndroidAnrV2Enabled);
-                androidOptions.Call("setReportHistoricalAnrs", options.AndroidAnrV2Enabled && options.AndroidReportHistoricalAnrs);
-                androidOptions.Call("setAttachAnrThreadDump", options.AndroidAnrV2Enabled && options.AndroidAttachAnrThreadDump);
+                androidOptions.Call("setAnrEnabled", options.AndroidNativeAnrEnabled);
+                androidOptions.Call("setEnableScopePersistence", options.AndroidNativeAnrEnabled);
+                androidOptions.Call("setReportHistoricalAnrs", options.AndroidNativeAnrEnabled && options.AndroidReportHistoricalAnrs);
+                androidOptions.Call("setAttachAnrThreadDump", options.AndroidNativeAnrEnabled && options.AndroidAttachAnrThreadDump);
+
+                using (var logsOptions = androidOptions.Call<AndroidJavaObject>("getLogs"))
+                {
+                    logsOptions.Call("setEnabled", options.EnableLogs);
+                }
+
+                using (var metricsOptions = androidOptions.Call<AndroidJavaObject>("getMetrics"))
+                {
+                    metricsOptions.Call("setEnabled", options.EnableMetrics);
+                }
 
                 // Options that are not to be set by the user
                 // We're disabling some integrations as to not duplicate event or because the SDK relies on the .NET SDK

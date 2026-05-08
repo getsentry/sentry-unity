@@ -151,9 +151,9 @@ public class AndroidManifestTests
     }
 
     [Test]
-    public void ModifyManifest_AndroidAnrV2Enabled_True_WritesAnrV2MetadataEnabled()
+    public void ModifyManifest_AndroidNativeAnrEnabled_True_WritesAnrMetadataEnabled()
     {
-        _fixture.SentryUnityOptions!.AndroidAnrV2Enabled = true;
+        _fixture.SentryUnityOptions!.AndroidNativeAnrEnabled = true;
         var sut = _fixture.GetSut();
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
@@ -164,9 +164,9 @@ public class AndroidManifestTests
     }
 
     [Test]
-    public void ModifyManifest_AndroidAnrV2Enabled_False_WritesAnrV2MetadataDisabled()
+    public void ModifyManifest_AndroidNativeAnrEnabled_False_WritesAnrMetadataDisabled()
     {
-        _fixture.SentryUnityOptions!.AndroidAnrV2Enabled = false;
+        _fixture.SentryUnityOptions!.AndroidNativeAnrEnabled = false;
         var sut = _fixture.GetSut();
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
@@ -179,7 +179,7 @@ public class AndroidManifestTests
     [Test]
     public void ModifyManifest_AndroidAttachAnrThreadDumpFalse_OverridesUmbrella()
     {
-        _fixture.SentryUnityOptions!.AndroidAnrV2Enabled = true;
+        _fixture.SentryUnityOptions!.AndroidNativeAnrEnabled = true;
         _fixture.SentryUnityOptions!.AndroidAttachAnrThreadDump = false;
         var sut = _fixture.GetSut();
 
