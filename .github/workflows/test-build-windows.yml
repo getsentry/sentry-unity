@@ -29,7 +29,7 @@ jobs:
           echo "unityChangeset=$(./scripts/ci-env.ps1 "unity$env:UNITY_VERSION-changeset")" >> $env:GITHUB_OUTPUT
 
       - name: Setup Unity
-        uses: getsentry/setup-unity@4067cb83df4caad4e6c47cba86712fa827bc7dc6
+        uses: getsentry/setup-unity@462149992aab8f7dc705c6939d7d50a93fd08a36
         with:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-version-changeset: ${{ steps.env.outputs.unityChangeset }}
