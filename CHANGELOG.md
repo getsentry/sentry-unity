@@ -4,6 +4,25 @@
 
 ### Dependencies
 
+- Bump Cocoa SDK from v9.12.0 to v9.12.1 ([#2670](https://github.com/getsentry/sentry-unity/pull/2670))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9121)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.12.0...9.12.1)
+- Bump Java SDK from v8.40.0 to v8.41.0 ([#2669](https://github.com/getsentry/sentry-unity/pull/2669))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8410)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.40.0...8.41.0)
+
+## 4.3.1
+
+### Fixes
+
+- The SDK no longer sends screenshot attachments for events that were dropped during processing (e.g., by `BeforeSend` or sampling). ([#2661](https://github.com/getsentry/sentry-unity/pull/2661))
+- The SDK now forwards `EnableLogs` and `EnableMetrics` to the native layer. ([#2662](https://github.com/getsentry/sentry-unity/pull/2662))
+
+### Dependencies
+
+- Bump .NET SDK from v6.3.1 to v6.5.0 ([#2661](https://github.com/getsentry/sentry-unity/pull/2661))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#650)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.3.1...6.5.0)
 - Bump Native SDK from v0.13.5 to v0.14.0 ([#2660](https://github.com/getsentry/sentry-unity/pull/2660))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0140)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.13.5...0.14.0)

@@ -72,6 +72,12 @@ internal static class SentryCocoaBridgeProxy
         Logger?.LogDebug("Setting CaptureFailedRequests: {0}", options.CaptureFailedRequests);
         OptionsSetInt(cOptions, "enableCaptureFailedRequests", options.CaptureFailedRequests ? 1 : 0);
 
+        Logger?.LogDebug("Setting EnableLogs: {0}", options.EnableLogs);
+        OptionsSetInt(cOptions, "enableLogs", options.EnableLogs ? 1 : 0);
+
+        Logger?.LogDebug("Setting EnableMetrics: {0}", options.EnableMetrics);
+        OptionsSetInt(cOptions, "enableMetrics", options.EnableMetrics ? 1 : 0);
+
         foreach (var range in options.FailedRequestStatusCodes)
         {
             Logger?.LogDebug("Adding FailedRequestStatusCodeRange: {0}-{1}", range.Start, range.End);
