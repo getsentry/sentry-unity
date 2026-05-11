@@ -236,13 +236,13 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Runtime-only. There is no <c>AndroidManifest</c> meta-data tag for this option, so it is only
     /// applied when <see cref="AndroidNativeInitializationType"/> is <see cref="NativeInitializationType.Runtime"/>.
     /// </remarks>
-    public bool AndroidReportHistoricalAnrs { get; set; } = true;
+    public bool AndroidReportHistoricalAnrs { get; set; } = false;
 
     /// <summary>
     /// When <see cref="AndroidNativeAnrEnabled"/> is enabled, controls whether sentry-java attaches a thread dump
     /// to ANR events. Has no effect when <see cref="AndroidNativeAnrEnabled"/> is <c>false</c>.
     /// </summary>
-    public bool AndroidAttachAnrThreadDump { get; set; } = true;
+    public bool AndroidAttachAnrThreadDump { get; set; } = false;
 
     /// <summary>
     /// Whether the SDK should add the NDK integration for Android

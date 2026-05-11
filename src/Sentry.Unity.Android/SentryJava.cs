@@ -142,8 +142,8 @@ internal class SentryJava : ISentryJava
 
                 androidOptions.Call("setAnrEnabled", options.AndroidNativeAnrEnabled);
                 androidOptions.Call("setEnableScopePersistence", options.AndroidNativeAnrEnabled);
-                androidOptions.Call("setReportHistoricalAnrs", options.AndroidNativeAnrEnabled && options.AndroidReportHistoricalAnrs);
-                androidOptions.Call("setAttachAnrThreadDump", options.AndroidNativeAnrEnabled && options.AndroidAttachAnrThreadDump);
+                androidOptions.Call("setReportHistoricalAnrs", options.AndroidReportHistoricalAnrs);
+                androidOptions.Call("setAttachAnrThreadDump", options.AndroidAttachAnrThreadDump);
 
                 using (var logsOptions = androidOptions.Call<AndroidJavaObject>("getLogs"))
                 {
