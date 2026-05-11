@@ -225,7 +225,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// monitors the Android UI (Looper) main thread, while the C# watchdog monitors the Unity engine
     /// main thread (the player loop). A hang that blocks both threads can produce one event from each.
     /// </remarks>
-    public bool AndroidNativeAnrEnabled { get; set; } = false;
+    public bool AndroidNativeAnrEnabled { get; set; } = true;
 
     /// <summary>
     /// When <see cref="AndroidNativeAnrEnabled"/> is enabled, controls whether sentry-java reports historical ANRs
