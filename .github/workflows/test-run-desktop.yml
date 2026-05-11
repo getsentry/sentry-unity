@@ -45,7 +45,7 @@ jobs:
 
       - name: Set executable permission (macOS)
         if: inputs.platform == 'macos'
-        run: chmod +x samples/IntegrationTest/Build/test.app/Contents/MacOS/test
+        run: chmod +x samples/IntegrationTest/Build/test.app/Contents/MacOS/IntegrationTest
         shell: bash
 
       - name: Run Integration Tests (Linux)
@@ -63,7 +63,7 @@ jobs:
         timeout-minutes: 20
         run: |
           $env:SENTRY_TEST_PLATFORM = "Desktop"
-          $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.app/Contents/MacOS/test"
+          $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.app/Contents/MacOS/IntegrationTest"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
 
       - name: Run Integration Tests (Windows)
