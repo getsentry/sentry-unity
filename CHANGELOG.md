@@ -4,7 +4,7 @@
 
 ### Features
 
-- Added `AndroidNativeAnrEnabled` (default `false`) to enable ANR detection through the native (sentry-java) SDK, monitoring the Android UI (Looper) main thread. On API ≥ 30 this uses [ANR v2](https://docs.sentry.io/platforms/android/configuration/app-not-respond/) via `ApplicationExitInfo` to report OS-detected ANRs from prior runs; on API < 30 it falls back to an in-process watchdog. Complementary to the Unity SDK's C# watchdog, which monitors the Unity player loop. ([#2671](https://github.com/getsentry/sentry-unity/pull/2671))
+- Added `AndroidNativeAnrEnabled` (default `true`) to enable ANR detection through `sentry-java` SDK. The native ANR integration monitors the Android UI thread. On API ≥ 30 this uses [ANR v2](https://docs.sentry.io/platforms/android/configuration/app-not-respond/) via `ApplicationExitInfo` to report OS-detected ANRs from prior runs; on API < 30 it falls back to an in-process watchdog. This is complementary to the Unity SDK's C# watchdog, which monitors the Unity player loop. ([#2671](https://github.com/getsentry/sentry-unity/pull/2671))
 
 ### Dependencies
 
