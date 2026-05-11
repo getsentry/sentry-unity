@@ -53,8 +53,8 @@ jobs:
     name: Build Unity SDK
     secrets: inherit
     permissions:
+      actions: read
       checks: write
-      statuses: write
       contents: read
     strategy:
       fail-fast: false

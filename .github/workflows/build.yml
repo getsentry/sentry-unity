@@ -21,8 +21,8 @@ jobs:
     name: Build - ${{ inputs.unity-version }}
     runs-on: ubuntu-22.04
     permissions:
+      actions: read
       checks: write
-      statuses: write
       contents: read
     steps:
       - name: Checkout
