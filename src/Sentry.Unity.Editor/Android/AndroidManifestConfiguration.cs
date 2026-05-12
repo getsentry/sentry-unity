@@ -218,8 +218,9 @@ public class AndroidManifestConfiguration
         androidManifest.SetAutoTraceIdGeneration(false);
         androidManifest.SetAutoSessionTracking(false);
         androidManifest.SetAutoAppLifecycleBreadcrumbs(false);
-        androidManifest.SetAnr(false);
-        androidManifest.SetPersistentScopeObserver(false);
+        androidManifest.SetAnr(_options.AndroidNativeAnrEnabled);
+        androidManifest.SetPersistentScopeObserver(_options.AndroidNativeAnrEnabled);
+        androidManifest.SetAttachAnrThreadDump(_options.AndroidAttachAnrThreadDump);
         // Disable user interaction tracking to prevent conflicts with VR platforms (e.g., Oculus InputHooks)
         androidManifest.SetEnableUserInteractionBreadcrumbs(false);
         androidManifest.SetEnableUserInteractionTracing(false);
@@ -494,6 +495,9 @@ internal class AndroidManifest : AndroidXmlDocument
 
     internal void SetPersistentScopeObserver(bool enableScopePersistence)
         => SetMetaData($"{SentryPrefix}.enable-scope-persistence", enableScopePersistence.ToString());
+
+    internal void SetAttachAnrThreadDump(bool attachAnrThreadDump)
+        => SetMetaData($"{SentryPrefix}.anr.attach-thread-dumps", attachAnrThreadDump.ToString());
 
     internal void SetNdkEnabled(bool enableNdk)
         => SetMetaData($"{SentryPrefix}.ndk.enable", enableNdk.ToString());
