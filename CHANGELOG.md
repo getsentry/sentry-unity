@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- When targeting iOS, the SDK no longer crashes in `urlSessionTask:setState:` when handling an `AVAssetDownloadTask` ([#2677](https://github.com/getsentry/sentry-unity/pull/2677))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.12.0 to v9.13.0 ([#2670](https://github.com/getsentry/sentry-unity/pull/2670), [#2677](https://github.com/getsentry/sentry-unity/pull/2677))
