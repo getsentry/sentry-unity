@@ -120,7 +120,7 @@ jobs:
   # A Linux, docker-based build to prepare a WebGL player. The tests run in `test-run-webgl`.
   test-build-webgl:
     name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Test
-    if: false # Temporarily disabled to speed up CI; only Windows integration tests run.
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
     runs-on: ubuntu-latest
     strategy:
@@ -259,7 +259,7 @@ jobs:
 
   test-build-android:
     name: Build Android ${{ matrix.unity-version }} Test
-    if: false # Temporarily disabled to speed up CI; only Windows integration tests run.
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -271,7 +271,7 @@ jobs:
 
   test-run-android:
     name: Run Android ${{ matrix.unity-version }} Integration Test
-    if: false # Temporarily disabled to speed up CI; only Windows integration tests run.
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-android, create-unity-matrix]
     secrets: inherit
     uses: ./.github/workflows/test-run-android.yml
@@ -289,7 +289,7 @@ jobs:
 
   test-build-ios:
     name: Build iOS ${{ matrix.unity-version }} Test
-    if: false # Temporarily disabled to speed up CI; only Windows integration tests run.
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -301,7 +301,7 @@ jobs:
 
   test-compile-ios:
     name: Compile iOS ${{ matrix.unity-version }} Test
-    if: false # Temporarily disabled to speed up CI; only Windows integration tests run.
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-ios, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -316,7 +316,7 @@ jobs:
 
   test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Integration Test
-    if: false # Temporarily disabled to speed up CI; only Windows integration tests run.
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-compile-ios, create-unity-matrix]
     uses: ./.github/workflows/test-run-ios.yml
     with:
@@ -342,7 +342,7 @@ jobs:
 
   test-run-webgl:
     name: Run WebGL ${{ matrix.unity-version }} Integration Test
-    if: false # Temporarily disabled to speed up CI; only Windows integration tests run.
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-webgl, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -355,7 +355,7 @@ jobs:
 
   test-build-linux:
     name: Build Linux ${{ matrix.unity-version }} Integration Test
-    if: false # Temporarily disabled to speed up CI; only Windows integration tests run.
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -394,7 +394,7 @@ jobs:
 
   test-run-linux:
     name: Run Linux ${{ matrix.unity-version }} Integration Test
-    if: false # Temporarily disabled to speed up CI; only Windows integration tests run.
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-linux, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -438,7 +438,7 @@ jobs:
     name: Build Size
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-build-windows, test-build-macos]
+    needs: [test-build-webgl, test-build-android, test-compile-ios, test-build-linux, test-build-windows, test-build-macos]
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
