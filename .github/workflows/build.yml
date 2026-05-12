@@ -43,9 +43,9 @@ jobs:
 
       - name: Load env
         id: env
-        run: echo "unityVersion=$(./scripts/ci-env.ps1 "$env:UNITY_SCRIPT_ARG")" >> $env:GITHUB_OUTPUT
-        env:
-          UNITY_SCRIPT_ARG: unity${{ env.UNITY_VERSION }}
+        run: |
+          $v = (Get-Content scripts/unity-versions.json -Raw | ConvertFrom-Json).'${{ env.UNITY_VERSION }}'.version
+          "unityVersion=$v" >> $env:GITHUB_OUTPUT
 
       - name: Cache Unity Library
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5

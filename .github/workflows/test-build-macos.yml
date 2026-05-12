@@ -25,8 +25,9 @@ jobs:
       - name: Load env
         id: env
         run: |
-          echo "unityVersion=$(./scripts/ci-env.ps1 "unity$env:UNITY_VERSION")" >> $env:GITHUB_OUTPUT
-          echo "unityChangeset=$(./scripts/ci-env.ps1 "unity$env:UNITY_VERSION-changeset")" >> $env:GITHUB_OUTPUT
+          $u = (Get-Content scripts/unity-versions.json -Raw | ConvertFrom-Json).'${{ env.UNITY_VERSION }}'
+          "unityVersion=$($u.version)"     >> $env:GITHUB_OUTPUT
+          "unityChangeset=$($u.changeset)" >> $env:GITHUB_OUTPUT
 
       - name: Setup Unity
         uses: getsentry/setup-unity@1bbd385ae3b0505069aacc56d47f0a16366f10b1
