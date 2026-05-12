@@ -140,6 +140,11 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setEnableScopeSync", options.NdkScopeSyncEnabled);
                 androidOptions.Call("setNativeSdkName", "sentry.native.android.unity");
 
+                androidOptions.Call("setAnrEnabled", options.AndroidNativeAnrEnabled);
+                androidOptions.Call("setEnableScopePersistence", options.AndroidNativeAnrEnabled);
+                androidOptions.Call("setReportHistoricalAnrs", options.AndroidReportHistoricalAnrs);
+                androidOptions.Call("setAttachAnrThreadDump", options.AndroidAttachAnrThreadDump);
+
                 using (var logsOptions = androidOptions.Call<AndroidJavaObject>("getLogs"))
                 {
                     logsOptions.Call("setEnabled", options.EnableLogs);
@@ -158,8 +163,6 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setAttachScreenshot", false);
                 androidOptions.Call("setEnableAutoSessionTracking", false);
                 androidOptions.Call("setEnableActivityLifecycleBreadcrumbs", false);
-                androidOptions.Call("setAnrEnabled", false);
-                androidOptions.Call("setEnableScopePersistence", false);
                 // Disable user interaction tracking to prevent conflicts with VR platforms (e.g., Oculus InputHooks)
                 androidOptions.Call("setEnableUserInteractionBreadcrumbs", false);
                 androidOptions.Call("setEnableUserInteractionTracing", false);
