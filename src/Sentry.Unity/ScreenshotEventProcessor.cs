@@ -27,6 +27,9 @@ public class ScreenshotEventProcessor : ISentryEventProcessor
         if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
         {
             _options.LogDebug("Starting coroutine to capture a screenshot.");
+            // Capture must run on the main thread after WaitForEndOfFrame (ReadPixels needs a complete frame), but the
+            // event processor pipeline is synchronous and may run on any thread - blocking here would deadlock when
+            // called from the main thread. So we capture in a coroutine and ship the screenshot as a separate envelope.
             _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(@event));
         }
 
