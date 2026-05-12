@@ -215,6 +215,36 @@ public sealed class SentryUnityOptions : SentryOptions
     public NativeInitializationType AndroidNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
     /// <summary>
+    /// Enables ANR detection on Android through the native (sentry-java) SDK.
+    /// On API ≥ 30 this uses Android's <c>ApplicationExitInfo</c> to report ANRs detected by the OS
+    /// in prior runs (ANR v2). On API &lt; 30, sentry-java falls back to its in-process watchdog.
+    /// The Unity SDK's C# ANR watchdog continues to run on all API levels.
+    /// </summary>
+    /// <remarks>
+    /// The Java and C# watchdogs observe different threads and are complementary: the Java watchdog
+    /// monitors the Android UI (Looper) main thread, while the C# watchdog monitors the Unity engine
+    /// main thread (the player loop). A hang that blocks both threads can produce one event from each.
+    /// </remarks>
+    public bool AndroidNativeAnrEnabled { get; set; } = true;
+
+    /// <summary>
+    /// When <see cref="AndroidNativeAnrEnabled"/> is enabled, controls whether sentry-java reports historical ANRs
+    /// recorded by the OS (<c>ApplicationExitInfo</c>) from prior runs. Has no effect when
+    /// <see cref="AndroidNativeAnrEnabled"/> is <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// Runtime-only. There is no <c>AndroidManifest</c> meta-data tag for this option, so it is only
+    /// applied when <see cref="AndroidNativeInitializationType"/> is <see cref="NativeInitializationType.Runtime"/>.
+    /// </remarks>
+    public bool AndroidReportHistoricalAnrs { get; set; } = false;
+
+    /// <summary>
+    /// When <see cref="AndroidNativeAnrEnabled"/> is enabled, controls whether sentry-java attaches a thread dump
+    /// to ANR events. Has no effect when <see cref="AndroidNativeAnrEnabled"/> is <c>false</c>.
+    /// </summary>
+    public bool AndroidAttachAnrThreadDump { get; set; } = false;
+
+    /// <summary>
     /// Whether the SDK should add the NDK integration for Android
     /// </summary>
     public bool NdkIntegrationEnabled { get; set; } = true;

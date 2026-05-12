@@ -151,6 +151,41 @@ public class AndroidManifestTests
     }
 
     [Test]
+    public void ModifyManifest_AndroidNativeAnrEnabled_True_WritesAnrMetadataEnabled()
+    {
+        _fixture.SentryUnityOptions!.AndroidNativeAnrEnabled = true;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"True\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.enable-scope-persistence\" android:value=\"True\" />", manifest);
+    }
+
+    [Test]
+    public void ModifyManifest_AndroidNativeAnrEnabled_False_WritesAnrMetadataDisabled()
+    {
+        _fixture.SentryUnityOptions!.AndroidNativeAnrEnabled = false;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"False\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.enable-scope-persistence\" android:value=\"False\" />", manifest);
+    }
+
+    [Test]
+    public void ModifyManifest_AndroidAttachAnrThreadDump_FlowsThroughToManifest()
+    {
+        _fixture.SentryUnityOptions!.AndroidAttachAnrThreadDump = true;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.attach-thread-dumps\" android:value=\"True\" />", manifest);
+    }
+
+    [Test]
     public void ModifyManifest_ManifestHasDsn()
     {
         var expected = _fixture.SentryUnityOptions!.Dsn;
