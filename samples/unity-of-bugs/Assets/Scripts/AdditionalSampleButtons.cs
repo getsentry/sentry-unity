@@ -51,7 +51,7 @@ public class AdditionalSampleButtons : MonoBehaviour
     public void ApplicationNotResponding()
     {
         Debug.Log("Running Thread.Sleep() on the UI thread to trigger an ANR event.");
-        Thread.Sleep(6 * 1000); // ANR detection currently defaults to 5 seconds
+        Thread.Sleep(10 * 1000); // ANR detection currently defaults to 5 seconds
         Debug.Log("Thread.Sleep() finished.");
     }
 
