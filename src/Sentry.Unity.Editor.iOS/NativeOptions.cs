@@ -30,7 +30,7 @@ static SentryOptions* getSentryOptions()
         @""maxBreadcrumbs"": @{options.MaxBreadcrumbs},
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
-        @""enableAppHangTracking"": @NO,
+        @""enableAppHangTracking"": @{ToObjCString(options.IosNativeAnrEnabled)},
         @""enableCaptureFailedRequests"": @{ToObjCString(options.CaptureFailedRequests)},
         @""failedRequestStatusCodes"" : @[{failedRequestStatusCodesArray}],
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},

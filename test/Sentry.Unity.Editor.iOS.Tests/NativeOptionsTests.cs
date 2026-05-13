@@ -59,6 +59,32 @@ public class NativeOptionsTests
     }
 
     [Test]
+    public void CreateOptionsFile_IosNativeAnrEnabled_SetsYes()
+    {
+        const string testOptionsFileName = "testOptions.m";
+
+        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { IosNativeAnrEnabled = true });
+
+        var nativeOptions = File.ReadAllText(testOptionsFileName);
+        StringAssert.Contains("@\"enableAppHangTracking\": @YES", nativeOptions);
+
+        File.Delete(testOptionsFileName);
+    }
+
+    [Test]
+    public void CreateOptionsFile_IosNativeAnrDisabled_SetsNo()
+    {
+        const string testOptionsFileName = "testOptions.m";
+
+        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { IosNativeAnrEnabled = false });
+
+        var nativeOptions = File.ReadAllText(testOptionsFileName);
+        StringAssert.Contains("@\"enableAppHangTracking\": @NO", nativeOptions);
+
+        File.Delete(testOptionsFileName);
+    }
+
+    [Test]
     public void CreateOptionsFile_FilterBadGatewayEnabled_AddsFiltering()
     {
         const string testOptionsFileName = "testOptions.m";

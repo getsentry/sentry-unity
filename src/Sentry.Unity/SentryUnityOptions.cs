@@ -186,6 +186,18 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool IosWatchdogTerminationIntegrationEnabled { get; set; } = false;
 
     /// <summary>
+    /// Enables ANR (app hang) detection on iOS through the native (sentry-cocoa) SDK.
+    /// When enabled, sentry-cocoa monitors the main thread for hangs and the Unity SDK's
+    /// C# ANR watchdog is skipped on iOS to avoid duplicate reports.
+    /// </summary>
+    /// <remarks>
+    /// sentry-cocoa observes the iOS run loop directly, which yields more accurate
+    /// app-hang detection than the Unity-side watchdog. Disable this only if you want
+    /// to fall back to the C# watchdog.
+    /// </remarks>
+    public bool IosNativeAnrEnabled { get; set; } = true;
+
+    /// <summary>
     /// Whether the SDK should initialize the native SDK before the game starts. This bakes the options at build-time into
     /// the generated Xcode project. Modifying the options at runtime will not affect the options used to initialize
     /// the native SDK.
