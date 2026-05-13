@@ -45,6 +45,7 @@ internal interface ISentryJava
     void AddAttachment(string path, string fileName, string? contentType);
     void AddAttachmentBytes(byte[] data, string fileName, string? contentType);
     void ClearAttachments();
+    void NotifyAnrThreadAlive();
 }
 
 /// <summary>
@@ -68,6 +69,9 @@ internal class SentryJava : ISentryJava
 
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+    // The heartbeat registry is sentry-java's @ApiStatus.Internal entry point for hybrid SDKs;
+    // it deliberately bypasses the public Sentry/Scopes plumbing.
+    private static AndroidJavaObject GetAnrHeartbeatRegistry() => new AndroidJavaClass("io.sentry.AnrHeartbeatRegistry");
 
     public SentryJava(IDiagnosticLogger? logger, IAndroidJNI? androidJNI = null)
     {
@@ -144,6 +148,14 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setEnableScopePersistence", options.AndroidNativeAnrEnabled);
                 androidOptions.Call("setReportHistoricalAnrs", options.AndroidReportHistoricalAnrs);
                 androidOptions.Call("setAttachAnrThreadDump", options.AndroidAttachAnrThreadDump);
+
+                if (options.AndroidNativeAnrEnabled)
+                {
+                    using var processClass = new AndroidJavaClass("android.os.Process");
+                    var mainThreadTid = processClass.CallStatic<int>("myTid");
+                    _logger?.LogDebug("Setting ANR thread id on sentry-java: {0}", mainThreadTid);
+                    androidOptions.Call("setAnrThreadId", (long)mainThreadTid);
+                }
 
                 using (var logsOptions = androidOptions.Call<AndroidJavaObject>("getLogs"))
                 {
@@ -413,6 +425,25 @@ internal class SentryJava : ISentryJava
             sentry.CallStatic("configureScope", new ScopeCallback(scope =>
                 scope.Call("clearAttachments")));
         });
+    }
+
+    public void NotifyAnrThreadAlive()
+    {
+        if (_closed)
+        {
+            _logger?.LogInfo("SentryJava is closed, skipping 'NotifyAnrThreadAlive'");
+            return;
+        }
+
+        try
+        {
+            using var registry = GetAnrHeartbeatRegistry();
+            registry.CallStatic("notifyAlive");
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.NotifyAnrThreadAlive' failed.");
+        }
     }
 
     // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9

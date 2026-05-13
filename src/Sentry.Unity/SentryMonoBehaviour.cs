@@ -10,7 +10,9 @@ namespace Sentry.Unity;
 internal interface ISentryMonoBehaviour
 {
     event Action? ApplicationResuming;
+    event Action? ApplicationPausing;
     public Coroutine StartCoroutine(IEnumerator routine);
+    public void StopCoroutine(Coroutine routine);
     public void QueueCoroutine(IEnumerator routine);
 }
 

@@ -15,6 +15,11 @@ public static class SentryNativeAndroid
     // parameter on `Configure` due SentryNativeAndroid being public
     internal static ISentryJava? SentryJava;
 
+    // Test seam: lets tests observe heartbeat construction without running coroutines.
+    internal static Func<ISentryJava, SentryUnityOptions, AnrHeartbeat>? HeartbeatFactory;
+
+    internal static AnrHeartbeat? Heartbeat;
+
     private static IDiagnosticLogger? Logger;
 
     /// <summary>
@@ -65,6 +70,17 @@ public static class SentryNativeAndroid
                 Logger?.LogError("Failed to initialize Android Native Support");
                 return;
             }
+        }
+
+        if (options.AndroidNativeAnrEnabled)
+        {
+            Logger?.LogDebug("Disabling the C# ANR watchdog on Android - sentry-java handles app hang detection.");
+            options.DisableAnrIntegration();
+
+            Heartbeat = HeartbeatFactory is not null
+                ? HeartbeatFactory(SentryJava!, options)
+                : new AnrHeartbeat(SentryMonoBehaviour.Instance, SentryJava!, options.AnrTimeout, Logger);
+            Heartbeat.Start();
         }
 
         Logger?.LogDebug("Configuring scope sync");
@@ -131,6 +147,12 @@ public static class SentryNativeAndroid
     public static void Close(SentryUnityOptions options)
     {
         Logger?.LogInfo("Attempting to close the Android SDK");
+
+        if (Heartbeat is not null)
+        {
+            Heartbeat.Stop();
+            Heartbeat = null;
+        }
 
         if (!options.IsNativeSupportEnabled())
         {

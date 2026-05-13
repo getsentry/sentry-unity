@@ -1,4 +1,6 @@
+using System.Linq;
 using Sentry.Extensibility;
+using Sentry.Integrations;
 using Sentry.Unity.Integrations;
 using UnityEngine;
 
@@ -105,6 +107,13 @@ public static class SentryUnityOptionsExtensions
     /// </summary>
     public static void DisableAnrIntegration(this SentryUnityOptions options) =>
         options.RemoveIntegration<AnrIntegration>();
+
+    // Bridge for cross-assembly tests (e.g. Sentry.Unity.Android.Tests) that need to inspect
+    // integrations. SentryOptions.HasIntegration and SentryOptions.Integrations are internal
+    // to Sentry, whose InternalsVisibleTo list doesn't include the Android tests project —
+    // but Sentry.Unity.Android.Tests does have access to Sentry.Unity's internals.
+    internal static bool HasIntegration<T>(this SentryUnityOptions options) where T : ISdkIntegration
+        => options.Integrations.Any(i => i is T);
 
     /// <summary>
     /// Disables the automatic filtering of Bad Gateway exception of type Exception.

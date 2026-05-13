@@ -60,4 +60,8 @@ internal class TestSentryJava : ISentryJava
     public void AddAttachmentBytes(byte[] data, string fileName, string? contentType) { }
 
     public void ClearAttachments() { }
+
+    public int NotifyAnrThreadAliveCount { get; private set; }
+
+    public void NotifyAnrThreadAlive() => NotifyAnrThreadAliveCount++;
 }

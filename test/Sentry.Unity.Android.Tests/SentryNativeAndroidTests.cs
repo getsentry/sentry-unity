@@ -4,6 +4,7 @@ using System.Threading;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
+using UnityEngine;
 
 namespace Sentry.Unity.Android.Tests;
 
@@ -192,5 +193,104 @@ public class SentryNativeAndroidTests
             log.message.Contains("Failed to initialize Android Native Support")));
 
         Assert.Null(options.ScopeObserver);
+    }
+
+    [Test]
+    public void Configure_AndroidNativeAnrEnabled_RemovesAnrIntegration()
+    {
+        var options = new SentryUnityOptions { AndroidNativeAnrEnabled = true };
+        Assert.IsTrue(options.HasIntegration<AnrIntegration>()); // sanity
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.IsFalse(options.HasIntegration<AnrIntegration>());
+    }
+
+    [Test]
+    public void Configure_AndroidNativeAnrDisabled_KeepsAnrIntegration()
+    {
+        var options = new SentryUnityOptions { AndroidNativeAnrEnabled = false };
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.IsTrue(options.HasIntegration<AnrIntegration>());
+    }
+
+    [Test]
+    public void Configure_AndroidNativeAnrEnabled_StartsHeartbeat()
+    {
+        var options = new SentryUnityOptions { AndroidNativeAnrEnabled = true };
+        AnrHeartbeat? built = null;
+        var go = new GameObject(nameof(Configure_AndroidNativeAnrEnabled_StartsHeartbeat));
+        try
+        {
+            var monoBehaviour = go.AddComponent<Sentry.Unity.Tests.Stubs.TestSentryMonoBehaviour>();
+            SentryNativeAndroid.HeartbeatFactory = (java, opts) =>
+            {
+                built = new AnrHeartbeat(monoBehaviour, java, opts.AnrTimeout);
+                return built;
+            };
+
+            SentryNativeAndroid.Configure(options);
+
+            Assert.NotNull(built);
+            Assert.IsTrue(monoBehaviour.StartCoroutineCalled);
+        }
+        finally
+        {
+            SentryNativeAndroid.HeartbeatFactory = null;
+            SentryNativeAndroid.Heartbeat = null;
+            UnityEngine.Object.DestroyImmediate(go);
+        }
+    }
+
+    [Test]
+    public void Configure_AndroidNativeAnrDisabled_DoesNotStartHeartbeat()
+    {
+        var options = new SentryUnityOptions { AndroidNativeAnrEnabled = false };
+        var built = false;
+        SentryNativeAndroid.HeartbeatFactory = (_, _) =>
+        {
+            built = true;
+            return null!;
+        };
+        try
+        {
+            SentryNativeAndroid.Configure(options);
+            Assert.IsFalse(built);
+        }
+        finally
+        {
+            SentryNativeAndroid.HeartbeatFactory = null;
+            SentryNativeAndroid.Heartbeat = null;
+        }
+    }
+
+    [Test]
+    public void Close_StopsHeartbeat()
+    {
+        var options = new SentryUnityOptions { AndroidNativeAnrEnabled = true };
+        var go = new GameObject(nameof(Close_StopsHeartbeat));
+        try
+        {
+            var monoBehaviour = go.AddComponent<Sentry.Unity.Tests.Stubs.TestSentryMonoBehaviour>();
+            SentryNativeAndroid.HeartbeatFactory = (java, opts) =>
+                new AnrHeartbeat(monoBehaviour, java, opts.AnrTimeout);
+
+            SentryNativeAndroid.Configure(options);
+            Assert.IsNotNull(SentryNativeAndroid.Heartbeat); // sanity
+            var stopCountBefore = monoBehaviour.StopCoroutineCallCount;
+
+            SentryNativeAndroid.Close(options);
+
+            Assert.IsNull(SentryNativeAndroid.Heartbeat);
+            Assert.AreEqual(stopCountBefore + 1, monoBehaviour.StopCoroutineCallCount);
+        }
+        finally
+        {
+            SentryNativeAndroid.HeartbeatFactory = null;
+            SentryNativeAndroid.Heartbeat = null;
+            UnityEngine.Object.DestroyImmediate(go);
+        }
     }
 }
