@@ -156,7 +156,7 @@ Key targets defined in `Directory.Build.targets`:
 | `BuildAndroidSDK`    | Builds Android SDK via Gradle           |
 | `BuildLinuxSDK`      | Builds Linux SDK via CMake              |
 | `BuildWindowsSDK`    | Builds Windows SDK via CMake (Crashpad) |
-| `BuildCocoaSDK`      | Downloads iOS/macOS SDKs from releases  |
+| `BuildCocoaSDK`      | Builds iOS/macOS SDKs via Xcode         |
 | `UnityEditModeTest`  | Runs edit-mode unit tests               |
 | `UnityPlayModeTest`  | Runs play-mode tests                    |
 
@@ -319,6 +319,18 @@ modules/
 ├── sentry-native/  # Windows/Linux/macOS (CMake build)
 └── sentry-cocoa/   # iOS/macOS (prebuilt XCFramework)
 ```
+
+### Local Android NDK Development
+
+When iterating on `modules/sentry-native/ndk` together with `modules/sentry-java`, publish the local NDK build to `~/.m2` so sentry-java picks it up instead of mavenCentral:
+
+```bash
+pwsh scripts/build-native-ndk-local.ps1                       # publish only
+pwsh scripts/build-native-ndk-local.ps1 -BuildJava            # publish + rebuild :sentry-android-ndk
+pwsh scripts/build-native-ndk-local.ps1 -PurgeCache -BuildJava  # first switch from central, or after stale builds
+```
+
+Prerequisite: `mavenLocal()` must precede `mavenCentral()` in `modules/sentry-java/settings.gradle.kts` (`dependencyResolutionManagement` block). The script aborts otherwise.
 
 ### Key Source Files
 

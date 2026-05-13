@@ -8,7 +8,9 @@ param(
     [string]$iOSDestination,
 
     [Parameter(Mandatory = $true)]
-    [string]$macOSDestination
+    [string]$macOSDestination,
+
+    [switch]$Clean
 )
 
 Set-StrictMode -Version latest
@@ -24,6 +26,11 @@ if (-not (Test-Path (Join-Path $CocoaRoot "Sentry.xcodeproj"))) {
 $buildPath = Join-Path $CocoaRoot "XCFrameworkBuildPath"
 $iOSXcframeworkPath = Join-Path $buildPath "Sentry-Dynamic-iOS.xcframework"
 $macOSXcframeworkPath = Join-Path $buildPath "Sentry-Dynamic-macOS.xcframework"
+
+if ($Clean -and (Test-Path $buildPath)) {
+    Write-Host "Clean build requested — removing $buildPath" -ForegroundColor Yellow
+    Remove-Item -Path $buildPath -Recurse -Force
+}
 
 Write-Host "Building Cocoa SDK from source..." -ForegroundColor Yellow
 
