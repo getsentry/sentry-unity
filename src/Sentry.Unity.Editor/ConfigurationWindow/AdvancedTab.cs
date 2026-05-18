@@ -39,21 +39,24 @@ internal static class AdvancedTab
             EditorGUILayout.Space();
 
             {
-                options.AnrDetectionEnabled = EditorGUILayout.BeginToggleGroup(
-                    new GUIContent("ANR Detection", "Whether the SDK should report 'Application Not " +
-                                                    "Responding' events."),
+                options.AnrDetectionEnabled = EditorGUILayout.Toggle(
+                    new GUIContent("C# Watchdog", "Whether the SDK should run the C# main-thread watchdog " +
+                                                  "to report 'Application Not Responding' events."),
                     options.AnrDetectionEnabled);
-                EditorGUI.indentLevel++;
+
+                options.EnableAppHangTracking = EditorGUILayout.Toggle(
+                    new GUIContent("App Hang Tracking",
+                        "Enables app hang (ANR) detection via the native SDK. " +
+                        "When enabled, the native SDK monitors the main thread and the Unity SDK's C# ANR " +
+                        "watchdog is skipped to avoid duplicate reports."),
+                    options.EnableAppHangTracking);
 
                 options.AnrTimeout = EditorGUILayout.IntField(
-                    new GUIContent("Timeout [ms]",
+                    new GUIContent("App Hang Timeout [ms]",
                         "The duration in [ms] for how long the game has to be unresponsive " +
                         "before an ANR event is reported.\nDefault: 5000ms"),
                     options.AnrTimeout);
                 options.AnrTimeout = Math.Max(0, options.AnrTimeout);
-
-                EditorGUI.indentLevel--;
-                EditorGUILayout.EndToggleGroup();
             }
 
             EditorGUILayout.Space();

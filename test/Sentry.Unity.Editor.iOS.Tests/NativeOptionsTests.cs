@@ -59,11 +59,11 @@ public class NativeOptionsTests
     }
 
     [Test]
-    public void CreateOptionsFile_IosNativeAnrEnabled_SetsYes()
+    public void CreateOptionsFile_EnableAppHangTracking_SetsYes()
     {
         const string testOptionsFileName = "testOptions.m";
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { IosNativeAnrEnabled = true });
+        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { EnableAppHangTracking = true });
 
         var nativeOptions = File.ReadAllText(testOptionsFileName);
         StringAssert.Contains("@\"enableAppHangTracking\": @YES", nativeOptions);
@@ -72,14 +72,28 @@ public class NativeOptionsTests
     }
 
     [Test]
-    public void CreateOptionsFile_IosNativeAnrDisabled_SetsNo()
+    public void CreateOptionsFile_AppHangTrackingDisabled_SetsNo()
     {
         const string testOptionsFileName = "testOptions.m";
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { IosNativeAnrEnabled = false });
+        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { EnableAppHangTracking = false });
 
         var nativeOptions = File.ReadAllText(testOptionsFileName);
         StringAssert.Contains("@\"enableAppHangTracking\": @NO", nativeOptions);
+
+        File.Delete(testOptionsFileName);
+    }
+
+    [Test]
+    public void CreateOptionsFile_AnrTimeout_WrittenAsSeconds()
+    {
+        const string testOptionsFileName = "testOptions.m";
+
+        NativeOptions.CreateFile(testOptionsFileName,
+            new SentryUnityOptions { AnrTimeout = System.TimeSpan.FromMilliseconds(7500) });
+
+        var nativeOptions = File.ReadAllText(testOptionsFileName);
+        StringAssert.Contains("@\"appHangTimeoutInterval\": @7.5", nativeOptions);
 
         File.Delete(testOptionsFileName);
     }

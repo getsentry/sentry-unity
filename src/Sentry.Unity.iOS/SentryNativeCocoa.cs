@@ -43,12 +43,6 @@ public static class SentryNativeCocoa
             }
 
             options.ScopeObserver = new NativeScopeObserver("iOS", options);
-
-            if (options.IosNativeAnrEnabled)
-            {
-                Logger?.LogDebug("Disabling the C# ANR watchdog on iOS - sentry-cocoa handles app hang detection.");
-                options.DisableAnrIntegration();
-            }
         }
         else
         {
@@ -58,6 +52,12 @@ public static class SentryNativeCocoa
                 return;
             }
             options.ScopeObserver = new NativeScopeObserver("macOS", options);
+        }
+
+        if (options.EnableAppHangTracking)
+        {
+            Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-cocoa handles app hang detection.");
+            options.DisableAnrIntegration();
         }
 
         SentryCocoaBridgeProxy.SetSdkName(); // Since we're not building the SDK we have to overwrite the name here
