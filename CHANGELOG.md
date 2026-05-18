@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- When targeting iOS, the SDK no longer crashes in `urlSessionTask:setState:` when handling an `AVAssetDownloadTask` ([#2677](https://github.com/getsentry/sentry-unity/pull/2677))
+
 ### Features
 
 - Added `IosNativeAnrEnabled` (default `true`) to enable ANR detection through the `sentry-cocoa` SDK. This replaces the Unity SDK's C# watchdog, monitors the Unity player loop and allows Sentry to show a stack trace for the ANR event ([#2679](https://github.com/getsentry/sentry-unity/pull/2679))
@@ -9,9 +13,9 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v9.12.0 to v9.12.1 ([#2670](https://github.com/getsentry/sentry-unity/pull/2670))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9121)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.12.0...9.12.1)
+- Bump Cocoa SDK from v9.12.0 to v9.13.0 ([#2670](https://github.com/getsentry/sentry-unity/pull/2670), [#2677](https://github.com/getsentry/sentry-unity/pull/2677))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9130)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.12.0...9.13.0)
 - Bump Java SDK from v8.40.0 to v8.41.0 ([#2669](https://github.com/getsentry/sentry-unity/pull/2669))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8410)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.40.0...8.41.0)

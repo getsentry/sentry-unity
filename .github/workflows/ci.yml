@@ -379,6 +379,19 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
 
+  test-build-macos:
+    name: Build macOS ${{ matrix.unity-version }} Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [test-create, create-unity-matrix]
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+    uses: ./.github/workflows/test-build-macos.yml
+    with:
+      unity-version: ${{ matrix.unity-version }}
+
   test-run-linux:
     name: Run Linux ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
@@ -407,11 +420,25 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       platform: windows
 
+  test-run-macos:
+    name: Run macOS ${{ matrix.unity-version }} Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [test-build-macos, create-unity-matrix]
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+    uses: ./.github/workflows/test-run-desktop.yml
+    with:
+      unity-version: ${{ matrix.unity-version }}
+      platform: macos
+
   build-size-summary:
     name: Build Size
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-build-webgl, test-build-android, test-compile-ios, test-build-linux, test-build-windows]
+    needs: [test-build-webgl, test-build-android, test-compile-ios, test-build-linux, test-build-windows, test-build-macos]
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
