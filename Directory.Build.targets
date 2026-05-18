@@ -25,95 +25,23 @@
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)Windows/Sentry/</SentryWindowsArtifactsDestination>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <HubSecondaryInstallPathFile>$(AppData)\UnityHub\secondaryInstallPath.json</HubSecondaryInstallPathFile>
-    <HubDefaultEditorFile>$(AppData)\UnityHub\defaultEditor.json</HubDefaultEditorFile>
-    <HubDefaultEditor Condition="'$(HubDefaultEditor)' == ''"></HubDefaultEditor>
-    <HubInstallDir Condition="'$(HubInstallDir)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">C:\Program Files\Unity\Hub\Editor</HubInstallDir>
-    <HubInstallDir Condition="'$(HubInstallDir)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">\Applications\Unity\Hub\Editor</HubInstallDir>
-    <HubInstallDir Condition="'$(HubInstallDir)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">$(Home)\Unity\Hub\Editor</HubInstallDir>
-    <HubInstallDir Condition="!Exists('$(HubInstallDir)')"></HubInstallDir>
-  </PropertyGroup>
-
-  <Target Name="FindHub"
-          Condition="'$(HubInstallDir)' == '' AND Exists('$(HubSecondaryInstallPathFile)')"
-          Returns="$(HubInstallDir);$(HubDefaultEditor)">
-
-    <ReadLinesFromFile File="$(HubSecondaryInstallPathFile)">
-      <Output TaskParameter="Lines" ItemName="item1" />
-    </ReadLinesFromFile>
-
-    <ReadLinesFromFile File="$(HubDefaultEditorFile)" Condition="Exists('$(HubDefaultEditorFile)')">
-      <Output TaskParameter="Lines" ItemName="item2" />
-    </ReadLinesFromFile>
-
-    <PropertyGroup>
-      <HubInstallDir>@(item1->Replace('"', ''))</HubInstallDir>
-      <HubInstallDir Condition=" !Exists('$(HubInstallDir)') "></HubInstallDir>
-
-      <HubDefaultEditor>@(item2->Replace('"', ''))</HubDefaultEditor>
-      <HubDefaultEditor Condition=" !Exists('$(HubInstallDir)\$(HubDefaultEditor)') "></HubDefaultEditor>
-    </PropertyGroup>
-  </Target>
-
-  <!-- Use the Unity Editor version set in the sample project of the repo -->
-  <Target Name="FindUnity" DependsOnTargets="FindHub" AfterTargets="FindHub">
+  <Target Name="FindUnity">
     <Message Text="Unity Version: $(UnityVersion)" Importance="Normal" />
 
-    <!-- Find all the installations of Unity done by the Unity Hub -->
-    <ItemGroup Condition="'$(HubInstallDir)' != '' AND '$(HubDefaultEditor)' == ''">
-      <_AllUnityInstallDirs Include="$([System.IO.Directory]::GetDirectories('$(HubInstallDir)'))" />
-      <_UnityInstalls Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(Filename)', '^[\d]{4}.*$'))" Include="@(_AllUnityInstallDirs->'%(Filename)%(Extension)')" />
-    </ItemGroup>
-
-    <!-- Pick the latest one if this version of the Hub doesn't record a default version -->
-    <PropertyGroup Condition="'$(HubInstallDir)' != '' AND '$(HubDefaultEditor)' == ''">
-      <HubDefaultEditor>%(_UnityInstalls.Identity)</HubDefaultEditor>
-    </PropertyGroup>
+    <Exec
+      Command="pwsh -NoProfile -File &quot;$(RepoRoot)scripts/find-unity.ps1&quot; -UnityVersion &quot;$(UnityVersion)&quot; -HubInstallDir &quot;$(HubInstallDir)&quot; -HubDefaultEditor &quot;$(HubDefaultEditor)&quot;"
+      ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_FindUnityOutput" />
+    </Exec>
 
     <PropertyGroup>
-      <_UnityInnerPath Condition="!$([MSBuild]::IsOSPlatform('OSX'))">Editor\Data</_UnityInnerPath>
-      <_UnityInnerPath Condition="$([MSBuild]::IsOSPlatform('OSX'))">Unity.App\Contents</_UnityInnerPath>
+      <UnityRoot>$([System.Text.RegularExpressions.Regex]::Match($(_FindUnityOutput), 'UnityRoot=([^;\r\n]+)').Groups[1].Value)</UnityRoot>
+      <UnityDataPath>$([System.Text.RegularExpressions.Regex]::Match($(_FindUnityOutput), 'UnityDataPath=([^;\r\n]+)').Groups[1].Value)</UnityDataPath>
+      <UnityManagedPath>$([System.Text.RegularExpressions.Regex]::Match($(_FindUnityOutput), 'UnityManagedPath=([^;\r\n]+)').Groups[1].Value)</UnityManagedPath>
+      <UnityLibcache>$(UnityDataPath)Resources/PackageManager/ProjectTemplates/libcache/</UnityLibcache>
     </PropertyGroup>
 
-    <ItemGroup>
-      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Linux')) AND '$(UNITY_PATH)' != ''" Include="$(UNITY_PATH)\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != ''" Include="$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="'$(HubInstallDir)' != '' AND '$(HubDefaultEditor)' != '' AND '$(UnityVersion)' != '$(HubDefaultEditor)'" Include="$(HubInstallDir)\$(HubDefaultEditor)\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="C:\Program Files\Unity\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
-      <_PotentialUnityPaths Condition="$([MSBuild]::IsOSPlatform('OSX'))" Include="\Applications\Unity\$(_UnityInnerPath)\Managed\UnityEngine.dll" />
-      <_UnityPathsFound Include="@(_PotentialUnityPaths->Exists())" />
-      <_UnityPathsFoundReversed Include="@(_UnityPathsFound->Reverse())" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <!--This is a little hack to grab the first item found on the list - properties are repeatedly set for each item on the list, so they end up with the last one (we reversed the list so we get the first one) -->
-      <_UnityPathProp>%(_UnityPathsFoundReversed.Identity)</_UnityPathProp>
-    </PropertyGroup>
-
-    <Message
-      Condition="'$(UnityVersion)' != '' AND '$(HubInstallDir)' != '' AND !Exists('$(HubInstallDir)\$(UnityVersion)\$(_UnityInnerPath)\Managed\UnityEngine.dll') AND '$(_UnityPathProp)' != ''"
-      Text="Unity version $(UnityVersion) is not installed. Falling back to default Unity installation."
-      Importance="High" />
-
-    <ItemGroup>
-      <!-- Turn the property back into an item so we can use DirectoryName() below. -->
-      <_UnityPath Include="$(_UnityPathProp)" />
-    </ItemGroup>
-
-    <PropertyGroup Condition="'$(_UnityPathProp)' != ''">
-      <UnityManagedPath>@(_UnityPath->DirectoryName())\</UnityManagedPath>
-      <UnityDataPath>@(_UnityPath->DirectoryName()->DirectoryName())\</UnityDataPath>
-      <UnityRoot>@(_UnityPath->DirectoryName()->DirectoryName()->DirectoryName())\</UnityRoot>
-      <UnityLibcache>$(UnityDataPath)Resources\PackageManager\ProjectTemplates\libcache\</UnityLibcache>
-    </PropertyGroup>
-
-    <Error Condition="'$(UnityRoot)' == ''" Text="UnityRoot not found. Ensure Unity is installed.
-See the CONTRIBUTING.md.
-UnityVersion: '$(UnityVersion)'
-Expected to exist:
-* @(_PotentialUnityPaths, '%0a or %0a  * ')" />
-
+    <Error Condition="'$(UnityRoot)' == ''" Text="UnityRoot not resolved — see scripts/find-unity.ps1 output above." />
 
     <!-- Unity paths on Windows -->
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
