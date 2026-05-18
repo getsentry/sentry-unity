@@ -160,14 +160,16 @@
     Build the Android SDK:
         dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity
 
-    Always wipes prior outputs and rebuilds. When modules/sentry-native/ndk is
-    checked out, PublishNativeNdkLocal runs first so a locally-built NDK is
-    available in ~/.m2 before Gradle resolves. Gradle falls through to mavenLocal
-    only when the version declared in gradle/libs.versions.toml isn't on Maven
-    Central — see PublishNativeNdkLocal above for the iteration workflow.
+    Always wipes prior outputs and rebuilds the NDK from source via
+    PublishNativeNdkLocal, then runs Gradle to build sentry-java. Both
+    modules/sentry-java and modules/sentry-native must be checked out.
+    For Gradle to resolve the locally-built NDK over Maven Central, the
+    version in gradle/libs.versions.toml must not exist on Maven Central
+    (see PublishNativeNdkLocal above for the iteration workflow).
   -->
   <Target Name="BuildAndroidSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="sentry-java submodule not checked out at $(SentryAndroidRoot). Run: git submodule update --init modules/sentry-java" />
+    <Error Condition="!Exists('$(SentryNativeRoot)ndk')" Text="sentry-native NDK module not found at $(SentryNativeRoot)ndk. Run: git submodule update --init modules/sentry-native" />
 
     <Message Importance="High" Text="Building Sentry Android SDK (clean rebuild)." />
 
@@ -177,11 +179,9 @@
     <RemoveDir Directories="$(SentryAndroidRoot)sentry-android-core/build" ContinueOnError="true" />
     <RemoveDir Directories="$(SentryAndroidRoot)sentry-android-ndk/build" ContinueOnError="true" />
 
-    <!-- Publish local NDK to ~/.m2 first if the sentry-native NDK module is available.
-         Gradle resolves it via mavenLocal() only when libs.versions.toml declares
-         a version that isn't on Maven Central. -->
-    <CallTarget Condition="Exists('$(SentryNativeRoot)ndk')" Targets="PublishNativeNdkLocal" />
-    <Message Condition="!Exists('$(SentryNativeRoot)ndk')" Importance="High" Text="modules/sentry-native/ndk not checked out; Gradle will resolve sentry-native-ndk from Maven Central only." />
+    <!-- Build sentry-native NDK from source and publish it to ~/.m2 so Gradle's
+         mavenLocal() can resolve it (when the version isn't on Maven Central). -->
+    <CallTarget Targets="PublishNativeNdkLocal" />
 
     <!-- IgnoreExitCode: Gradle may report BUILD SUCCESSFUL yet the JVM exits with code -1 due to
          the Kotlin compiler daemon terminating unexpectedly. The Error checks below validate the
@@ -200,6 +200,15 @@
 
     <Copy SourceFiles="@(AndroidSdkArtifacts)" DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(AndroidJarArtifacts)" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry.jar" />
+
+    <!-- Ship the standalone sentry-native-ndk AAR (contains the JNI .so libs) into Sentry~/.
+         sentry-android-ndk declares it as a Maven dependency and doesn't embed it, so Unity
+         needs it shipped separately. PublishNativeNdkLocal above produced it at this path. -->
+    <PropertyGroup>
+      <SentryNativeNdkLocalAar>$(SentryNativeRoot)ndk/lib/build/outputs/aar/sentry-native-ndk-release.aar</SentryNativeNdkLocalAar>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SentryNativeNdkLocalAar)')" Text="sentry-native-ndk-release.aar not produced at $(SentryNativeNdkLocalAar). PublishNativeNdkLocal may have failed." />
+    <Copy SourceFiles="$(SentryNativeNdkLocalAar)" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
 
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to set up the Android SDK." />
   </Target>

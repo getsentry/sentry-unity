@@ -26,7 +26,8 @@ jobs:
         shell: bash
         run: |
           if [[ "${TARGET}" == "Android" ]]; then
-            submodules="modules/sentry-java"
+            # Android needs sentry-native too — BuildAndroidSDK builds the NDK from source.
+            submodules="modules/sentry-java modules/sentry-native"
           elif [[ "${TARGET}" == "Cocoa" ]]; then
             submodules="modules/sentry-cocoa"
           else

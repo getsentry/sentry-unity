@@ -324,9 +324,11 @@ modules/
 
 ### Local Android NDK Development
 
-When iterating on `modules/sentry-native/ndk` together with `modules/sentry-java`,
-`BuildAndroidSDK` automatically publishes the locally-built NDK to `~/.m2` before
-running Gradle (as long as the `modules/sentry-native` submodule is checked out).
+`BuildAndroidSDK` builds the NDK from source on every run (via `PublishNativeNdkLocal`)
+and ships the resulting AAR alongside the sentry-java artifacts. Both
+`modules/sentry-java` AND `modules/sentry-native` must be checked out — the target
+aborts otherwise and prints the `git submodule update --init` command.
+
 sentry-java's `dependencyResolutionManagement` block already lists `mavenLocal()`,
 so Gradle resolves whatever version is declared in
 `modules/sentry-java/gradle/libs.versions.toml` — falling through to Maven Central
