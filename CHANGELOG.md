@@ -8,7 +8,7 @@
 
 ### Features
 
-- Added `IosNativeAnrEnabled` (default `true`) to enable ANR detection through the `sentry-cocoa` SDK. This replaces the Unity SDK's C# watchdog, monitors the Unity player loop and allows Sentry to show a stack trace for the ANR event ([#2679](https://github.com/getsentry/sentry-unity/pull/2679))
+- Added `EnableAppHangTracking` (default `true`) to enable app hang (ANR) detection through the `sentry-cocoa` SDK on iOS and macOS. When enabled, sentry-cocoa monitors the main thread and replaces the Unity SDK's C# watchdog on these platforms, allowing Sentry to show a stack trace for the hang event ([#2679](https://github.com/getsentry/sentry-unity/pull/2679))
 - Added `AndroidNativeAnrEnabled` (default `true`) to enable ANR detection through the `sentry-java` SDK. The native ANR integration monitors the Android UI thread. On API ≥ 30 this uses [ANR v2](https://docs.sentry.io/platforms/android/configuration/app-not-respond/) via `ApplicationExitInfo` to report OS-detected ANRs from prior runs; on API < 30 it falls back to an in-process watchdog. This is complementary to the Unity SDK's C# watchdog, which monitors the Unity player loop. ([#2671](https://github.com/getsentry/sentry-unity/pull/2671))
 
 ### Dependencies
