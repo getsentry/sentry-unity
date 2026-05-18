@@ -2,7 +2,7 @@
 set -euo pipefail
 
 unityPrefix="$1"
-unityVersion=$(pwsh ./scripts/ci-env.ps1 "unity$unityPrefix")
+unityVersion=$(jq -r --arg p "$unityPrefix" '.[$p].version' ./scripts/unity-versions.json)
 imageVariant=$(echo "$2" | tr '[:upper:]' '[:lower:]')
 licenseConfig=$3
 
