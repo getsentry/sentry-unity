@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Threading;
+#if UNITY_IOS
+using System.Runtime.InteropServices;
+#endif
 using Sentry;
 using Sentry.Unity;
 using Unity.Burst;
@@ -48,9 +51,31 @@ public class AdditionalSampleButtons : MonoBehaviour
     public void ApplicationNotResponding()
     {
         Debug.Log("Running Thread.Sleep() on the UI thread to trigger an ANR event.");
-        Thread.Sleep(6 * 1000); // ANR detection currently defaults to 5 seconds
+        Thread.Sleep(10 * 1000); // ANR detection currently defaults to 5 seconds
         Debug.Log("Thread.Sleep() finished.");
     }
+
+    public void ApplicationNotRespondingNative()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        Debug.Log("Stalling the main thread via Kotlin to trigger a native ANR event.");
+        using (var jo = new AndroidJavaObject("unity.of.bugs.KotlinPlugin"))
+        {
+            jo.CallStatic("applicationNotResponding");
+        }
+#elif UNITY_IOS && !UNITY_EDITOR
+        Debug.Log("Stalling the main thread via Objective-C to trigger a native ANR event.");
+        applicationNotResponding();
+#else
+        Debug.LogWarning("Native ANR sample requires running on Android or iOS.");
+#endif
+    }
+
+#if UNITY_IOS && !UNITY_EDITOR
+    // ObjectiveCPlugin.m
+    [DllImport("__Internal")]
+    private static extern void applicationNotResponding();
+#endif
 
     public void Assert() => UnityEngine.Assertions.Assert.IsTrue(false);
 

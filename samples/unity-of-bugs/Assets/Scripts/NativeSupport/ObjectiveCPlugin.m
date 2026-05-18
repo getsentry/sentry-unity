@@ -16,4 +16,11 @@ void throwObjectiveC()
 #endif
 }
 
+void applicationNotResponding()
+{
+    NSLog(@"Stalling the main thread from Objective-C to trigger a native ANR.");
+    [NSThread sleepForTimeInterval:10.0]; // ANR detection currently defaults to 5 seconds
+    NSLog(@"Objective-C main thread stall finished.");
+}
+
 NS_ASSUME_NONNULL_END
