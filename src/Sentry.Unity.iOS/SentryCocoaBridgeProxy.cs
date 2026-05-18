@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
+using UnityEngine;
 
 namespace Sentry.Unity.iOS;
 
@@ -66,8 +68,11 @@ internal static class SentryCocoaBridgeProxy
         // See https://github.com/getsentry/sentry-unity/issues/1658
         OptionsSetInt(cOptions, "enableNetworkBreadcrumbs", 0);
 
-        Logger?.LogDebug("Setting EnableAppHangTracking: {0}", options.IosNativeAnrEnabled);
-        OptionsSetInt(cOptions, "enableAppHangTracking", options.IosNativeAnrEnabled ? 1 : 0);
+        if (ApplicationAdapter.Instance.Platform == RuntimePlatform.IPhonePlayer)
+        {
+            Logger?.LogDebug("Setting EnableAppHangTracking: {0}", options.IosNativeAnrEnabled);
+            OptionsSetInt(cOptions, "enableAppHangTracking", options.IosNativeAnrEnabled ? 1 : 0);
+        }
 
         Logger?.LogDebug("Setting EnableWatchdogTerminationTracking: {0}", options.IosWatchdogTerminationIntegrationEnabled);
         OptionsSetInt(cOptions, "enableWatchdogTerminationTracking", options.IosWatchdogTerminationIntegrationEnabled ? 1 : 0);
