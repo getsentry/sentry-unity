@@ -12,5 +12,8 @@
     <Compile Include="../SharedClasses/*.cs">
       <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
+    <Compile Include="../Sentry.Unity.Tests/Stubs/SentryTestMonoBehaviour.cs">
+      <Link>Stubs/SentryTestMonoBehaviour.cs</Link>
+    </Compile>
   </ItemGroup>
 </Project>

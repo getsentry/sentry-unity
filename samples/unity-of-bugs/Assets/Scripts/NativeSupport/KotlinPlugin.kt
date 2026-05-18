@@ -18,4 +18,9 @@ object KotlinPlugin {
             throw Exception("Kotlin 🐛 from a background thread.")
         }
     }
+    @JvmStatic fun applicationNotResponding() {
+        Log.i("test", "Stalling the main thread from Kotlin to trigger a native ANR.")
+        Thread.sleep(10 * 1000) // ANR detection currently defaults to 5 seconds
+        Log.i("test", "Kotlin main thread stall finished.")
+    }
 }

@@ -128,4 +128,24 @@ public class SentryMonoBehaviourTests
 
         Assert.IsTrue(coroutineExecuted);
     }
+
+    [Test]
+    public void TestSentryMonoBehaviour_RaisesApplicationPausing()
+    {
+        var go = new GameObject(nameof(TestSentryMonoBehaviour_RaisesApplicationPausing));
+        try
+        {
+            var sut = go.AddComponent<Sentry.Unity.Tests.Stubs.TestSentryMonoBehaviour>();
+            var raised = 0;
+            ((ISentryMonoBehaviour)sut).ApplicationPausing += () => raised++;
+
+            sut.PauseApplication();
+
+            Assert.AreEqual(1, raised);
+        }
+        finally
+        {
+            Object.DestroyImmediate(go);
+        }
+    }
 }

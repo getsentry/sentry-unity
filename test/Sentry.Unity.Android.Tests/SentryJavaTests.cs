@@ -142,6 +142,17 @@ public class SentryJavaTests
             "Should log warning when trying to queue action after Close()");
     }
 
+    [Test]
+    public void TestSentryJava_RecordsNotifyAnrThreadAlive()
+    {
+        var stub = new TestSentryJava();
+
+        stub.NotifyAnrThreadAlive();
+        stub.NotifyAnrThreadAlive();
+
+        Assert.AreEqual(2, stub.NotifyAnrThreadAliveCount);
+    }
+
     internal class TestAndroidJNI : IAndroidJNI
     {
         public bool AttachCalled { get; private set; }

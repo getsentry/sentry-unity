@@ -117,32 +117,56 @@
     <Exec Command="pwsh &quot;$(RepoRoot)scripts/download-sentry-cli.ps1&quot;"></Exec>
   </Target>
 
-  <!-- Build the Cocoa SDK: dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity -->
-  <!-- Builds the sentry-cocoa submodule from source and extracts iOS and macOS artifacts -->
+  <!--
+    Build the Cocoa SDK:
+        dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity
+    Force a clean rebuild (bypass the "xcframework already built" short-circuit and
+    wipe the sentry-cocoa XCFrameworkBuildPath/ cache before building):
+        dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity -p:RebuildCocoaSdk=true
+    Builds the sentry-cocoa submodule from source and replaces the iOS xcframework
+    and macOS dylib in package-dev/Plugins/.
+  -->
   <Target Name="BuildCocoaSDK"
       Condition="!$([MSBuild]::IsOSPlatform('Windows')) AND '$(MSBuildProjectName)' == 'Sentry.Unity'
-        And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))"
+        And ('$(RebuildCocoaSdk)' == 'true' Or !Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))"
       BeforeTargets="BeforeBuild">
 
     <Error Condition="!Exists('$(SentryCocoaRoot)Sentry.xcodeproj')" Text="sentry-cocoa submodule not checked out at $(SentryCocoaRoot). Run: git submodule update --init modules/sentry-cocoa" />
 
     <Message Importance="High" Text="Building Cocoa SDK from submodule." />
 
-    <Exec Command="pwsh &quot;$(RepoRoot)scripts/build-cocoa-sdk.ps1&quot; -CocoaRoot &quot;$(SentryCocoaRoot)&quot; -iOSDestination &quot;$(SentryiOSArtifactsDestination)&quot; -macOSDestination &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot;" />
+    <PropertyGroup>
+      <BuildCocoaSdkScriptArgs Condition="'$(RebuildCocoaSdk)' == 'true'">-Clean</BuildCocoaSdkScriptArgs>
+    </PropertyGroup>
+
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/build-cocoa-sdk.ps1&quot; -CocoaRoot &quot;$(SentryCocoaRoot)&quot; -iOSDestination &quot;$(SentryiOSArtifactsDestination)&quot; -macOSDestination &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot; $(BuildCocoaSdkScriptArgs)" />
 
     <Error Condition="(!Exists('$(SentryiOSArtifactsDestination)'))" Text="Failed to set up the iOS SDK." />
     <Error Condition="(!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM'))" Text="Failed to set up the macOS SDK." />
   </Target>
 
-  <!-- Build the Android SDK: dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -->
+  <!--
+    Build the Android SDK:
+        dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity
+    Force a clean rebuild (bypass the "Sentry~/ already has 4 files" short-circuit).
+    Also republishes sentry-native-ndk to mavenLocal so sentry-java consumes the
+    locally-built NDK instead of the mavenCentral release:
+        dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity -p:RebuildAndroidSdk=true
+  -->
   <Target Name="BuildAndroidSDK"
           DependsOnTargets="DownloadCLI"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' And (!Exists('$(SentryAndroidArtifactsDestination)') Or (Exists('$(SentryAndroidArtifactsDestination)') And $([System.IO.Directory]::GetFiles('$(SentryAndroidArtifactsDestination)').Length) != 4))"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' And ('$(RebuildAndroidSdk)' == 'true' Or !Exists('$(SentryAndroidArtifactsDestination)') Or (Exists('$(SentryAndroidArtifactsDestination)') And $([System.IO.Directory]::GetFiles('$(SentryAndroidArtifactsDestination)').Length) != 4))"
           BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="Couldn't find the Android root at $(SentryAndroidRoot)." />
 
     <!-- Clean incomplete artifacts directory before building -->
     <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" Condition="Exists('$(SentryAndroidArtifactsDestination)')" ContinueOnError="true" />
+
+    <!-- When forcing a rebuild, also publish a fresh sentry-native-ndk to mavenLocal so
+         sentry-java's :sentry-android-ndk resolves it locally. The same local AAR is also
+         copied over the bundled sentry-native-ndk-release.aar below, keeping the Java/Kotlin
+         and native sides in sync. -->
+    <CallTarget Condition="'$(RebuildAndroidSdk)' == 'true'" Targets="PublishNativeNdkLocal" />
 
     <Message Importance="High" Text="Building Sentry Android SDK." />
 
@@ -169,41 +193,81 @@
 
     <Copy SourceFiles="@(AndroidJarArtifacts)" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry.jar" />
 
-    <Message Importance="High" Text="Reading the sentry-native-ndk version from the 'libs.versions.toml' file." />
-
     <PropertyGroup>
+      <SentryNativeNdkLocalAar>$(SentryNativeRoot)ndk/lib/build/outputs/aar/sentry-native-ndk-release.aar</SentryNativeNdkLocalAar>
+    </PropertyGroup>
+
+    <!-- Prefer the locally-built sentry-native-ndk AAR when present
+         (see scripts/build-native-ndk-local.ps1). Falls back to the
+         released artifact below when no local build exists. -->
+    <Message Condition="Exists('$(SentryNativeNdkLocalAar)')" Importance="High" Text="Using locally-built sentry-native-ndk AAR from '$(SentryNativeNdkLocalAar)'." />
+    <Copy Condition="Exists('$(SentryNativeNdkLocalAar)')" SourceFiles="$(SentryNativeNdkLocalAar)" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
+
+    <Message Condition="!Exists('$(SentryNativeNdkLocalAar)')" Importance="High" Text="Reading the sentry-native-ndk version from the 'libs.versions.toml' file." />
+
+    <PropertyGroup Condition="!Exists('$(SentryNativeNdkLocalAar)')">
         <PropertiesContent>$([System.IO.File]::ReadAllText("$(RepoRoot)modules/sentry-java/gradle/libs.versions.toml"))</PropertiesContent>
         <NativeVersion>$([System.Text.RegularExpressions.Regex]::Match($(PropertiesContent), 'sentry-native-ndk\s*=\s*\{[^}]*version\s*=\s*"([^"]+)"').Groups[1].Value)</NativeVersion>
     </PropertyGroup>
 
     <!-- Clean cache if version does not exist to get rid of old versions -->
     <RemoveDir
-      Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip')"
+      Condition="!Exists('$(SentryNativeNdkLocalAar)') And !Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip')"
       Directories="$(SentryNativeNdkCache)" />
 
     <!-- Create cache directory -->
-    <MakeDir Condition="!Exists('$(SentryNativeNdkCache)')" Directories="$(SentryNativeNdkCache)" />
+    <MakeDir Condition="!Exists('$(SentryNativeNdkLocalAar)') And !Exists('$(SentryNativeNdkCache)')" Directories="$(SentryNativeNdkCache)" />
 
-    <Message Importance="High" Text="Downloading sentry-native-ndk version '$(NativeVersion)'." />
+    <Message Condition="!Exists('$(SentryNativeNdkLocalAar)')" Importance="High" Text="Downloading sentry-native-ndk version '$(NativeVersion)'." />
 
     <!-- Download prebuilt sentry-native-ndk -->
     <Exec
-      Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip')"
+      Condition="!Exists('$(SentryNativeNdkLocalAar)') And !Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip')"
       Command="curl -L https://github.com/getsentry/sentry-native/releases/download/$(NativeVersion)/sentry-native-ndk-$(NativeVersion).zip -o &quot;$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip&quot;" />
 
     <Exec
-      Condition="!Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)')"
+      Condition="!Exists('$(SentryNativeNdkLocalAar)') And !Exists('$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)')"
       Command="pwsh -Command &quot;Expand-Archive -Path '$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion).zip' -DestinationPath '$(SentryNativeNdkCache)' -Force&quot;" />
 
-    <Copy SourceFiles="$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)/sentry-native-ndk-release.aar" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
+    <Copy Condition="!Exists('$(SentryNativeNdkLocalAar)')" SourceFiles="$(SentryNativeNdkCache)sentry-native-ndk-$(NativeVersion)/sentry-native-ndk-release.aar" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
 
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to build the Android SDK." />
   </Target>
 
-  <!-- Build the Sentry Native SDK for Windows: dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -->
+  <!--
+    Build sentry-native-ndk and publish it to the local Maven repo (~/.m2)
+    so sentry-java's :sentry-android-ndk build consumes the local artifact
+    instead of mavenCentral. Requires mavenLocal() to be listed before
+    mavenCentral() in modules/sentry-java/settings.gradle.kts (the script
+    verifies this and aborts otherwise).
+
+        dotnet msbuild /t:PublishNativeNdkLocal src/Sentry.Unity
+
+    Purge stale Gradle caches before publishing (use the first time you
+    switch from mavenCentral or when the consumed artifact looks stale):
+        dotnet msbuild /t:PublishNativeNdkLocal src/Sentry.Unity -p:PurgeNdkCache=true
+  -->
+  <Target Name="PublishNativeNdkLocal" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="!Exists('$(SentryNativeRoot)ndk')" Text="Couldn't find sentry-native NDK module at $(SentryNativeRoot)ndk. Run: git submodule update --init modules/sentry-native" />
+
+    <PropertyGroup>
+      <PublishNativeNdkScriptArgs Condition="'$(PurgeNdkCache)' == 'true'">-PurgeCache</PublishNativeNdkScriptArgs>
+    </PropertyGroup>
+
+    <Message Importance="High" Text="Publishing sentry-native-ndk to mavenLocal." />
+
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/build-native-ndk-local.ps1&quot; $(PublishNativeNdkScriptArgs)" />
+  </Target>
+
+  <!--
+    Build the Sentry Native SDK for Windows:
+        dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity
+    Force a clean rebuild (bypass the "sentry.dll already exists" short-circuit):
+        dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity -p:RebuildNativeSdk=true
+  -->
   <Target Name="BuildWindowsSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Windows'))
-          And !Exists('$(SentryWindowsArtifactsDestination)sentry.dll')" BeforeTargets="BeforeBuild">
+          And ('$(RebuildNativeSdk)' == 'true' Or !Exists('$(SentryWindowsArtifactsDestination)sentry.dll'))" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
     <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Windows." />
@@ -222,10 +286,15 @@
     <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryWindowsArtifactsDestination)%(Filename)%(Extension)')" />
   </Target>
 
-  <!-- Build the Sentry Native SDK for Linux: dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity -->
+  <!--
+    Build the Sentry Native SDK for Linux:
+        dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity
+    Force a clean rebuild (bypass the "libsentry.so already exists" short-circuit):
+        dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity -p:RebuildNativeSdk=true
+  -->
   <Target Name="BuildLinuxSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
           And $([MSBuild]::IsOsPlatform('Linux'))
-          And !Exists('$(SentryLinuxArtifactsDestination)libsentry.so')" BeforeTargets="BeforeBuild">
+          And ('$(RebuildNativeSdk)' == 'true' Or !Exists('$(SentryLinuxArtifactsDestination)libsentry.so'))" BeforeTargets="BeforeBuild">
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="Couldn't find the Native root at $(SentryNativeRoot)."></Error>
 
     <Message Importance="High" Text="Building artifacts of Sentry Native SDK for Linux." />
