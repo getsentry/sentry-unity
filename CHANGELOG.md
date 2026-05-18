@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK now uses Gradle's built-in Exec task type when setting up the automated debug symbol upload. This resolves builds failing when targeting Android on Unity 6.4 ([#2686](https://github.com/getsentry/sentry-unity/pull/2686))
 - When targeting iOS, the SDK no longer crashes in `urlSessionTask:setState:` when handling an `AVAssetDownloadTask` ([#2677](https://github.com/getsentry/sentry-unity/pull/2677))
 
 ### Features
