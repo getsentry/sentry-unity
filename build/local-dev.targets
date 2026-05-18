@@ -1,0 +1,88 @@
+<Project>
+  <!--
+    Build a player with IL2CPP: dotnet msbuild /t:UnityBuildStandalonePlayerIL2CPP src/Sentry.Unity
+  -->
+  <Target Name="UnityBuildStandalonePlayerIL2CPP" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
+    <Error Condition="$(StandaloneBuildMethod) == ''" Text="StandaloneBuildMethod build variable not defined. Did FindUnity target fail?" />
+
+    <Message Importance="High" Text="Building Player with IL2CPP." />
+
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnitySampleProjectPath) -executeMethod $(StandaloneBuildMethod) -buildPath $(StandaloneBuildPath)" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <!--
+    Build an Android player: dotnet msbuild /t:UnityBuildPlayerAndroid src/Sentry.Unity
+  -->
+  <Target Name="UnityBuildPlayerAndroid" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
+
+    <Message Importance="High" Text="Building Android Player with IL2CPP." />
+
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnitySampleProjectPath) -executeMethod $(AndroidBuildMethod) -buildPath $(AndroidBuildPath)" IgnoreStandardErrorWarningFormat="true" />
+
+    <Error Condition="!Exists('$(AndroidBuildPath)')" Text="Android APK not found. Did something go wrong?" />
+  </Target>
+
+  <!--
+    Build an iOS player: dotnet msbuild /t:UnityBuildPlayerIOS src/Sentry.Unity
+  -->
+  <Target Name="UnityBuildPlayerIOS" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
+
+    <Message Importance="High" Text="Building iOS Xcode project." />
+
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnitySampleProjectPath) -executeMethod $(IOSBuildMethod) -buildPath $(IOSBuildPath)" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <!--
+    Build a WebGL player: dotnet msbuild /t:UnityBuildPlayerWebGL src/Sentry.Unity
+  -->
+  <Target Name="UnityBuildPlayerWebGL" DependsOnTargets="FindUnity" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$(UnityExec) == ''" Text="Couldn't find Unity." />
+
+    <Message Importance="High" Text="Building the sample player for WebGL." />
+
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/unity.ps1&quot; $(UnityExec) -quit -batchmode -nographics -projectPath $(UnitySampleProjectPath) -executeMethod Builder.BuildWebGLPlayer -buildPath $(PlayerBuildPath)WebGL" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <!--
+    Run smoke test on the WebGL player: dotnet msbuild /t:UnitySmokeTestPlayerWebGL src/Sentry.Unity
+  -->
+  <Target Name="UnitySmokeTestPlayerWebGL" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Exec Command="pwsh -Command &quot;Invoke-Pester -Path '$(RepoRoot)test/IntegrationTest/Integration.Tests.ps1' -CI&quot;" EnvironmentVariables="SENTRY_TEST_PLATFORM=WebGL;SENTRY_TEST_APP=$(PlayerBuildPath)WebGL" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <!--
+    Downloads native SDKs from the latest successful GitHub Actions workflow run.
+    Only downloads SDKs that are not already present.
+    Depends on a GH CLI installation - https://cli.github.com/
+
+        dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
+  -->
+  <Target Name="DownloadNativeSDKs" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/download-native-sdks.ps1&quot; -RepoRoot &quot;$(RepoRoot)&quot;" />
+  </Target>
+
+  <!--
+    When SENTRY_AUTH_TOKEN is set, create the SentryCliOptions.asset for the sample project.
+    Runs automatically after DownloadNativeSDKs.
+
+        dotnet msbuild /t:SamplesSetupCliOptions src/Sentry.Unity
+  -->
+  <Target Name="SamplesSetupCliOptions" AfterTargets="DownloadNativeSDKs" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND '$(SENTRY_AUTH_TOKEN)' != ''">
+    <Message Importance="High" Text="Found environment variable 'SENTRY_AUTH_TOKEN'. Creating Sentry CLI options for sample project." />
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/samples-setup-cli-options.ps1&quot;" />
+  </Target>
+
+  <!--
+    When APPLE_ID is set, modify ProjectSettings.asset for the sample project.
+    Runs automatically after SamplesSetupCliOptions.
+
+        dotnet msbuild /t:SamplesSetupAppleId src/Sentry.Unity
+  -->
+  <Target Name="SamplesSetupAppleId" AfterTargets="SamplesSetupCliOptions" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND '$(APPLE_ID)' != ''">
+    <Message Importance="High" Text="Found environment variable 'APPLE_ID'. Setting Apple ID for sample project." />
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/samples-setup-apple-id.ps1&quot;" />
+  </Target>
+</Project>

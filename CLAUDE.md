@@ -148,17 +148,19 @@ Builds run in Docker containers using `ghcr.io/unityci/editor` images:
 
 ### MSBuild Targets
 
-Key targets defined in `Directory.Build.targets`:
+Key targets defined across `build/` target files:
 
-| Target               | Purpose                                 |
-| -------------------- | --------------------------------------- |
-| `DownloadNativeSDKs` | Downloads prebuilt native SDKs from CI  |
-| `BuildAndroidSDK`    | Builds Android SDK via Gradle           |
-| `BuildLinuxSDK`      | Builds Linux SDK via CMake              |
-| `BuildWindowsSDK`    | Builds Windows SDK via CMake (Crashpad) |
-| `BuildCocoaSDK`      | Builds iOS/macOS SDKs via Xcode         |
-| `UnityEditModeTest`  | Runs edit-mode unit tests               |
-| `UnityPlayModeTest`  | Runs play-mode tests                    |
+| Target                  | Purpose                                                                 |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `BuildCocoaSDK`         | Builds iOS + macOS SDKs via Xcode (`build/native-sdks.targets`)          |
+| `BuildAndroidSDK`       | Builds Android SDK via Gradle (`build/native-sdks.targets`)              |
+| `BuildLinuxSDK`         | Builds Linux SDK via CMake (`build/native-sdks.targets`)                 |
+| `BuildWindowsSDK`       | Builds Windows SDK via CMake + Crashpad (`build/native-sdks.targets`)    |
+| `Ensure<Platform>SDK`   | Auto-bootstrap wrapper; fires from `dotnet build` when artifacts missing |
+| `PublishNativeNdkLocal` | Builds and publishes `sentry-native-ndk` to `~/.m2`                      |
+| `DownloadNativeSDKs`    | Downloads prebuilt native SDKs from CI (`build/local-dev.targets`)       |
+| `UnityEditModeTest`     | Runs edit-mode unit tests                                                |
+| `UnityPlayModeTest`     | Runs play-mode tests                                                     |
 
 ### Artifact Caching
 
@@ -190,7 +192,7 @@ Key targets defined in `Directory.Build.targets`:
 
 ### Build System
 
-Central configuration in `Directory.Build.targets` (900+ lines) and `Directory.Build.props`:
+Core build configuration in `Directory.Build.props`. Build targets are split across `Directory.Build.targets` (CI-shared: `FindUnity`, Unity test/configure targets), `build/native-sdks.targets` (native SDK builders), and `build/local-dev.targets` (developer convenience targets):
 
 ```xml
 <!-- Key properties -->
@@ -322,15 +324,36 @@ modules/
 
 ### Local Android NDK Development
 
-When iterating on `modules/sentry-native/ndk` together with `modules/sentry-java`, publish the local NDK build to `~/.m2` so sentry-java picks it up instead of mavenCentral:
+When iterating on `modules/sentry-native/ndk` together with `modules/sentry-java`,
+`BuildAndroidSDK` automatically publishes the locally-built NDK to `~/.m2` before
+running Gradle (as long as the `modules/sentry-native` submodule is checked out).
+sentry-java's `dependencyResolutionManagement` block already lists `mavenLocal()`,
+so Gradle resolves whatever version is declared in
+`modules/sentry-java/gradle/libs.versions.toml` — falling through to Maven Central
+when the version isn't found locally.
+
+**The local build must publish a version that is NOT available on Maven Central.**
+Otherwise Gradle uses the released artifact on Central (listed before `mavenLocal()`
+in the repositories block) and your local changes are silently ignored.
+
+To iterate on NDK code:
+
+1. Bump the version in the sentry-native NDK source to something unique — e.g.
+   add a `-dev`, `-SNAPSHOT`, or hash suffix that doesn't exist on Maven Central.
+2. Bump the matching `sentry-native-ndk` version in
+   `modules/sentry-java/gradle/libs.versions.toml` to the same value.
+3. Run `dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity`. The target rebuilds
+   the NDK, publishes it to `~/.m2`, then builds sentry-java against the local
+   artifact.
+
+To refresh only `~/.m2` without rebuilding the Android SDK:
 
 ```bash
-pwsh scripts/build-native-ndk-local.ps1                       # publish only
-pwsh scripts/build-native-ndk-local.ps1 -BuildJava            # publish + rebuild :sentry-android-ndk
-pwsh scripts/build-native-ndk-local.ps1 -PurgeCache -BuildJava  # first switch from central, or after stale builds
+dotnet msbuild /t:PublishNativeNdkLocal src/Sentry.Unity
+# Purge cached Gradle artifacts (use when iterating on NDK source without
+# bumping the version, so Gradle re-resolves rather than reusing its cache):
+dotnet msbuild /t:PublishNativeNdkLocal src/Sentry.Unity -p:PurgeNdkCache=true
 ```
-
-Prerequisite: `mavenLocal()` must precede `mavenCentral()` in `modules/sentry-java/settings.gradle.kts` (`dependencyResolutionManagement` block). The script aborts otherwise.
 
 ### Key Source Files
 

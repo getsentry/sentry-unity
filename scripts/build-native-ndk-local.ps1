@@ -1,26 +1,23 @@
 <#
 .SYNOPSIS
     Builds modules/sentry-native (NDK) and publishes the artifact to the local
-    Maven repo so modules/sentry-java consumes it instead of mavenCentral.
+    Maven repo so sentry-java can resolve it via mavenLocal().
 
 .DESCRIPTION
     Runs :sentry-native-ndk:publishToMavenLocal in modules/sentry-native/ndk,
     producing io.sentry:sentry-native-ndk:<version> at ~/.m2.
 
-    Requires mavenLocal() to be listed before mavenCentral() in
-    modules/sentry-java/settings.gradle.kts. The script verifies this and
-    aborts otherwise.
-
-    Because both repos publish the same version coordinate, Gradle's module
-    and transform caches can hold a previously-resolved mavenCentral copy.
-    The first time you switch to local (or when the module cache holds a
-    stale build), pass -PurgeCache to wipe sentry-native-ndk caches and
-    stop the Gradle daemon so the next build re-resolves from mavenLocal.
+    sentry-java's settings.gradle.kts already lists mavenLocal() in
+    dependencyResolutionManagement. For Gradle to pick the locally-published
+    artifact over mavenCentral, the local build's version must be unique
+    (i.e., not on Maven Central) — bump the version in both the NDK source
+    and modules/sentry-java/gradle/libs.versions.toml before iterating.
 
 .PARAMETER PurgeCache
     Delete sentry-native-ndk from the Gradle module cache and the related
-    transform directories, then stop the Gradle daemon. Use when switching
-    from mavenCentral resolution or when the consumed artifact looks stale.
+    transform directories, then stop the Gradle daemon. Use when Gradle is
+    holding a stale cached copy (e.g., when iterating on NDK source without
+    bumping the version).
 
 .PARAMETER BuildJava
     After publishing, run :sentry-android-ndk:assembleRelease in
@@ -28,7 +25,7 @@
 
 .EXAMPLE
     pwsh scripts/build-native-ndk-local.ps1
-    # Publish ndk to ~/.m2 (assumes caches are already clean).
+    # Publish ndk to ~/.m2.
 
 .EXAMPLE
     pwsh scripts/build-native-ndk-local.ps1 -PurgeCache -BuildJava
@@ -47,30 +44,9 @@ Set-StrictMode -Version Latest
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
 $ndkDir = Join-Path $repoRoot 'modules/sentry-native/ndk'
 $javaDir = Join-Path $repoRoot 'modules/sentry-java'
-$javaSettings = Join-Path $javaDir 'settings.gradle.kts'
 
 if (-not (Test-Path $ndkDir)) {
     throw "sentry-native NDK module not found at $ndkDir. Did you check out the submodule?"
-}
-if (-not (Test-Path $javaSettings)) {
-    throw "sentry-java settings.gradle.kts not found at $javaSettings."
-}
-
-$settingsContent = Get-Content $javaSettings -Raw
-$drmMatch = [regex]::Match($settingsContent, 'dependencyResolutionManagement\s*\{[^}]*repositories\s*\{(?<repos>[^}]*)\}')
-if (-not $drmMatch.Success) {
-    throw "Could not locate dependencyResolutionManagement.repositories block in $javaSettings."
-}
-$reposBlock = $drmMatch.Groups['repos'].Value
-$localIdx = $reposBlock.IndexOf('mavenLocal()')
-$centralIdx = $reposBlock.IndexOf('mavenCentral()')
-if ($localIdx -lt 0 -or $centralIdx -lt 0 -or $localIdx -gt $centralIdx) {
-    throw @"
-mavenLocal() must appear before mavenCentral() in
-$javaSettings (dependencyResolutionManagement block) so sentry-java
-resolves the locally-published sentry-native-ndk artifact. Reorder the
-repositories and re-run this script.
-"@
 }
 
 if ($PurgeCache) {

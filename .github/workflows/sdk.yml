@@ -62,7 +62,7 @@ jobs:
           # hash of package/package.json for cache busting on release builds (version bump)
           path: |
             package-dev/Plugins
-          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1') }}
+          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1') }}
 
       - name: Installing Linux Dependencies
         if: ${{ env.TARGET == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
