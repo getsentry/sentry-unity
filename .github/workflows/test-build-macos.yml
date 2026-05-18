@@ -1,4 +1,4 @@
-name: "Test: Build Windows"
+name: "Test: Build macOS"
 on:
   workflow_call:
     inputs:
@@ -12,11 +12,11 @@ defaults:
 
 jobs:
   build:
-    name: Windows ${{ inputs.unity-version }}
-    runs-on: windows-latest
+    name: macOS ${{ inputs.unity-version }}
+    runs-on: macos-latest
     env:
       UNITY_VERSION: ${{ inputs.unity-version }}
-      BUILD_PLATFORM: Windows
+      BUILD_PLATFORM: MacOS
 
     steps:
       - name: Checkout
@@ -34,12 +34,12 @@ jobs:
         with:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-version-changeset: ${{ steps.env.outputs.unityChangeset }}
-          unity-modules: windows-il2cpp
+          unity-modules: mac-il2cpp
 
       - name: Create Unity license config
         run: |
-          New-Item -Path "C:/ProgramData/Unity/config/" -ItemType Directory -Force
-          Set-Content -Path "C:/ProgramData/Unity/config/services-config.json" -Value "$env:UNITY_LICENSE_SERVER_CONFIG"
+          sudo mkdir -p "/Library/Application Support/Unity/config"
+          echo "$env:UNITY_LICENSE_SERVER_CONFIG" | sudo tee "/Library/Application Support/Unity/config/services-config.json" > /dev/null
         env:
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
@@ -55,21 +55,21 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
-          key: Library-IntegrationTest-windows-${{ env.UNITY_VERSION }}-v1
+          key: Library-IntegrationTest-macos-${{ env.UNITY_VERSION }}-v1
           restore-keys: |
-            Library-IntegrationTest-windows-${{ env.UNITY_VERSION }}-
-            Library-IntegrationTest-windows-
+            Library-IntegrationTest-macos-${{ env.UNITY_VERSION }}-
+            Library-IntegrationTest-macos-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Build-NoSentry
-          key: build-nosentry-Windows-${{ inputs.unity-version }}
+          key: build-nosentry-MacOS-${{ inputs.unity-version }}
 
       - name: Build without Sentry SDK
         if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows -BuildDirName "Build-NoSentry"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform MacOS -BuildDirName "Build-NoSentry"
 
       - name: Download UPM package
         uses: ./.github/actions/wait-for-artifact
@@ -83,20 +83,20 @@ jobs:
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
       - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform MacOS
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Build with Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform MacOS -UnityVersion "$env:UNITY_VERSION"
 
       - name: Compare build sizes
-        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform Windows -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform MacOS -UnityVersion "$env:UNITY_VERSION"
 
       - name: Upload build size measurement
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: build-size-Windows-${{ env.UNITY_VERSION }}
+          name: build-size-MacOS-${{ env.UNITY_VERSION }}
           path: build-size-measurements/*.json
           retention-days: 1
 
@@ -109,7 +109,7 @@ jobs:
       - name: Upload test app
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: testapp-desktop-compiled-${{ env.UNITY_VERSION }}-windows
+          name: testapp-desktop-compiled-${{ env.UNITY_VERSION }}-macos
           if-no-files-found: error
           path: test-app-desktop.tar.gz
           retention-days: 14
@@ -118,7 +118,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: failed-project-desktop-windows-${{ env.UNITY_VERSION }}
+          name: failed-project-desktop-macos-${{ env.UNITY_VERSION }}
           path: |
             samples/IntegrationTest
             unity.log
