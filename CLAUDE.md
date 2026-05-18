@@ -131,12 +131,12 @@ The CI system uses modular, reusable workflows in `.github/workflows/`:
 | 6000.0.x | Yes        | Yes         |
 | 6000.1.x | No         | Yes         |
 
-Version mapping is defined in `scripts/ci-env.ps1`:
+Version mapping is defined in `scripts/unity-versions.json` (each entry has a `version` and a `changeset`):
 
 - `2021.3` → `2021.3.45f2`
-- `2022.3` → `2022.3.70f1`
-- `6000.0` → `6000.0.48f1`
-- `6000.1` → `6000.1.17f1`
+- `2022.3` → `2022.3.62f3`
+- `6000.0` → `6000.0.74f1`
+- `6000.3` → `6000.3.14f1`
 
 ### Docker-Based Builds
 
