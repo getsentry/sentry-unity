@@ -213,11 +213,14 @@
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to set up the Android SDK." />
   </Target>
 
-  <!-- Hooks into 'dotnet build' so a missing Android plugin auto-triggers BuildAndroidSDK. -->
+  <!-- Hooks into 'dotnet build' so a missing/incomplete Android plugin auto-triggers BuildAndroidSDK.
+       BuildAndroidSDK copies exactly 4 artifacts into $(SentryAndroidArtifactsDestination); any
+       other count means the previous run was interrupted and we should rebuild. -->
   <Target Name="EnsureAndroidSDK"
           BeforeTargets="BeforeBuild"
           Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-            And !Exists('$(SentryAndroidArtifactsDestination)')">
+            And (!Exists('$(SentryAndroidArtifactsDestination)')
+              Or $([System.IO.Directory]::GetFiles('$(SentryAndroidArtifactsDestination)').Length) != 4)">
     <CallTarget Targets="BuildAndroidSDK" />
   </Target>
 </Project>
