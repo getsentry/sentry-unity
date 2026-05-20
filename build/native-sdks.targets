@@ -133,26 +133,28 @@
   </Target>
 
   <!--
-    Build the Sentry Native SDK for macOS (universal binary, native backend):
+    Build the Sentry Native SDK for macOS:
         dotnet msbuild /t:BuildMacOSNativeSDK src/Sentry.Unity
-    Short-circuits if libsentry.dylib already exists. Produces a universal
+    Always wipes prior outputs and rebuilds. Produces a universal
     (x86_64 + arm64) dylib and the sentry-crash out-of-process handler.
     Debug symbols are extracted into .dSYM bundles; binaries are then stripped.
   -->
-  <Target Name="BuildMacOSNativeSDK"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-            And $([MSBuild]::IsOSPlatform('OSX'))
-            And !Exists('$(SentryMacOSNativeArtifactsDestination)libsentry.dylib')">
+  <Target Name="BuildMacOSNativeSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="!$([MSBuild]::IsOSPlatform('OSX'))" Text="BuildMacOSNativeSDK can only run on macOS." />
     <Error Condition="!Exists('$(SentryNativeRoot)')" Text="sentry-native submodule not checked out at $(SentryNativeRoot). Run: git submodule update --init modules/sentry-native" />
 
-    <Message Importance="High" Text="Building Sentry Native SDK for macOS (universal binary, native backend)." />
+    <Message Importance="High" Text="Building Sentry Native SDK for macOS (clean rebuild)." />
 
-    <Exec WorkingDirectory="$(SentryNativeRoot)"
-          Command="cmake -B build_macos -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unity -D SENTRY_BUILD_SHARED_LIBS=ON -D &quot;CMAKE_OSX_ARCHITECTURES=x86_64;arm64&quot; -D CMAKE_OSX_DEPLOYMENT_TARGET=10.15 -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
-    <Exec WorkingDirectory="$(SentryNativeRoot)"
-          Command="cmake --build build_macos --target sentry --config RelWithDebInfo --parallel" />
-    <Exec WorkingDirectory="$(SentryNativeRoot)"
-          Command="cmake --build build_macos --target sentry-crash --config RelWithDebInfo --parallel" />
+    <!-- Wipe prior outputs -->
+    <RemoveDir Directories="$(SentryNativeRoot)build_macos" ContinueOnError="true" />
+    <Delete Files="$(SentryMacOSNativeArtifactsDestination)libsentry.dylib" ContinueOnError="true" />
+    <Delete Files="$(SentryMacOSNativeArtifactsDestination)sentry-crash" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryMacOSNativeArtifactsDestination)libsentry.dylib.dSYM" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryMacOSNativeArtifactsDestination)sentry-crash.dSYM" ContinueOnError="true" />
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build_macos -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unity -D SENTRY_BUILD_SHARED_LIBS=ON -D &quot;CMAKE_OSX_ARCHITECTURES=x86_64;arm64&quot; -D CMAKE_OSX_DEPLOYMENT_TARGET=10.15 -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build_macos --target sentry --config RelWithDebInfo --parallel" />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build_macos --target sentry-crash --config RelWithDebInfo --parallel" />
 
     <MakeDir Directories="$(SentryMacOSNativeArtifactsDestination)" />
 
@@ -169,17 +171,16 @@
     <Exec Command="strip -x $(SentryMacOSNativeArtifactsDestination)libsentry.dylib" />
     <Exec Command="strip -x $(SentryMacOSNativeArtifactsDestination)sentry-crash" />
 
-    <Error Condition="!Exists('$(SentryMacOSNativeArtifactsDestination)libsentry.dylib')" Text="Failed to produce libsentry.dylib for macOS." />
-    <Error Condition="!Exists('$(SentryMacOSNativeArtifactsDestination)sentry-crash')" Text="Failed to produce sentry-crash for macOS." />
+    <Error Condition="!Exists('$(SentryMacOSNativeArtifactsDestination)libsentry.dylib')" Text="Failed to set up the macOS Native SDK." />
   </Target>
 
-  <!-- Cleans the macOS native SDK build artifacts. -->
-  <Target Name="CleanMacOSNativeSDK" AfterTargets="Clean" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
-    <RemoveDir Directories="$(SentryNativeRoot)build_macos" ContinueOnError="true" />
-    <Delete Files="$(SentryMacOSNativeArtifactsDestination)libsentry.dylib" ContinueOnError="true" />
-    <Delete Files="$(SentryMacOSNativeArtifactsDestination)sentry-crash" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryMacOSNativeArtifactsDestination)libsentry.dylib.dSYM" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryMacOSNativeArtifactsDestination)sentry-crash.dSYM" ContinueOnError="true" />
+  <!-- Hooks into 'dotnet build' so a missing macOS Native plugin auto-triggers BuildMacOSNativeSDK. -->
+  <Target Name="EnsureMacOSNativeSDK"
+          BeforeTargets="BeforeBuild"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+            And $([MSBuild]::IsOSPlatform('OSX'))
+            And !Exists('$(SentryMacOSNativeArtifactsDestination)libsentry.dylib')">
+    <CallTarget Targets="BuildMacOSNativeSDK" />
   </Target>
 
   <!--

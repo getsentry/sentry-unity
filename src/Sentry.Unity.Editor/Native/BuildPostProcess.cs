@@ -157,24 +157,30 @@ public static class BuildPostProcess
                 $"Run 'dotnet msbuild /t:{target} src/Sentry.Unity' (or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it.");
         }
 
-        // Native: dylib + daemon must be next to the player executable so that sentry-native can
-        // posix_spawn the daemon from @executable_path and so DllImport("sentry") resolves
-        // libsentry.dylib via DYLD's @executable_path search.
-        // Cocoa: SentryNativeBridge.m dlopens Sentry.dylib from @executable_path/../PlugIns/.
+        // Files split by type:
+        //  - dylibs go to Contents/PlugIns/ — Unity's IL2CPP loader searches there for DllImport.
+        //  - executables (e.g. sentry-native's sentry-crash daemon) go to Contents/MacOS/
+        //    because sentry-native posix_spawns the daemon from @executable_path.
+        //  - dSYMs are skipped — only consumed from the package at symbol-upload time.
         var contentsDir = Path.Combine(executablePath, "Contents");
-        var destDir = options.MacosBackend == MacosBackend.Native
-            ? Path.Combine(contentsDir, "MacOS")
-            : Path.Combine(contentsDir, "PlugIns");
-        Directory.CreateDirectory(destDir);
+        var pluginsDest = Path.Combine(contentsDir, "PlugIns");
+        var macOSDest = Path.Combine(contentsDir, "MacOS");
+        Directory.CreateDirectory(pluginsDest);
+        Directory.CreateDirectory(macOSDest);
 
-        logger.LogInfo("Copying macOS Sentry plugins from '{0}' to '{1}'", sourceDir, destDir);
         foreach (var file in Directory.GetFiles(sourceDir))
         {
-            var destFile = Path.Combine(destDir, Path.GetFileName(file));
+            var name = Path.GetFileName(file);
+            // Dylibs into PlugIns/ (Unity's loader searches there). Everything
+            // else — i.e. the sentry-crash daemon executable for the Native
+            // backend — into MacOS/ so it sits next to the player binary,
+            // which is where sentry-native posix_spawns it from.
+            var destFile = name.EndsWith(".dylib", StringComparison.OrdinalIgnoreCase)
+                ? Path.Combine(pluginsDest, name)
+                : Path.Combine(macOSDest, name);
             logger.LogDebug("Copying '{0}' to '{1}'", file, destFile);
             File.Copy(file, destFile, overwrite: true);
         }
-        // dSYMs are not copied — they're only consumed from the package source at symbol-upload time.
     }
 
     private static void CopyHandler(IDiagnosticLogger logger, string buildOutputDir, string handlerPath)
