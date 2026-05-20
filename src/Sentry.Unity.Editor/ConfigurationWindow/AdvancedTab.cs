@@ -46,7 +46,7 @@ internal static class AdvancedTab
 
                 options.EnableAppHangTracking = EditorGUILayout.Toggle(
                     new GUIContent("App Hang Tracking",
-                        "Enables app hang (ANR) detection via the native SDK. " +
+                        "Enables app hang (ANR) detection via the native SDK. Currently limited to iOS." +
                         "When enabled, the native SDK monitors the main thread and the Unity SDK's C# ANR " +
                         "watchdog is skipped to avoid duplicate reports."),
                     options.EnableAppHangTracking);
