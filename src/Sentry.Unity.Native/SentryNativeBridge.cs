@@ -23,6 +23,7 @@ internal static class SentryNativeBridge
     private static IDiagnosticLogger? Logger; // This is also the logger we're forwarding native messages to.
     private static bool UseLibC;
     private static bool IsWindows;
+    private static bool IsMacOS;
 
     public static bool Init(SentryUnityOptions options)
     {
@@ -34,6 +35,8 @@ internal static class SentryNativeBridge
         IsWindows = Application.platform
             is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer
             or RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne;
+        IsMacOS = Application.platform
+            is RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer;
 
         var cOptions = sentry_options_new();
 
@@ -92,6 +95,10 @@ internal static class SentryNativeBridge
             sentry_options_set_database_path(cOptions, databasePath);
         }
 #endif
+
+        var shutdownTimeoutMs = (ulong)Math.Max(0, options.ShutdownTimeout.TotalMilliseconds);
+        Logger?.LogDebug("Setting ShutdownTimeout: {0}ms", shutdownTimeoutMs);
+        sentry_options_set_shutdown_timeout(cOptions, shutdownTimeoutMs);
 
         Logger?.LogDebug("Setting EnableLogs: {0}", options.EnableLogs);
         sentry_options_set_enable_logs(cOptions, options.EnableLogs ? 1 : 0);
@@ -171,6 +178,9 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_attach_screenshot(IntPtr options, int attachScreenshot);
+
+    [DllImport(SentryLib)]
+    private static extern void sentry_options_set_shutdown_timeout(IntPtr options, ulong shutdown_timeout);
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_enable_logs(IntPtr options, int enable_logs);

@@ -267,6 +267,13 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool MacosNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Selects the native backend to use on macOS. Defaults to <see cref="MacosBackend.Cocoa"/>, which requires IL2CPP.
+    /// Use <see cref="MacosBackend.Native"/> for the out-of-process sentry-native backend, which uploads crashes
+    /// immediately and supports both IL2CPP and Mono.
+    /// </summary>
+    public MacosBackend MacosBackend { get; set; } = MacosBackend.Cocoa;
+
+    /// <summary>
     /// Whether the SDK should add native support for Linux
     /// </summary>
     public bool LinuxNativeSupportEnabled { get; set; } = true;

@@ -165,6 +165,25 @@ public class ScriptableSentryUnityOptionsTests
         Assert.True(filters.OfType<UnityBadGatewayExceptionFilter>().Any());
     }
 
+    [Test]
+    public void MacosBackend_DefaultValue_IsCocoa()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+
+        Assert.AreEqual(MacosBackend.Cocoa, scriptableOptions.MacosBackend);
+    }
+
+    [Test]
+    public void ToSentryUnityOptions_MacosBackendNative_Propagates()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        scriptableOptions.MacosBackend = MacosBackend.Native;
+
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.Application);
+
+        Assert.AreEqual(MacosBackend.Native, options.MacosBackend);
+    }
+
     public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
     {
         Assert.AreEqual(expected.Enabled, actual.Enabled);

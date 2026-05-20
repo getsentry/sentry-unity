@@ -125,6 +125,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
     [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
+    [field: SerializeField] public MacosBackend MacosBackend { get; set; } = MacosBackend.Cocoa;
     [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool XboxNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool PlayStationNativeSupportEnabled { get; set; } = true;
@@ -210,6 +211,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             PostGenerateGradleProjectCallbackOrder = PostGenerateGradleProjectCallbackOrder,
             WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
             MacosNativeSupportEnabled = MacosNativeSupportEnabled,
+            MacosBackend = MacosBackend,
             LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
             XboxNativeSupportEnabled = XboxNativeSupportEnabled,
             PlayStationNativeSupportEnabled = PlayStationNativeSupportEnabled,

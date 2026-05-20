@@ -45,6 +45,9 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 
+        // Use the new sentry-native backend on macOS in integration tests.
+        options.MacosBackend = MacosBackend.Native;
+
         Debug.Log("Sentry: IntegrationOptionsConfig::Configure() finished");
     }
 }

@@ -88,6 +88,10 @@ public static class BuildPostProcess
         try
         {
             AddCrashHandler(logger, target, buildOutputDir);
+            if (target == BuildTarget.StandaloneOSX)
+            {
+                CopyMacOSPlugins(logger, options, executablePath);
+            }
         }
         catch (Exception e)
         {
@@ -135,6 +139,42 @@ public static class BuildPostProcess
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
         }
+    }
+
+    private static void CopyMacOSPlugins(IDiagnosticLogger logger, SentryUnityOptions options, string executablePath)
+    {
+        // executablePath on macOS is the .app bundle itself (e.g. /Build/MyGame.app).
+        var packagePluginsDir = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS");
+        var sourceDir = options.MacosBackend == MacosBackend.Native
+            ? Path.Combine(packagePluginsDir, "SentryNative~")
+            : Path.Combine(packagePluginsDir, "Sentry~");
+
+        if (!Directory.Exists(sourceDir))
+        {
+            var target = options.MacosBackend == MacosBackend.Native ? "BuildMacOSNativeSDK" : "BuildCocoaSDK";
+            throw new BuildFailedException(
+                $"Sentry macOS plugin directory not found: {sourceDir}\n" +
+                $"Run 'dotnet msbuild /t:{target} src/Sentry.Unity' (or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it.");
+        }
+
+        // Native: dylib + daemon must be next to the player executable so that sentry-native can
+        // posix_spawn the daemon from @executable_path and so DllImport("sentry") resolves
+        // libsentry.dylib via DYLD's @executable_path search.
+        // Cocoa: SentryNativeBridge.m dlopens Sentry.dylib from @executable_path/../PlugIns/.
+        var contentsDir = Path.Combine(executablePath, "Contents");
+        var destDir = options.MacosBackend == MacosBackend.Native
+            ? Path.Combine(contentsDir, "MacOS")
+            : Path.Combine(contentsDir, "PlugIns");
+        Directory.CreateDirectory(destDir);
+
+        logger.LogInfo("Copying macOS Sentry plugins from '{0}' to '{1}'", sourceDir, destDir);
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            var destFile = Path.Combine(destDir, Path.GetFileName(file));
+            logger.LogDebug("Copying '{0}' to '{1}'", file, destFile);
+            File.Copy(file, destFile, overwrite: true);
+        }
+        // dSYMs are not copied — they're only consumed from the package source at symbol-upload time.
     }
 
     private static void CopyHandler(IDiagnosticLogger logger, string buildOutputDir, string handlerPath)
@@ -273,7 +313,16 @@ public static class BuildPostProcess
                 AddPath(paths, Path.Combine(buildOutputDir, executableName), logger, required: true);
 
                 // Sentry dSYM from package
-                AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"), logger);
+                if (options.MacosBackend == MacosBackend.Native)
+                {
+                    var packageMacOSDir = $"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/SentryNative~";
+                    AddPath(paths, Path.GetFullPath($"{packageMacOSDir}/libsentry.dylib.dSYM"), logger);
+                    AddPath(paths, Path.GetFullPath($"{packageMacOSDir}/sentry-crash.dSYM"), logger);
+                }
+                else
+                {
+                    AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry~/Sentry.dylib.dSYM"), logger);
+                }
 
                 if (!isMono) // IL2CPP
                 {

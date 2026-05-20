@@ -111,4 +111,18 @@ public sealed class SentryUnityOptionsTests
 
         Assert.AreEqual(expectedValue, sut.IsEnvironmentUser);
     }
+
+    [Test]
+    public void Options_MacosBackend_DefaultsToCocoa()
+    {
+        var options = new SentryUnityOptions();
+        Assert.AreEqual(MacosBackend.Cocoa, options.MacosBackend);
+    }
+
+    [Test]
+    public void Options_MacosBackend_IsSettable()
+    {
+        var options = new SentryUnityOptions { MacosBackend = MacosBackend.Native };
+        Assert.AreEqual(MacosBackend.Native, options.MacosBackend);
+    }
 }

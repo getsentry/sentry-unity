@@ -34,8 +34,13 @@ $SDKs = @(
         Destination = $ArtifactsDestination
         CheckFiles = @(
             "iOS/Sentry.xcframework~/Info.plist",
-            "macOS/Sentry/Sentry.dylib"
+            "macOS/Sentry~/Sentry.dylib"
         )
+    },
+    @{
+        Name = "MacOSNative"
+        Destination = Join-Path $ArtifactsDestination "macOS/SentryNative~"
+        CheckFile = "libsentry.dylib"
     }
 )
 
