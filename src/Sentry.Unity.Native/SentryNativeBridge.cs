@@ -99,6 +99,10 @@ internal static class SentryNativeBridge
         Logger?.LogDebug("Setting EnableMetrics: {0}", options.EnableMetrics);
         sentry_options_set_enable_metrics(cOptions, options.EnableMetrics ? 1 : 0);
 
+        var shutdownMs = (ulong)Math.Max(0, options.ShutdownTimeout.TotalMilliseconds);
+        Logger?.LogDebug("Setting ShutdownTimeout: {0} ms", shutdownMs);
+        sentry_options_set_shutdown_timeout(cOptions, shutdownMs);
+
         if (options.UnityInfo.IL2CPP)
         {
             Logger?.LogDebug("Setting the native logger");
@@ -177,6 +181,9 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_enable_metrics(IntPtr options, int enable_metrics);
+
+    [DllImport(SentryLib)]
+    private static extern void sentry_options_set_shutdown_timeout(IntPtr options, ulong shutdown_timeout);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
     private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
