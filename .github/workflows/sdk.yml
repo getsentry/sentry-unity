@@ -112,7 +112,23 @@ jobs:
           retention-days: 14
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ env.TARGET != 'Cocoa' }}
+        if: ${{ env.TARGET == 'Windows' }}
+        with:
+          name: ${{ env.TARGET }}-sdk
+          path: package-dev/Plugins/Windows/Sentry~
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ env.TARGET == 'WindowsNative' }}
+        with:
+          name: ${{ env.TARGET }}-sdk
+          path: package-dev/Plugins/Windows/SentryNative~
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ env.TARGET != 'Cocoa' && env.TARGET != 'Windows' && env.TARGET != 'WindowsNative' }}
         with:
           name: ${{ env.TARGET }}-sdk
           path: package-dev/Plugins/${{ env.TARGET }}

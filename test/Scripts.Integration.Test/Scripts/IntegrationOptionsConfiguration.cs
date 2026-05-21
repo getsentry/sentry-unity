@@ -45,6 +45,9 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 
+        // Use the new sentry-native backend on Windows in integration tests.
+        options.WindowsBackend = WindowsBackend.Native;
+
         Debug.Log("Sentry: IntegrationOptionsConfig::Configure() finished");
     }
 }

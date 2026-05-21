@@ -124,6 +124,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool NdkScopeSyncEnabled { get; set; } = true;
     [field: SerializeField] public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
     [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
+    [field: SerializeField] public WindowsBackend WindowsBackend { get; set; } = WindowsBackend.Crashpad;
     [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool XboxNativeSupportEnabled { get; set; } = true;
@@ -209,6 +210,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             NdkScopeSyncEnabled = NdkScopeSyncEnabled,
             PostGenerateGradleProjectCallbackOrder = PostGenerateGradleProjectCallbackOrder,
             WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
+            WindowsBackend = WindowsBackend,
             MacosNativeSupportEnabled = MacosNativeSupportEnabled,
             LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
             XboxNativeSupportEnabled = XboxNativeSupportEnabled,

@@ -14,7 +14,8 @@
     <!-- Native (Windows / Linux) -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)Linux/Sentry/</SentryLinuxArtifactsDestination>
-    <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)Windows/Sentry/</SentryWindowsArtifactsDestination>
+    <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)Windows/Sentry~/</SentryWindowsArtifactsDestination>
+    <SentryWindowsNativeArtifactsDestination>$(SentryArtifactsDestination)Windows/SentryNative~/</SentryWindowsNativeArtifactsDestination>
   </PropertyGroup>
 
   <!--
@@ -102,7 +103,9 @@
     <!-- Wipe prior outputs -->
     <RemoveDir Directories="$(SentryNativeRoot)build" ContinueOnError="true" />
     <Delete Files="$(SentryWindowsArtifactsDestination)crashpad_handler.exe" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)crashpad_handler.pdb" ContinueOnError="true" />
     <Delete Files="$(SentryWindowsArtifactsDestination)crashpad_wer.dll" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)crashpad_wer.pdb" ContinueOnError="true" />
     <Delete Files="$(SentryWindowsArtifactsDestination)sentry.dll" ContinueOnError="true" />
     <Delete Files="$(SentryWindowsArtifactsDestination)sentry.pdb" ContinueOnError="true" />
 
@@ -110,9 +113,13 @@
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel" />
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel" />
 
+    <MakeDir Directories="$(SentryWindowsArtifactsDestination)" />
+
     <ItemGroup>
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.exe" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.pdb" />
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/RelWithDebInfo/crashpad_wer.dll" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/RelWithDebInfo/crashpad_wer.pdb" />
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.dll" />
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.pdb" />
     </ItemGroup>
@@ -129,6 +136,57 @@
             And $([MSBuild]::IsOSPlatform('Windows'))
             And !Exists('$(SentryWindowsArtifactsDestination)sentry.dll')">
     <CallTarget Targets="BuildWindowsSDK" />
+  </Target>
+
+  <!--
+    Build the Sentry Native SDK for Windows (sentry-native's new native backend):
+        dotnet msbuild /t:BuildWindowsNativeSDK src/Sentry.Unity
+    Always wipes prior outputs and rebuilds. Produces sentry.dll, sentry-crash.exe,
+    and sentry-wer.dll plus their .pdb sidecars.
+  -->
+  <Target Name="BuildWindowsNativeSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="!$([MSBuild]::IsOSPlatform('Windows'))" Text="BuildWindowsNativeSDK can only run on Windows." />
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="sentry-native submodule not checked out at $(SentryNativeRoot). Run: git submodule update --init modules/sentry-native" />
+
+    <Message Importance="High" Text="Building Sentry Native SDK for Windows (native backend, clean rebuild)." />
+
+    <!-- Wipe prior outputs -->
+    <RemoveDir Directories="$(SentryNativeRoot)build_native" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsNativeArtifactsDestination)sentry.dll" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsNativeArtifactsDestination)sentry.pdb" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsNativeArtifactsDestination)sentry-crash.exe" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsNativeArtifactsDestination)sentry-crash.pdb" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsNativeArtifactsDestination)sentry-wer.dll" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsNativeArtifactsDestination)sentry-wer.pdb" ContinueOnError="true" />
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build_native -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unity -D SENTRY_BUILD_RUNTIMESTATIC=ON -S ." />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build_native --target sentry --config RelWithDebInfo --parallel" />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build_native --target sentry-crash --config RelWithDebInfo --parallel" />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build_native --target sentry-wer --config RelWithDebInfo --parallel" />
+
+    <MakeDir Directories="$(SentryWindowsNativeArtifactsDestination)" />
+
+    <ItemGroup>
+      <WindowsNativeSdkArtifacts Include="$(SentryNativeRoot)build_native/RelWithDebInfo/sentry.dll" />
+      <WindowsNativeSdkArtifacts Include="$(SentryNativeRoot)build_native/RelWithDebInfo/sentry.pdb" />
+      <WindowsNativeSdkArtifacts Include="$(SentryNativeRoot)build_native/RelWithDebInfo/sentry-crash.exe" />
+      <WindowsNativeSdkArtifacts Include="$(SentryNativeRoot)build_native/RelWithDebInfo/sentry-crash.pdb" />
+      <WindowsNativeSdkArtifacts Include="$(SentryNativeRoot)build_native/RelWithDebInfo/sentry-wer.dll" />
+      <WindowsNativeSdkArtifacts Include="$(SentryNativeRoot)build_native/RelWithDebInfo/sentry-wer.pdb" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(WindowsNativeSdkArtifacts)" DestinationFolder="$(SentryWindowsNativeArtifactsDestination)" />
+
+    <Error Condition="!Exists('$(SentryWindowsNativeArtifactsDestination)sentry.dll')" Text="Failed to set up the Windows Native SDK." />
+  </Target>
+
+  <!-- Hooks into 'dotnet build' so a missing Windows Native plugin auto-triggers BuildWindowsNativeSDK. -->
+  <Target Name="EnsureWindowsNativeSDK"
+          BeforeTargets="BeforeBuild"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+            And $([MSBuild]::IsOSPlatform('Windows'))
+            And !Exists('$(SentryWindowsNativeArtifactsDestination)sentry.dll')">
+    <CallTarget Targets="BuildWindowsNativeSDK" />
   </Target>
 
   <!--

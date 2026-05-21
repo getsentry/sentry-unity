@@ -165,6 +165,25 @@ public class ScriptableSentryUnityOptionsTests
         Assert.True(filters.OfType<UnityBadGatewayExceptionFilter>().Any());
     }
 
+    [Test]
+    public void WindowsBackend_DefaultValue_IsCrashpad()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+
+        Assert.AreEqual(WindowsBackend.Crashpad, scriptableOptions.WindowsBackend);
+    }
+
+    [Test]
+    public void ToSentryUnityOptions_WindowsBackendNative_Propagates()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        scriptableOptions.WindowsBackend = WindowsBackend.Native;
+
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.Application);
+
+        Assert.AreEqual(WindowsBackend.Native, options.WindowsBackend);
+    }
+
     public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
     {
         Assert.AreEqual(expected.Enabled, actual.Enabled);

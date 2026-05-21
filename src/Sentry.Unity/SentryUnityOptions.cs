@@ -262,6 +262,13 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool WindowsNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Selects the native backend to use on Windows. Defaults to <see cref="WindowsBackend.Crashpad"/>.
+    /// Use <see cref="WindowsBackend.Native"/> for the new sentry-native out-of-process <c>sentry-crash.exe</c>
+    /// daemon, which uploads crashes immediately.
+    /// </summary>
+    public WindowsBackend WindowsBackend { get; set; } = WindowsBackend.Crashpad;
+
+    /// <summary>
     /// Whether the SDK should add native support for MacOS
     /// </summary>
     public bool MacosNativeSupportEnabled { get; set; } = true;

@@ -111,4 +111,18 @@ public sealed class SentryUnityOptionsTests
 
         Assert.AreEqual(expectedValue, sut.IsEnvironmentUser);
     }
+
+    [Test]
+    public void Options_WindowsBackend_DefaultsToCrashpad()
+    {
+        var options = new SentryUnityOptions();
+        Assert.AreEqual(WindowsBackend.Crashpad, options.WindowsBackend);
+    }
+
+    [Test]
+    public void Options_WindowsBackend_IsSettable()
+    {
+        var options = new SentryUnityOptions { WindowsBackend = WindowsBackend.Native };
+        Assert.AreEqual(WindowsBackend.Native, options.WindowsBackend);
+    }
 }

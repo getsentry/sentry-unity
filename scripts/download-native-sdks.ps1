@@ -15,8 +15,13 @@ $ArtifactsDestination = Join-Path $RepoRoot "package-dev/Plugins"
 $SDKs = @(
     @{
         Name = "Windows"
-        Destination = Join-Path $ArtifactsDestination "Windows"
-        CheckFile = "Sentry/sentry.dll"
+        Destination = Join-Path $ArtifactsDestination "Windows/Sentry~"
+        CheckFile = "sentry.dll"
+    },
+    @{
+        Name = "WindowsNative"
+        Destination = Join-Path $ArtifactsDestination "Windows/SentryNative~"
+        CheckFile = "sentry.dll"
     },
     @{
         Name = "Linux"

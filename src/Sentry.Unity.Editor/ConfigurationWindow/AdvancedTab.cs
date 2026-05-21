@@ -98,6 +98,19 @@ internal static class AdvancedTab
                 new GUIContent("Windows", "Whether to enable native crashes support on Windows."),
                 options.WindowsNativeSupportEnabled);
 
+            EditorGUI.indentLevel++;
+            using (new EditorGUI.DisabledScope(!options.WindowsNativeSupportEnabled))
+            {
+                options.WindowsBackend = (WindowsBackend)EditorGUILayout.EnumPopup(
+                    new GUIContent(
+                        "Windows Backend",
+                        "Crashpad: ships crashpad_handler.exe as the out-of-process handler.\n" +
+                        "Native (experimental): uses sentry-native's new out-of-process sentry-crash.exe daemon. " +
+                        "Uploads crashes immediately."),
+                    options.WindowsBackend);
+            }
+            EditorGUI.indentLevel--;
+
             options.MacosNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("macOS", "Whether to enable native crashes support on macOS."),
                 options.MacosNativeSupportEnabled);
