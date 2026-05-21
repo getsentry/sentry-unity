@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using System.Collections.Generic;
@@ -61,6 +62,12 @@ public static class SentryNative
             Logger?.LogDebug("Closing the sentry-native SDK");
             SentryNativeBridge.Close();
         };
+
+        if (SentryNativeBridge.AppHangEnabled)
+        {
+            Logger?.LogDebug("Starting native app-hang heartbeat coroutine");
+            SentryMonoBehaviour.Instance.StartCoroutine(HeartbeatCoroutine());
+        }
         options.ScopeObserver = new NativeScopeObserver(options);
         options.EnableScopeSync = true;
         options.NativeContextWriter = new NativeContextWriter();
@@ -88,6 +95,18 @@ public static class SentryNative
         options.CrashedLastRun = () => crashedLastRun;
 
         ShouldReinstallBackend = true;
+    }
+
+    // The first call from the main thread latches this thread as the monitored one; subsequent calls
+    // refresh the heartbeat timestamp. 1Hz is plenty of resolution against a 5s default timeout.
+    private static IEnumerator HeartbeatCoroutine()
+    {
+        var waitForSeconds = new WaitForSecondsRealtime(1f);
+        while (true)
+        {
+            SentryNativeBridge.AppHangHeartbeat();
+            yield return waitForSeconds;
+        }
     }
 
     // We're calling this in `BeforeSceneLoad` instead of `SubsystemRegistration` as it's too soon and the

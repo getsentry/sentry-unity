@@ -23,6 +23,7 @@ internal static class SentryNativeBridge
     private static IDiagnosticLogger? Logger; // This is also the logger we're forwarding native messages to.
     private static bool UseLibC;
     private static bool IsWindows;
+    internal static bool AppHangEnabled;
 
     public static bool Init(SentryUnityOptions options)
     {
@@ -103,6 +104,17 @@ internal static class SentryNativeBridge
         Logger?.LogDebug("Setting ShutdownTimeout: {0} ms", shutdownMs);
         sentry_options_set_shutdown_timeout(cOptions, shutdownMs);
 
+        // App-hang detection is only effective on Windows with the native backend; the setter is a
+        // silent no-op elsewhere. SentryNative pumps the heartbeat from a 1Hz coroutine once init succeeds.
+        AppHangEnabled = IsWindows && options.WindowsBackend == WindowsBackend.Native;
+        if (AppHangEnabled)
+        {
+            var timeoutMs = (ulong)Math.Max(0, options.AnrTimeout.TotalMilliseconds);
+            Logger?.LogDebug("Enabling native app-hang detection with timeout: {0} ms", timeoutMs);
+            sentry_options_set_app_hang_enabled(cOptions, 1);
+            sentry_options_set_app_hang_timeout_ms(cOptions, timeoutMs);
+        }
+
         if (options.UnityInfo.IL2CPP)
         {
             Logger?.LogDebug("Setting the native logger");
@@ -142,6 +154,8 @@ internal static class SentryNativeBridge
     }
 
     internal static void ReinstallBackend() => sentry_reinstall_backend();
+
+    internal static void AppHangHeartbeat() => sentry_app_hang_heartbeat();
 
     // libsentry.so
     [DllImport(SentryLib)]
@@ -346,4 +360,13 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib)]
     private static extern void sentry_reinstall_backend();
+
+    [DllImport(SentryLib)]
+    private static extern void sentry_options_set_app_hang_enabled(IntPtr options, int enabled);
+
+    [DllImport(SentryLib)]
+    private static extern void sentry_options_set_app_hang_timeout_ms(IntPtr options, ulong timeout_ms);
+
+    [DllImport(SentryLib)]
+    private static extern void sentry_app_hang_heartbeat();
 }
