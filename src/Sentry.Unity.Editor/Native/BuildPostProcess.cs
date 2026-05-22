@@ -168,6 +168,25 @@ public static class BuildPostProcess
         Directory.CreateDirectory(pluginsDest);
         Directory.CreateDirectory(macOSDest);
 
+        // Remove artifacts from a prior build with the other backend. On
+        // case-insensitive APFS, mono's DllImport("sentry") otherwise resolves
+        // "sentry.dylib" to a leftover Sentry.dylib (Cocoa) before finding
+        // libsentry.dylib (Native), surfacing as `sentry_options_new` not
+        // found at runtime.
+        foreach (var stale in new[]
+        {
+            Path.Combine(pluginsDest, "Sentry.dylib"),
+            Path.Combine(pluginsDest, "libsentry.dylib"),
+            Path.Combine(macOSDest, "sentry-crash"),
+        })
+        {
+            if (File.Exists(stale))
+            {
+                logger.LogDebug("Removing stale Sentry artifact from prior build: '{0}'", stale);
+                File.Delete(stale);
+            }
+        }
+
         foreach (var file in Directory.GetFiles(sourceDir))
         {
             var name = Path.GetFileName(file);
