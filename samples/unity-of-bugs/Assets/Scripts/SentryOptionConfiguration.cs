@@ -1,3 +1,4 @@
+using System;
 using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -53,6 +54,13 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
 #elif UNITY_IOS
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
+#elif UNITY_STANDALONE_OSX
+        // sentry-native uploads crashes out-of-process on shutdown; give the native
+        // backend enough time to flush before the player exits.
+        if (options.MacosBackend == MacosBackend.Native)
+        {
+            options.ShutdownTimeout = TimeSpan.FromSeconds(20);
+        }
 #endif
 
         Debug.Log("SentryOptionConfigure finished.");

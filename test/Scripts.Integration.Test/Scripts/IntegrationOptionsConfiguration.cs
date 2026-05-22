@@ -45,8 +45,14 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 
-        // Use the new sentry-native backend on macOS in integration tests.
-        options.MacosBackend = MacosBackend.Native;
+        options.MacosBackend = MacosBackend.Cocoa;
+
+        // sentry-native uploads crashes out-of-process on shutdown; give the native
+        // backend enough time to flush before the player exits.
+        if (options.MacosBackend == MacosBackend.Native)
+        {
+            options.ShutdownTimeout = TimeSpan.FromSeconds(20);
+        }
 
         Debug.Log("Sentry: IntegrationOptionsConfig::Configure() finished");
     }
