@@ -109,6 +109,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool AnrDetectionEnabled { get; set; } = true;
     [field: SerializeField] public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
     [field: SerializeField] public bool EnableAppHangTracking { get; set; } = true;
+    [field: SerializeField] public int AppHangTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
 
     [field: SerializeField] public bool CaptureFailedRequests { get; set; } = true;
 
@@ -203,6 +204,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             CaptureLogErrorEvents = CaptureLogErrorEvents,
             AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
             EnableAppHangTracking = EnableAppHangTracking,
+            AppHangTimeout = TimeSpan.FromMilliseconds(AppHangTimeout),
             CaptureFailedRequests = CaptureFailedRequests,
             FilterBadGatewayExceptions = FilterBadGatewayExceptions,
             IosNativeSupportEnabled = IosNativeSupportEnabled,

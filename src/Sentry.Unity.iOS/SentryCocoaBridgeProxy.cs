@@ -69,8 +69,8 @@ internal static class SentryCocoaBridgeProxy
         Logger?.LogDebug("Setting EnableAppHangTracking: {0}", options.EnableAppHangTracking);
         OptionsSetInt(cOptions, "enableAppHangTracking", options.EnableAppHangTracking ? 1 : 0);
 
-        Logger?.LogDebug("Setting AppHangTimeoutInterval: {0}s", options.AnrTimeout.TotalSeconds);
-        OptionsSetDouble(cOptions, "appHangTimeoutInterval", options.AnrTimeout.TotalSeconds);
+        Logger?.LogDebug("Setting AppHangTimeoutInterval: {0}s", options.AppHangTimeout.TotalSeconds);
+        OptionsSetDouble(cOptions, "appHangTimeoutInterval", options.AppHangTimeout.TotalSeconds);
 
         Logger?.LogDebug("Setting EnableWatchdogTerminationTracking: {0}", options.IosWatchdogTerminationIntegrationEnabled);
         OptionsSetInt(cOptions, "enableWatchdogTerminationTracking", options.IosWatchdogTerminationIntegrationEnabled ? 1 : 0);

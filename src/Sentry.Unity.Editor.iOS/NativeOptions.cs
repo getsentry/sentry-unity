@@ -31,7 +31,7 @@ static SentryOptions* getSentryOptions()
         @""maxCacheItems"": @{options.MaxCacheItems},
         @""enableAutoSessionTracking"": @NO,
         @""enableAppHangTracking"": @{ToObjCString(options.EnableAppHangTracking)},
-        @""appHangTimeoutInterval"": @{options.AnrTimeout.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture)},
+        @""appHangTimeoutInterval"": @{options.AppHangTimeout.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture)},
         @""enableCaptureFailedRequests"": @{ToObjCString(options.CaptureFailedRequests)},
         @""failedRequestStatusCodes"" : @[{failedRequestStatusCodesArray}],
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},

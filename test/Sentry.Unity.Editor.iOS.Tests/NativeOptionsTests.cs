@@ -85,12 +85,12 @@ public class NativeOptionsTests
     }
 
     [Test]
-    public void CreateOptionsFile_AnrTimeout_WrittenAsSeconds()
+    public void CreateOptionsFile_AppHangTimeout_WrittenAsSeconds()
     {
         const string testOptionsFileName = "testOptions.m";
 
         NativeOptions.CreateFile(testOptionsFileName,
-            new SentryUnityOptions { AnrTimeout = System.TimeSpan.FromMilliseconds(7500) });
+            new SentryUnityOptions { AppHangTimeout = System.TimeSpan.FromMilliseconds(7500) });
 
         var nativeOptions = File.ReadAllText(testOptionsFileName);
         StringAssert.Contains("@\"appHangTimeoutInterval\": @7.5", nativeOptions);

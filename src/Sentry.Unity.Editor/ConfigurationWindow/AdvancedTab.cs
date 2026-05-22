@@ -39,24 +39,40 @@ internal static class AdvancedTab
             EditorGUILayout.Space();
 
             {
+                GUILayout.Label("C# Watchdog", EditorStyles.boldLabel);
+
                 options.AnrDetectionEnabled = EditorGUILayout.Toggle(
-                    new GUIContent("C# Watchdog", "Whether the SDK should run the C# main-thread watchdog " +
-                                                  "to report 'Application Not Responding' events."),
+                    new GUIContent("Enable", "Whether the SDK should run the C# main-thread watchdog " +
+                                             "to report 'Application Not Responding' events."),
                     options.AnrDetectionEnabled);
 
-                options.EnableAppHangTracking = EditorGUILayout.Toggle(
-                    new GUIContent("App Hang Tracking",
-                        "Enables app hang (ANR) detection via the native SDK. Currently limited to iOS." +
-                        "When enabled, the native SDK monitors the main thread and the Unity SDK's C# ANR " +
-                        "watchdog is skipped to avoid duplicate reports."),
-                    options.EnableAppHangTracking);
-
                 options.AnrTimeout = EditorGUILayout.IntField(
-                    new GUIContent("App Hang Timeout [ms]",
+                    new GUIContent("Watchdog Timeout [ms]",
                         "The duration in [ms] for how long the game has to be unresponsive " +
-                        "before an ANR event is reported.\nDefault: 5000ms"),
+                        "before the C# watchdog reports an ANR event.\nDefault: 5000ms"),
                     options.AnrTimeout);
                 options.AnrTimeout = Math.Max(0, options.AnrTimeout);
+            }
+
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+            EditorGUILayout.Space();
+
+            {
+                GUILayout.Label("App Hang Tracking", EditorStyles.boldLabel);
+
+                options.EnableAppHangTracking = EditorGUILayout.Toggle(
+                    new GUIContent("Enable",
+                        "Enables app hang detection via the native SDK. Currently effective on iOS only; " +
+                        "no-op on other platforms until each platform's native hang detection lands."),
+                    options.EnableAppHangTracking);
+
+                options.AppHangTimeout = EditorGUILayout.IntField(
+                    new GUIContent("App Hang Timeout [ms]",
+                        "The duration in [ms] for how long the main thread has to be blocked " +
+                        "before an app hang is reported.\nDefault: 5000ms"),
+                    options.AppHangTimeout);
+                options.AppHangTimeout = Math.Max(0, options.AppHangTimeout);
             }
 
             EditorGUILayout.Space();

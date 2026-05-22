@@ -186,11 +186,17 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool IosWatchdogTerminationIntegrationEnabled { get; set; } = false;
 
     /// <summary>
-    /// Enables native app hang (ANR) detection. This currently only targets iOS.
-    /// When enabled, the platform's native SDK monitors the Unity thread for hangs.
-    /// This replaces the older C# watchdog.
+    /// Enables app hang detection on platforms whose native SDK can deliver Unity-thread hang
+    /// coverage. Currently effective on iOS only; on other platforms this is a no-op until each
+    /// platform's native hang detection lands.
     /// </summary>
     public bool EnableAppHangTracking { get; set; } = true;
+
+    /// <summary>
+    /// The minimum duration for which the main thread must be blocked before <see cref="EnableAppHangTracking"/>
+    /// reports an app hang.
+    /// </summary>
+    public TimeSpan AppHangTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
     /// <summary>
     /// Whether the SDK should initialize the native SDK before the game starts. This bakes the options at build-time into
