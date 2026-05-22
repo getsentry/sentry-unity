@@ -89,13 +89,7 @@ namespace Sentry.Unity
                 // If the SDK is not `enabled` we're closing down the native layer as well. This is especially relevant
                 // in a `built-time-initialization` scenario where the native SDKs self-initialize.
 #if UNITY_STANDALONE_OSX
-#if SENTRY_NATIVE_COCOA
-                if (options.MacosBackend == MacosBackend.Cocoa)
-                {
-                    SentryNativeCocoa.Close(options);
-                }
-#endif
-                // Native: nothing to do — SentryNative registers its own close callback at Configure time.
+                CloseMacosBackend(options);
 #elif SENTRY_NATIVE_COCOA
                 SentryNativeCocoa.Close(options);
 #elif SENTRY_NATIVE_ANDROID
@@ -141,6 +135,17 @@ namespace Sentry.Unity
                 "MacosBackend is set to Cocoa, but Cocoa requires IL2CPP. " +
                 "Native crash reporting is disabled. Set MacosBackend to Native or enable IL2CPP.");
 #endif
+        }
+
+        private static void CloseMacosBackend(SentryUnityOptions options)
+        {
+#if SENTRY_NATIVE_COCOA
+            if (options.MacosBackend == MacosBackend.Cocoa)
+            {
+                SentryNativeCocoa.Close(options);
+            }
+#endif
+            // Native: nothing to do — SentryNative registers its own close callback at Configure time.
         }
 #endif
     }
