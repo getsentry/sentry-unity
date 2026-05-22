@@ -1,0 +1,226 @@
+<Project>
+  <PropertyGroup>
+    <SentryArtifactsDestination>$(RepoRoot)package-dev/Plugins/</SentryArtifactsDestination>
+
+    <!-- Cocoa -->
+    <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
+    <SentryiOSArtifactsDestination>$(SentryArtifactsDestination)iOS/Sentry.xcframework~/</SentryiOSArtifactsDestination>
+    <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)macOS/Sentry/</SentrymacOSArtifactsDestination>
+
+    <!-- Android -->
+    <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
+    <SentryAndroidArtifactsDestination>$(SentryArtifactsDestination)Android/Sentry~/</SentryAndroidArtifactsDestination>
+
+    <!-- Native (Windows / Linux) -->
+    <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
+    <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)Linux/Sentry/</SentryLinuxArtifactsDestination>
+    <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)Windows/Sentry/</SentryWindowsArtifactsDestination>
+  </PropertyGroup>
+
+  <!--
+    Build the Cocoa SDK:
+        dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity
+    Always wipes prior outputs (in package-dev/Plugins/iOS, package-dev/Plugins/macOS
+    and modules/sentry-cocoa/XCFrameworkBuildPath/) and rebuilds from source.
+  -->
+  <Target Name="BuildCocoaSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="$([MSBuild]::IsOSPlatform('Windows'))" Text="BuildCocoaSDK cannot run on Windows. Use macOS or Linux." />
+    <Error Condition="!Exists('$(SentryCocoaRoot)Sentry.xcodeproj')" Text="sentry-cocoa submodule not checked out at $(SentryCocoaRoot). Run: git submodule update --init modules/sentry-cocoa" />
+
+    <Message Importance="High" Text="Building Cocoa SDK from submodule (clean rebuild)." />
+
+    <!-- Wipe prior outputs -->
+    <RemoveDir Directories="$(SentryCocoaRoot)XCFrameworkBuildPath" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryiOSArtifactsDestination)" ContinueOnError="true" />
+    <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib" ContinueOnError="true" />
+    <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" ContinueOnError="true" />
+
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/build-cocoa-sdk.ps1&quot; -CocoaRoot &quot;$(SentryCocoaRoot)&quot; -iOSDestination &quot;$(SentryiOSArtifactsDestination)&quot; -macOSDestination &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot; -Clean" />
+
+    <Error Condition="!Exists('$(SentryiOSArtifactsDestination)')" Text="Failed to set up the iOS SDK." />
+    <Error Condition="!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM')" Text="Failed to set up the macOS SDK." />
+  </Target>
+
+  <!-- Hooks into 'dotnet build' so a missing iOS/macOS plugin auto-triggers BuildCocoaSDK. -->
+  <Target Name="EnsureCocoaSDK"
+          BeforeTargets="BeforeBuild"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+            And !$([MSBuild]::IsOSPlatform('Windows'))
+            And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))">
+    <CallTarget Targets="BuildCocoaSDK" />
+  </Target>
+
+  <!--
+    Build the Sentry Native SDK for Linux:
+        dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity
+    Always wipes prior outputs and rebuilds.
+  -->
+  <Target Name="BuildLinuxSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="!$([MSBuild]::IsOSPlatform('Linux'))" Text="BuildLinuxSDK can only run on Linux." />
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="sentry-native submodule not checked out at $(SentryNativeRoot). Run: git submodule update --init modules/sentry-native" />
+
+    <Message Importance="High" Text="Building Sentry Native SDK for Linux (clean rebuild)." />
+
+    <!-- Wipe prior outputs -->
+    <RemoveDir Directories="$(SentryNativeRoot)build" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArtifactsDestination)libsentry.so" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxArtifactsDestination)libsentry.dbg.so" ContinueOnError="true" />
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=breakpad -D SENTRY_SDK_NAME=sentry.native.unity -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --parallel" />
+
+    <MakeDir Directories="$(SentryLinuxArtifactsDestination)" />
+
+    <!-- strip all, including exported symbols except those starting with 'sentry_', except for 'sentry__' -->
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxArtifactsDestination)libsentry.so" />
+    <Copy SourceFiles="$(SentryNativeRoot)build/libsentry.so" DestinationFiles="$(SentryLinuxArtifactsDestination)libsentry.dbg.so" />
+    <Exec WorkingDirectory="$(SentryLinuxArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
+
+    <Error Condition="!Exists('$(SentryLinuxArtifactsDestination)libsentry.so')" Text="Failed to set up the Linux SDK." />
+  </Target>
+
+  <!-- Hooks into 'dotnet build' so a missing Linux plugin auto-triggers BuildLinuxSDK. -->
+  <Target Name="EnsureLinuxSDK"
+          BeforeTargets="BeforeBuild"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+            And $([MSBuild]::IsOSPlatform('Linux'))
+            And !Exists('$(SentryLinuxArtifactsDestination)libsentry.so')">
+    <CallTarget Targets="BuildLinuxSDK" />
+  </Target>
+
+  <!--
+    Build the Sentry Native SDK for Windows:
+        dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity
+    Always wipes prior outputs and rebuilds.
+  -->
+  <Target Name="BuildWindowsSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="!$([MSBuild]::IsOSPlatform('Windows'))" Text="BuildWindowsSDK can only run on Windows." />
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="sentry-native submodule not checked out at $(SentryNativeRoot). Run: git submodule update --init modules/sentry-native" />
+
+    <Message Importance="High" Text="Building Sentry Native SDK for Windows (clean rebuild)." />
+
+    <!-- Wipe prior outputs -->
+    <RemoveDir Directories="$(SentryNativeRoot)build" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)crashpad_handler.exe" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)crashpad_wer.dll" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)sentry.dll" ContinueOnError="true" />
+    <Delete Files="$(SentryWindowsArtifactsDestination)sentry.pdb" ContinueOnError="true" />
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build -D SENTRY_BACKEND=crashpad -D SENTRY_SDK_NAME=sentry.native.unity -D SENTRY_BUILD_RUNTIMESTATIC=ON -S ." />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target sentry --config RelWithDebInfo --parallel" />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build --target crashpad_handler --config Release --parallel" />
+
+    <ItemGroup>
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.exe" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/RelWithDebInfo/crashpad_wer.dll" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.dll" />
+      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.pdb" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFiles="@(NativeSdkArtifacts->'$(SentryWindowsArtifactsDestination)%(Filename)%(Extension)')" />
+
+    <Error Condition="!Exists('$(SentryWindowsArtifactsDestination)sentry.dll')" Text="Failed to set up the Windows SDK." />
+  </Target>
+
+  <!-- Hooks into 'dotnet build' so a missing Windows plugin auto-triggers BuildWindowsSDK. -->
+  <Target Name="EnsureWindowsSDK"
+          BeforeTargets="BeforeBuild"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+            And $([MSBuild]::IsOSPlatform('Windows'))
+            And !Exists('$(SentryWindowsArtifactsDestination)sentry.dll')">
+    <CallTarget Targets="BuildWindowsSDK" />
+  </Target>
+
+  <!--
+    Build sentry-native-ndk and publish it to the local Maven repo (~/.m2)
+    so sentry-java's :sentry-android-ndk build can resolve it via mavenLocal().
+    For Gradle to actually pick the local artifact over mavenCentral, the local
+    build's version must NOT exist on Maven Central — bump the version in both
+    the NDK source and modules/sentry-java/gradle/libs.versions.toml.
+
+        dotnet msbuild /t:PublishNativeNdkLocal src/Sentry.Unity
+
+    Purge cached Gradle artifacts (use when iterating on NDK source without
+    bumping the version, so Gradle re-resolves rather than reusing its cache):
+        dotnet msbuild /t:PublishNativeNdkLocal src/Sentry.Unity -p:PurgeNdkCache=true
+  -->
+  <Target Name="PublishNativeNdkLocal" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="!Exists('$(SentryNativeRoot)ndk')" Text="Couldn't find sentry-native NDK module at $(SentryNativeRoot)ndk. Run: git submodule update --init modules/sentry-native" />
+
+    <PropertyGroup>
+      <PublishNativeNdkScriptArgs Condition="'$(PurgeNdkCache)' == 'true'">-PurgeCache</PublishNativeNdkScriptArgs>
+    </PropertyGroup>
+
+    <Message Importance="High" Text="Publishing sentry-native-ndk to mavenLocal." />
+
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/build-native-ndk-local.ps1&quot; $(PublishNativeNdkScriptArgs)" />
+  </Target>
+
+  <!--
+    Build the Android SDK:
+        dotnet msbuild /t:BuildAndroidSDK src/Sentry.Unity
+
+    Always wipes prior outputs and rebuilds the NDK from source via
+    PublishNativeNdkLocal, then runs Gradle to build sentry-java. Both
+    modules/sentry-java and modules/sentry-native must be checked out.
+    For Gradle to resolve the locally-built NDK over Maven Central, the
+    version in gradle/libs.versions.toml must not exist on Maven Central
+    (see PublishNativeNdkLocal above for the iteration workflow).
+  -->
+  <Target Name="BuildAndroidSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="!Exists('$(SentryAndroidRoot)')" Text="sentry-java submodule not checked out at $(SentryAndroidRoot). Run: git submodule update --init modules/sentry-java" />
+    <Error Condition="!Exists('$(SentryNativeRoot)ndk')" Text="sentry-native NDK module not found at $(SentryNativeRoot)ndk. Run: git submodule update --init modules/sentry-native" />
+
+    <Message Importance="High" Text="Building Sentry Android SDK (clean rebuild)." />
+
+    <!-- Wipe prior outputs (package-dev plugins + Gradle outputs) -->
+    <RemoveDir Directories="$(SentryAndroidArtifactsDestination)" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryAndroidRoot)sentry/build/libs" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryAndroidRoot)sentry-android-core/build" ContinueOnError="true" />
+    <RemoveDir Directories="$(SentryAndroidRoot)sentry-android-ndk/build" ContinueOnError="true" />
+
+    <!-- Build sentry-native NDK from source and publish it to ~/.m2 so Gradle's
+         mavenLocal() can resolve it (when the version isn't on Maven Central). -->
+    <CallTarget Targets="PublishNativeNdkLocal" />
+
+    <!-- IgnoreExitCode: Gradle may report BUILD SUCCESSFUL yet the JVM exits with code -1 due to
+         the Kotlin compiler daemon terminating unexpectedly. The Error checks below validate the
+         actual build outputs, so we can safely ignore the exit code here. -->
+    <Exec WorkingDirectory="$(SentryAndroidRoot)" Command="./gradlew -PsentryAndroidSdkName=sentry.native.android.unity :sentry-android-core:assembleRelease :sentry-android-ndk:assembleRelease :sentry:jar --no-daemon --stacktrace --warning-mode none" IgnoreExitCode="true" />
+
+    <ItemGroup>
+      <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar" />
+      <AndroidSdkArtifacts Include="$(SentryAndroidRoot)sentry-android-core/build/outputs/aar/sentry-android-core-release.aar" />
+      <AndroidJarArtifacts Include="$(SentryAndroidRoot)sentry/build/libs/sentry*.jar" />
+    </ItemGroup>
+
+    <Error Condition="!Exists('$(SentryAndroidRoot)sentry-android-ndk/build/outputs/aar/sentry-android-ndk-release.aar')" Text="sentry-android-ndk-release.aar not found. The Gradle build likely failed." />
+    <Error Condition="!Exists('$(SentryAndroidRoot)sentry-android-core/build/outputs/aar/sentry-android-core-release.aar')" Text="sentry-android-core-release.aar not found. The Gradle build likely failed." />
+    <Error Condition="@(AndroidJarArtifacts->Count()) == 0" Text="sentry.jar not found. The Gradle build likely failed." />
+
+    <Copy SourceFiles="@(AndroidSdkArtifacts)" DestinationFiles="@(AndroidSdkArtifacts->'$(SentryAndroidArtifactsDestination)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(AndroidJarArtifacts)" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry.jar" />
+
+    <!-- Ship the standalone sentry-native-ndk AAR (contains the JNI .so libs) into Sentry~/.
+         sentry-android-ndk declares it as a Maven dependency and doesn't embed it, so Unity
+         needs it shipped separately. PublishNativeNdkLocal above produced it at this path. -->
+    <PropertyGroup>
+      <SentryNativeNdkLocalAar>$(SentryNativeRoot)ndk/lib/build/outputs/aar/sentry-native-ndk-release.aar</SentryNativeNdkLocalAar>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SentryNativeNdkLocalAar)')" Text="sentry-native-ndk-release.aar not produced at $(SentryNativeNdkLocalAar). PublishNativeNdkLocal may have failed." />
+    <Copy SourceFiles="$(SentryNativeNdkLocalAar)" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
+
+    <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to set up the Android SDK." />
+  </Target>
+
+  <!-- Hooks into 'dotnet build' so a missing/incomplete Android plugin auto-triggers BuildAndroidSDK.
+       BuildAndroidSDK copies exactly 4 artifacts into $(SentryAndroidArtifactsDestination); any
+       other count means the previous run was interrupted and we should rebuild. -->
+  <Target Name="EnsureAndroidSDK"
+          BeforeTargets="BeforeBuild"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+            And (!Exists('$(SentryAndroidArtifactsDestination)')
+              Or $([System.IO.Directory]::GetFiles('$(SentryAndroidArtifactsDestination)').Length) != 4)">
+    <CallTarget Targets="BuildAndroidSDK" />
+  </Target>
+</Project>

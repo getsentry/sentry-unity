@@ -26,7 +26,8 @@ jobs:
         shell: bash
         run: |
           if [[ "${TARGET}" == "Android" ]]; then
-            submodules="modules/sentry-java"
+            # Android needs sentry-native too — BuildAndroidSDK builds the NDK from source.
+            submodules="modules/sentry-java modules/sentry-native"
           elif [[ "${TARGET}" == "Cocoa" ]]; then
             submodules="modules/sentry-cocoa"
           else
@@ -62,7 +63,7 @@ jobs:
           # hash of package/package.json for cache busting on release builds (version bump)
           path: |
             package-dev/Plugins
-          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1') }}
+          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1') }}
 
       - name: Installing Linux Dependencies
         if: ${{ env.TARGET == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
