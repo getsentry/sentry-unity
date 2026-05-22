@@ -9,6 +9,7 @@ internal static class AdvancedTab
 {
     private static bool UnfoldAutomaticOptions;
     private static bool UnfoldNativeOptions;
+    private static bool UnfoldExperimentalOptions;
 
     internal static void Display(ScriptableSentryUnityOptions options, SentryCliOptions? cliOptions)
     {
@@ -101,19 +102,6 @@ internal static class AdvancedTab
             options.MacosNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("macOS", "Whether to enable native crashes support on macOS."),
                 options.MacosNativeSupportEnabled);
-
-            EditorGUI.indentLevel++;
-            using (new EditorGUI.DisabledScope(!options.MacosNativeSupportEnabled))
-            {
-                options.MacosBackend = (MacosBackend)EditorGUILayout.EnumPopup(
-                    new GUIContent(
-                        "macOS Backend",
-                        "Cocoa: uses sentry-cocoa via the Objective-C bridge. Requires IL2CPP.\n" +
-                        "Native (experimental): uses sentry-native with the new out-of-process crash daemon. " +
-                        "Uploads crashes immediately and supports both IL2CPP and Mono."),
-                    options.MacosBackend);
-            }
-            EditorGUI.indentLevel--;
 
             options.LinuxNativeSupportEnabled = EditorGUILayout.Toggle(
                 new GUIContent("Linux", "Whether to enable native crashes support on Linux."),
@@ -217,5 +205,32 @@ internal static class AdvancedTab
                     "Metrics are connected to traces for correlation."),
                 options.EnableMetrics);
         }
+
+        EditorGUILayout.Space();
+        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+        EditorGUILayout.Space();
+
+        UnfoldExperimentalOptions = EditorGUILayout.BeginFoldoutHeaderGroup(UnfoldExperimentalOptions, "Experimental");
+        EditorGUI.indentLevel++;
+        if (UnfoldExperimentalOptions)
+        {
+            EditorGUILayout.HelpBox(
+                "Experimental options. Behavior and defaults may change between releases. " +
+                "Set the values you depend on explicitly.",
+                MessageType.Warning);
+
+            using (new EditorGUI.DisabledScope(!options.MacosNativeSupportEnabled))
+            {
+                options.Experimental.MacosBackend = (MacosBackend)EditorGUILayout.EnumPopup(
+                    new GUIContent(
+                        "macOS Backend",
+                        "Cocoa: uses sentry-cocoa via the Objective-C bridge. Requires IL2CPP.\n" +
+                        "Native: uses sentry-native with the new out-of-process crash daemon. " +
+                        "Uploads crashes immediately and supports both IL2CPP and Mono."),
+                    options.Experimental.MacosBackend);
+            }
+        }
+        EditorGUI.indentLevel--;
+        EditorGUILayout.EndFoldoutHeaderGroup();
     }
 }

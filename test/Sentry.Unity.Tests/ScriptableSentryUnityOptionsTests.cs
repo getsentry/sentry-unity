@@ -166,22 +166,22 @@ public class ScriptableSentryUnityOptionsTests
     }
 
     [Test]
-    public void MacosBackend_DefaultValue_IsCocoa()
+    public void Experimental_MacosBackend_DefaultValue_IsCocoa()
     {
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
 
-        Assert.AreEqual(MacosBackend.Cocoa, scriptableOptions.MacosBackend);
+        Assert.AreEqual(MacosBackend.Cocoa, scriptableOptions.Experimental.MacosBackend);
     }
 
     [Test]
     public void ToSentryUnityOptions_MacosBackendNative_Propagates()
     {
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
-        scriptableOptions.MacosBackend = MacosBackend.Native;
+        scriptableOptions.Experimental.MacosBackend = MacosBackend.Native;
 
         var options = scriptableOptions.ToSentryUnityOptions(_fixture.Application);
 
-        Assert.AreEqual(MacosBackend.Native, options.MacosBackend);
+        Assert.AreEqual(MacosBackend.Native, options.Experimental.MacosBackend);
     }
 
     public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)

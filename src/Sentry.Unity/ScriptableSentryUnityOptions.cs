@@ -125,13 +125,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
     [field: SerializeField] public bool WindowsNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool MacosNativeSupportEnabled { get; set; } = true;
-    [field: SerializeField] public MacosBackend MacosBackend { get; set; } = MacosBackend.Cocoa;
     [field: SerializeField] public bool LinuxNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool XboxNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool PlayStationNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool SwitchNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool EnableMetrics { get; set; } = true;
+    [field: SerializeField] public ExperimentalSentryUnityOptions Experimental { get; set; } = new();
     [field: SerializeField] public SentryOptionsConfiguration? OptionsConfiguration { get; set; }
 
     [field: SerializeField] public bool Debug { get; set; } = true;
@@ -211,7 +211,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             PostGenerateGradleProjectCallbackOrder = PostGenerateGradleProjectCallbackOrder,
             WindowsNativeSupportEnabled = WindowsNativeSupportEnabled,
             MacosNativeSupportEnabled = MacosNativeSupportEnabled,
-            MacosBackend = MacosBackend,
             LinuxNativeSupportEnabled = LinuxNativeSupportEnabled,
             XboxNativeSupportEnabled = XboxNativeSupportEnabled,
             PlayStationNativeSupportEnabled = PlayStationNativeSupportEnabled,
@@ -231,6 +230,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         };
 
         options.EnableMetrics = EnableMetrics;
+        options.Experimental.MacosBackend = Experimental.MacosBackend;
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
         if (!EnableOfflineCaching)

@@ -45,11 +45,11 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 
-        options.MacosBackend = MacosBackend.Cocoa;
+        options.Experimental.MacosBackend = MacosBackend.Cocoa;
 
         // sentry-native uploads crashes out-of-process on shutdown; give the native
         // backend enough time to flush before the player exits.
-        if (options.MacosBackend == MacosBackend.Native)
+        if (options.Experimental.MacosBackend == MacosBackend.Native)
         {
             options.ShutdownTimeout = TimeSpan.FromSeconds(20);
         }
