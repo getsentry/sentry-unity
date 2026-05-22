@@ -126,4 +126,19 @@ public sealed class SentryUnityOptionsTests
         options.Experimental.MacosBackend = MacosBackend.Native;
         Assert.AreEqual(MacosBackend.Native, options.Experimental.MacosBackend);
     }
+
+    [Test]
+    public void Options_Experimental_WindowsBackend_DefaultsToCrashpad()
+    {
+        var options = new SentryUnityOptions();
+        Assert.AreEqual(WindowsBackend.Crashpad, options.Experimental.WindowsBackend);
+    }
+
+    [Test]
+    public void Options_Experimental_WindowsBackend_IsSettable()
+    {
+        var options = new SentryUnityOptions();
+        options.Experimental.WindowsBackend = WindowsBackend.Native;
+        Assert.AreEqual(WindowsBackend.Native, options.Experimental.WindowsBackend);
+    }
 }

@@ -57,7 +57,14 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
 #elif UNITY_STANDALONE_OSX
         // sentry-native uploads crashes out-of-process on shutdown; give the native
         // backend enough time to flush before the player exits.
-        if (options.MacosBackend == MacosBackend.Native)
+        if (options.Experimental.MacosBackend == MacosBackend.Native)
+        {
+            options.ShutdownTimeout = TimeSpan.FromSeconds(20);
+        }
+#elif UNITY_STANDALONE_WIN
+        // sentry-native uploads crashes out-of-process on shutdown; give the native
+        // backend enough time to flush before the player exits.
+        if (options.Experimental.WindowsBackend == WindowsBackend.Native)
         {
             options.ShutdownTimeout = TimeSpan.FromSeconds(20);
         }

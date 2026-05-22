@@ -88,6 +88,10 @@ public static class BuildPostProcess
         try
         {
             AddCrashHandler(logger, target, buildOutputDir);
+            if (target is BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64)
+            {
+                CopyWindowsPlugins(logger, options, buildOutputDir);
+            }
             if (target == BuildTarget.StandaloneOSX)
             {
                 CopyMacOSPlugins(logger, options, executablePath);
@@ -118,10 +122,8 @@ public static class BuildPostProcess
         {
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
-                logger.LogDebug("Adding crashpad.");
-                CopyHandler(logger, buildOutputDir, Path.Combine("Windows", "Sentry", "crashpad_handler.exe"));
-                CopyHandler(logger, buildOutputDir, Path.Combine("Windows", "Sentry", "crashpad_wer.dll"));
-                break;
+                // Handled by CopyWindowsPlugins.
+                return;
             case BuildTarget.StandaloneLinux64:
             case BuildTarget.StandaloneOSX:
                 // No standalone crash handler for Linux/macOS - uses built-in handlers.
@@ -138,6 +140,35 @@ public static class BuildPostProcess
                 return;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
+        }
+    }
+
+    private static void CopyWindowsPlugins(IDiagnosticLogger logger, SentryUnityOptions options, string buildOutputDir)
+    {
+        var packagePluginsDir = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows");
+        var sourceDir = options.Experimental.WindowsBackend == WindowsBackend.Native
+            ? Path.Combine(packagePluginsDir, "SentryNative~")
+            : Path.Combine(packagePluginsDir, "Sentry~");
+
+        if (!Directory.Exists(sourceDir))
+        {
+            var target = options.Experimental.WindowsBackend == WindowsBackend.Native ? "BuildWindowsNativeSDK" : "BuildWindowsSDK";
+            throw new BuildFailedException(
+                $"Sentry Windows plugin directory not found: {sourceDir}\n" +
+                $"Run 'dotnet msbuild /t:{target} src/Sentry.Unity' (or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it.");
+        }
+
+        // Flat copy of every non-PDB file next to the player .exe.
+        // PDBs stay in the package and are consumed at symbol-upload time only.
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            if (file.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+            var destFile = Path.Combine(buildOutputDir, Path.GetFileName(file));
+            logger.LogDebug("Copying '{0}' to '{1}'", file, destFile);
+            File.Copy(file, destFile, overwrite: true);
         }
     }
 
@@ -181,14 +212,6 @@ public static class BuildPostProcess
             logger.LogDebug("Copying '{0}' to '{1}'", file, destFile);
             File.Copy(file, destFile, overwrite: true);
         }
-    }
-
-    private static void CopyHandler(IDiagnosticLogger logger, string buildOutputDir, string handlerPath)
-    {
-        var fullHandlerPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", handlerPath));
-        var targetHandlerPath = Path.Combine(buildOutputDir, Path.GetFileName(fullHandlerPath));
-        logger.LogInfo("Copying handler '{0}' to {1}", Path.GetFileName(fullHandlerPath), targetHandlerPath);
-        File.Copy(fullHandlerPath, targetHandlerPath, true);
     }
 
     internal static void AddPath(List<string> paths, string path, IDiagnosticLogger logger, bool required = false)
@@ -245,8 +268,21 @@ public static class BuildPostProcess
                 AddPath(paths, Path.Combine(buildOutputDir, executableName), logger, required: true);
                 AddPath(paths, Path.Combine(buildOutputDir, "UnityPlayer.dll"), logger, required: true);
 
-                // Sentry native SDK symbols from package
-                AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"), logger);
+                // Sentry native SDK symbols from package.
+                // Glob *.pdb from whichever backend's source dir is in use, so adding
+                // or removing PDBs at build time doesn't require touching this code.
+                var windowsBackendDir = options.Experimental.WindowsBackend == WindowsBackend.Native
+                    ? "SentryNative~"
+                    : "Sentry~";
+                var windowsPdbDir = Path.GetFullPath(
+                    $"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/{windowsBackendDir}");
+                if (Directory.Exists(windowsPdbDir))
+                {
+                    foreach (var pdb in Directory.GetFiles(windowsPdbDir, "*.pdb"))
+                    {
+                        AddPath(paths, pdb, logger);
+                    }
+                }
 
                 // Data - native plugins
                 foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_Data"))

@@ -42,6 +42,8 @@ jobs:
             host: ubuntu-latest
           - target: Windows
             host: windows-latest
+          - target: WindowsNative
+            host: windows-latest
           - target: Cocoa
             host: macos-latest
           - target: MacOSNative
@@ -409,7 +411,7 @@ jobs:
       platform: linux
 
   test-run-windows:
-    name: Run Windows ${{ matrix.unity-version }} Integration Test
+    name: Run Windows ${{ matrix.backend }} ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-windows, create-unity-matrix]
     secrets: inherit
@@ -417,10 +419,12 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        backend: ["crashpad", "native"]
     uses: ./.github/workflows/test-run-desktop.yml
     with:
       unity-version: ${{ matrix.unity-version }}
       platform: windows
+      backend: ${{ matrix.backend }}
 
   test-run-macos:
     name: Run macOS ${{ matrix.backend }} ${{ matrix.unity-version }} Integration Test
