@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Introduce `sentry-native` as an experimental backend on macOS and Windows. Opt in via `options.Experimental.MacosBackend = MacosBackend.Native` or `options.Experimental.WindowsBackend = WindowsBackend.Native`. The `sentry-native` backend uploads crashes immediately and enables further updates such as `AppHangTracking` support ([#2687](https://github.com/getsentry/sentry-unity/pull/2687))
+
 ### Fixes
 
 - When targeting iOS, the SDK no longer crashes in `urlSessionTask:setState:` when handling an `AVAssetDownloadTask` ([#2677](https://github.com/getsentry/sentry-unity/pull/2677))

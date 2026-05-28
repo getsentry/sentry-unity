@@ -14,6 +14,8 @@ public class ExperimentalSentryUnityOptions
     /// Selects the native backend to use on macOS. Defaults to <see cref="Sentry.Unity.MacosBackend.Cocoa"/>,
     /// which requires IL2CPP. Use <see cref="Sentry.Unity.MacosBackend.Native"/> for the out-of-process
     /// sentry-native backend, which uploads crashes immediately and supports both IL2CPP and Mono.
+    /// When set to <see cref="Sentry.Unity.MacosBackend.Native"/>, <c>ShutdownTimeout</c> is raised to
+    /// a minimum of 10 seconds so the out-of-process handler has time to flush before the player exits.
     /// </summary>
     [field: SerializeField] public MacosBackend MacosBackend { get; set; } = MacosBackend.Cocoa;
 
@@ -22,6 +24,8 @@ public class ExperimentalSentryUnityOptions
     /// which ships <c>crashpad_handler.exe</c> as the out-of-process handler. Use
     /// <see cref="Sentry.Unity.WindowsBackend.Native"/> for sentry-native's new out-of-process <c>sentry-crash.exe</c>
     /// daemon, which uploads crashes immediately.
+    /// When set to <see cref="Sentry.Unity.WindowsBackend.Native"/>, <c>ShutdownTimeout</c> is raised to
+    /// a minimum of 10 seconds so the out-of-process handler has time to flush before the player exits.
     /// </summary>
     [field: SerializeField] public WindowsBackend WindowsBackend { get; set; } = WindowsBackend.Crashpad;
 }

@@ -34,8 +34,6 @@ Plugins/macOS.meta
 Plugins/PS5.meta
 Plugins/Switch.meta
 Plugins/Windows.meta
-Plugins/macOS/Sentry/
-Plugins/macOS/Sentry.meta
 Plugins/macOS/SentryNativeBridge.m
 Plugins/macOS/SentryNativeBridge.m.meta
 Plugins/macOS/SentryNative~/libsentry.dylib.dSYM/

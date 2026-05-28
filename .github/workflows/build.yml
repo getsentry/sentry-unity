@@ -92,6 +92,12 @@ jobs:
           name: Cocoa-sdk
           path: package-dev/Plugins
 
+      - name: Download MacOSNative SDK
+        uses: ./.github/actions/wait-for-artifact
+        with:
+          name: MacOSNative-sdk
+          path: package-dev/Plugins/macOS/SentryNative~
+
       - name: Download Linux SDK
         uses: ./.github/actions/wait-for-artifact
         with:

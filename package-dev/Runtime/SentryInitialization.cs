@@ -122,7 +122,7 @@ namespace Sentry.Unity
         private static void ConfigureMacosBackend(SentryUnityOptions options)
         {
 #if SENTRY_NATIVE
-            if (options.MacosBackend == MacosBackend.Native)
+            if (options.Experimental.MacosBackend == MacosBackend.Native)
             {
                 SentryNative.Configure(options);
                 return;
@@ -139,8 +139,12 @@ namespace Sentry.Unity
 
         private static void CloseMacosBackend(SentryUnityOptions options)
         {
+            if (options is null)
+            {
+                return;
+            }
 #if SENTRY_NATIVE_COCOA
-            if (options.MacosBackend == MacosBackend.Cocoa)
+            if (options.Experimental.MacosBackend == MacosBackend.Cocoa)
             {
                 SentryNativeCocoa.Close(options);
             }
