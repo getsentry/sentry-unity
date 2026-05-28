@@ -4,7 +4,7 @@
 
 ### Features
 
-- Introduce `sentry-native` as an experimental backend on macOS and Windows. Opt in via `options.Experimental.MacosBackend = MacosBackend.Native` or `options.Experimental.WindowsBackend = WindowsBackend.Native`. The `sentry-native` backend uploads crashes immediately and enables further updates such as `AppHangTracking` support ([#2687](https://github.com/getsentry/sentry-unity/pull/2687))
+- Introduce `sentry-native` as an experimental backend on macOS and Windows. Opt in via `options.Experimental.MacosBackend = MacosBackend.Native` or `options.Experimental.WindowsBackend = WindowsBackend.Native`. The `sentry-native` backend uploads crashes immediately and enables further updates such as `AppHangTracking` support ([#2687](https://github.com/getsentry/sentry-unity/pull/2687), [#2692](https://github.com/getsentry/sentry-unity/pull/2692))
 
 ### Fixes
 
@@ -496,7 +496,7 @@ This release contains the bump of the Cocoa SDK with the following note and reso
 ### API Changes
 
 - The Runtime- and BuildTime-Configuration have been merged into a single `OptionsConfiguration` script. This allows for programmatic configuration of the SDK in one place using precompile directives. Note, that the current limitation of options for Android and iOS being baked into the project at build time still remains. ([#1888](https://github.com/getsentry/sentry-unity/pull/1888))
-  This is part of a larger effort to simplify the configuration of the native SDKs and enable users to modify their options at runtime. For more information see https://github.com/getsentry/sentry-unity/issues/1907
+  This is part of a larger effort to simplify the configuration of the native SDKs and enable users to modify their options at runtime. For more information see <https://github.com/getsentry/sentry-unity/issues/1907>
 
 ### Features
 
@@ -582,7 +582,7 @@ This release contains the bump of the Cocoa SDK with the following note and reso
 
 - The `SentrySdk.Metrics` module is deprecated and will be removed in the next major release.
   Sentry will reject all metrics sent after October 7, 2024.
-  Learn more: https://sentry.zendesk.com/hc/en-us/articles/26369339769883-Upcoming-API-Changes-to-Metrics ([#3619](https://github.com/getsentry/sentry-dotnet/pull/3619))
+  Learn more: <https://sentry.zendesk.com/hc/en-us/articles/26369339769883-Upcoming-API-Changes-to-Metrics> ([#3619](https://github.com/getsentry/sentry-dotnet/pull/3619))
 
 ### Fixes
 
@@ -1017,7 +1017,7 @@ If you have compilation errors you can find the affected types or overloads miss
 - Bump CLI from v2.21.2 to v2.24.1 ([#1501](https://github.com/getsentry/sentry-unity/pull/1501), [#1502](https://github.com/getsentry/sentry-unity/pull/1502), [#1525](https://github.com/getsentry/sentry-unity/pull/1525), [#1528](https://github.com/getsentry/sentry-unity/pull/1528), [#1532](https://github.com/getsentry/sentry-unity/pull/1532))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#2241)
   - [diff](https://github.com/getsentry/sentry-cli/compare/2.21.2...2.24.1)
-- Bump Cocoa SDK from v8.16.1 to v8.17.1 [#1503](https://github.com/getsentry/sentry-unity/pull/1503, [#1508](https://github.com/getsentry/sentry-unity/pull/1508), [#1520](https://github.com/getsentry/sentry-unity/pull/1520), [#1530](https://github.com/getsentry/sentry-unity/pull/1530))
+- Bump Cocoa SDK from v8.16.1 to v8.17.1 [#1503](<https://github.com/getsentry/sentry-unity/pull/1503>, [#1508](https://github.com/getsentry/sentry-unity/pull/1508), [#1520](https://github.com/getsentry/sentry-unity/pull/1520), [#1530](https://github.com/getsentry/sentry-unity/pull/1530))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#8180)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/8.16.1...8.18.0)
 - Bump .NET SDK from v3.41.2 to v3.41.3 [#1505](https://github.com/getsentry/sentry-unity/pull/1505)
@@ -2143,7 +2143,7 @@ If you have compilation errors you can find the affected types or overloads miss
 
 - UPM meta updated ([#124](https://github.com/getsentry/sentry-unity/pull/124))
 - Bump dotnet 3.3.4 ([#132](https://github.com/getsentry/sentry-unity/pull/132))
-  - https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#334
+  - <https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#334>
   - Bug fixes for performance monitoring
   - Ability to keep failed envelopes for troubleshooting when they are too large
 
