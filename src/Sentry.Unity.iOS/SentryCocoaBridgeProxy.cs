@@ -66,6 +66,12 @@ internal static class SentryCocoaBridgeProxy
         // See https://github.com/getsentry/sentry-unity/issues/1658
         OptionsSetInt(cOptions, "enableNetworkBreadcrumbs", 0);
 
+        Logger?.LogDebug("Setting EnableAppHangTracking: {0}", options.EnableAppHangTracking);
+        OptionsSetInt(cOptions, "enableAppHangTracking", options.EnableAppHangTracking ? 1 : 0);
+
+        Logger?.LogDebug("Setting AppHangTimeoutInterval: {0}s", options.AppHangTimeout.TotalSeconds);
+        OptionsSetDouble(cOptions, "appHangTimeoutInterval", options.AppHangTimeout.TotalSeconds);
+
         Logger?.LogDebug("Setting EnableWatchdogTerminationTracking: {0}", options.IosWatchdogTerminationIntegrationEnabled);
         OptionsSetInt(cOptions, "enableWatchdogTerminationTracking", options.IosWatchdogTerminationIntegrationEnabled ? 1 : 0);
 
@@ -102,6 +108,9 @@ internal static class SentryCocoaBridgeProxy
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsSetInt")]
     private static extern void OptionsSetInt(IntPtr options, string name, int value);
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsSetDouble")]
+    private static extern void OptionsSetDouble(IntPtr options, string name, double value);
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange")]
     private static extern void OptionsAddFailedRequestStatusCodeRange(IntPtr options, int min, int max);
