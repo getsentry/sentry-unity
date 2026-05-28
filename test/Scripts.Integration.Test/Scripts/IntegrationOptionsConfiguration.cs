@@ -47,13 +47,6 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
 
         options.Experimental.MacosBackend = MacosBackend.Cocoa;
 
-        // sentry-native uploads crashes out-of-process on shutdown; give the native
-        // backend enough time to flush before the player exits.
-        if (options.Experimental.MacosBackend == MacosBackend.Native)
-        {
-            options.ShutdownTimeout = TimeSpan.FromSeconds(20);
-        }
-
         Debug.Log("Sentry: IntegrationOptionsConfig::Configure() finished");
     }
 }

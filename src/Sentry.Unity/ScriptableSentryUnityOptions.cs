@@ -266,6 +266,21 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             OptionsConfiguration.Configure(options);
         }
 
+        // The macOS Native backend hands crash uploads to an out-of-process handler that gets killed
+        // when the player exits. Enforce a floor so the handler has time to flush.
+        if (options.Experimental.MacosBackend == MacosBackend.Native)
+        {
+            var minimum = TimeSpan.FromSeconds(10);
+            if (options.ShutdownTimeout < minimum)
+            {
+                options.LogInfo(
+                    "Native macOS backend: raising ShutdownTimeout from {0}ms to the {1}ms floor.",
+                    (int)options.ShutdownTimeout.TotalMilliseconds,
+                    (int)minimum.TotalMilliseconds);
+                options.ShutdownTimeout = minimum;
+            }
+        }
+
         if (EnableErrorEventThrottling && options.Throttler is null)
         {
             options.Throttler = new ErrorEventThrottler(TimeSpan.FromMilliseconds(ThrottleDedupeWindow));
