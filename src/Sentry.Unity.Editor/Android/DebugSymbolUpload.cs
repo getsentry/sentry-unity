@@ -46,36 +46,41 @@ internal class DebugSymbolUpload
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("// Credentials and project settings information are stored in the sentry.properties file");
             stringBuilder.AppendLine("afterEvaluate {");
-            stringBuilder.AppendLine("task sentryUploadSymbols {");
-            stringBuilder.AppendLine("    doLast {");
-            stringBuilder.AppendLine("        println 'Uploading symbols to Sentry.'");
 
-            var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
-            Directory.CreateDirectory(logsDir);
-            stringBuilder.AppendLine($"        def logFilePath = '{logsDir}/{SymbolUploadLogName}'");
-            stringBuilder.AppendLine("        def sentryLogFile = new FileOutputStream(logFilePath)");
-            stringBuilder.AppendLine("        def outputStream = new org.apache.tools.ant.util.TeeOutputStream(System.out, sentryLogFile)");
-            stringBuilder.AppendLine("        def errorStream = new org.apache.tools.ant.util.TeeOutputStream(System.err, sentryLogFile)");
-
-            stringBuilder.AppendLine("        exec {");
-            stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', './sentry.properties'");
-            stringBuilder.AppendLine($"            executable '{SentryCliMarker}'");
-            stringBuilder.AppendLine($"            args = ['debug-files', 'upload'{UploadArgsMarker}]");
+            stringBuilder.AppendLine("    tasks.register('sentryUploadDebugFiles', Exec) {");
+            stringBuilder.AppendLine("        environment 'SENTRY_PROPERTIES', './sentry.properties'");
+            stringBuilder.AppendLine($"        executable '{SentryCliMarker}'");
+            stringBuilder.AppendLine($"        args = ['debug-files', 'upload'{UploadArgsMarker}]");
+            stringBuilder.AppendLine("        doFirst {");
+            stringBuilder.AppendLine("            println 'Uploading symbols to Sentry.'");
             if (!_isExporting)
             {
-                stringBuilder.AppendLine("            standardOutput outputStream");
-                stringBuilder.AppendLine("            errorOutput errorStream");
+                var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
+                Directory.CreateDirectory(logsDir);
+                stringBuilder.AppendLine($"            def sentryLogFile = new FileOutputStream('{logsDir}/{SymbolUploadLogName}')");
+                stringBuilder.AppendLine("            standardOutput = new org.apache.tools.ant.util.TeeOutputStream(System.out, sentryLogFile)");
+                stringBuilder.AppendLine("            errorOutput = new org.apache.tools.ant.util.TeeOutputStream(System.err, sentryLogFile)");
             }
             stringBuilder.AppendLine("        }");
-
-            CheckMapping(stringBuilder);
             stringBuilder.AppendLine("    }");
-            stringBuilder.AppendLine("}");
-            stringBuilder.AppendLine(string.Empty);
-            stringBuilder.AppendLine("tasks.assembleDebug.finalizedBy sentryUploadSymbols");
-            stringBuilder.AppendLine("tasks.assembleRelease.finalizedBy sentryUploadSymbols");
-            stringBuilder.AppendLine("tasks.bundleDebug.finalizedBy sentryUploadSymbols");
-            stringBuilder.AppendLine("tasks.bundleRelease.finalizedBy sentryUploadSymbols");
+
+            if (_isMinifyEnabled)
+            {
+                AppendProguardMappingTask(stringBuilder);
+            }
+
+            stringBuilder.AppendLine("    tasks.register('sentryUploadSymbols') {");
+            stringBuilder.AppendLine("        dependsOn 'sentryUploadDebugFiles'");
+            if (_isMinifyEnabled)
+            {
+                stringBuilder.AppendLine("        dependsOn 'sentryUploadProguardMapping'");
+            }
+            stringBuilder.AppendLine("    }");
+
+            stringBuilder.AppendLine("    tasks.named('assembleDebug').configure { finalizedBy 'sentryUploadSymbols' }");
+            stringBuilder.AppendLine("    tasks.named('assembleRelease').configure { finalizedBy 'sentryUploadSymbols' }");
+            stringBuilder.AppendLine("    tasks.named('bundleDebug').configure { finalizedBy 'sentryUploadSymbols' }");
+            stringBuilder.AppendLine("    tasks.named('bundleRelease').configure { finalizedBy 'sentryUploadSymbols' }");
 
             stringBuilder.AppendLine("}");
             return stringBuilder.ToString();
@@ -164,7 +169,7 @@ internal class DebugSymbolUpload
         symbolUploadText = symbolUploadText.Replace(ProguardArgsMarker, uploadProguardArguments);
 
         var gradleBuildFile = LoadGradleScript();
-        if (gradleBuildFile.Contains(SymbolUploadTaskStartComment) || gradleBuildFile.Contains("task sentryUploadSymbols"))
+        if (gradleBuildFile.Contains(SymbolUploadTaskStartComment) || gradleBuildFile.Contains("sentryUploadSymbols"))
         {
             throw new InvalidOperationException($"Failed to create Debug Symbol Upload Task. Task already exists in gradle file. A clean build should resolve this.{RaiseIssuePrompt}");
         }
@@ -201,7 +206,7 @@ internal class DebugSymbolUpload
         gradleBuildFile = regex.Replace(gradleBuildFile, "");
 
         if (gradleBuildFile.Contains(SymbolUploadTaskStartComment) ||
-            gradleBuildFile.Contains("task sentryUploadSymbols") ||
+            gradleBuildFile.Contains("sentryUploadSymbols") ||
             gradleBuildFile.Contains(SymbolUploadTaskEndComment))
         {
             throw new InvalidOperationException($"Failed to remove Debug Symbol Upload Task from gradle file. A clean build should resolve this.{RaiseIssuePrompt}");
@@ -264,32 +269,24 @@ internal class DebugSymbolUpload
     // Gradle doesn't support backslashes on path (Windows) so converting to forward slashes
     internal static string ConvertSlashes(string path) => path.Replace(@"\", "/");
 
-    private void CheckMapping(StringBuilder stringBuilder)
+    private void AppendProguardMappingTask(StringBuilder stringBuilder)
     {
-        if (!_isMinifyEnabled)
-            return;
-
-        stringBuilder.AppendLine("        println 'Uploading mapping file to Sentry.'");
+        stringBuilder.AppendLine("    tasks.register('sentryUploadProguardMapping', Exec) {");
+        stringBuilder.AppendLine("        environment 'SENTRY_PROPERTIES', './sentry.properties'");
+        stringBuilder.AppendLine($"        executable '{SentryCliMarker}'");
+        stringBuilder.AppendLine($"        args = ['upload-proguard'{ProguardArgsMarker}]");
+        stringBuilder.AppendLine("        doFirst {");
+        stringBuilder.AppendLine("            println 'Uploading mapping file to Sentry.'");
         if (!_isExporting)
         {
             var logsDir = $"{ConvertSlashes(_unityProjectPath)}/Logs";
             Directory.CreateDirectory(logsDir);
-            stringBuilder.AppendLine($"        def mappingLogFilePath = '{logsDir}/{MappingUploadLogName}'");
-            stringBuilder.AppendLine($"        def mappingLogFile = new FileOutputStream(mappingLogFilePath)");
-            stringBuilder.AppendLine("        def mappingOutputStream = new org.apache.tools.ant.util.TeeOutputStream(System.out, mappingLogFile)");
-            stringBuilder.AppendLine("        def mappingErrorStream = new org.apache.tools.ant.util.TeeOutputStream(System.err, mappingLogFile)");
-        }
-        stringBuilder.AppendLine("        exec {");
-        stringBuilder.AppendLine("            environment 'SENTRY_PROPERTIES', './sentry.properties'");
-        stringBuilder.AppendLine($"            executable '{SentryCliMarker}'");
-        stringBuilder.AppendLine($"            args = ['upload-proguard'{ProguardArgsMarker}]");
-        // stringBuilder.AppendLine($"            args = ['debug-files', 'upload'{UploadArgsMarker}]");
-        if (!_isExporting)
-        {
-            stringBuilder.AppendLine("            standardOutput mappingOutputStream");
-            stringBuilder.AppendLine("            errorOutput mappingErrorStream");
+            stringBuilder.AppendLine($"            def mappingLogFile = new FileOutputStream('{logsDir}/{MappingUploadLogName}')");
+            stringBuilder.AppendLine("            standardOutput = new org.apache.tools.ant.util.TeeOutputStream(System.out, mappingLogFile)");
+            stringBuilder.AppendLine("            errorOutput = new org.apache.tools.ant.util.TeeOutputStream(System.err, mappingLogFile)");
         }
         stringBuilder.AppendLine("        }");
+        stringBuilder.AppendLine("    }");
     }
 
     private string GetMappingFilePath(IApplication? application)
