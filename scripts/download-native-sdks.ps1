@@ -90,43 +90,19 @@ function Get-LatestSuccessfulRunId {
     return $result
 }
 
-function Get-RunArtifactNames {
-    param([Parameter(Mandatory)][string]$RunId)
+function Get-LatestBranchRunId {
+    param([Parameter(Mandatory)][string]$Branch)
 
-    try {
-        $json = gh api "repos/{owner}/{repo}/actions/runs/$RunId/artifacts" --paginate --jq '[.artifacts[].name]'
+    # Any conclusion — the SDK build job uploads its artifact before downstream
+    # jobs run, so a run that overall failed often still has the SDK artifact.
+    $result = gh run list --branch $Branch --workflow CI --limit 1 --json databaseId --jq '.[0].databaseId'
+    if (-not $result -or $result -eq 'null') {
+        return $null
     }
-    catch {
-        return @()
-    }
-    if (-not $json) {
-        return @()
-    }
-    return @($json | ConvertFrom-Json)
+    return $result
 }
 
-function Get-RecentBranchRunIds {
-    param(
-        [Parameter(Mandatory)][string]$Branch,
-        [int]$Limit = 10
-    )
-
-    try {
-        $json = gh run list --branch $Branch --workflow CI --limit $Limit --json databaseId --jq '[.[].databaseId]'
-    }
-    catch {
-        return @()
-    }
-    if (-not $json) {
-        return @()
-    }
-    # Branch runs may be in any conclusion state — the SDK build job uploads
-    # its artifact before downstream tests run, so failed runs often still
-    # contain the artifact we need.
-    return @($json | ConvertFrom-Json)
-}
-
-function Download-SDK {
+function Try-DownloadSDK {
     param(
         [Parameter(Mandatory)]
         [string]$Name,
@@ -136,31 +112,35 @@ function Download-SDK {
         [string]$RunId
     )
 
-    Write-Host "Downloading $Name SDK..." -ForegroundColor Yellow
-
     $artifactName = "$Name-sdk"
 
-    # Download to a temp directory, then move contents into destination
     $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "sentry-$Name-sdk-download"
     if (Test-Path $tempDir) {
         Remove-Item -Path $tempDir -Recurse -Force
     }
 
-    gh run download $RunId -n $artifactName -D $tempDir
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to download $Name SDK"
-        exit 1
+    # `gh run download` exits non-zero when the artifact doesn't exist in the
+    # run; we want to handle that as "not available here" rather than abort.
+    $previousEAP = $PSNativeCommandUseErrorActionPreference
+    $PSNativeCommandUseErrorActionPreference = $false
+    try {
+        gh run download $RunId -n $artifactName -D $tempDir 2>$null
+        $downloadExit = $LASTEXITCODE
+    }
+    finally {
+        $PSNativeCommandUseErrorActionPreference = $previousEAP
+    }
+    if ($downloadExit -ne 0) {
+        return $false
     }
 
-    # Move downloaded contents into the destination
     if (-not (Test-Path $Destination)) {
         New-Item -ItemType Directory -Path $Destination -Force | Out-Null
     }
     Copy-Item -Path (Join-Path $tempDir "*") -Destination $Destination -Recurse -Force
     Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
 
-    Write-Host "  Downloaded $Name SDK successfully" -ForegroundColor Green
+    return $true
 }
 
 # Main logic
@@ -186,58 +166,35 @@ if ($sdksToDownload.Count -eq 0) {
     exit 0
 }
 
-# Resolve the source CI run for each SDK. Primary source is main's latest
-# successful run; for artifacts not yet on main (e.g. new native backends
-# under development on a feature branch), fall back to the most recent run
-# on the current branch that has the artifact.
-$primaryRunId = Get-LatestSuccessfulRunId
-$artifactsByRun = @{}
-$artifactsByRun[$primaryRunId] = Get-RunArtifactNames -RunId $primaryRunId
+# Primary source is main's latest successful run. For artifacts not yet on
+# main (e.g. new native backends under development), fall back to the latest
+# CI run on the current branch.
+$mainRunId = Get-LatestSuccessfulRunId
 
+$branchRunId = $null
 $currentBranch = (git -C $RepoRoot rev-parse --abbrev-ref HEAD).Trim()
-$branchRunIds = @()
 if ($currentBranch -and $currentBranch -ne 'main' -and $currentBranch -ne 'HEAD') {
-    $branchRunIds = Get-RecentBranchRunIds -Branch $currentBranch
+    $branchRunId = Get-LatestBranchRunId -Branch $currentBranch
 }
 
-$resolved = @()
-$unresolved = @()
+$failed = @()
 foreach ($sdk in $sdksToDownload) {
-    $artifactName = "$($sdk.Name)-sdk"
-    $sourceRunId = $null
-
-    if ($artifactsByRun[$primaryRunId] -contains $artifactName) {
-        $sourceRunId = $primaryRunId
+    Write-Host "Downloading $($sdk.Name) SDK..." -ForegroundColor Yellow
+    if (Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $mainRunId) {
+        Write-Host "  Downloaded from main run $mainRunId" -ForegroundColor Green
+        continue
     }
-    else {
-        foreach ($runId in $branchRunIds) {
-            if (-not $artifactsByRun.ContainsKey($runId)) {
-                $artifactsByRun[$runId] = Get-RunArtifactNames -RunId $runId
-            }
-            if ($artifactsByRun[$runId] -contains $artifactName) {
-                $sourceRunId = $runId
-                Write-Host "$($sdk.Name) SDK not on main run $primaryRunId; using branch '$currentBranch' run $runId" -ForegroundColor Yellow
-                break
-            }
-        }
+    if ($branchRunId -and (Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $branchRunId)) {
+        Write-Host "  Not on main; downloaded from branch '$currentBranch' run $branchRunId" -ForegroundColor Yellow
+        continue
     }
-
-    if ($sourceRunId) {
-        $resolved += [pscustomobject]@{ Sdk = $sdk; RunId = $sourceRunId }
-    }
-    else {
-        $unresolved += $sdk.Name
-    }
+    $failed += $sdk.Name
 }
 
-if ($unresolved.Count -gt 0) {
-    $names = $unresolved -join ', '
-    Write-Error "Could not locate these SDK artifacts on main or recent CI runs of branch '$currentBranch': $names. Push the branch so CI publishes the artifact, or build locally with Build<Name>SDK."
+if ($failed.Count -gt 0) {
+    $names = $failed -join ', '
+    Write-Error "Could not download these SDK artifacts: $names. Push the branch so CI publishes the artifact, or build locally with Build<Name>SDK."
     exit 1
-}
-
-foreach ($entry in $resolved) {
-    Download-SDK -Name $entry.Sdk.Name -Destination $entry.Sdk.Destination -RunId $entry.RunId
 }
 
 Write-Host ""
