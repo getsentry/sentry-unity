@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Introduce `sentry-native` on macOS as experimental backend. This is an opt-in and accessible programmatically via the `options.Experimental`. The `sentry-native` backend allows for crashes to be sent immediately and will enable further updates, like `AppHangTracking` support ([#2687](https://github.com/getsentry/sentry-unity/pull/2687))
+
 ### Fixes
 
 - The SDK now uses Gradle's built-in Exec task type when setting up the automated debug symbol upload. This resolves builds failing when targeting Android on Unity 6.4 ([#2686](https://github.com/getsentry/sentry-unity/pull/2686))

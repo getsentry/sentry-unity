@@ -1,19 +1,25 @@
 #if !UNITY_EDITOR
+
 #if UNITY_IOS || (UNITY_STANDALONE_OSX && ENABLE_IL2CPP)
 #define SENTRY_NATIVE_COCOA
-#elif UNITY_ANDROID && ENABLE_IL2CPP
+#endif
+
+#if UNITY_ANDROID && ENABLE_IL2CPP
 #define SENTRY_NATIVE_ANDROID
-#elif UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
+#endif
+
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX || UNITY_STANDALONE_OSX || UNITY_GAMECORE || UNITY_PS5
 #define SENTRY_NATIVE
-#elif UNITY_GAMECORE
-#define SENTRY_NATIVE
-#elif UNITY_PS5
-#define SENTRY_NATIVE
-#elif UNITY_SWITCH
+#endif
+
+#if UNITY_SWITCH
 #define SENTRY_NATIVE_SWITCH
-#elif UNITY_WEBGL
+#endif
+
+#if UNITY_WEBGL
 #define SENTRY_WEBGL
 #endif
+
 #endif
 
 #if ENABLE_IL2CPP && (SENTRY_NATIVE_COCOA || SENTRY_NATIVE_ANDROID || SENTRY_NATIVE)
@@ -29,7 +35,14 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Scripting;
 
+#if UNITY_STANDALONE_OSX
 #if SENTRY_NATIVE_COCOA
+using Sentry.Unity.iOS;
+#endif
+#if SENTRY_NATIVE
+using Sentry.Unity.Native;
+#endif
+#elif SENTRY_NATIVE_COCOA
 using Sentry.Unity.iOS;
 #elif SENTRY_NATIVE_ANDROID
 using Sentry.Unity.Android;
@@ -75,7 +88,9 @@ namespace Sentry.Unity
             {
                 // If the SDK is not `enabled` we're closing down the native layer as well. This is especially relevant
                 // in a `built-time-initialization` scenario where the native SDKs self-initialize.
-#if SENTRY_NATIVE_COCOA
+#if UNITY_STANDALONE_OSX
+                CloseMacosBackend(options);
+#elif SENTRY_NATIVE_COCOA
                 SentryNativeCocoa.Close(options);
 #elif SENTRY_NATIVE_ANDROID
                 SentryNativeAndroid.Close(options);
@@ -88,7 +103,9 @@ namespace Sentry.Unity
             SentryPlatformServices.CollectMainThreadData();
             SentryPlatformServices.UnityInfo = new SentryUnityInfo();
 
-#if SENTRY_NATIVE_COCOA
+#if UNITY_STANDALONE_OSX
+            SentryPlatformServices.PlatformConfiguration = ConfigureMacosBackend;
+#elif SENTRY_NATIVE_COCOA
             SentryPlatformServices.PlatformConfiguration = SentryNativeCocoa.Configure;
 #elif SENTRY_NATIVE_ANDROID
             SentryPlatformServices.PlatformConfiguration = SentryNativeAndroid.Configure;
@@ -100,6 +117,41 @@ namespace Sentry.Unity
             SentryPlatformServices.PlatformConfiguration = SentryWebGL.Configure;
 #endif
         }
+
+#if UNITY_STANDALONE_OSX
+        private static void ConfigureMacosBackend(SentryUnityOptions options)
+        {
+#if SENTRY_NATIVE
+            if (options.Experimental.MacosBackend == MacosBackend.Native)
+            {
+                SentryNative.Configure(options);
+                return;
+            }
+#endif
+#if SENTRY_NATIVE_COCOA
+            SentryNativeCocoa.Configure(options);
+#else
+            options.DiagnosticLogger?.LogWarning(
+                "MacosBackend is set to Cocoa, but Cocoa requires IL2CPP. " +
+                "Native crash reporting is disabled. Set MacosBackend to Native or enable IL2CPP.");
+#endif
+        }
+
+        private static void CloseMacosBackend(SentryUnityOptions options)
+        {
+            if (options is null)
+            {
+                return;
+            }
+#if SENTRY_NATIVE_COCOA
+            if (options.Experimental.MacosBackend == MacosBackend.Cocoa)
+            {
+                SentryNativeCocoa.Close(options);
+            }
+#endif
+            // Native: nothing to do — SentryNative registers its own close callback at Configure time.
+        }
+#endif
     }
 
     public class SentryUnityInfo : ISentryUnityInfo

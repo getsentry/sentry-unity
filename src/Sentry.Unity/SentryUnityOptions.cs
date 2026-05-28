@@ -280,6 +280,11 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool MacosNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
+    /// Experimental options. APIs and defaults here may change between releases.
+    /// </summary>
+    public ExperimentalSentryUnityOptions Experimental { get; } = new();
+
+    /// <summary>
     /// Whether the SDK should add native support for Linux
     /// </summary>
     public bool LinuxNativeSupportEnabled { get; set; } = true;

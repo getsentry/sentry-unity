@@ -107,12 +107,20 @@ jobs:
           name: ${{ env.TARGET }}-sdk
           path: |
             package-dev/Plugins/iOS/Sentry.xcframework~
-            package-dev/Plugins/macOS/Sentry
+            package-dev/Plugins/macOS/Sentry~
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ env.TARGET != 'Cocoa' }}
+        if: ${{ env.TARGET == 'MacOSNative' }}
+        with:
+          name: ${{ env.TARGET }}-sdk
+          path: package-dev/Plugins/macOS/SentryNative~
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ env.TARGET != 'Cocoa' && env.TARGET != 'MacOSNative' }}
         with:
           name: ${{ env.TARGET }}-sdk
           path: package-dev/Plugins/${{ env.TARGET }}

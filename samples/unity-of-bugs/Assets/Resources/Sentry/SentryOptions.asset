@@ -81,6 +81,8 @@ MonoBehaviour:
   <SwitchNativeSupportEnabled>k__BackingField: 1
   <Il2CppLineNumberSupportEnabled>k__BackingField: 1
   <EnableMetrics>k__BackingField: 1
+  <Experimental>k__BackingField:
+    <MacosBackend>k__BackingField: 0
   <OptionsConfiguration>k__BackingField: {fileID: 11400000, guid: cea63afb7c75f429799422326f926abe, type: 2}
   <Debug>k__BackingField: 1
   <DebugOnlyInEditor>k__BackingField: 0

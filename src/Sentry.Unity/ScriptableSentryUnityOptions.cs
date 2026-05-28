@@ -133,6 +133,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool SwitchNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool EnableMetrics { get; set; } = true;
+    [field: SerializeField] public ExperimentalSentryUnityOptions Experimental { get; set; } = new();
     [field: SerializeField] public SentryOptionsConfiguration? OptionsConfiguration { get; set; }
 
     [field: SerializeField] public bool Debug { get; set; } = true;
@@ -233,6 +234,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         };
 
         options.EnableMetrics = EnableMetrics;
+        options.Experimental.MacosBackend = Experimental.MacosBackend;
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
         if (!EnableOfflineCaching)
@@ -266,6 +268,21 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         {
             options.LogDebug("OptionsConfiguration found. Calling configure.");
             OptionsConfiguration.Configure(options);
+        }
+
+        // The macOS Native backend hands crash uploads to an out-of-process handler that gets killed
+        // when the player exits. Enforce a floor so the handler has time to flush.
+        if (options.Experimental.MacosBackend == MacosBackend.Native)
+        {
+            var minimum = TimeSpan.FromSeconds(10);
+            if (options.ShutdownTimeout < minimum)
+            {
+                options.LogInfo(
+                    "Native macOS backend: raising ShutdownTimeout from {0}ms to the {1}ms floor.",
+                    (int)options.ShutdownTimeout.TotalMilliseconds,
+                    (int)minimum.TotalMilliseconds);
+                options.ShutdownTimeout = minimum;
+            }
         }
 
         if (EnableErrorEventThrottling && options.Throttler is null)

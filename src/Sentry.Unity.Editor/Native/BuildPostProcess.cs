@@ -85,13 +85,29 @@ public static class BuildPostProcess
             return;
         }
 
+        // Setup the actual plugin and crash handler in the build ouput directory
         try
         {
-            AddCrashHandler(logger, target, buildOutputDir);
+            if (target == BuildTarget.StandaloneOSX)
+            {
+                // Since the backend can change between iterative builds we need to clean up after ourselves
+                CleanupStaleMacOSArtifacts(logger, executablePath);
+            }
+
+            foreach (var artifact in GetNativePluginArtifact(target, options, executablePath, buildOutputDir))
+            {
+                _ = Directory.CreateDirectory(Path.GetDirectoryName(artifact.Destination));
+                logger.LogDebug("Copying '{0}' to '{1}'", artifact.Source, artifact.Destination);
+                File.Copy(artifact.Source, artifact.Destination, overwrite: true);
+                if (artifact.MarkExecutable)
+                {
+                    SentryCli.SetExecutePermission(artifact.Destination);
+                }
+            }
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Failed to add the crash-handler to the built application.");
+            logger.LogError(e, "Failed to copy Sentry runtime artifacts into the built application.");
             throw new BuildFailedException("Sentry Native BuildPostProcess failed");
         }
     }
@@ -108,41 +124,89 @@ public static class BuildPostProcess
         _ => false,
     };
 
-    private static void AddCrashHandler(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir)
+    private readonly struct NativePluginArtifact(string source, string destination, bool isExecutable = false)
     {
+        public readonly string Source = source;
+        public readonly string Destination = destination;
+        public readonly bool MarkExecutable = isExecutable;
+    }
+
+    private static IEnumerable<NativePluginArtifact> GetNativePluginArtifact(
+        BuildTarget target, SentryUnityOptions options, string executablePath, string buildOutputDir)
+    {
+        var pluginsPath = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins");
+
         switch (target)
         {
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
-                logger.LogDebug("Adding crashpad.");
-                CopyHandler(logger, buildOutputDir, Path.Combine("Windows", "Sentry", "crashpad_handler.exe"));
-                CopyHandler(logger, buildOutputDir, Path.Combine("Windows", "Sentry", "crashpad_wer.dll"));
+                // Crashpad must sit next to the player .exe so sentry-native can spawn it on crash
+                yield return new NativePluginArtifact(
+                    Path.Combine(pluginsPath, "Windows", "Sentry", "crashpad_handler.exe"),
+                    Path.Combine(buildOutputDir, "crashpad_handler.exe"));
+                yield return new NativePluginArtifact(
+                    Path.Combine(pluginsPath, "Windows", "Sentry", "crashpad_wer.dll"),
+                    Path.Combine(buildOutputDir, "crashpad_wer.dll"));
                 break;
-            case BuildTarget.StandaloneLinux64:
+
             case BuildTarget.StandaloneOSX:
-                // No standalone crash handler for Linux/macOS - uses built-in handlers.
-                return;
+                var backendSourcePath = options.Experimental.MacosBackend == MacosBackend.Native
+                    ? Path.Combine(pluginsPath, "macOS", "SentryNative~")
+                    : Path.Combine(pluginsPath, "macOS", "Sentry~");
+                var contents = Path.Combine(executablePath, "Contents");
+                foreach (var file in Directory.GetFiles(backendSourcePath))
+                {
+                    var name = Path.GetFileName(file);
+                    var isDylib = name.EndsWith(".dylib", StringComparison.OrdinalIgnoreCase);
+                    // The .dylibs need to go into the `*.app/Contents/Plugins` dirctory and will be picked
+                    // up by unity. The crash handler (sentry-native) needs to be next to the game's executable
+                    var desination = Path.Combine(contents, isDylib ? "PlugIns" : "MacOS", name);
+                    yield return new NativePluginArtifact(
+                        file,
+                        desination,
+                        isExecutable: !isDylib);
+                }
+                break;
+
+            case BuildTarget.StandaloneLinux64:
+                // No standalone crash handler for Linux - uses built-in handlers.
+                break;
             case BuildTarget.GameCoreXboxSeries:
             case BuildTarget.GameCoreXboxOne:
                 // No standalone crash handler for Xbox - comes with Breakpad
-                return;
+                break;
             case BuildTarget.PS5:
                 // No standalone crash handler for PlayStation
-                return;
+                break;
             case BuildTarget.Switch:
                 // No standalone crash handler for Switch - uses Nintendo's crash reporter
-                return;
+                break;
             default:
                 throw new ArgumentException($"Unsupported build target: {target}");
         }
     }
 
-    private static void CopyHandler(IDiagnosticLogger logger, string buildOutputDir, string handlerPath)
+    // On case-insensitive APFS, leftover artifacts from a prior build with
+    // the *other* macOS backend break DllImport("sentry") resolution
+    // (Sentry.dylib gets picked over libsentry.dylib, surfacing as
+    // `sentry_options_new` not found at runtime). Wipe both candidates
+    // before copying the current backend's files in.
+    private static void CleanupStaleMacOSArtifacts(IDiagnosticLogger logger, string executablePath)
     {
-        var fullHandlerPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", handlerPath));
-        var targetHandlerPath = Path.Combine(buildOutputDir, Path.GetFileName(fullHandlerPath));
-        logger.LogInfo("Copying handler '{0}' to {1}", Path.GetFileName(fullHandlerPath), targetHandlerPath);
-        File.Copy(fullHandlerPath, targetHandlerPath, true);
+        var contents = Path.Combine(executablePath, "Contents");
+        foreach (var stale in new[]
+        {
+            Path.Combine(contents, "PlugIns", "Sentry.dylib"),
+            Path.Combine(contents, "PlugIns", "libsentry.dylib"),
+            Path.Combine(contents, "MacOS", "sentry-crash"),
+        })
+        {
+            if (File.Exists(stale))
+            {
+                logger.LogDebug("Removing stale Sentry artifact from prior build: '{0}'", stale);
+                File.Delete(stale);
+            }
+        }
     }
 
     internal static void AddPath(List<string> paths, string path, IDiagnosticLogger logger, bool required = false)
@@ -273,7 +337,16 @@ public static class BuildPostProcess
                 AddPath(paths, Path.Combine(buildOutputDir, executableName), logger, required: true);
 
                 // Sentry dSYM from package
-                AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry/Sentry.dylib.dSYM"), logger);
+                if (options.Experimental.MacosBackend == MacosBackend.Native)
+                {
+                    var packageMacOSDir = $"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/SentryNative~";
+                    AddPath(paths, Path.GetFullPath($"{packageMacOSDir}/libsentry.dylib.dSYM"), logger);
+                    AddPath(paths, Path.GetFullPath($"{packageMacOSDir}/sentry-crash.dSYM"), logger);
+                }
+                else
+                {
+                    AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/Sentry~/Sentry.dylib.dSYM"), logger);
+                }
 
                 if (!isMono) // IL2CPP
                 {
