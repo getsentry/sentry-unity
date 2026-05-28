@@ -43,6 +43,13 @@ public static class SentryNativeCocoa
             }
 
             options.ScopeObserver = new NativeScopeObserver("iOS", options);
+
+            if (options.EnableAppHangTracking)
+            {
+                Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-cocoa handles app hang detection.");
+                options.DisableAnrIntegration();
+            }
+
         }
         else
         {

@@ -66,6 +66,12 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
     dictOptions[[NSString stringWithUTF8String:name]] = [NSNumber numberWithInt:value];
 }
 
+void SentryNativeBridgeOptionsSetDouble(const void *options, const char *name, double value)
+{
+    NSMutableDictionary *dictOptions = (__bridge NSMutableDictionary *)options;
+    dictOptions[[NSString stringWithUTF8String:name]] = [NSNumber numberWithDouble:value];
+}
+
 void SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange(const void *options, int32_t min, int32_t max)
 {
     NSMutableDictionary *dictOptions = (__bridge NSMutableDictionary *)options;
