@@ -161,18 +161,13 @@ public static class BuildPostProcess
         //  - dylibs go to Contents/PlugIns/ — Unity's IL2CPP loader searches there for DllImport.
         //  - executables (e.g. sentry-native's sentry-crash daemon) go to Contents/MacOS/
         //    because sentry-native posix_spawns the daemon from @executable_path.
-        //  - dSYMs are skipped — only consumed from the package at symbol-upload time.
         var contentsDir = Path.Combine(executablePath, "Contents");
         var pluginsDest = Path.Combine(contentsDir, "PlugIns");
         var macOSDest = Path.Combine(contentsDir, "MacOS");
         Directory.CreateDirectory(pluginsDest);
         Directory.CreateDirectory(macOSDest);
 
-        // Remove artifacts from a prior build with the other backend. On
-        // case-insensitive APFS, mono's DllImport("sentry") otherwise resolves
-        // "sentry.dylib" to a leftover Sentry.dylib (Cocoa) before finding
-        // libsentry.dylib (Native), surfacing as `sentry_options_new` not
-        // found at runtime.
+        // Cleanup of previous runs
         foreach (var stale in new[]
         {
             Path.Combine(pluginsDest, "Sentry.dylib"),
@@ -190,15 +185,16 @@ public static class BuildPostProcess
         foreach (var file in Directory.GetFiles(sourceDir))
         {
             var name = Path.GetFileName(file);
-            // Dylibs into PlugIns/ (Unity's loader searches there). Everything
-            // else — i.e. the sentry-crash daemon executable for the Native
-            // backend — into MacOS/ so it sits next to the player binary,
-            // which is where sentry-native posix_spawns it from.
-            var destFile = name.EndsWith(".dylib", StringComparison.OrdinalIgnoreCase)
-                ? Path.Combine(pluginsDest, name)
-                : Path.Combine(macOSDest, name);
+            var isExecutable = !name.EndsWith(".dylib", StringComparison.OrdinalIgnoreCase);
+            var destFile = isExecutable
+                ? Path.Combine(macOSDest, name)
+                : Path.Combine(pluginsDest, name);
             logger.LogDebug("Copying '{0}' to '{1}'", file, destFile);
             File.Copy(file, destFile, overwrite: true);
+            if (isExecutable)
+            {
+                SentryCli.SetExecutePermission(destFile);
+            }
         }
     }
 
