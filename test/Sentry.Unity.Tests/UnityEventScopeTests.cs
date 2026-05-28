@@ -343,19 +343,21 @@ public sealed class UnityEventProcessorTests
     }
 
     [Test]
-    public void UserId_UnchangedIfNonEmpty()
+    public void UserId_DefaultUserIdOverwritesPreExisting()
     {
-        // arrange
-        var options = new SentryUnityOptions(application: _testApplication) { DefaultUserId = "foo" };
+        // arrange - simulates the .NET SDK's GlobalRootScopeIntegration pre-setting User.Id
+        // before UnityScopeIntegration runs. Unity's native installation id (DefaultUserId)
+        // must win so managed events and native crashes share the same User.Id.
+        var options = new SentryUnityOptions(application: _testApplication) { DefaultUserId = "native-id" };
         var sut = new UnityScopeUpdater(options, _testApplication);
         var scope = new Scope(options);
-        scope.User.Id = "bar";
+        scope.User.Id = "dotnet-installation-id";
 
         // act
         sut.ConfigureScope(scope);
 
         // assert
-        Assert.AreEqual(scope.User.Id, "bar");
+        Assert.AreEqual("native-id", scope.User.Id);
     }
 
     [Test]
@@ -395,17 +397,19 @@ public sealed class UnityEventProcessorTests
     }
 
     [Test]
-    public void UserId_ScopeSync_NotTriggeredWhenUserAlreadySet()
+    public void UserId_ScopeSync_TriggeredEvenWhenUserAlreadySet()
     {
-        // arrange - User.Id already set, PopulateUser should early-return
-        var options = new SentryUnityOptions(application: _testApplication) { DefaultUserId = "should-not-sync" };
+        // arrange - simulates the .NET SDK pre-setting User.Id before UnityScopeIntegration runs.
+        // PopulateUser must still overwrite with DefaultUserId so the native SDK receives the
+        // native installation id via the scope observer.
+        var options = new SentryUnityOptions(application: _testApplication) { DefaultUserId = "native-id" };
         var observer = new TestScopeObserver(options);
         options.ScopeObserver = observer;
         options.EnableScopeSync = true;
 
         var sut = new UnityScopeUpdater(options, _testApplication);
         var scope = new Scope(options);
-        scope.User.Id = "already-set";
+        scope.User.Id = "dotnet-installation-id";
 
         // Reset observer after the initial scope.User.Id set above triggered it
         observer.LastUser = null;
@@ -413,8 +417,9 @@ public sealed class UnityEventProcessorTests
         // act
         sut.ConfigureScope(scope);
 
-        // assert - PopulateUser should not have set a new user
-        Assert.IsNull(observer.LastUser, "ScopeObserver.SetUser should not be called when User.Id is already set");
+        // assert - PopulateUser overwrote and synced the native id
+        Assert.IsNotNull(observer.LastUser, "ScopeObserver.SetUser should be called when DefaultUserId is set");
+        Assert.AreEqual("native-id", observer.LastUser!.Id);
     }
 
     [Test]
