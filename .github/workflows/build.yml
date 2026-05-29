@@ -108,7 +108,13 @@ jobs:
         uses: ./.github/actions/wait-for-artifact
         with:
           name: Windows-sdk
-          path: package-dev/Plugins/Windows
+          path: package-dev/Plugins/Windows/Sentry~
+
+      - name: Download WindowsNative SDK
+        uses: ./.github/actions/wait-for-artifact
+        with:
+          name: WindowsNative-sdk
+          path: package-dev/Plugins/Windows/SentryNative~
 
       - name: Build Sentry.Unity Solution
         run: docker exec unity dotnet build -c Release -v:d
