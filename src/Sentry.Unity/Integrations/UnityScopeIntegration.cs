@@ -159,17 +159,19 @@ internal class UnityScopeUpdater
 
     private void PopulateUser(Scope scope)
     {
-        if (scope.User.Id is not null)
-        {
-            return;
-        }
-
-        // Only set the native installation ID here. The .NET SDK's Enricher handles
-        // the fallback to InstallationId after the HasUser() check, which allows
-        // IsEnvironmentUser/SendDefaultPii to set the Username first.
+        // The .NET SDK pre-sets User.Id from its own InstallationId on the root scope in global
+        // mode. On mobile we want the native SDK's installation id so managed events and native
+        // crashes share a user identity — overwrite unconditionally when DefaultUserId is set.
         if (_options.DefaultUserId is not null)
         {
             scope.User.Id = _options.DefaultUserId;
+        }
+
+        // Enricher only applies Environment.UserName when the scope user has no data yet — and
+        // the pre-set User.Id above trips that gate. Apply it here so IsEnvironmentUser is honored.
+        if (scope.User.Username is null && _options.SendDefaultPii && _options.IsEnvironmentUser)
+        {
+            scope.User.Username = Environment.UserName;
         }
     }
 }
