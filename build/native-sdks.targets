@@ -104,7 +104,6 @@
     <!-- Wipe prior outputs -->
     <RemoveDir Directories="$(SentryNativeRoot)build" ContinueOnError="true" />
     <Delete Files="$(SentryWindowsArtifactsDestination)crashpad_handler.exe" ContinueOnError="true" />
-    <Delete Files="$(SentryWindowsArtifactsDestination)crashpad_handler.pdb" ContinueOnError="true" />
     <Delete Files="$(SentryWindowsArtifactsDestination)crashpad_wer.dll" ContinueOnError="true" />
     <Delete Files="$(SentryWindowsArtifactsDestination)crashpad_wer.pdb" ContinueOnError="true" />
     <Delete Files="$(SentryWindowsArtifactsDestination)sentry.dll" ContinueOnError="true" />
@@ -118,7 +117,6 @@
 
     <ItemGroup>
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.exe" />
-      <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/Release/crashpad_handler.pdb" />
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/RelWithDebInfo/crashpad_wer.dll" />
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/crashpad_build/handler/RelWithDebInfo/crashpad_wer.pdb" />
       <NativeSdkArtifacts Include="$(SentryNativeRoot)build/RelWithDebInfo/sentry.dll" />
