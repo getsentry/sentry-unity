@@ -45,6 +45,8 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 
+        options.Experimental.MacosBackend = MacosBackend.Cocoa;
+
         Debug.Log("Sentry: IntegrationOptionsConfig::Configure() finished");
     }
 }

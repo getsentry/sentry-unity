@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Introduce `sentry-native` on macOS as experimental backend. This is an opt-in and accessible programmatically via the `options.Experimental`. The `sentry-native` backend allows for crashes to be sent immediately and will enable further updates, like `AppHangTracking` support ([#2687](https://github.com/getsentry/sentry-unity/pull/2687))
+
 ### Fixes
 
 - The SDK now uses Gradle's built-in Exec task type when setting up the automated debug symbol upload. This resolves builds failing when targeting Android on Unity 6.4 ([#2686](https://github.com/getsentry/sentry-unity/pull/2686))
@@ -9,16 +13,17 @@
 
 ### Features
 
-- Added `AndroidNativeAnrEnabled` (default `true`) to enable ANR detection through `sentry-java` SDK. The native ANR integration monitors the Android UI thread. On API ≥ 30 this uses [ANR v2](https://docs.sentry.io/platforms/android/configuration/app-not-respond/) via `ApplicationExitInfo` to report OS-detected ANRs from prior runs; on API < 30 it falls back to an in-process watchdog. This is complementary to the Unity SDK's C# watchdog, which monitors the Unity player loop. ([#2671](https://github.com/getsentry/sentry-unity/pull/2671))
+- Added `EnableAppHangTracking` (default `true`) and `AppHangTimeout` (default `5s`) to enable app hang detection via the native SDK. Currently effective on iOS through `sentry-cocoa`, which monitors the main thread and produces a stack trace for the hang event. On other platforms this is a no-op until each platform's native hang detection lands. When enabled on iOS, the Unity SDK's C# watchdog is skipped to avoid duplicate reports ([#2679](https://github.com/getsentry/sentry-unity/pull/2679))
+- Added `AndroidNativeAnrEnabled` (default `true`) to enable ANR detection through the `sentry-java` SDK. The native ANR integration monitors the Android UI thread. On API ≥ 30 this uses [ANR v2](https://docs.sentry.io/platforms/android/configuration/app-not-respond/) via `ApplicationExitInfo` to report OS-detected ANRs from prior runs; on API < 30 it falls back to an in-process watchdog. This is complementary to the Unity SDK's C# watchdog, which monitors the Unity player loop. ([#2671](https://github.com/getsentry/sentry-unity/pull/2671))
 
 ### Dependencies
 
-- Bump Cocoa SDK from v9.12.0 to v9.14.0 ([#2670](https://github.com/getsentry/sentry-unity/pull/2670), [#2677](https://github.com/getsentry/sentry-unity/pull/2677), [#2694](https://github.com/getsentry/sentry-unity/pull/2694))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9140)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.12.0...9.14.0)
-- Bump Java SDK from v8.40.0 to v8.42.0 ([#2669](https://github.com/getsentry/sentry-unity/pull/2669), [#2691](https://github.com/getsentry/sentry-unity/pull/2691))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8420)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.40.0...8.42.0)
+- Bump Cocoa SDK from v9.12.0 to v9.15.0 ([#2670](https://github.com/getsentry/sentry-unity/pull/2670), [#2677](https://github.com/getsentry/sentry-unity/pull/2677), [#2694](https://github.com/getsentry/sentry-unity/pull/2694), [#2697](https://github.com/getsentry/sentry-unity/pull/2697))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9150)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.12.0...9.15.0)
+- Bump Java SDK from v8.40.0 to v8.43.0 ([#2669](https://github.com/getsentry/sentry-unity/pull/2669), [#2691](https://github.com/getsentry/sentry-unity/pull/2691), [#2696](https://github.com/getsentry/sentry-unity/pull/2696))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8430)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.40.0...8.43.0)
 - Bump CLI from v3.4.1 to v3.4.3 ([#2678](https://github.com/getsentry/sentry-unity/pull/2678), [#2693](https://github.com/getsentry/sentry-unity/pull/2693))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#343)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.4.1...3.4.3)

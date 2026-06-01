@@ -1,3 +1,4 @@
+using System;
 using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;

@@ -186,6 +186,19 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool IosWatchdogTerminationIntegrationEnabled { get; set; } = false;
 
     /// <summary>
+    /// Enables app hang detection on platforms whose native SDK can deliver Unity-thread hang
+    /// coverage. Currently effective on iOS only; on other platforms this is a no-op until each
+    /// platform's native hang detection lands.
+    /// </summary>
+    public bool EnableAppHangTracking { get; set; } = true;
+
+    /// <summary>
+    /// The minimum duration for which the main thread must be blocked before <see cref="EnableAppHangTracking"/>
+    /// reports an app hang.
+    /// </summary>
+    public TimeSpan AppHangTimeout { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
     /// Whether the SDK should initialize the native SDK before the game starts. This bakes the options at build-time into
     /// the generated Xcode project. Modifying the options at runtime will not affect the options used to initialize
     /// the native SDK.
@@ -265,6 +278,11 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Whether the SDK should add native support for MacOS
     /// </summary>
     public bool MacosNativeSupportEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Experimental options. APIs and defaults here may change between releases.
+    /// </summary>
+    public ExperimentalSentryUnityOptions Experimental { get; } = new();
 
     /// <summary>
     /// Whether the SDK should add native support for Linux
