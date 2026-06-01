@@ -35,13 +35,8 @@ jobs:
   sdk:
     strategy:
       matrix:
+        # TEMP: only building macOS native SDKs while debugging the macOS lightmapper failure
         include:
-          - target: Android
-            host: ubuntu-latest
-          - target: Linux
-            host: ubuntu-latest
-          - target: Windows
-            host: windows-latest
           - target: Cocoa
             host: macos-latest
           - target: MacOSNative
@@ -122,7 +117,7 @@ jobs:
   # A Linux, docker-based build to prepare a WebGL player. The tests run in `test-run-webgl`.
   test-build-webgl:
     name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-create, create-unity-matrix]
     runs-on: ubuntu-latest
     strategy:
@@ -261,7 +256,7 @@ jobs:
 
   test-build-android:
     name: Build Android ${{ matrix.unity-version }} Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -273,7 +268,7 @@ jobs:
 
   test-run-android:
     name: Run Android ${{ matrix.unity-version }} Integration Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-build-android, create-unity-matrix]
     secrets: inherit
     uses: ./.github/workflows/test-run-android.yml
@@ -291,7 +286,7 @@ jobs:
 
   test-build-ios:
     name: Build iOS ${{ matrix.unity-version }} Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -303,7 +298,7 @@ jobs:
 
   test-compile-ios:
     name: Compile iOS ${{ matrix.unity-version }} Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-build-ios, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -318,7 +313,7 @@ jobs:
 
   test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Integration Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-compile-ios, create-unity-matrix]
     uses: ./.github/workflows/test-run-ios.yml
     with:
@@ -344,7 +339,7 @@ jobs:
 
   test-run-webgl:
     name: Run WebGL ${{ matrix.unity-version }} Integration Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-build-webgl, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -357,7 +352,7 @@ jobs:
 
   test-build-linux:
     name: Build Linux ${{ matrix.unity-version }} Integration Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -370,7 +365,7 @@ jobs:
 
   test-build-windows:
     name: Build Windows ${{ matrix.unity-version }} Integration Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -396,7 +391,7 @@ jobs:
 
   test-run-linux:
     name: Run Linux ${{ matrix.unity-version }} Integration Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-build-linux, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -410,7 +405,7 @@ jobs:
 
   test-run-windows:
     name: Run Windows ${{ matrix.unity-version }} Integration Test
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-build-windows, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -441,7 +436,7 @@ jobs:
   build-size-summary:
     name: Build Size
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    if: false # TEMP: disabled while debugging macOS lightmapper failure
     needs: [test-build-webgl, test-build-android, test-compile-ios, test-build-linux, test-build-windows, test-build-macos]
     steps:
       - name: Checkout

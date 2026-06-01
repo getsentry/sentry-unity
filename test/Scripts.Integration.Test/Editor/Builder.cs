@@ -28,7 +28,6 @@ public class Builder
         PlayerSettings.runInBackground = true;
 
         DisableUnityAudio();
-        DisableProgressiveLightMapper();
 
         Debug.Log("Builder: Setting IL2CPP generation to OptimizeSpeed");
 #if UNITY_2022_1_OR_NEWER
@@ -249,17 +248,5 @@ public class Builder
         var prop = serializedManager.FindProperty("m_DisableAudio");
         prop.boolValue = true;
         serializedManager.ApplyModifiedProperties();
-    }
-
-    // The Progressive Lightmapper does not work on silicone CPUs and there is no GPU in CI
-    private static void DisableProgressiveLightMapper()
-    {
-#if UNITY_2021_1_OR_NEWER
-        Lightmapping.lightingSettings = new LightingSettings
-        {
-            bakedGI = false,
-            realtimeGI = false
-        };
-#endif
     }
 }
