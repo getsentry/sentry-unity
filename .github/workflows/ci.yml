@@ -122,7 +122,7 @@ jobs:
   # A Linux, docker-based build to prepare a WebGL player. The tests run in `test-run-webgl`.
   test-build-webgl:
     name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
     runs-on: ubuntu-latest
     strategy:
@@ -261,7 +261,7 @@ jobs:
 
   test-build-android:
     name: Build Android ${{ matrix.unity-version }} Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -273,7 +273,7 @@ jobs:
 
   test-run-android:
     name: Run Android ${{ matrix.unity-version }} Integration Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-android, create-unity-matrix]
     secrets: inherit
     uses: ./.github/workflows/test-run-android.yml
@@ -291,7 +291,7 @@ jobs:
 
   test-build-ios:
     name: Build iOS ${{ matrix.unity-version }} Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -303,7 +303,7 @@ jobs:
 
   test-compile-ios:
     name: Compile iOS ${{ matrix.unity-version }} Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-ios, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -318,7 +318,7 @@ jobs:
 
   test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Integration Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-compile-ios, create-unity-matrix]
     uses: ./.github/workflows/test-run-ios.yml
     with:
@@ -344,7 +344,7 @@ jobs:
 
   test-run-webgl:
     name: Run WebGL ${{ matrix.unity-version }} Integration Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-webgl, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -357,7 +357,7 @@ jobs:
 
   test-build-linux:
     name: Build Linux ${{ matrix.unity-version }} Integration Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -370,7 +370,7 @@ jobs:
 
   test-build-windows:
     name: Build Windows ${{ matrix.unity-version }} Integration Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -390,13 +390,17 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        # The progressive lightmapper requires a GPU, which the Apple silicon CI runners don't have.
+        # On Unity 2021 this fails the player build outright (instead of warning), so skip macOS 2021.3.
+        exclude:
+          - unity-version: "2021.3"
     uses: ./.github/workflows/test-build-macos.yml
     with:
       unity-version: ${{ matrix.unity-version }}
 
   test-run-linux:
     name: Run Linux ${{ matrix.unity-version }} Integration Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-linux, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -410,7 +414,7 @@ jobs:
 
   test-run-windows:
     name: Run Windows ${{ matrix.unity-version }} Integration Test
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-windows, create-unity-matrix]
     secrets: inherit
     strategy:
@@ -432,6 +436,10 @@ jobs:
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         backend: ["cocoa", "native"]
+        # See test-build-macos: the progressive lightmapper needs a GPU the Apple silicon
+        # CI runners lack, which fails the Unity 2021 player build. Skip macOS 2021.3.
+        exclude:
+          - unity-version: "2021.3"
     uses: ./.github/workflows/test-run-desktop.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -441,7 +449,7 @@ jobs:
   build-size-summary:
     name: Build Size
     runs-on: ubuntu-latest
-    if: false # TEMP: disabled while debugging macOS lightmapper failure
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-webgl, test-build-android, test-compile-ios, test-build-linux, test-build-windows, test-build-macos]
     steps:
       - name: Checkout
