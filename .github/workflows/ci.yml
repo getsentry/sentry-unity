@@ -35,8 +35,13 @@ jobs:
   sdk:
     strategy:
       matrix:
-        # TEMP: only building macOS native SDKs while debugging the macOS lightmapper failure
         include:
+          - target: Android
+            host: ubuntu-latest
+          - target: Linux
+            host: ubuntu-latest
+          - target: Windows
+            host: windows-latest
           - target: Cocoa
             host: macos-latest
           - target: MacOSNative
