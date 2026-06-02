@@ -390,6 +390,10 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+        # The progressive lightmapper requires a GPU, which the Apple silicon CI runners don't have.
+        # On Unity 2021 this fails the player build outright (instead of warning), so skip macOS 2021.3.
+        exclude:
+          - unity-version: "2021.3"
     uses: ./.github/workflows/test-build-macos.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -432,6 +436,10 @@ jobs:
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         backend: ["cocoa", "native"]
+        # See test-build-macos: the progressive lightmapper needs a GPU the Apple silicon
+        # CI runners lack, which fails the Unity 2021 player build. Skip macOS 2021.3.
+        exclude:
+          - unity-version: "2021.3"
     uses: ./.github/workflows/test-run-desktop.yml
     with:
       unity-version: ${{ matrix.unity-version }}
