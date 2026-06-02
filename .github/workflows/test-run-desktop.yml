@@ -22,7 +22,7 @@ defaults:
 jobs:
   run:
     name: ${{ inputs.platform }}${{ inputs.backend && format(' ({0})', inputs.backend) || '' }} ${{ inputs.unity-version }}
-    runs-on: ${{ inputs.platform == 'linux' && 'ubuntu-latest' || inputs.platform == 'macos' && 'macos-latest' || 'windows-latest' }}
+    runs-on: ${{ inputs.platform == 'linux' && 'ubuntu-latest' || inputs.platform == 'macos' && 'macos-15' || 'windows-latest' }}
     env:
       SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

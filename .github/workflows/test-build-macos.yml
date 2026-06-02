@@ -13,7 +13,7 @@ defaults:
 jobs:
   build:
     name: macOS ${{ inputs.unity-version }}
-    runs-on: macos-latest
+    runs-on: macos-15
     env:
       UNITY_VERSION: ${{ inputs.unity-version }}
       BUILD_PLATFORM: MacOS

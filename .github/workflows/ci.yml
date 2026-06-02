@@ -43,9 +43,9 @@ jobs:
           - target: Windows
             host: windows-latest
           - target: Cocoa
-            host: macos-latest
+            host: macos-15
           - target: MacOSNative
-            host: macos-latest
+            host: macos-15
     uses: ./.github/workflows/sdk.yml
     with:
       target: ${{ matrix.target }}
