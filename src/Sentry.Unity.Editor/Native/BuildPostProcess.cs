@@ -93,6 +93,11 @@ public static class BuildPostProcess
                 // Since the backend can change between iterative builds we need to clean up after ourselves
                 CleanupStaleMacOSArtifacts(logger, executablePath);
             }
+            else if (target is BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64)
+            {
+                // Since the backend can change between iterative builds we need to clean up after ourselves
+                CleanupStaleWindowsArtifacts(logger, buildOutputDir);
+            }
 
             foreach (var artifact in GetNativePluginArtifact(target, options, executablePath, buildOutputDir))
             {
@@ -140,13 +145,29 @@ public static class BuildPostProcess
         {
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
-                // Crashpad must sit next to the player .exe so sentry-native can spawn it on crash
-                yield return new NativePluginArtifact(
-                    Path.Combine(pluginsPath, "Windows", "Sentry", "crashpad_handler.exe"),
-                    Path.Combine(buildOutputDir, "crashpad_handler.exe"));
-                yield return new NativePluginArtifact(
-                    Path.Combine(pluginsPath, "Windows", "Sentry", "crashpad_wer.dll"),
-                    Path.Combine(buildOutputDir, "crashpad_wer.dll"));
+                var windowsBackendSourcePath = options.Experimental.WindowsBackend == WindowsBackend.Native
+                    ? Path.Combine(pluginsPath, "Windows", "SentryNative~")
+                    : Path.Combine(pluginsPath, "Windows", "Sentry~");
+                if (!Directory.Exists(windowsBackendSourcePath))
+                {
+                    var buildTarget = options.Experimental.WindowsBackend == WindowsBackend.Native ? "BuildWindowsNativeSDK" : "BuildWindowsSDK";
+                    throw new BuildFailedException(
+                        $"Sentry Windows plugin directory not found: {windowsBackendSourcePath}\n" +
+                        $"Run 'dotnet msbuild /t:{buildTarget} src/Sentry.Unity' (or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it.");
+                }
+                // Flat copy of every non-PDB file next to the player .exe — sentry.dll and the
+                // crash handler (crashpad_handler.exe / sentry-crash.exe) all sit at the build root.
+                // PDBs stay in the package and are consumed at symbol-upload time only.
+                foreach (var file in Directory.GetFiles(windowsBackendSourcePath))
+                {
+                    if (file.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                    yield return new NativePluginArtifact(
+                        file,
+                        Path.Combine(buildOutputDir, Path.GetFileName(file)));
+                }
                 break;
 
             case BuildTarget.StandaloneOSX:
@@ -199,6 +220,28 @@ public static class BuildPostProcess
             Path.Combine(contents, "PlugIns", "Sentry.dylib"),
             Path.Combine(contents, "PlugIns", "libsentry.dylib"),
             Path.Combine(contents, "MacOS", "sentry-crash"),
+        })
+        {
+            if (File.Exists(stale))
+            {
+                logger.LogDebug("Removing stale Sentry artifact from prior build: '{0}'", stale);
+                File.Delete(stale);
+            }
+        }
+    }
+
+    // Switching Windows backends between iterative builds leaves the other
+    // backend's crash handler next to the player .exe (e.g. crashpad_handler.exe
+    // lingers after switching to sentry-native). Wipe known handlers from both
+    // backends before copying the current backend's files in.
+    private static void CleanupStaleWindowsArtifacts(IDiagnosticLogger logger, string buildOutputDir)
+    {
+        foreach (var stale in new[]
+        {
+            Path.Combine(buildOutputDir, "crashpad_handler.exe"),
+            Path.Combine(buildOutputDir, "crashpad_wer.dll"),
+            Path.Combine(buildOutputDir, "sentry-crash.exe"),
+            Path.Combine(buildOutputDir, "sentry-wer.dll"),
         })
         {
             if (File.Exists(stale))
@@ -263,8 +306,21 @@ public static class BuildPostProcess
                 AddPath(paths, Path.Combine(buildOutputDir, executableName), logger, required: true);
                 AddPath(paths, Path.Combine(buildOutputDir, "UnityPlayer.dll"), logger, required: true);
 
-                // Sentry native SDK symbols from package
-                AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/Sentry/sentry.pdb"), logger);
+                // Sentry native SDK symbols from package.
+                // Glob *.pdb from whichever backend's source dir is in use, so adding
+                // or removing PDBs at build time doesn't require touching this code.
+                var windowsBackendDir = options.Experimental.WindowsBackend == WindowsBackend.Native
+                    ? "SentryNative~"
+                    : "Sentry~";
+                var windowsPdbDir = Path.GetFullPath(
+                    $"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/{windowsBackendDir}");
+                if (Directory.Exists(windowsPdbDir))
+                {
+                    foreach (var pdb in Directory.GetFiles(windowsPdbDir, "*.pdb"))
+                    {
+                        AddPath(paths, pdb, logger);
+                    }
+                }
 
                 // Data - native plugins
                 foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_Data"))

@@ -15,8 +15,13 @@ $ArtifactsDestination = Join-Path $RepoRoot "package-dev/Plugins"
 $SDKs = @(
     @{
         Name = "Windows"
-        Destination = Join-Path $ArtifactsDestination "Windows"
-        CheckFile = "Sentry/sentry.dll"
+        Destination = Join-Path $ArtifactsDestination "Windows/Sentry~"
+        CheckFile = "sentry.dll"
+    },
+    @{
+        Name = "WindowsNative"
+        Destination = Join-Path $ArtifactsDestination "Windows/SentryNative~"
+        CheckFile = "sentry.dll"
     },
     @{
         Name = "Linux"
@@ -85,7 +90,19 @@ function Get-LatestSuccessfulRunId {
     return $result
 }
 
-function Download-SDK {
+function Get-LatestBranchRunId {
+    param([Parameter(Mandatory)][string]$Branch)
+
+    # Any conclusion — the SDK build job uploads its artifact before downstream
+    # jobs run, so a run that overall failed often still has the SDK artifact.
+    $result = gh run list --branch $Branch --workflow CI --limit 1 --json databaseId --jq '.[0].databaseId'
+    if (-not $result -or $result -eq 'null') {
+        return $null
+    }
+    return $result
+}
+
+function Try-DownloadSDK {
     param(
         [Parameter(Mandatory)]
         [string]$Name,
@@ -95,31 +112,35 @@ function Download-SDK {
         [string]$RunId
     )
 
-    Write-Host "Downloading $Name SDK..." -ForegroundColor Yellow
-
     $artifactName = "$Name-sdk"
 
-    # Download to a temp directory, then move contents into destination
     $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "sentry-$Name-sdk-download"
     if (Test-Path $tempDir) {
         Remove-Item -Path $tempDir -Recurse -Force
     }
 
-    gh run download $RunId -n $artifactName -D $tempDir
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to download $Name SDK"
-        exit 1
+    # `gh run download` exits non-zero when the artifact doesn't exist in the
+    # run; we want to handle that as "not available here" rather than abort.
+    $previousEAP = $PSNativeCommandUseErrorActionPreference
+    $PSNativeCommandUseErrorActionPreference = $false
+    try {
+        gh run download $RunId -n $artifactName -D $tempDir 2>$null
+        $downloadExit = $LASTEXITCODE
+    }
+    finally {
+        $PSNativeCommandUseErrorActionPreference = $previousEAP
+    }
+    if ($downloadExit -ne 0) {
+        return $false
     }
 
-    # Move downloaded contents into the destination
     if (-not (Test-Path $Destination)) {
         New-Item -ItemType Directory -Path $Destination -Force | Out-Null
     }
     Copy-Item -Path (Join-Path $tempDir "*") -Destination $Destination -Recurse -Force
     Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
 
-    Write-Host "  Downloaded $Name SDK successfully" -ForegroundColor Green
+    return $true
 }
 
 # Main logic
@@ -145,11 +166,35 @@ if ($sdksToDownload.Count -eq 0) {
     exit 0
 }
 
-# Fetch run ID only if we need to download something
-$runId = Get-LatestSuccessfulRunId
+# Primary source is main's latest successful run. For artifacts not yet on
+# main (e.g. new native backends under development), fall back to the latest
+# CI run on the current branch.
+$mainRunId = Get-LatestSuccessfulRunId
 
+$branchRunId = $null
+$currentBranch = (git -C $RepoRoot rev-parse --abbrev-ref HEAD).Trim()
+if ($currentBranch -and $currentBranch -ne 'main' -and $currentBranch -ne 'HEAD') {
+    $branchRunId = Get-LatestBranchRunId -Branch $currentBranch
+}
+
+$failed = @()
 foreach ($sdk in $sdksToDownload) {
-    Download-SDK -Name $sdk.Name -Destination $sdk.Destination -RunId $runId
+    Write-Host "Downloading $($sdk.Name) SDK..." -ForegroundColor Yellow
+    if (Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $mainRunId) {
+        Write-Host "  Downloaded from main run $mainRunId" -ForegroundColor Green
+        continue
+    }
+    if ($branchRunId -and (Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $branchRunId)) {
+        Write-Host "  Not on main; downloaded from branch '$currentBranch' run $branchRunId" -ForegroundColor Yellow
+        continue
+    }
+    $failed += $sdk.Name
+}
+
+if ($failed.Count -gt 0) {
+    $names = $failed -join ', '
+    Write-Error "Could not download these SDK artifacts: $names. Push the branch so CI publishes the artifact, or build locally with Build<Name>SDK."
+    exit 1
 }
 
 Write-Host ""

@@ -4,7 +4,7 @@
 
 ### Features
 
-- Introduce `sentry-native` on macOS as experimental backend. This is an opt-in and accessible programmatically via the `options.Experimental`. The `sentry-native` backend allows for crashes to be sent immediately and will enable further updates, like `AppHangTracking` support ([#2687](https://github.com/getsentry/sentry-unity/pull/2687))
+- Introduce `sentry-native` as an experimental backend on macOS and Windows. Opt in via `options.Experimental.MacosBackend = MacosBackend.Native` or `options.Experimental.WindowsBackend = WindowsBackend.Native`. The `sentry-native` backend uploads crashes immediately and enables further updates such as `AppHangTracking` support ([#2687](https://github.com/getsentry/sentry-unity/pull/2687), [#2692](https://github.com/getsentry/sentry-unity/pull/2692))
 
 ### Fixes
 

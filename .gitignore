@@ -46,6 +46,10 @@ modules/sentry-native-ndk
 # Android SDK files
 package-dev/Plugins/Android/Sentry~/*
 
+# Windows SDK files
+package-dev/Plugins/Windows/Sentry~/*
+package-dev/Plugins/Windows/SentryNative~/*
+
 # CLI
 package-dev/Editor/sentry-cli
 

@@ -46,6 +46,7 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 
         options.Experimental.MacosBackend = MacosBackend.Cocoa;
+        options.Experimental.WindowsBackend = WindowsBackend.Crashpad;
 
         Debug.Log("Sentry: IntegrationOptionsConfig::Configure() finished");
     }

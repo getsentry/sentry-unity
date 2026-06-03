@@ -184,6 +184,25 @@ public class ScriptableSentryUnityOptionsTests
         Assert.AreEqual(MacosBackend.Native, options.Experimental.MacosBackend);
     }
 
+    [Test]
+    public void Experimental_WindowsBackend_DefaultValue_IsCrashpad()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+
+        Assert.AreEqual(WindowsBackend.Crashpad, scriptableOptions.Experimental.WindowsBackend);
+    }
+
+    [Test]
+    public void ToSentryUnityOptions_WindowsBackendNative_Propagates()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        scriptableOptions.Experimental.WindowsBackend = WindowsBackend.Native;
+
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.Application);
+
+        Assert.AreEqual(WindowsBackend.Native, options.Experimental.WindowsBackend);
+    }
+
     public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
     {
         Assert.AreEqual(expected.Enabled, actual.Enabled);

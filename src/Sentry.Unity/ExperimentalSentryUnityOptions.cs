@@ -18,4 +18,14 @@ public class ExperimentalSentryUnityOptions
     /// a minimum of 10 seconds so the out-of-process handler has time to flush before the player exits.
     /// </summary>
     [field: SerializeField] public MacosBackend MacosBackend { get; set; } = MacosBackend.Cocoa;
+
+    /// <summary>
+    /// Selects the native backend to use on Windows. Defaults to <see cref="Sentry.Unity.WindowsBackend.Crashpad"/>,
+    /// which ships <c>crashpad_handler.exe</c> as the out-of-process handler. Use
+    /// <see cref="Sentry.Unity.WindowsBackend.Native"/> for sentry-native's new out-of-process <c>sentry-crash.exe</c>
+    /// daemon, which uploads crashes immediately.
+    /// When set to <see cref="Sentry.Unity.WindowsBackend.Native"/>, <c>ShutdownTimeout</c> is raised to
+    /// a minimum of 10 seconds so the out-of-process handler has time to flush before the player exits.
+    /// </summary>
+    [field: SerializeField] public WindowsBackend WindowsBackend { get; set; } = WindowsBackend.Crashpad;
 }

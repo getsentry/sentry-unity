@@ -248,6 +248,17 @@ internal static class AdvancedTab
                         "Uploads crashes immediately and supports both IL2CPP and Mono."),
                     options.Experimental.MacosBackend);
             }
+
+            using (new EditorGUI.DisabledScope(!options.WindowsNativeSupportEnabled))
+            {
+                options.Experimental.WindowsBackend = (WindowsBackend)EditorGUILayout.EnumPopup(
+                    new GUIContent(
+                        "Windows Backend",
+                        "Crashpad: ships crashpad_handler.exe as the out-of-process handler.\n" +
+                        "Native: uses sentry-native's new out-of-process sentry-crash.exe daemon. " +
+                        "Uploads crashes immediately."),
+                    options.Experimental.WindowsBackend);
+            }
         }
         EditorGUI.indentLevel--;
         EditorGUILayout.EndFoldoutHeaderGroup();
