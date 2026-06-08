@@ -91,6 +91,14 @@ public static class SentryNative
         {
             Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
             SentryMonoBehaviour.Instance.StartAppHangHeartbeat(SentryNativeBridge.AppHangHeartbeat);
+
+            // sentry-native's app-hang detection is currently macOS-only. Where it is effective, skip the
+            // C# ANR watchdog so a hang isn't reported twice (mirrors the iOS/sentry-cocoa behavior).
+            if (platform is RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer)
+            {
+                Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-native handles app hang detection on macOS.");
+                options.DisableAnrIntegration();
+            }
         }
 
         ShouldReinstallBackend = true;
