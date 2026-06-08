@@ -64,7 +64,7 @@ internal static class AdvancedTab
 
                 options.EnableAppHangTracking = EditorGUILayout.Toggle(
                     new GUIContent("Enable",
-                        "Enables app hang detection via the native SDK. Currently effective on iOS only; " +
+                        "Enables app hang detection via the native SDK. Effective on iOS, and on macOS when using the Native backend; " +
                         "no-op on other platforms until each platform's native hang detection lands."),
                     options.EnableAppHangTracking);
 
