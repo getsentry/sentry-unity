@@ -25,8 +25,13 @@ $SDKs = @(
     },
     @{
         Name = "Linux"
-        Destination = Join-Path $ArtifactsDestination "Linux"
-        CheckFile = "Sentry/libsentry.so"
+        Destination = Join-Path $ArtifactsDestination "Linux/Sentry~"
+        CheckFile = "libsentry.so"
+    },
+    @{
+        Name = "LinuxNative"
+        Destination = Join-Path $ArtifactsDestination "Linux/SentryNative~"
+        CheckFile = "libsentry.so"
     },
     @{
         Name = "Android"

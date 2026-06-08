@@ -47,6 +47,7 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
 
         options.Experimental.MacosBackend = MacosBackend.Cocoa;
         options.Experimental.WindowsBackend = WindowsBackend.Crashpad;
+        options.Experimental.LinuxBackend = LinuxBackend.Breakpad;
 
         Debug.Log("Sentry: IntegrationOptionsConfig::Configure() finished");
     }

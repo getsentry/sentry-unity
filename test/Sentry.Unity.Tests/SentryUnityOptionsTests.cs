@@ -141,4 +141,19 @@ public sealed class SentryUnityOptionsTests
         options.Experimental.WindowsBackend = WindowsBackend.Native;
         Assert.AreEqual(WindowsBackend.Native, options.Experimental.WindowsBackend);
     }
+
+    [Test]
+    public void Options_Experimental_LinuxBackend_DefaultsToBreakpad()
+    {
+        var options = new SentryUnityOptions();
+        Assert.AreEqual(LinuxBackend.Breakpad, options.Experimental.LinuxBackend);
+    }
+
+    [Test]
+    public void Options_Experimental_LinuxBackend_IsSettable()
+    {
+        var options = new SentryUnityOptions();
+        options.Experimental.LinuxBackend = LinuxBackend.Native;
+        Assert.AreEqual(LinuxBackend.Native, options.Experimental.LinuxBackend);
+    }
 }

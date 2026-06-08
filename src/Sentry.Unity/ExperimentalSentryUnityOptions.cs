@@ -28,4 +28,14 @@ public class ExperimentalSentryUnityOptions
     /// a minimum of 10 seconds so the out-of-process handler has time to flush before the player exits.
     /// </summary>
     [field: SerializeField] public WindowsBackend WindowsBackend { get; set; } = WindowsBackend.Crashpad;
+
+    /// <summary>
+    /// Selects the native backend to use on Linux. Defaults to <see cref="Sentry.Unity.LinuxBackend.Breakpad"/>,
+    /// the in-process handler that uploads crashes on the next launch. Use
+    /// <see cref="Sentry.Unity.LinuxBackend.Native"/> for sentry-native's new out-of-process <c>sentry-crash</c>
+    /// daemon, which uploads crashes immediately.
+    /// When set to <see cref="Sentry.Unity.LinuxBackend.Native"/>, <c>ShutdownTimeout</c> is raised to
+    /// a minimum of 10 seconds so the out-of-process handler has time to flush before the player exits.
+    /// </summary>
+    [field: SerializeField] public LinuxBackend LinuxBackend { get; set; } = LinuxBackend.Breakpad;
 }
