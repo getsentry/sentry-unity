@@ -50,6 +50,10 @@ package-dev/Plugins/Android/Sentry~/*
 package-dev/Plugins/Windows/Sentry~/*
 package-dev/Plugins/Windows/SentryNative~/*
 
+# Linux SDK files
+package-dev/Plugins/Linux/Sentry~/*
+package-dev/Plugins/Linux/SentryNative~/*
+
 # CLI
 package-dev/Editor/sentry-cli
 

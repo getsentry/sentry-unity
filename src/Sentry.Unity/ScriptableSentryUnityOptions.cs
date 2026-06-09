@@ -236,6 +236,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         options.EnableMetrics = EnableMetrics;
         options.Experimental.MacosBackend = Experimental.MacosBackend;
         options.Experimental.WindowsBackend = Experimental.WindowsBackend;
+        options.Experimental.LinuxBackend = Experimental.LinuxBackend;
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
         if (!EnableOfflineCaching)
@@ -271,10 +272,11 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             OptionsConfiguration.Configure(options);
         }
 
-        // The macOS / Windows Native backends hand crash uploads to an out-of-process handler that gets killed
-        // when the player exits. Enforce a floor so the handler has time to flush.
+        // The macOS / Windows / Linux Native backends hand crash uploads to an out-of-process handler that gets
+        // killed when the player exits. Enforce a floor so the handler has time to flush.
         if (options.Experimental.MacosBackend == MacosBackend.Native
-            || options.Experimental.WindowsBackend == WindowsBackend.Native)
+            || options.Experimental.WindowsBackend == WindowsBackend.Native
+            || options.Experimental.LinuxBackend == LinuxBackend.Native)
         {
             var minimum = TimeSpan.FromSeconds(10);
             if (options.ShutdownTimeout < minimum)

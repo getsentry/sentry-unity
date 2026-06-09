@@ -98,6 +98,11 @@ public static class BuildPostProcess
                 // Since the backend can change between iterative builds we need to clean up after ourselves
                 CleanupStaleWindowsArtifacts(logger, buildOutputDir);
             }
+            else if (target == BuildTarget.StandaloneLinux64)
+            {
+                // Since the backend can change between iterative builds we need to clean up after ourselves
+                CleanupStaleLinuxArtifacts(logger, buildOutputDir);
+            }
 
             foreach (var artifact in GetNativePluginArtifact(target, options, executablePath, buildOutputDir))
             {
@@ -190,7 +195,37 @@ public static class BuildPostProcess
                 break;
 
             case BuildTarget.StandaloneLinux64:
-                // No standalone crash handler for Linux - uses built-in handlers.
+                var linuxBackendSourcePath = options.Experimental.LinuxBackend == LinuxBackend.Native
+                    ? Path.Combine(pluginsPath, "Linux", "SentryNative~")
+                    : Path.Combine(pluginsPath, "Linux", "Sentry~");
+                if (!Directory.Exists(linuxBackendSourcePath))
+                {
+                    var buildTarget = options.Experimental.LinuxBackend == LinuxBackend.Native ? "BuildLinuxNativeSDK" : "BuildLinuxSDK";
+                    throw new BuildFailedException(
+                        $"Sentry Linux plugin directory not found: {linuxBackendSourcePath}\n" +
+                        $"Run 'dotnet msbuild /t:{buildTarget} src/Sentry.Unity' (or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it.");
+                }
+                // libsentry.so must sit in the player's native plugin dir (<name>_Data/Plugins/x86_64) where the
+                // Linux player resolves DllImport("sentry"). The crash daemon (sentry-crash, native backend only)
+                // sits next to the player executable so sentry-native can spawn it on crash.
+                // The .dbg.so / .dbg debug sidecars stay in the package and are consumed at symbol-upload time only.
+                var linuxPluginDir = GetLinuxPluginDir(buildOutputDir);
+                foreach (var file in Directory.GetFiles(linuxBackendSourcePath))
+                {
+                    var name = Path.GetFileName(file);
+                    if (name.EndsWith(".dbg.so", StringComparison.OrdinalIgnoreCase)
+                        || name.EndsWith(".dbg", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                    var isSharedObject = name.EndsWith(".so", StringComparison.OrdinalIgnoreCase);
+                    yield return new NativePluginArtifact(
+                        file,
+                        isSharedObject
+                            ? Path.Combine(linuxPluginDir, name)
+                            : Path.Combine(buildOutputDir, name),
+                        isExecutable: !isSharedObject);
+                }
                 break;
             case BuildTarget.GameCoreXboxSeries:
             case BuildTarget.GameCoreXboxOne:
@@ -243,6 +278,42 @@ public static class BuildPostProcess
             Path.Combine(buildOutputDir, "sentry-crash.exe"),
             Path.Combine(buildOutputDir, "sentry-wer.dll"),
         })
+        {
+            if (File.Exists(stale))
+            {
+                logger.LogDebug("Removing stale Sentry artifact from prior build: '{0}'", stale);
+                File.Delete(stale);
+            }
+        }
+    }
+
+    // Unity places Linux native plugins under <PlayerName>_Data/Plugins/x86_64, which the player adds
+    // to its dlopen search path. We resolve the data dir by globbing (the player name isn't known here).
+    private static string GetLinuxPluginDir(string buildOutputDir)
+    {
+        var dataDir = Directory.GetDirectories(buildOutputDir, "*_Data").FirstOrDefault();
+        if (dataDir is null)
+        {
+            throw new BuildFailedException(
+                $"Could not locate the player '*_Data' directory under '{buildOutputDir}' to place the Sentry native plugin.");
+        }
+
+        return Path.Combine(dataDir, "Plugins", "x86_64");
+    }
+
+    // Switching Linux backends between iterative builds leaves the other backend's artifacts behind
+    // (a stale sentry-crash next to the player, or the other backend's libsentry.so in the plugin dir).
+    // Wipe them before copying the current backend's files in.
+    private static void CleanupStaleLinuxArtifacts(IDiagnosticLogger logger, string buildOutputDir)
+    {
+        var stalePaths = new List<string> { Path.Combine(buildOutputDir, "sentry-crash") };
+        var dataDir = Directory.GetDirectories(buildOutputDir, "*_Data").FirstOrDefault();
+        if (dataDir is not null)
+        {
+            stalePaths.Add(Path.Combine(dataDir, "Plugins", "x86_64", "libsentry.so"));
+        }
+
+        foreach (var stale in stalePaths)
         {
             if (File.Exists(stale))
             {
@@ -361,8 +432,25 @@ public static class BuildPostProcess
                 AddPath(paths, Path.Combine(buildOutputDir, executableName), logger, required: true);
                 AddPath(paths, Path.Combine(buildOutputDir, "UnityPlayer.so"), logger, required: true);
 
-                // Sentry native SDK symbols from package
-                AddPath(paths, Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/Sentry/libsentry.dbg.so"), logger);
+                // Sentry native SDK symbols from package.
+                // Glob the debug sidecars (libsentry.dbg.so, and sentry-crash.dbg for the native backend)
+                // from whichever backend's source dir is in use.
+                var linuxBackendDir = options.Experimental.LinuxBackend == LinuxBackend.Native
+                    ? "SentryNative~"
+                    : "Sentry~";
+                var linuxSymbolDir = Path.GetFullPath(
+                    $"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/{linuxBackendDir}");
+                if (Directory.Exists(linuxSymbolDir))
+                {
+                    foreach (var file in Directory.GetFiles(linuxSymbolDir))
+                    {
+                        if (file.EndsWith(".dbg.so", StringComparison.OrdinalIgnoreCase)
+                            || file.EndsWith(".dbg", StringComparison.OrdinalIgnoreCase))
+                        {
+                            AddPath(paths, file, logger);
+                        }
+                    }
+                }
 
                 // Data - native plugins
                 foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_Data"))

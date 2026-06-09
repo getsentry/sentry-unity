@@ -102,7 +102,13 @@ jobs:
         uses: ./.github/actions/wait-for-artifact
         with:
           name: Linux-sdk
-          path: package-dev/Plugins/Linux
+          path: package-dev/Plugins/Linux/Sentry~
+
+      - name: Download LinuxNative SDK
+        uses: ./.github/actions/wait-for-artifact
+        with:
+          name: LinuxNative-sdk
+          path: package-dev/Plugins/Linux/SentryNative~
 
       - name: Download Windows SDK
         uses: ./.github/actions/wait-for-artifact
