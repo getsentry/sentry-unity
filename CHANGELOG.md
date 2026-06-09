@@ -7,6 +7,9 @@
 - Bump Java SDK from v8.43.0 to v8.43.1 ([#2706](https://github.com/getsentry/sentry-unity/pull/2706))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8431)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.43.0...8.43.1)
+- Bump Cocoa SDK from v9.15.0 to v9.16.1 ([#2705](https://github.com/getsentry/sentry-unity/pull/2705))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9161)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.16.1)
 
 ## 4.4.0
 
