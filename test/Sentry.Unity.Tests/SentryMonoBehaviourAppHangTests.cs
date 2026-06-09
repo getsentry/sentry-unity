@@ -18,7 +18,7 @@ public class SentryMonoBehaviourAppHangTests
     }
 
     [UnityTest]
-    public IEnumerator StartAppHangHeartbeat_FiresImmediatelyThenPeriodically()
+    public IEnumerator StartAppHangHeartbeat_ArmsAfterFirstFrameThenFiresPeriodically()
     {
         var sut = GetSut();
         var count = 0;
@@ -26,8 +26,12 @@ public class SentryMonoBehaviourAppHangTests
         // Use a tiny interval so the test runs fast.
         sut.StartAppHangHeartbeat(() => count++, TimeSpan.FromSeconds(0.05));
 
-        // First heartbeat fires synchronously on start.
-        Assert.AreEqual(1, count);
+        // Arming is deferred until the player loop ticks, so nothing fires synchronously on start.
+        Assert.AreEqual(0, count);
+
+        // The first heartbeat fires once a frame has passed.
+        yield return null;
+        Assert.GreaterOrEqual(count, 1);
 
         // After roughly two intervals we expect at least two more.
         yield return new WaitForSecondsRealtime(0.12f);
@@ -42,7 +46,10 @@ public class SentryMonoBehaviourAppHangTests
         var count = 0;
 
         sut.StartAppHangHeartbeat(() => count++, TimeSpan.FromSeconds(0.05));
-        Assert.AreEqual(1, count);
+
+        // Let it arm (deferred until the player loop ticks).
+        yield return null;
+        Assert.GreaterOrEqual(count, 1);
 
         UnityEngine.Object.DestroyImmediate(sut.gameObject);
         var countAfterDestroy = count;

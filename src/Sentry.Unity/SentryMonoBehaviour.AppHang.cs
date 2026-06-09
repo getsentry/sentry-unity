@@ -14,7 +14,9 @@ public partial class SentryMonoBehaviour
     private static readonly TimeSpan AppHangHeartbeatInterval = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Starts the app-hang heartbeat on the main thread at a fixed 1-second interval.
+    /// Starts the app-hang heartbeat on the main thread at a fixed 1-second interval. Arming is
+    /// deferred until the player loop is running (see <see cref="AppHangHeartbeatCoroutine"/>) so
+    /// the synchronous startup stall isn't reported as a hang.
     /// </summary>
     public Coroutine StartAppHangHeartbeat(Action heartbeat) =>
         StartAppHangHeartbeat(heartbeat, AppHangHeartbeatInterval);
@@ -25,8 +27,14 @@ public partial class SentryMonoBehaviour
 
     private IEnumerator AppHangHeartbeatCoroutine(Action heartbeat, TimeSpan interval)
     {
-        // Fire immediately to latch the main thread as the monitored target
-        // before any real hang can occur.
+        // Defer arming by a frame. The first heartbeat both latches the main thread as the
+        // monitored target and arms detection (the native side treats a missing heartbeat as "not
+        // armed"). Startup - splash screen plus the first scene load - routinely blocks the main
+        // thread longer than the hang timeout, so arming any earlier reports that startup stall as
+        // a false hang. A single 'yield return null' suspends until the player loop ticks, by which
+        // point the synchronous startup work is behind us. Unlike WaitForEndOfFrame this also
+        // resumes in batchmode/headless (e.g. OSXServer), so detection still arms there.
+        yield return null;
         heartbeat();
 
         // WaitForSecondsRealtime so a paused or Time.timeScale == 0 game keeps
