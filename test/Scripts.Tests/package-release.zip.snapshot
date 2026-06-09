@@ -27,8 +27,8 @@ Editor/sentry-cli/sentry-cli-Linux-x86_64
 Editor/sentry-cli/sentry-cli-Linux-x86_64.meta
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe.meta
-Plugins/Windows/
 Plugins/Linux/
+Plugins/Windows/
 Plugins/Android.meta
 Plugins/iOS.meta
 Plugins/Linux.meta
@@ -224,12 +224,12 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/R
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Resources/Relocations/arm64e/Sentry.yml
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Resources/Relocations/aarch64/Sentry.yml
 Plugins/iOS/Sentry.xcframework~/ios-arm64/dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry
-Plugins/Linux/Sentry~/libsentry.so
-Plugins/Linux/Sentry~/libsentry.dbg.so
-Plugins/Linux/SentryNative~/libsentry.so
 Plugins/Linux/SentryNative~/libsentry.dbg.so
+Plugins/Linux/SentryNative~/libsentry.so
 Plugins/Linux/SentryNative~/sentry-crash
 Plugins/Linux/SentryNative~/sentry-crash.dbg
+Plugins/Linux/Sentry~/libsentry.dbg.so
+Plugins/Linux/Sentry~/libsentry.so
 Plugins/Android/proguard-sentry-unity.pro
 Plugins/Android/proguard-sentry-unity.pro.meta
 Plugins/Android/Sentry~/sentry-android-core-release.aar
