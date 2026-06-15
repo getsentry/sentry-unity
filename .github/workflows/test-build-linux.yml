@@ -92,7 +92,7 @@ jobs:
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
-      - name: Build with Sentry SDK
+      - name: Build with Sentry SDK (Breakpad backend)
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
 
       - name: Compare build sizes
@@ -106,15 +106,39 @@ jobs:
           retention-days: 1
 
       # We create tar explicitly because upload-artifact is slow for many files.
-      - name: Create archive
+      - name: Create archive (Breakpad backend)
         run: |
           Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
           tar -cvzf test-app-desktop.tar.gz samples/IntegrationTest/Build
 
-      - name: Upload test app
+      - name: Upload test app (Breakpad backend)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: testapp-desktop-compiled-${{ env.UNITY_VERSION }}-linux
+          name: testapp-desktop-compiled-${{ env.UNITY_VERSION }}-linux-breakpad
+          if-no-files-found: error
+          path: test-app-desktop.tar.gz
+          retention-days: 14
+
+      - name: Overwrite IntegrationOptionsConfiguration for Native backend
+        run: |
+          $optionsPath = "samples/IntegrationTest/Assets/Scripts/IntegrationOptionsConfiguration.cs"
+          $content = Get-Content $optionsPath -Raw
+          $content = $content -replace 'LinuxBackend = LinuxBackend.Breakpad', 'LinuxBackend = LinuxBackend.Native'
+          Set-Content $optionsPath $content
+
+      - name: Build with Sentry SDK (Native backend)
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
+
+      - name: Create archive (Native backend)
+        run: |
+          Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
+          Remove-Item -Force test-app-desktop.tar.gz -ErrorAction SilentlyContinue
+          tar -cvzf test-app-desktop.tar.gz samples/IntegrationTest/Build
+
+      - name: Upload test app (Native backend)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: testapp-desktop-compiled-${{ env.UNITY_VERSION }}-linux-native
           if-no-files-found: error
           path: test-app-desktop.tar.gz
           retention-days: 14

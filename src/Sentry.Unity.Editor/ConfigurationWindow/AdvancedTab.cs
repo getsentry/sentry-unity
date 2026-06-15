@@ -259,6 +259,17 @@ internal static class AdvancedTab
                         "Uploads crashes immediately."),
                     options.Experimental.WindowsBackend);
             }
+
+            using (new EditorGUI.DisabledScope(!options.LinuxNativeSupportEnabled))
+            {
+                options.Experimental.LinuxBackend = (LinuxBackend)EditorGUILayout.EnumPopup(
+                    new GUIContent(
+                        "Linux Backend",
+                        "Breakpad: in-process handler; crashes are uploaded on the next launch.\n" +
+                        "Native: uses sentry-native's new out-of-process sentry-crash daemon. " +
+                        "Uploads crashes immediately."),
+                    options.Experimental.LinuxBackend);
+            }
         }
         EditorGUI.indentLevel--;
         EditorGUILayout.EndFoldoutHeaderGroup();

@@ -14,7 +14,8 @@
 
     <!-- Native (Windows / Linux) -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
-    <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)Linux/Sentry/</SentryLinuxArtifactsDestination>
+    <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)Linux/Sentry~/</SentryLinuxArtifactsDestination>
+    <SentryLinuxNativeArtifactsDestination>$(SentryArtifactsDestination)Linux/SentryNative~/</SentryLinuxNativeArtifactsDestination>
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)Windows/Sentry~/</SentryWindowsArtifactsDestination>
     <SentryWindowsNativeArtifactsDestination>$(SentryArtifactsDestination)Windows/SentryNative~/</SentryWindowsNativeArtifactsDestination>
   </PropertyGroup>
@@ -88,6 +89,55 @@
             And $([MSBuild]::IsOSPlatform('Linux'))
             And !Exists('$(SentryLinuxArtifactsDestination)libsentry.so')">
     <CallTarget Targets="BuildLinuxSDK" />
+  </Target>
+
+  <!--
+    Build the Sentry Native SDK for Linux (sentry-native's new native backend):
+        dotnet msbuild /t:BuildLinuxNativeSDK src/Sentry.Unity
+    Always wipes prior outputs and rebuilds. Produces libsentry.so and the
+    out-of-process sentry-crash daemon, plus stripped debug sidecars
+    (libsentry.dbg.so / sentry-crash.dbg) for symbol upload.
+  -->
+  <Target Name="BuildLinuxNativeSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Error Condition="!$([MSBuild]::IsOSPlatform('Linux'))" Text="BuildLinuxNativeSDK can only run on Linux." />
+    <Error Condition="!Exists('$(SentryNativeRoot)')" Text="sentry-native submodule not checked out at $(SentryNativeRoot). Run: git submodule update --init modules/sentry-native" />
+
+    <Message Importance="High" Text="Building Sentry Native SDK for Linux (native backend, clean rebuild)." />
+
+    <!-- Wipe prior outputs -->
+    <RemoveDir Directories="$(SentryNativeRoot)build_native" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxNativeArtifactsDestination)libsentry.so" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxNativeArtifactsDestination)libsentry.dbg.so" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxNativeArtifactsDestination)sentry-crash" ContinueOnError="true" />
+    <Delete Files="$(SentryLinuxNativeArtifactsDestination)sentry-crash.dbg" ContinueOnError="true" />
+
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build_native -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unity -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build_native --target sentry --parallel" />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build_native --target sentry-crash --parallel" />
+
+    <MakeDir Directories="$(SentryLinuxNativeArtifactsDestination)" />
+
+    <!-- strip all, including exported symbols except those starting with 'sentry_', except for 'sentry__' -->
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build_native/libsentry.so -w -K sentry_[^_]* -o $(SentryLinuxNativeArtifactsDestination)libsentry.so" />
+    <Copy SourceFiles="$(SentryNativeRoot)build_native/libsentry.so" DestinationFiles="$(SentryLinuxNativeArtifactsDestination)libsentry.dbg.so" />
+    <Exec WorkingDirectory="$(SentryLinuxNativeArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
+
+    <!-- The crash daemon ships next to the player executable; keep an unstripped debug sidecar for symbol upload -->
+    <Copy SourceFiles="$(SentryNativeRoot)build_native/sentry-crash" DestinationFiles="$(SentryLinuxNativeArtifactsDestination)sentry-crash.dbg" />
+    <Exec WorkingDirectory="$(SentryNativeRoot)" Command="strip -s build_native/sentry-crash -o $(SentryLinuxNativeArtifactsDestination)sentry-crash" />
+    <Exec WorkingDirectory="$(SentryLinuxNativeArtifactsDestination)" Command="objcopy --add-gnu-debuglink=sentry-crash.dbg sentry-crash" />
+
+    <Error Condition="!Exists('$(SentryLinuxNativeArtifactsDestination)libsentry.so')" Text="Failed to set up the Linux Native SDK." />
+    <Error Condition="!Exists('$(SentryLinuxNativeArtifactsDestination)sentry-crash')" Text="Failed to set up the Linux Native SDK crash daemon." />
+  </Target>
+
+  <!-- Hooks into 'dotnet build' so a missing Linux Native plugin auto-triggers BuildLinuxNativeSDK. -->
+  <Target Name="EnsureLinuxNativeSDK"
+          BeforeTargets="BeforeBuild"
+          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
+            And $([MSBuild]::IsOSPlatform('Linux'))
+            And !Exists('$(SentryLinuxNativeArtifactsDestination)libsentry.so')">
+    <CallTarget Targets="BuildLinuxNativeSDK" />
   </Target>
 
   <!--

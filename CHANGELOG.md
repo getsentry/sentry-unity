@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Extend the experimental `sentry-native` backend to Linux. Opt in via `options.Experimental.LinuxBackend = LinuxBackend.Native`. The `sentry-native` backend uploads crashes immediately through an out-of-process handler and enables further updates such as `AppHangTracking` support ([#2708](https://github.com/getsentry/sentry-unity/pull/2708))
+
 ### Dependencies
 
 - Bump Java SDK from v8.43.0 to v8.43.2 ([#2706](https://github.com/getsentry/sentry-unity/pull/2706), [#2711](https://github.com/getsentry/sentry-unity/pull/2711))

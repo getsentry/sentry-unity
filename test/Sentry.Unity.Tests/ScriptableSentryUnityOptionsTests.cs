@@ -203,6 +203,25 @@ public class ScriptableSentryUnityOptionsTests
         Assert.AreEqual(WindowsBackend.Native, options.Experimental.WindowsBackend);
     }
 
+    [Test]
+    public void Experimental_LinuxBackend_DefaultValue_IsBreakpad()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+
+        Assert.AreEqual(LinuxBackend.Breakpad, scriptableOptions.Experimental.LinuxBackend);
+    }
+
+    [Test]
+    public void ToSentryUnityOptions_LinuxBackendNative_Propagates()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        scriptableOptions.Experimental.LinuxBackend = LinuxBackend.Native;
+
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.Application);
+
+        Assert.AreEqual(LinuxBackend.Native, options.Experimental.LinuxBackend);
+    }
+
     public static void AssertOptions(SentryUnityOptions expected, SentryUnityOptions actual)
     {
         Assert.AreEqual(expected.Enabled, actual.Enabled);

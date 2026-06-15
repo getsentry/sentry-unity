@@ -66,7 +66,7 @@ jobs:
           key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1') }}
 
       - name: Installing Linux Dependencies
-        if: ${{ env.TARGET == 'Linux' && steps.cache.outputs.cache-hit != 'true' }}
+        if: ${{ (env.TARGET == 'Linux' || env.TARGET == 'LinuxNative') && steps.cache.outputs.cache-hit != 'true' }}
         shell: bash
         run: |
           sudo apt-get update
@@ -136,7 +136,23 @@ jobs:
           retention-days: 14
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ env.TARGET != 'Cocoa' && env.TARGET != 'MacOSNative' && env.TARGET != 'Windows' && env.TARGET != 'WindowsNative' }}
+        if: ${{ env.TARGET == 'Linux' }}
+        with:
+          name: ${{ env.TARGET }}-sdk
+          path: package-dev/Plugins/Linux/Sentry~
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ env.TARGET == 'LinuxNative' }}
+        with:
+          name: ${{ env.TARGET }}-sdk
+          path: package-dev/Plugins/Linux/SentryNative~
+          # Lower retention period - we only need this to retry CI.
+          retention-days: 14
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ env.TARGET != 'Cocoa' && env.TARGET != 'MacOSNative' && env.TARGET != 'Windows' && env.TARGET != 'WindowsNative' && env.TARGET != 'Linux' && env.TARGET != 'LinuxNative' }}
         with:
           name: ${{ env.TARGET }}-sdk
           path: package-dev/Plugins/${{ env.TARGET }}
