@@ -313,6 +313,10 @@ public static partial class SentrySdk
     /// <summary>
     /// Captures feedback from the user.
     /// </summary>
+    /// <param name="feedback">The feedback to send to Sentry.</param>
+    /// <param name="configureScope">The callback to configure the scope.</param>
+    /// <param name="hint">An optional hint providing high-level context for the source of the event.</param>
+    /// <returns>The Id of the captured feedback. Returns <see cref="SentryId.Empty"/> when capture failed.</returns>
     [DebuggerStepThrough]
     public static SentryId CaptureFeedback(SentryFeedback feedback, Action<Scope> configureScope, SentryHint? hint = null)
         => Sentry.SentrySdk.CaptureFeedback(feedback, configureScope, hint);
@@ -328,6 +332,7 @@ public static partial class SentrySdk
     /// </param>
     /// <param name="configureScope">The callback to configure the scope.</param>
     /// <param name="hint">An optional hint providing high-level context for the source of the event.</param>
+    /// <returns>The Id of the captured feedback. Returns <see cref="SentryId.Empty"/> when capture failed.</returns>
     /// <remarks>
     /// Capturing is asynchronous and non-blocking. The envelope is handed to a background worker. Non-success 
     /// results inform only on whether the capture succeeded or failed on the client, i.e. empty message, 
@@ -341,6 +346,10 @@ public static partial class SentrySdk
     /// <summary>
     /// Captures feedback from the user.
     /// </summary>
+    /// <param name="feedback">The feedback to send to Sentry.</param>
+    /// <param name="scope">The scope to apply to the feedback.</param>
+    /// <param name="hint">An optional hint providing high-level context for the source of the event.</param>
+    /// <returns>The Id of the captured feedback. Returns <see cref="SentryId.Empty"/> when capture failed.</returns>
     [DebuggerStepThrough]
     public static SentryId CaptureFeedback(SentryFeedback feedback, Scope? scope = null, SentryHint? hint = null)
         => Sentry.SentrySdk.CaptureFeedback(feedback, scope, hint);
@@ -356,6 +365,7 @@ public static partial class SentrySdk
     /// </param>
     /// <param name="scope">The scope to apply to the feedback.</param>
     /// <param name="hint">An optional hint providing high-level context for the source of the event.</param>
+    /// <returns>The Id of the captured feedback. Returns <see cref="SentryId.Empty"/> when capture failed.</returns>
     /// <remarks>
     /// Capturing is asynchronous and non-blocking. The envelope is handed to a background worker. Non-success 
     /// results inform only on whether the capture succeeded or failed on the client, i.e. empty message, 
@@ -369,6 +379,15 @@ public static partial class SentrySdk
     /// <summary>
     /// Captures feedback from the user.
     /// </summary>
+    /// <param name="message">The feedback message.</param>
+    /// <param name="contactEmail">The contact email of the user submitting the feedback.</param>
+    /// <param name="name">The name of the user submitting the feedback.</param>
+    /// <param name="replayId">The ID of the replay associated with the feedback.</param>
+    /// <param name="url">The URL of the page or screen the feedback relates to.</param>
+    /// <param name="associatedEventId">The ID of the event the feedback is associated with.</param>
+    /// <param name="scope">The scope to apply to the feedback.</param>
+    /// <param name="hint">An optional hint providing high-level context for the source of the event.</param>
+    /// <returns>The Id of the captured feedback. Returns <see cref="SentryId.Empty"/> when capture failed.</returns>
     [DebuggerStepThrough]
     public static SentryId CaptureFeedback(string message, string? contactEmail = null, string? name = null,
         string? replayId = null, string? url = null, SentryId? associatedEventId = null, Scope? scope = null,
