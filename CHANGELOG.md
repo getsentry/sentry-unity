@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Removed `Lumin` and `Stadia` platforms from the package's assembly definition to resolve compilation errors. ([#2716](https://github.com/getsentry/sentry-unity/pull/2716))
+
 ### Dependencies
 
 - Bump Java SDK from v8.43.0 to v8.43.1 ([#2706](https://github.com/getsentry/sentry-unity/pull/2706))
