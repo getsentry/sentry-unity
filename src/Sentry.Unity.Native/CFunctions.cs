@@ -229,7 +229,7 @@ internal static class C
     private static extern sentry_value_t sentry_get_modules_list();
 
     [DllImport(SentryLib)]
-    internal static extern void sentry_value_decref(sentry_value_t value);
+    internal static extern int sentry_value_decref(sentry_value_t value);
 
     // native union sentry_value_u/t
     [StructLayout(LayoutKind.Explicit)]
