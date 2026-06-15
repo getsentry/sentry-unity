@@ -320,6 +320,19 @@ public static partial class SentrySdk
     /// <summary>
     /// Captures feedback from the user.
     /// </summary>
+    /// <param name="feedback">The feedback to send to Sentry.</param>
+    /// <param name="result">
+    /// The outcome of capturing the feedback. <see cref="CaptureFeedbackResult.Success"/> means the
+    /// feedback was accepted and handed to the transport. It passed validation and event processors and
+    /// was queued for delivery. It does <b>not</b> confirm that the feedback was transmitted to Sentry.
+    /// </param>
+    /// <param name="configureScope">The callback to configure the scope.</param>
+    /// <param name="hint">An optional hint providing high-level context for the source of the event.</param>
+    /// <remarks>
+    /// Capturing is asynchronous and non-blocking. The envelope is handed to a background worker. If enabled,
+    /// this also provides offline caching and retries. Non-success results inform only on whether the capture
+    /// succeeded or failed on the client, i.e. empty message, disabled SDK, dropped by an event processor.
+    /// </remarks>
     [DebuggerStepThrough]
     public static SentryId CaptureFeedback(SentryFeedback feedback, out CaptureFeedbackResult result,
         Action<Scope> configureScope, SentryHint? hint = null)
@@ -335,6 +348,19 @@ public static partial class SentrySdk
     /// <summary>
     /// Captures feedback from the user.
     /// </summary>
+    /// <param name="feedback">The feedback to send to Sentry.</param>
+    /// <param name="result">
+    /// The outcome of capturing the feedback. <see cref="CaptureFeedbackResult.Success"/> means the
+    /// feedback was accepted and handed to the transport. It passed validation and event processors and
+    /// was queued for delivery. It does <b>not</b> confirm that the feedback was transmitted to Sentry.
+    /// </param>
+    /// <param name="scope">The scope to apply to the feedback.</param>
+    /// <param name="hint">An optional hint providing high-level context for the source of the event.</param>
+    /// <remarks>
+    /// Capturing is asynchronous and non-blocking. The envelope is handed to a background worker. If enabled,
+    /// this also provides offline caching and retries. Non-success results inform only on whether the capture
+    /// succeeded or failed on the client, i.e. empty message, disabled SDK, dropped by an event processor.
+    /// </remarks>
     [DebuggerStepThrough]
     public static SentryId CaptureFeedback(SentryFeedback feedback, out CaptureFeedbackResult result,
         Scope? scope = null, SentryHint? hint = null)
