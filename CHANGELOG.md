@@ -6,14 +6,21 @@
 
 - Removed `Lumin` and `Stadia` platforms from the package's assembly definition to resolve compilation errors. ([#2716](https://github.com/getsentry/sentry-unity/pull/2716))
 
+### Features
+
+- Extend the experimental `sentry-native` backend to Linux. Opt in via `options.Experimental.LinuxBackend = LinuxBackend.Native`. The `sentry-native` backend uploads crashes immediately through an out-of-process handler and enables further updates such as `AppHangTracking` support ([#2708](https://github.com/getsentry/sentry-unity/pull/2708))
+
 ### Dependencies
 
-- Bump Java SDK from v8.43.0 to v8.43.1 ([#2706](https://github.com/getsentry/sentry-unity/pull/2706))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8431)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.0...8.43.1)
-- Bump Cocoa SDK from v9.15.0 to v9.16.1 ([#2705](https://github.com/getsentry/sentry-unity/pull/2705))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9161)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.16.1)
+- Bump Java SDK from v8.43.0 to v8.43.2 ([#2706](https://github.com/getsentry/sentry-unity/pull/2706), [#2711](https://github.com/getsentry/sentry-unity/pull/2711))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8432)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.0...8.43.2)
+- Bump Cocoa SDK from v9.15.0 to v9.17.1 ([#2705](https://github.com/getsentry/sentry-unity/pull/2705), [#2713](https://github.com/getsentry/sentry-unity/pull/2713))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9171)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.17.1)
+- Bump Native SDK from v0.14.2 to v0.15.0 ([#2714](https://github.com/getsentry/sentry-unity/pull/2714))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0150)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.14.2...0.15.0)
 
 ## 4.4.0
 
