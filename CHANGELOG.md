@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Removed `Lumin` and `Stadia` platforms from the package's assembly definition to resolve compilation errors. ([#2716](https://github.com/getsentry/sentry-unity/pull/2716))
+
 ### Features
 
 - Extend the experimental `sentry-native` backend to Linux. Opt in via `options.Experimental.LinuxBackend = LinuxBackend.Native`. The `sentry-native` backend uploads crashes immediately through an out-of-process handler and enables further updates such as `AppHangTracking` support ([#2708](https://github.com/getsentry/sentry-unity/pull/2708))
