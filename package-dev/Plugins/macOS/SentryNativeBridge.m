@@ -208,8 +208,8 @@ void SentryNativeBridgeClose()
     }
 }
 
-void SentryNativeBridgeAddBreadcrumb(
-    const char *timestamp, const char *message, const char *type, const char *category, int level)
+void SentryNativeBridgeAddBreadcrumb(const char *timestamp, const char *message, const char *type,
+    const char *category, int level, const char **dataKeys, const char **dataValues, int dataCount)
 {
     if (timestamp == NULL && message == NULL && type == NULL && category == NULL) {
         return;
@@ -243,6 +243,18 @@ void SentryNativeBridgeAddBreadcrumb(
         }
 
         [breadcrumb setValue:[NSNumber numberWithInt:level] forKey:@"level"];
+
+        if (dataCount > 0 && dataKeys != NULL && dataValues != NULL) {
+            NSMutableDictionary *data = [NSMutableDictionary dictionaryWithCapacity:dataCount];
+            for (int i = 0; i < dataCount; i++) {
+                NSString *key = _NSStringOrNil(dataKeys[i]);
+                NSString *value = _NSStringOrNil(dataValues[i]);
+                if (key != nil && value != nil) {
+                    data[key] = value;
+                }
+            }
+            [breadcrumb setValue:data forKey:@"data"];
+        }
 
         [scope performSelector:@selector(addBreadcrumb:) withObject:breadcrumb];
     });

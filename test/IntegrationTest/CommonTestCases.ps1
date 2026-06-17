@@ -74,6 +74,13 @@ $CommonTestCases = @(
             $SentryEvent.breadcrumbs.values | Where-Object { $_.message -eq "Context configuration finished" } | Should -Not -BeNullOrEmpty
         }
     }
+    @{ Name = "Syncs breadcrumb data"; TestBlock = {
+            param($TestSetup, $TestType, $SentryEvent, $RunResult)
+            $crumb = $SentryEvent.breadcrumbs.values | Where-Object { $_.message -eq "Breadcrumb with data" }
+            $crumb | Should -Not -BeNullOrEmpty
+            $crumb.data.integration_test_key | Should -Be "integration_test_value"
+        }
+    }
     @{ Name = "Contains SDK information"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
             $SentryEvent.sdk | Should -Not -BeNullOrEmpty

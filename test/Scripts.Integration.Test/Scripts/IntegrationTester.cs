@@ -99,6 +99,14 @@ public class IntegrationTester : MonoBehaviour
         });
 
         SentrySdk.AddBreadcrumb("Context configuration finished");
+
+        // Carries data so the e2e tests can verify breadcrumb data is synced from managed to native.
+        // On a native crash the event is assembled by the native SDK, so this only round-trips if the
+        // C#->native breadcrumb data sync works.
+        SentrySdk.AddBreadcrumb("Breadcrumb with data", data: new Dictionary<string, string>
+        {
+            { "integration_test_key", "integration_test_value" }
+        });
     }
 
     private IEnumerator MessageCapture()

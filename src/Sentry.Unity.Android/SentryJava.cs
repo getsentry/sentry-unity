@@ -304,6 +304,13 @@ internal class SentryJava : ISentryJava
             javaBreadcrumb.Set("category", breadcrumb.Category);
             using var javaLevel = breadcrumb.Level.ToJavaSentryLevel();
             javaBreadcrumb.Set("level", javaLevel);
+            if (breadcrumb.Data is { Count: > 0 })
+            {
+                foreach (var kvp in breadcrumb.Data)
+                {
+                    javaBreadcrumb.Call("setData", kvp.Key, kvp.Value);
+                }
+            }
             sentry.CallStatic("addBreadcrumb", javaBreadcrumb, null);
         });
     }

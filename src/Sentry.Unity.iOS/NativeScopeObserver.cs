@@ -11,7 +11,34 @@ public class NativeScopeObserver : ScopeObserver
         var level = GetBreadcrumbLevel(breadcrumb.Level);
         var timestamp = GetTimestamp(breadcrumb.Timestamp);
 
-        SentryCocoaBridgeProxy.AddBreadcrumb(timestamp, breadcrumb.Message, breadcrumb.Type, breadcrumb.Category, level);
+        var dataCount = GetBreadcrumbData(breadcrumb, out var dataKeys, out var dataValues);
+
+        SentryCocoaBridgeProxy.AddBreadcrumb(timestamp, breadcrumb.Message, breadcrumb.Type, breadcrumb.Category, level,
+            dataKeys, dataValues, dataCount);
+    }
+
+    // Flattens breadcrumb.Data into parallel key/value arrays for the __Internal P/Invoke boundary.
+    // Returns 0 and null arrays when there is no data, so the common case pays no marshalling cost.
+    internal static int GetBreadcrumbData(Breadcrumb breadcrumb, out string[]? keys, out string[]? values)
+    {
+        if (breadcrumb.Data is not { Count: > 0 } data)
+        {
+            keys = null;
+            values = null;
+            return 0;
+        }
+
+        keys = new string[data.Count];
+        values = new string[data.Count];
+        var i = 0;
+        foreach (var kvp in data)
+        {
+            keys[i] = kvp.Key;
+            values[i] = kvp.Value;
+            i++;
+        }
+
+        return data.Count;
     }
 
     public override void SetExtraImpl(string key, string? value) =>
