@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK now also syncs breadcrumb data to the native layer so they are available on events coming from the native SDKs ([#2720](https://github.com/getsentry/sentry-unity/pull/2720))
 - Removed `Lumin` and `Stadia` platforms from the package's assembly definition to resolve compilation errors. ([#2716](https://github.com/getsentry/sentry-unity/pull/2716))
 
 ### Features
