@@ -41,6 +41,12 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         // Disable ANR to avoid test interference
         options.DisableAnrIntegration();
 
+        // Enable native in-proc app-hang detection and shorten its timeout so the app-hang-capture
+        // test blocks for less time. Safe to lower globally: no other test action blocks the main
+        // thread and heartbeat arming is deferred past startup.
+        options.EnableAppHangTracking = true;
+        options.AppHangTimeout = TimeSpan.FromSeconds(2);
+
         // Runtime initialization for integration tests
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
         options.IosNativeInitializationType = NativeInitializationType.Runtime;

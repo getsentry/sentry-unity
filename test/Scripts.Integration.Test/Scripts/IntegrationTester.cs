@@ -40,6 +40,9 @@ public class IntegrationTester : MonoBehaviour
             case "crash-capture":
                 StartCoroutine(CrashCapture());
                 break;
+            case "app-hang-capture":
+                StartCoroutine(AppHangCapture());
+                break;
             case "crash-send":
                 CrashSend();
                 break;
@@ -186,6 +189,40 @@ public class IntegrationTester : MonoBehaviour
         // Should not reach here
         Logger.LogError("CRASH TEST: FAIL - unexpected code executed after crash");
         Application.Quit(1);
+    }
+
+    private IEnumerator AppHangCapture()
+    {
+        var hangId = Guid.NewGuid().ToString();
+
+        AddIntegrationTestContext("app-hang-capture");
+
+        // The native app-hang event is captured in-proc by sentry-native and its event ID is not
+        // visible to C#. Tag the scope with a unique ID so the test harness can look the event up,
+        // the same way crash-capture does (scope tags sync to the native layer).
+        SentrySdk.ConfigureScope(scope =>
+        {
+            scope.SetTag("test.app_hang_id", hangId);
+        });
+
+        // Wait for the scope sync to complete and for the app-hang heartbeat coroutine to arm
+        // (arming is deliberately deferred by a frame so startup isn't reported as a hang).
+        yield return new WaitForSeconds(0.5f);
+
+        Logger.Log($"EVENT_CAPTURED: {hangId}");
+        Logger.Log("APP HANG TEST: Blocking the main thread to trigger native app-hang detection");
+
+        // Block the main thread well past AppHangTimeout (2s in IntegrationOptionsConfiguration),
+        // clearing the watchdog's 500ms poll and 1s heartbeat interval so detection reliably fires.
+        System.Threading.Thread.Sleep(5000);
+
+        // The main thread is responsive again; let the heartbeat resume and flush the captured event.
+        yield return null;
+
+        SentrySdk.FlushAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+
+        Logger.Log("APP HANG TEST: Flush complete, quitting.");
+        Application.Quit(0);
     }
 
     private void CrashSend()
