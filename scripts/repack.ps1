@@ -7,7 +7,9 @@ if (Test-Path "package-release.zip") {
     Remove-Item -Path "package-release.zip" -Force
 }
 
-assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+# --assemblies-to-exclude: BCL assemblies Unity's unityaot profile already provides. Aliasing them
+# mints a duplicate System.Span<T> definition that breaks IL2CPP's intrinsic remap (#2717, #1777).
+assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*" --assemblies-to-exclude "System.Buffers;System.Memory;System.Numerics.Vectors;System.Threading.Tasks.Extensions"
 assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;Mono.Cecil*"
 
 if ($IsWindows) {
