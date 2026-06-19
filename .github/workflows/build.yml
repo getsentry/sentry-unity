@@ -149,6 +149,21 @@ jobs:
           path: |
             package-release.zip
 
+      # The DependencyConflict package ships plain, UNALIASED System.*/Microsoft.*
+      # assemblies at versions that differ from the ones the SDK ships aliased. It
+      # gets dropped into the integration test project alongside Sentry to verify
+      # the assembly aliasing keeps them from colliding. Build it here (this job
+      # has the pinned .NET SDK) and pass it to the integration jobs as an artifact.
+      - name: Build DependencyConflict package
+        run: docker exec unity dotnet build test/Scripts.Integration.Test/DependencyConflict
+
+      - name: Upload DependencyConflict package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dependency-conflict-package
+          if-no-files-found: error
+          path: test/Scripts.Integration.Test/DependencyConflict/package
+
       - name: Run Unity tests (playmode)
         run: docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 

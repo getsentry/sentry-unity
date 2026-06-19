@@ -1,0 +1,19 @@
+{
+    "name": "io.sentry.dependency-conflict.runtime",
+    "rootNamespace": "DependencyConflict",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "DependencyConflict.dll",
+        "System.Text.Json.dll",
+        "System.Collections.Immutable.dll",
+        "Microsoft.Bcl.AsyncInterfaces.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

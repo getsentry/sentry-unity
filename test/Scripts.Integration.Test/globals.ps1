@@ -84,6 +84,11 @@ $IntegrationScriptsPath = "$(ProjectRoot)/test/Scripts.Integration.Test"
 $PackageReleaseOutput = "$(ProjectRoot)/test-package-release"
 $PackageReleaseAssetsPath = "$PackageReleaseOutput/Samples~/unity-of-bugs"
 
+# DependencyConflict: the assembly-aliasing stress-test fixture. The csproj
+# builds its plain (unaliased) System.*/Microsoft.* DLLs into package/Runtime,
+# and the package/ folder is copied into the test project as an embedded package.
+$DependencyConflictPackagePath = "$IntegrationScriptsPath/DependencyConflict/package"
+
 function FormatUnityPath
 {
     param ($path)
