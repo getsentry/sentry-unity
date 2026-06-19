@@ -1,11 +1,11 @@
 {
     "name": "io.sentry.dependency-conflict.runtime",
-    "rootNamespace": "DependencyConflict",
+    "rootNamespace": "",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": true,
+    "overrideReferences": false,
     "precompiledReferences": [
         "DependencyConflict.dll",
         "System.Text.Json.dll",
@@ -15,5 +15,5 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": true
+    "noEngineReferences": false
 }

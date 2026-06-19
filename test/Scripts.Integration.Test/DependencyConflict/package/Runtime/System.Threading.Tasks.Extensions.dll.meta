@@ -2,20 +2,55 @@ fileFormatVersion: 2
 guid: 4afb523000a1f748db9214327260052e
 PluginImporter:
   externalObjects: {}
-  serializedVersion: 2
+  serializedVersion: 3
   iconMap: {}
   executionOrder: {}
   defineConstraints: []
   isPreloaded: 0
   isOverridable: 1
-  isExplicitlyReferenced: 1
+  isExplicitlyReferenced: 0
   validateReferences: 1
   platformData:
-  - first:
-      Any:
-    second:
+    Android:
       enabled: 1
       settings: {}
-  userData:
-  assetBundleName:
-  assetBundleVariant:
+    Any:
+      enabled: 1
+      settings:
+        Exclude Android: 0
+        Exclude Editor: 0
+        Exclude Linux64: 0
+        Exclude OSXUniversal: 0
+        Exclude WebGL: 0
+        Exclude Win: 0
+        Exclude Win64: 0
+        Exclude iOS: 0
+    Editor:
+      enabled: 1
+      settings:
+        DefaultValueInitialized: true
+    Linux64:
+      enabled: 1
+      settings: {}
+    OSXUniversal:
+      enabled: 1
+      settings: {}
+    WebGL:
+      enabled: 1
+      settings: {}
+    Win:
+      enabled: 1
+      settings: {}
+    Win64:
+      enabled: 1
+      settings: {}
+    WindowsStoreApps:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+    iOS:
+      enabled: 1
+      settings: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
