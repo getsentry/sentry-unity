@@ -98,7 +98,10 @@ public class IntegrationTester : MonoBehaviour
             };
         });
 
-        SentrySdk.AddBreadcrumb("Context configuration finished");
+        SentrySdk.AddBreadcrumb("Context configuration finished", data: new Dictionary<string, string>
+        {
+            { "integration_test_key", "integration_test_value" }
+        });
     }
 
     private IEnumerator MessageCapture()

@@ -128,7 +128,8 @@ internal static class SentryCocoaBridgeProxy
     public static extern void Close();
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeAddBreadcrumb")]
-    public static extern void AddBreadcrumb(string timestamp, string? message, string? type, string? category, int level);
+    public static extern void AddBreadcrumb(string timestamp, string? message, string? type, string? category, int level,
+        string[]? dataKeys, string[]? dataValues, int dataCount);
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeSetExtra")]
     public static extern void SetExtra(string key, string? value);

@@ -16,8 +16,8 @@ int SentryNativeBridgeCrashedLastRun() { return 0; }
 
 void SentryNativeBridgeClose() { }
 
-void SentryNativeBridgeAddBreadcrumb(
-    const char *timestamp, const char *message, const char *type, const char *category, int level) { }
+void SentryNativeBridgeAddBreadcrumb(const char *timestamp, const char *message, const char *type,
+    const char *category, int level, const char **dataKeys, const char **dataValues, int dataCount) { }
 
 void SentryNativeBridgeSetExtra(const char *key, const char *value) { }
 

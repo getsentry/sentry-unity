@@ -17,6 +17,15 @@ public class NativeScopeObserver : ScopeObserver
         C.sentry_value_set_by_key(crumb, "level", C.sentry_value_new_string(breadcrumb.Level.ToString().ToLower()));
         C.sentry_value_set_by_key(crumb, "timestamp", C.sentry_value_new_string(GetTimestamp(breadcrumb.Timestamp)));
         C.SetValueIfNotNull(crumb, "category", breadcrumb.Category);
+        if (breadcrumb.Data is { Count: > 0 })
+        {
+            var data = C.sentry_value_new_object();
+            foreach (var kvp in breadcrumb.Data)
+            {
+                C.SetValueIfNotNull(data, kvp.Key, kvp.Value);
+            }
+            _ = C.sentry_value_set_by_key(crumb, "data", data);
+        }
         C.sentry_add_breadcrumb(crumb);
     }
 

@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- The SDK now also syncs breadcrumb data to the native layer so they are available on events coming from the native SDKs ([#2720](https://github.com/getsentry/sentry-unity/pull/2720))
 - Removed `Lumin` and `Stadia` platforms from the package's assembly definition to resolve compilation errors. ([#2716](https://github.com/getsentry/sentry-unity/pull/2716))
 
 ### Features
@@ -12,9 +13,9 @@
 
 ### Dependencies
 
-- Bump Java SDK from v8.43.0 to v8.44.0 ([#2706](https://github.com/getsentry/sentry-unity/pull/2706), [#2711](https://github.com/getsentry/sentry-unity/pull/2711), [#2723](https://github.com/getsentry/sentry-unity/pull/2723))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8440)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.0...8.44.0)
+- Bump Java SDK from v8.43.0 to v8.44.1 ([#2706](https://github.com/getsentry/sentry-unity/pull/2706), [#2711](https://github.com/getsentry/sentry-unity/pull/2711), [#2723](https://github.com/getsentry/sentry-unity/pull/2723), [#2720](https://github.com/getsentry/sentry-unity/pull/2720))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8441)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.43.0...8.44.1)
 - Bump Cocoa SDK from v9.15.0 to v9.18.0 ([#2705](https://github.com/getsentry/sentry-unity/pull/2705), [#2713](https://github.com/getsentry/sentry-unity/pull/2713), [#2724](https://github.com/getsentry/sentry-unity/pull/2724))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9180)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.15.0...9.18.0)
