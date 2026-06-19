@@ -1,0 +1,10 @@
+<Project>
+  <!--
+    Intentionally does NOT import the repo-root Directory.Build.props.
+    MiniSentry is a standalone "adversary" package used to stress-test the
+    assembly aliasing of the real Sentry SDK. It must stay isolated from the
+    Sentry build configuration (analyzers, Unity engine reference,
+    TreatWarningsAsErrors, etc.) so its only job is to drag plain, UNALIASED
+    System.*/Microsoft.* assemblies at LOWER versions into a Unity project.
+  -->
+</Project>
