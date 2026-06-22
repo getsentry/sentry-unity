@@ -5,9 +5,9 @@ using UnityEngine;
 namespace Sentry.Unity;
 
 /// <summary>
-/// Drives the periodic heartbeat used by the native SDK's app-hang detection.
+/// Drives the periodic heartbeat used by sentry-native's app-hang detection.
 /// The coroutine runs on the Unity main thread, which is the thread the native
-/// daemon latches onto as the monitored target (first caller wins).
+/// daemon latches onto as the monitored target.
 /// </summary>
 public partial class SentryMonoBehaviour
 {
@@ -27,18 +27,15 @@ public partial class SentryMonoBehaviour
 
     private IEnumerator AppHangHeartbeatCoroutine(Action heartbeat, TimeSpan interval)
     {
-        // Defer arming by a frame. The first heartbeat both latches the main thread as the
-        // monitored target and arms detection (the native side treats a missing heartbeat as "not
-        // armed"). Startup - splash screen plus the first scene load - routinely blocks the main
-        // thread longer than the hang timeout, so arming any earlier reports that startup stall as
-        // a false hang. A single 'yield return null' suspends until the player loop ticks, by which
-        // point the synchronous startup work is behind us. Unlike WaitForEndOfFrame this also
-        // resumes in batchmode/headless (e.g. OSXServer), so detection still arms there.
+        // Skipping the first frame. The first heartbeat both latches the main thread as the
+        // monitored target and arms detection. The monitor no-op without having received a 
+        // heartbeat. During startup, splash screen plus the first scene load routinely block the 
+        // main thread longer than the hang timeout and would cause false positives.
+        // This also works in batchmode/headless (e.g. LinuxServer).
+        // (unlike WaitForEndOfFrame)
         yield return null;
         heartbeat();
 
-        // WaitForSecondsRealtime so a paused or Time.timeScale == 0 game keeps
-        // heartbeating.
         var wait = new WaitForSecondsRealtime((float)interval.TotalSeconds);
         while (true)
         {
