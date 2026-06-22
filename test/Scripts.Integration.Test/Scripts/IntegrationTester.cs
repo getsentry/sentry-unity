@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using DependencyConflict;
+using DependencyConflictPackage;
 using Sentry;
 using Sentry.Unity;
 using UnityEngine;
@@ -38,7 +38,7 @@ public class IntegrationTester : MonoBehaviour
     {
         try
         {
-            var greeting = DependencyConflictClient.SayHiAsync().GetAwaiter().GetResult();
+            var greeting = DependencyConflictPackageClient.SayHiAsync().GetAwaiter().GetResult();
             Logger.Log($"DependencyConflict: {greeting}");
         }
         catch (Exception ex)

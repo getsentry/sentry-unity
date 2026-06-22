@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace DependencyConflict
+namespace DependencyConflictPackage
 {
     /// <summary>
     /// A deliberately tiny stand-in "SDK" whose only purpose is to drag plain,
@@ -11,7 +11,7 @@ namespace DependencyConflict
     /// project. The API usage below forces real assembly references so the
     /// dependency graph - and therefore the version collision - is genuine.
     /// </summary>
-    public static class DependencyConflictClient
+    public static class DependencyConflictPackageClient
     {
         /// <summary>
         /// Exercises every conflicting dependency (System.Text.Json,

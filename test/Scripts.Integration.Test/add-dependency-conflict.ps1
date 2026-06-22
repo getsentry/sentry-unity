@@ -2,7 +2,7 @@ param(
     # Path to the prebuilt DependencyConflict UPM package (the `package/` folder,
     # with its Runtime/*.dll populated). Defaults to the in-repo location, which
     # is correct for local runs where the DLLs were built via
-    # `dotnet build test/Scripts.Integration.Test/DependencyConflict`. In CI the
+    # `dotnet build test/Scripts.Integration.Test/DependencyConflictPackage`. In CI the
     # DLLs are built in build.yml and downloaded as an artifact, so the caller
     # points this at the downloaded copy.
     [string] $PackagePath
@@ -32,9 +32,9 @@ if (-not [System.IO.Path]::IsPathRooted($PackagePath))
     $PackagePath = "$(ProjectRoot)/$PackagePath"
 }
 
-if (-not (Test-Path -Path "$PackagePath/Runtime/DependencyConflict.dll"))
+if (-not (Test-Path -Path "$PackagePath/Runtime/DependencyConflictPackage.dll"))
 {
-    Write-Error "DependencyConflict package not found at '$PackagePath'. Build it with 'dotnet build test/Scripts.Integration.Test/DependencyConflict' or download the 'dependency-conflict-package' artifact first."
+    Write-Error "DependencyConflict package not found at '$PackagePath'. Build it with 'dotnet build test/Scripts.Integration.Test/DependencyConflictPackage' or download the 'dependency-conflict-package' artifact first."
 }
 
 $embeddedPackagePath = "$(GetNewProjectPath)/Packages/io.sentry.dependency-conflict"

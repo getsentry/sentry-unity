@@ -5,14 +5,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
-    <AssemblyName>DependencyConflict</AssemblyName>
-    <RootNamespace>DependencyConflict</RootNamespace>
+    <AssemblyName>DependencyConflictPackage</AssemblyName>
+    <RootNamespace>DependencyConflictPackage</RootNamespace>
 
     <!-- Drop the build output straight into the nested UPM package. The
          transitive System.*/Microsoft.* DLLs ride along thanks to
          CopyLocalLockFileAssemblies, exactly mirroring how package-dev carries
          them - except here they are plain (unaliased) and version-skewed. -->
-    <OutDir>$(MSBuildThisFileDirectory)package/Runtime</OutDir>
+    <OutDir>$(MSBuildThisFileDirectory)DependencyConflict/Runtime</OutDir>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -32,7 +32,7 @@
       package-dev:         System.Text.Json 8.0.5  (assembly 8.0.0.0)
                            System.Collections.Immutable 5.0.0
                            Microsoft.Bcl.AsyncInterfaces 8.0 (transitive)
-      DependencyConflict:  System.Text.Json 8.0.4  - same major, different patch (mild)
+      DependencyConflictPackage: System.Text.Json 8.0.4  - same major, different patch (mild)
                            System.Collections.Immutable 7.0.0 - assembly 7.0.0.0 (clear skew)
                            Microsoft.Bcl.AsyncInterfaces left transitive from STJ
   -->

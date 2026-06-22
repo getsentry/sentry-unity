@@ -22,7 +22,7 @@ friction:
 | System.Collections.Immutable    | 5.0.0                 | 7.0.0 (clear skew)         |
 | Microsoft.Bcl.AsyncInterfaces   | 8.0 (transitive)      | transitive via STJ         |
 
-[`DependencyConflictClient.cs`](DependencyConflictClient.cs) genuinely calls into
+[`DependencyConflictPackageClient.cs`](DependencyConflictPackageClient.cs) genuinely calls into
 all three so the references are real, not just dropped DLLs. The integration test
 app invokes it on startup (see `IntegrationTester.cs`, which logs
 `"Dependencies say hi"`) so the unaliased assemblies are actually linked into the
@@ -30,26 +30,26 @@ build next to Sentry's aliased copies.
 
 ## Layout
 
-- `DependencyConflict.csproj` — this build project. Intentionally isolated from
+- `DependencyConflictPackage.csproj` — this build project. Intentionally isolated from
   the repo-root MSBuild config (see its `Directory.Build.props`).
-- `package/` — the resulting UPM package, mirroring `package-dev`'s `Runtime/`
+- `DependencyConflict/` — the resulting UPM package, mirroring `package-dev`'s `Runtime/`
   layout. **Not aliased.** Only the Unity metadata (`.meta`, asmdef,
-  `package.json`) is committed; `package/Runtime/*.dll` is gitignored and rebuilt.
+  `package.json`) is committed; `DependencyConflict/Runtime/*.dll` is gitignored and rebuilt.
 
 ## Rebuild
 
 ```bash
-dotnet build test/Scripts.Integration.Test/DependencyConflict
+dotnet build test/Scripts.Integration.Test/DependencyConflictPackage
 ```
 
-Output lands directly in `package/Runtime/`.
+Output lands directly in `DependencyConflict/Runtime/`.
 
 ## How it runs in CI
 
 1. `build.yml` builds the package (it has the pinned .NET SDK) and uploads it as
    the `dependency-conflict-package` artifact.
 2. Each integration build job (`ci.yml`, `test-build-*.yml`) downloads that
-   artifact and runs `add-dependency-conflict.ps1`, which copies `package/` into
+   artifact and runs `add-dependency-conflict.ps1`, which copies `DependencyConflict/` into
    the test project's `Packages/` folder as an embedded package — right after
    Sentry is added.
 3. The existing **Build Project** step is the assertion: if assembly aliasing
@@ -58,4 +58,4 @@ Output lands directly in `package/Runtime/`.
 
 To run the whole thing locally, the package is installed by
 [`add-dependency-conflict.ps1`](../add-dependency-conflict.ps1), which defaults to
-the in-repo `package/` folder when no `-PackagePath` is given.
+the in-repo `DependencyConflict/` folder when no `-PackagePath` is given.

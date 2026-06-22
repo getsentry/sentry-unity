@@ -615,7 +615,7 @@ Located in `test/Scripts.Integration.Test/`:
 
 ### Assembly Aliasing Regression Test (`DependencyConflict`)
 
-`test/Scripts.Integration.Test/DependencyConflict/` is a committed fixture that
+`test/Scripts.Integration.Test/DependencyConflictPackage/` is a committed fixture that
 stress-tests the SDK's assembly aliasing. It is a tiny UPM package shipping
 **plain, unaliased** `System.*`/`Microsoft.*` assemblies at versions that differ
 from the ones the SDK ships aliased in `package-dev`. Both packages are installed
@@ -627,8 +627,8 @@ linked alongside Sentry's aliased copies.
   the `dependency-conflict-package` artifact; integration jobs download it and run
   `add-dependency-conflict.ps1` to embed it in the test project.
 - Only the Unity metadata (`.meta`, asmdef, `package.json`) is committed;
-  `package/Runtime/*.dll` is gitignored and rebuilt via
-  `dotnet build test/Scripts.Integration.Test/DependencyConflict`.
+  `DependencyConflict/Runtime/*.dll` is gitignored and rebuilt via
+  `dotnet build test/Scripts.Integration.Test/DependencyConflictPackage`.
 - **A red integration build is the regression signal** — if aliasing breaks, the
   duplicate assemblies collide and the project no longer builds.
 
