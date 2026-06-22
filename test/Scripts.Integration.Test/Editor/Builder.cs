@@ -79,9 +79,16 @@ public class Builder
             Debug.Log("Builder: Enabling minify");
             PlayerSettings.Android.minifyDebug = PlayerSettings.Android.minifyRelease = true;
 
-#if UNITY_6000_0_OR_NEWER
-            Debug.Log("Builder: Setting target architectures");
-            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.All;
+            // The CI emulator must run the app natively to avoid ndk_translation
+            // (ARM -> x86_64) hitting unsupported instructions and crashing with SIGILL.
+            // Unity 6000.5 removed x86_64 as an Android target, so from there on we build
+            // ARM64 and the workflow runs an arm64 emulator. Older versions keep x86_64.
+#if UNITY_6000_5_OR_NEWER
+            Debug.Log("Builder: Setting target architecture to ARM64");
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+#elif UNITY_6000_0_OR_NEWER
+            Debug.Log("Builder: Setting target architecture to X86_64");
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.X86_64;
 #endif
         }
 
