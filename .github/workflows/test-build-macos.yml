@@ -30,7 +30,7 @@ jobs:
           "unityChangeset=$($u.changeset)" >> $env:GITHUB_OUTPUT
 
       - name: Setup Unity
-        uses: getsentry/setup-unity@1bbd385ae3b0505069aacc56d47f0a16366f10b1
+        uses: getsentry/setup-unity@c3304fd81a0c4e11fb3ce14f2bcca12e9b0bfc95
         with:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-version-changeset: ${{ steps.env.outputs.unityChangeset }}
