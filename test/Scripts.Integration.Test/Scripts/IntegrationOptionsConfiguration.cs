@@ -41,8 +41,10 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         // Disable ANR to avoid test interference
         options.DisableAnrIntegration();
 
-        // App-Hang detection
+        // App-Hang detection. EnableAppHangTracking drives iOS (sentry-cocoa);
+        // EnableNativeAppHangTracking drives the desktop sentry-native path. Both share AppHangTimeout.
         options.EnableAppHangTracking = true;
+        options.Experimental.EnableNativeAppHangTracking = true;
         options.AppHangTimeout = TimeSpan.FromSeconds(2);
 
         // Runtime initialization for integration tests

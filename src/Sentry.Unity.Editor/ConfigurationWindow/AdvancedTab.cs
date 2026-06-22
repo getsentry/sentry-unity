@@ -64,14 +64,15 @@ internal static class AdvancedTab
 
                 options.EnableAppHangTracking = EditorGUILayout.Toggle(
                     new GUIContent("Enable",
-                        "Enables app hang detection via the native SDK. Effective on iOS, and on macOS, Windows, and Linux when using sentry-native; " +
-                        "no-op on other platforms until each platform's native hang detection lands."),
+                        "Enables app hang detection on iOS via sentry-cocoa. App hang detection on macOS, " +
+                        "Windows, and Linux is experimental and controlled separately in the Experimental section."),
                     options.EnableAppHangTracking);
 
                 options.AppHangTimeout = EditorGUILayout.IntField(
                     new GUIContent("App Hang Timeout [ms]",
                         "The duration in [ms] for how long the main thread has to be blocked " +
-                        "before an app hang is reported.\nDefault: 5000ms"),
+                        "before an app hang is reported. Shared with the experimental native app hang " +
+                        "detection.\nDefault: 5000ms"),
                     options.AppHangTimeout);
                 options.AppHangTimeout = Math.Max(0, options.AppHangTimeout);
             }
@@ -270,6 +271,14 @@ internal static class AdvancedTab
                         "Uploads crashes immediately."),
                     options.Experimental.LinuxBackend);
             }
+
+            options.Experimental.EnableNativeAppHangTracking = EditorGUILayout.Toggle(
+                new GUIContent(
+                    "Native App Hang Tracking",
+                    "Enables app hang detection via sentry-native on macOS, Windows, and Linux. Requires the " +
+                    "corresponding platform backend above to be set to 'Native'. Shares the App Hang Timeout " +
+                    "configured in the App Hang Tracking section. iOS is unaffected by this option."),
+                options.Experimental.EnableNativeAppHangTracking);
         }
         EditorGUI.indentLevel--;
         EditorGUILayout.EndFoldoutHeaderGroup();

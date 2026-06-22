@@ -186,9 +186,9 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool IosWatchdogTerminationIntegrationEnabled { get; set; } = false;
 
     /// <summary>
-    /// Enables app hang detection on platforms whose native SDK can deliver Unity-thread hang
-    /// coverage. Currently effective on iOS only; on other platforms this is a no-op until each
-    /// platform's native hang detection lands.
+    /// Enables app hang detection on iOS through <c>sentry-cocoa</c>, which monitors the main thread and
+    /// produces a stack trace for the hang event. App hang detection on macOS, Windows, and Linux is
+    /// experimental and controlled separately via <c>Experimental.EnableNativeAppHangTracking</c>.
     /// </summary>
     public bool EnableAppHangTracking { get; set; } = true;
 
