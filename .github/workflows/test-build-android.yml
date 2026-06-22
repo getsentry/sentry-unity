@@ -93,6 +93,21 @@ jobs:
       - name: Export APK - Runtime Initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
 
+      # Unity pipes the gradle output (which contains the Sentry symbol-upload task) to a separate
+      # log file instead of the editor log, so it never shows up in the build step output. Surface
+      # it (and the Sentry CLI upload logs) so we can verify debug symbols were actually uploaded.
+      - name: Upload gradle and symbol-upload logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-gradle-logs-${{ env.UNITY_VERSION }}
+          path: |
+            samples/IntegrationTest/Library/Bee/Android/Prj/IL2CPP/Gradle/launcher/build/outputs/logs/*.log
+            samples/IntegrationTest/Logs/sentry-symbols-upload.log
+            samples/IntegrationTest/Logs/sentry-mapping-upload.log
+          retention-days: 14
+          if-no-files-found: warn
+
       - name: Compare build sizes (Runtime)
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
 
