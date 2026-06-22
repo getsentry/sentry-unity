@@ -409,10 +409,12 @@ if ($env:SENTRY_TEST_PLATFORM -ne "WebGL") {
     }
 }
 
-# Native in-proc app-hang detection runs through sentry-native. Under the current test config it is
-# active on Windows (Crashpad) and Linux; macOS uses the Cocoa backend (sentry-cocoa app-hang path),
-# so it is excluded here along with the non-desktop platforms.
-if ($env:SENTRY_TEST_PLATFORM -eq "Desktop" -and ($IsWindows -or $IsLinux)) {
+# In-proc app-hang detection is driven by the C# heartbeat coroutine that pings sentry-native, so it
+# is active for every desktop configuration that uses the sentry-native code path. The exception
+# is macOS with the Cocoa backend: there the SDK uses sentry-cocoa, which has its own app-hang path
+# and never starts the in-proc heartbeat, so skip that one configuration.
+$isCocoaBackend = $env:SENTRY_TEST_BACKEND -eq "cocoa"
+if ($env:SENTRY_TEST_PLATFORM -eq "Desktop" -and -not $isCocoaBackend) {
     Describe "Unity $($env:SENTRY_TEST_PLATFORM) App Hang Tests" {
 
         Context "App Hang Capture" {
