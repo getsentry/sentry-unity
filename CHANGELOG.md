@@ -2,6 +2,8 @@
 
 ## 4.5.0
 
+## Unreleased
+
 ### Fixes
 
 - The SDK now also syncs breadcrumb data to the native layer so they are available on events coming from the native SDKs ([#2720](https://github.com/getsentry/sentry-unity/pull/2720))
