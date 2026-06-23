@@ -153,13 +153,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          adb connect localhost:5555
-          adb wait-for-device
-          # Redroid finishes booting a few seconds after the device appears.
+          # adbd inside Redroid takes a while to come up. `adb connect` reports success even when the
+          # port isn't serving yet and the transport stays 'offline', so poll connect + boot state
+          # together instead of relying on `adb wait-for-device`.
           for i in $(seq 1 60); do
-            booted=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-            if [ "$booted" = "1" ]; then echo "Redroid booted"; break; fi
-            if [ "$i" -eq 60 ]; then echo "Redroid did not boot in time"; docker logs redroid | tail -50; adb logcat -d | tail -100; exit 1; fi
+            adb connect localhost:5555 >/dev/null 2>&1 || true
+            booted=$(adb -s localhost:5555 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "$booted" = "1" ]; then echo "Redroid booted after $((i * 5))s"; break; fi
+            if [ "$i" -eq 60 ]; then
+              echo "Redroid did not boot in time"
+              adb devices -l || true
+              docker logs redroid 2>&1 | tail -80 || true
+              adb -s localhost:5555 logcat -d 2>&1 | tail -100 || true
+              exit 1
+            fi
             sleep 5
           done
           adb devices -l
