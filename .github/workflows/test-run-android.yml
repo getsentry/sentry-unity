@@ -152,6 +152,11 @@ jobs:
         id: integration-test-redroid
         timeout-minutes: 30
         shell: bash
+        env:
+          # adb auto-detects Redroid both on the emulator console port (emulator-5554) and via our
+          # `adb connect` (localhost:5555). Pin a single serial so bare `adb` commands in the test
+          # (e.g. the launcher-activity dumpsys) don't fail/misfire with "more than one device".
+          ANDROID_SERIAL: localhost:5555
         run: |
           set -euo pipefail
           # adbd inside Redroid takes a while to come up. `adb connect` reports success even when the
