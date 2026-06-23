@@ -82,6 +82,15 @@ jobs:
       - name: Add Sentry to the project
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
+      - name: Download DependencyConflict package
+        uses: ./.github/actions/wait-for-artifact
+        with:
+          name: dependency-conflict-package
+          path: dependency-conflict-package
+
+      - name: Add DependencyConflict to the project
+        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
+
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform MacOS
         env:

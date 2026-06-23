@@ -1,0 +1,3 @@
+<Project>
+  <!-- See Directory.Build.props: deliberately isolated from the repo-root build. -->
+</Project>

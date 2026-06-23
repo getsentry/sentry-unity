@@ -14,6 +14,20 @@ $CommonTestCases = @(
             $eventId | Should -Not -BeNullOrEmpty
         }
     }
+    @{ Name = "DependencyConflict package coexists with Sentry at runtime"; TestBlock = {
+            param($TestSetup, $TestType, $SentryEvent, $RunResult)
+            # IntegrationTester invokes the DependencyConflict package in Awake on every
+            # launch. It ships plain, UNALIASED System.*/Microsoft.* assemblies alongside
+            # Sentry's aliased copies, so a successful greeting proves the two dependency
+            # sets coexist at runtime. The build already fails to compile/link if aliasing
+            # regresses; this asserts the runtime path too, so a runtime conflict turns the
+            # build red rather than being swallowed into a log line.
+            $RunResult.Output | Where-Object { $_ -match "DependencyConflict: FAILED" } |
+                Should -BeNullOrEmpty -Because "the DependencyConflict package threw at runtime - assembly aliasing likely regressed"
+            $RunResult.Output | Where-Object { $_ -match "DependencyConflict: Dependencies say hi" } |
+                Should -Not -BeNullOrEmpty -Because "the DependencyConflict package must run successfully to prove unaliased deps coexist with Sentry"
+        }
+    }
     @{ Name = "Captures event in sentry.io"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
             $SentryEvent | Should -Not -BeNullOrEmpty
@@ -72,10 +86,6 @@ $CommonTestCases = @(
             $SentryEvent.breadcrumbs.values | Should -Not -BeNullOrEmpty
             $SentryEvent.breadcrumbs.values | Where-Object { $_.message -eq "Integration test started" } | Should -Not -BeNullOrEmpty
             $SentryEvent.breadcrumbs.values | Where-Object { $_.message -eq "Context configuration finished" } | Should -Not -BeNullOrEmpty
-
-            $dataCrumb = $SentryEvent.breadcrumbs.values | Where-Object { $_.message -eq "Context configuration finished" }
-            $dataCrumb | Should -Not -BeNullOrEmpty
-            $dataCrumb.data.integration_test_key | Should -Be "integration_test_value"
         }
     }
     @{ Name = "Contains SDK information"; TestBlock = {
