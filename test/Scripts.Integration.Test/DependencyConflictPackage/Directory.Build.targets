@@ -1,3 +1,5 @@
 <Project>
-  <!-- See Directory.Build.props: deliberately isolated from the repo-root build. -->
+  <!--
+    Intentionally does NOT import the repo-root Directory.Build.props.
+  -->
 </Project>
