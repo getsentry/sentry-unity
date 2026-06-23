@@ -130,10 +130,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # The arm runner image has neither adb nor the binder kernel module; install both.
+          # The arm runner image has no Android tooling or binder kernel module. Install adb (talk
+          # to Redroid over TCP), aapt (the test reads the APK package name), and the binder module.
           # Redroid runs the Android userspace directly on the host kernel via binder/ashmem.
           sudo apt-get update
-          sudo apt-get install -y adb "linux-modules-extra-$(uname -r)"
+          sudo apt-get install -y adb aapt "linux-modules-extra-$(uname -r)"
           sudo modprobe binder_linux devices="binder,hwbinder,vndbinder"
           sudo modprobe ashmem_linux || true  # built into the kernel on newer releases; ignore if absent
           if [ ! -e /dev/binderfs ] && ! grep -qw binder /proc/filesystems && [ ! -e /dev/binder ]; then
