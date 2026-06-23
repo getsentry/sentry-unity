@@ -218,13 +218,12 @@ Downloads prebuilt native SDKs from CI artifacts or releases:
 
 ### Assembly Aliasing
 
-Prevents symbol conflicts with user dependencies using `assemblyalias` tool:
+Prevents symbol conflicts with user dependencies using `assemblyalias` tool. The
+invocation (alias patterns + the BCL exclude list) lives in one place,
+`scripts/alias-assemblies.ps1`, which `repack.ps1` and CI (`build.yml`) both call:
 
-```bash
-pwsh scripts/build-and-alias.ps1
-```
-
-- Runtime assemblies: `Microsoft*`, `System*` → prefixed with `Sentry.`
+- Runtime assemblies: `Microsoft*`, `System*` → prefixed with `Sentry.` (excluding the
+  BCL facades Unity's unityaot profile already provides — see the script's comment)
 - Editor assemblies: `Microsoft*`, `Mono.Cecil*` → prefixed with `Sentry.`
 
 ### Package Structure
@@ -249,7 +248,7 @@ Scripts involved:
 
 - `scripts/pack.ps1` - Creates the release package
 - `scripts/repack.ps1` - Full preparation pipeline
-- `scripts/build-and-alias.ps1` - Build with assembly aliasing
+- `scripts/alias-assemblies.ps1` - Single source of truth for the assembly-aliasing invocation
 
 ### Package Validation
 

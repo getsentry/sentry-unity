@@ -128,13 +128,8 @@ jobs:
       - name: Install assemblyalias
         run: docker exec unity dotnet tool install --global Sentry.AssemblyAlias --version 0.5.0 --allow-roll-forward
 
-      - name: Alias editor assemblies
-        run: docker exec unity /home/gh/.dotnet/tools/assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;Mono.Cecil*"
-
-      # --assemblies-to-exclude: BCL assemblies Unity's unityaot profile already provides. Aliasing them
-      # mints a duplicate System.Span<T> definition that breaks IL2CPP's intrinsic remap (#2717, #1777).
-      - name: Alias runtime assemblies
-        run: docker exec unity /home/gh/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*" --assemblies-to-exclude "System.Buffers;System.Memory;System.Numerics.Vectors;System.Threading.Tasks.Extensions"
+      - name: Alias assemblies
+        run: docker exec unity pwsh scripts/alias-assemblies.ps1 -AssemblyAlias /home/gh/.dotnet/tools/assemblyalias
 
       - name: Package for release
         run: |
@@ -149,11 +144,6 @@ jobs:
           path: |
             package-release.zip
 
-      # The DependencyConflict package ships plain, UNALIASED System.*/Microsoft.*
-      # assemblies at versions that differ from the ones the SDK ships aliased. It
-      # gets dropped into the integration test project alongside Sentry to verify
-      # the assembly aliasing keeps them from colliding. Build it here (this job
-      # has the pinned .NET SDK) and pass it to the integration jobs as an artifact.
       - name: Build DependencyConflict package
         run: docker exec unity dotnet build test/Scripts.Integration.Test/DependencyConflictPackage
 
