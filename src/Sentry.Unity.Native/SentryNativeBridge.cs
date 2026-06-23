@@ -122,7 +122,7 @@ internal static class SentryNativeBridge
         }
 
         Logger?.LogDebug("Setting EnableNativeAppHangTracking: {0}", options.Experimental.EnableNativeAppHangTracking);
-        sentry_options_set_app_hang_enabled(cOptions, options.Experimental.EnableNativeAppHangTracking ? 1 : 0);
+        sentry_options_set_enable_app_hang_tracking(cOptions, options.Experimental.EnableNativeAppHangTracking ? 1 : 0);
 
         var appHangTimeoutMs = (ulong)Math.Max(0, options.AppHangTimeout.TotalMilliseconds);
         Logger?.LogDebug("Setting AppHangTimeout: {0}ms", appHangTimeoutMs);
@@ -203,7 +203,7 @@ internal static class SentryNativeBridge
     private static extern void sentry_options_set_enable_metrics(IntPtr options, int enable_metrics);
 
     [DllImport(SentryLib)]
-    private static extern void sentry_options_set_app_hang_enabled(IntPtr options, int enabled);
+    private static extern void sentry_options_set_enable_app_hang_tracking(IntPtr options, int enabled);
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_app_hang_timeout_ms(IntPtr options, ulong timeout_ms);
