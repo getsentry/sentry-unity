@@ -32,8 +32,11 @@ public class IntegrationTester : MonoBehaviour
     // Sentry SDK ships aliased. Calling into it forces those assemblies to be
     // linked into the build right next to Sentry's aliased copies - so if the
     // assembly aliasing ever regresses, this build fails to compile/link rather
-    // than the conflict going unnoticed. A successful "Dependencies say hi" log
-    // is the proof that both packages coexist in one project.
+    // than the conflict going unnoticed.
+    //
+    // The "Dependencies say hi" / "FAILED" markers below are asserted by the
+    // integration test harness (CommonTestCases.ps1), so a runtime conflict turns
+    // the build red too instead of being swallowed into a log line.
     private void ExerciseConflictingDependencies()
     {
         try
