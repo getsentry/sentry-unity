@@ -24,12 +24,13 @@ defaults:
 jobs:
   run:
     name: ${{ inputs.unity-version }} ${{ inputs.api-level }} ${{ inputs.init-type }}
-    # Unity 6000.5+ builds ARM64 (x86_64 was removed), so we run an arm64-v8a emulator. The
-    # GitHub-hosted arm64 Linux runners have no /dev/kvm, so the only place to run an accelerated
-    # arm64 emulator is an Apple Silicon macOS runner (Hypervisor.Framework). Older Unity versions
-    # keep x86_64 and run the emulator on the standard x86 Linux runner with KVM.
-    # Keep in sync with the "Determine emulator architecture" step below and Builder.cs.
-    runs-on: ${{ inputs.unity-version == '6000.5' && 'macos-15' || 'ubuntu-latest' }}
+    # Unity 6000.5+ builds ARM64 only (x86_64 was removed). No GitHub-hosted runner can run an
+    # accelerated Android *emulator* for an arm64 app: x86 Linux would need ndk_translation (SIGILL),
+    # arm64 Linux has no /dev/kvm, and macOS arm64 can't nest virtualization (HVF HV_UNSUPPORTED).
+    # So for 6000.5+ we run Redroid (containerized arm64 Android, no hypervisor) on an arm64 Linux
+    # runner. Older Unity versions keep x86_64 and run the emulator on the standard x86 Linux runner.
+    # Keep in sync with the "Determine device" step below and Builder.cs.
+    runs-on: ${{ inputs.unity-version == '6000.5' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -53,27 +54,33 @@ jobs:
           name: testapp-android-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
           path: samples/IntegrationTest/Build
 
-      # Unity 6000.5 removed x86_64 as an Android build target, so from there on the test app is
-      # built for ARM64 and runs on an arm64-v8a emulator (macOS runner). Older versions keep
-      # x86_64 and run on the x86 Linux runner; running the app natively avoids ndk_translation,
-      # which crashes with SIGILL on unsupported instructions.
-      # Keep in sync with the runs-on selection above and Builder.cs.
-      - name: Determine emulator architecture
-        id: arch
+      # Unity 6000.5+ ships an ARM64-only app -> Redroid on the arm64 runner. Older versions ship
+      # x86_64 and run the hardware-accelerated emulator. Keep in sync with runs-on and Builder.cs.
+      - name: Determine device
+        id: device
         shell: bash
         run: |
           case "${{ inputs.unity-version }}" in
-            6000.5) arch="arm64-v8a" ;;
-            *)      arch="x86_64" ;;
+            6000.5) device="redroid"; arch="arm64-v8a" ;;
+            *)      device="emulator"; arch="x86_64" ;;
           esac
+          echo "device=$device" >> "$GITHUB_OUTPUT"
           echo "arch=$arch" >> "$GITHUB_OUTPUT"
-          echo "Using emulator arch: $arch"
+          echo "Using device: $device ($arch)"
 
-      # KVM and the AVD directory workarounds only apply to the x86 Linux runner; the macOS runner
-      # uses Hypervisor.Framework and ships a working Android SDK out of the box.
+      # --- x86_64 path: hardware-accelerated emulator on the x86 Linux runner ---
+
+      - name: Add Android build-tools to PATH
+        if: ${{ steps.device.outputs.device == 'emulator' }}
+        run: |
+          BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
+          echo "Found build-tools at: $BUILD_TOOLS_DIR"
+          echo "$BUILD_TOOLS_DIR" >> $GITHUB_PATH
+        shell: bash
+
       # See https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
       - name: Enable KVM group perms
-        if: ${{ steps.arch.outputs.arch == 'x86_64' }}
+        if: ${{ steps.device.outputs.device == 'emulator' }}
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
@@ -81,20 +88,14 @@ jobs:
 
       # Make sure that the required directories and .cfg do exists. Workaround to keep ADV happy on `ubuntu-latest`.
       - name: Setup Android directories
-        if: ${{ steps.arch.outputs.arch == 'x86_64' }}
+        if: ${{ steps.device.outputs.device == 'emulator' }}
         run: |
           mkdir -p $HOME/.android
           mkdir -p $HOME/.android/avd
           touch $HOME/.android/repositories.cfg
 
-      - name: Add Android build-tools to PATH
-        run: |
-          BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
-          echo "Found build-tools at: $BUILD_TOOLS_DIR"
-          echo "$BUILD_TOOLS_DIR" >> $GITHUB_PATH
-        shell: bash
-
-      - name: Run Android Integration Tests
+      - name: Run Android Integration Tests (emulator)
+        if: ${{ steps.device.outputs.device == 'emulator' }}
         uses: reactivecircus/android-emulator-runner@0a638108440efd5c7f980e6ba145dbcdd8f32009 # v2.37.0
         id: integration-test
         timeout-minutes: 30
@@ -115,12 +116,54 @@ jobs:
             -camera-front none
             -timezone US/Pacific
             -no-metrics
-          arch: ${{ steps.arch.outputs.arch }}
+          arch: ${{ steps.device.outputs.arch }}
           script: |
             adb wait-for-device
             adb shell input keyevent 82
             adb devices -l
             pwsh -Command '$env:SENTRY_TEST_PLATFORM = "Android"; $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.apk"; Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI'
+
+      # --- arm64 path: Redroid container on the arm64 runner (no hypervisor needed) ---
+
+      - name: Start Redroid container
+        if: ${{ steps.device.outputs.device == 'redroid' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The arm runner image has neither adb nor the binder kernel module; install both.
+          # Redroid runs the Android userspace directly on the host kernel via binder/ashmem.
+          sudo apt-get update
+          sudo apt-get install -y adb "linux-modules-extra-$(uname -r)"
+          sudo modprobe binder_linux devices="binder,hwbinder,vndbinder"
+          sudo modprobe ashmem_linux || true  # built into the kernel on newer releases; ignore if absent
+          if [ ! -e /dev/binderfs ] && ! grep -qw binder /proc/filesystems && [ ! -e /dev/binder ]; then
+            echo "binder is unavailable on this kernel ($(uname -r)); Redroid cannot run." >&2
+            exit 1
+          fi
+          docker run -d --rm --privileged \
+            --name redroid \
+            -p 5555:5555 \
+            redroid/redroid:13.0.0_64only-latest \
+            androidboot.redroid_gpu_mode=guest
+
+      - name: Run Android Integration Tests (redroid)
+        if: ${{ steps.device.outputs.device == 'redroid' }}
+        id: integration-test-redroid
+        timeout-minutes: 30
+        shell: bash
+        run: |
+          set -euo pipefail
+          adb connect localhost:5555
+          adb wait-for-device
+          # Redroid finishes booting a few seconds after the device appears.
+          for i in $(seq 1 60); do
+            booted=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            if [ "$booted" = "1" ]; then echo "Redroid booted"; break; fi
+            if [ "$i" -eq 60 ]; then echo "Redroid did not boot in time"; docker logs redroid | tail -50; adb logcat -d | tail -100; exit 1; fi
+            sleep 5
+          done
+          adb devices -l
+          pwsh -Command '$env:SENTRY_TEST_PLATFORM = "Android"; $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.apk"; Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI'
 
       - name: Upload test results on failure
         if: ${{ failure() }}
