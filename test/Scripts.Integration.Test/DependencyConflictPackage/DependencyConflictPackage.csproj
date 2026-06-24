@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- netstandard2.0 keeps this loadable across every Unity version. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>DependencyConflictPackage</AssemblyName>
+    <RootNamespace>DependencyConflictPackage</RootNamespace>
+
+    <OutDir>$(MSBuildThisFileDirectory)DependencyConflict/Runtime</OutDir>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="System.Collections.Immutable" Version="7.0.0" />
+  </ItemGroup>
+
+  <!-- Clean what we drop into the package so stale DLLs don't linger. -->
+  <Target Name="CleanDependencyConflictPackage" AfterTargets="Clean">
+    <ItemGroup>
+      <FilesToDelete Include="$(OutDir)/*.dll" />
+      <FilesToDelete Include="$(OutDir)/*.pdb" />
+      <FilesToDelete Include="$(OutDir)/*.xml" />
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" ContinueOnError="true" />
+  </Target>
+
+</Project>

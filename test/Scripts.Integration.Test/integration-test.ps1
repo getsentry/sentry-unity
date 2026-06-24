@@ -45,6 +45,15 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)")) {
     ./test/Scripts.Integration.Test/add-sentry.ps1 "$UnityPath" -PackagePath $PackagePath
     Write-PhaseSuccess "Sentry added"
 
+    Write-PhaseHeader "Adding DependencyConflict (alias stress-test)"
+    dotnet build test/Scripts.Integration.Test/DependencyConflictPackage
+    if ($LASTEXITCODE -ne 0)
+    {
+        Write-Error "Failed to build the DependencyConflict package."
+    }
+    ./test/Scripts.Integration.Test/add-dependency-conflict.ps1
+    Write-PhaseSuccess "DependencyConflict added"
+
     Write-PhaseHeader "Configuring Sentry"
     ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform
     Write-PhaseSuccess "Sentry configured"

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using DependencyConflictPackage;
 using Sentry;
 using Sentry.Unity;
 using UnityEngine;
@@ -22,6 +23,31 @@ public class IntegrationTester : MonoBehaviour
         {
             Logger.Log("IntegrationTester is quitting.");
         };
+
+        ExerciseConflictingDependencies();
+    }
+
+    // Invokes the DependencyConflict package, which ships plain, UNALIASED
+    // System.*/Microsoft.* assemblies at versions that differ from the ones the
+    // Sentry SDK ships aliased. Calling into it forces those assemblies to be
+    // linked into the build right next to Sentry's aliased copies - so if the
+    // assembly aliasing ever regresses, this build fails to compile/link rather
+    // than the conflict going unnoticed.
+    //
+    // The "Dependencies say hi" / "FAILED" markers below are asserted by the
+    // integration test harness (CommonTestCases.ps1), so a runtime conflict turns
+    // the build red too instead of being swallowed into a log line.
+    private void ExerciseConflictingDependencies()
+    {
+        try
+        {
+            var greeting = DependencyConflictPackageClient.SayHiAsync().GetAwaiter().GetResult();
+            Logger.Log($"DependencyConflict: {greeting}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"DependencyConflict: FAILED - {ex}");
+        }
     }
 
     public void Start()

@@ -1,0 +1,9 @@
+{
+  "name": "io.sentry.dependency-conflict",
+  "version": "0.0.1",
+  "displayName": "Dependency Conflict (alias stress-test)",
+  "description": "A deliberately minimal package that ships plain, UNALIASED System.*/Microsoft.* assemblies at versions that differ from the ones the real Sentry SDK ships (aliased) in package-dev. Used to stress-test the assembly aliasing tooling by forcing a managed-dependency version collision in a single Unity project.",
+  "unity": "2021.3",
+  "license": "MIT",
+  "type": "library"
+}

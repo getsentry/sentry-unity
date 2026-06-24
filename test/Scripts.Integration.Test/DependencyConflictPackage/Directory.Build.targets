@@ -1,0 +1,5 @@
+<Project>
+  <!--
+    Intentionally does NOT import the repo-root Directory.Build.props.
+  -->
+</Project>

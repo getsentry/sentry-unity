@@ -126,13 +126,10 @@ jobs:
         run: docker exec unity dotnet build -c Release -v:d
 
       - name: Install assemblyalias
-        run: docker exec unity dotnet tool install --global Alias --version 0.4.3 --allow-roll-forward
+        run: docker exec unity dotnet tool install --global Sentry.AssemblyAlias --version 0.5.0 --allow-roll-forward
 
-      - name: Alias editor assemblies
-        run: docker exec unity /home/gh/.dotnet/tools/assemblyalias --target-directory "package-dev/Editor" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;Mono.Cecil*"
-
-      - name: Alias runtime assemblies
-        run: docker exec unity /home/gh/.dotnet/tools/assemblyalias --target-directory "package-dev/Runtime" --internalize --prefix "Sentry." --assemblies-to-alias "Microsoft*;System*"
+      - name: Alias assemblies
+        run: docker exec unity pwsh scripts/alias-assemblies.ps1 -AssemblyAlias /home/gh/.dotnet/tools/assemblyalias
 
       - name: Package for release
         run: |
@@ -146,6 +143,16 @@ jobs:
           if-no-files-found: error
           path: |
             package-release.zip
+
+      - name: Build DependencyConflict package
+        run: docker exec unity dotnet build test/Scripts.Integration.Test/DependencyConflictPackage
+
+      - name: Upload DependencyConflict package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dependency-conflict-package
+          if-no-files-found: error
+          path: test/Scripts.Integration.Test/DependencyConflictPackage/DependencyConflict
 
       - name: Run Unity tests (playmode)
         run: docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
