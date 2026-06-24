@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Updated the dependency resolution within the SDK. This enables .NET Standard 2.1 both for building the SDK from source and for setting the Api Compatibility Level in the Player Settings in your project. The assembly aliasing was originally intended to prevent dependency conflicts the SDK might introduce by deeply renaming its bundled dependencies. However, this prevented Unity from resolving these dependencies at build time, creating ambiguity for certain types. To resolve this, the SDK now excludes `System.Buffers`, `System.Memory`, `System.Numerics.Vectors`, and `System.Threading.Tasks.Extensions` from being aliased, letting the Unity build pipeline handle them. ([#2726](https://github.com/getsentry/sentry-unity/pull/2726))
+
 ## 4.5.0
 
 ### Fixes
