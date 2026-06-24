@@ -15,6 +15,7 @@ public static class SentryNative
 
     private static bool ShouldReinstallBackend;
     private static IDiagnosticLogger? Logger;
+    private static Action? OnQuitting;
 
     /// <summary>
     /// Configures the native SDK.
@@ -56,11 +57,17 @@ public static class SentryNative
             return;
         }
 
-        ApplicationAdapter.Instance.Quitting += () =>
+        if (OnQuitting is not null)
+        {
+            ApplicationAdapter.Instance.Quitting -= OnQuitting;
+        }
+
+        OnQuitting = () =>
         {
             Logger?.LogDebug("Closing the sentry-native SDK");
             SentryNativeBridge.Close();
         };
+        ApplicationAdapter.Instance.Quitting += OnQuitting;
         options.ScopeObserver = new NativeScopeObserver(options);
         options.EnableScopeSync = true;
         options.NativeContextWriter = new NativeContextWriter();
