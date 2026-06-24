@@ -14,7 +14,7 @@ public class CliConfiguration : SentryCliOptionsConfiguration
         cliOptions.Auth = authToken;
 
         cliOptions.Organization = "sentry-sdks";
-        cliOptions.Project = "sentry-unity";
+        cliOptions.Project = "sentry-unity-integration-tests";
 
         Debug.Log("Sentry: CliConfiguration::Configure() finished");
     }

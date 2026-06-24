@@ -247,10 +247,9 @@ jobs:
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
-        shell: bash
         run: |
-          # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
-          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
+          Copy-Item -Force unity.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
           tar -cvzf test-app-webgl.tar.gz samples/IntegrationTest/Build
 
       - name: Upload test app

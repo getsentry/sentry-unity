@@ -1,3 +1,5 @@
+$ErrorActionPreference = "Stop"
+
 # Clean up previous release artifacts
 if (Test-Path "package-release") {
     Remove-Item -Path "package-release" -Recurse -Force

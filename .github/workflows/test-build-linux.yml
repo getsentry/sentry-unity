@@ -118,6 +118,7 @@ jobs:
       - name: Create archive (Breakpad backend)
         run: |
           Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
+          Copy-Item unity.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
           tar -cvzf test-app-desktop.tar.gz samples/IntegrationTest/Build
 
       - name: Upload test app (Breakpad backend)
@@ -142,6 +143,7 @@ jobs:
         run: |
           Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
           Remove-Item -Force test-app-desktop.tar.gz -ErrorAction SilentlyContinue
+          Copy-Item unity.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
           tar -cvzf test-app-desktop.tar.gz samples/IntegrationTest/Build
 
       - name: Upload test app (Native backend)

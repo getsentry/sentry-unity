@@ -117,10 +117,9 @@ jobs:
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive (runtime initialization)
-        shell: bash
         run: |
-          # Note: remove local.properties file that contains Android SDK & NDK paths in the Unity installation.
-          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
+          Copy-Item -Force unity.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
           tar -cvzf test-app-runtime.tar.gz samples/IntegrationTest/Build
 
       # Upload runtime initialization build
@@ -145,9 +144,9 @@ jobs:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
 
       - name: Create archive (build-time initialization)
-        shell: bash
         run: |
-          rm -rf samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
+          Copy-Item -Force unity.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
           tar -cvzf test-app-buildtime.tar.gz samples/IntegrationTest/Build
 
       # Upload build-time initialization build
