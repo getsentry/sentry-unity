@@ -4,7 +4,7 @@
 
 ### Features
 
-- Added the experimental `options.Experimental.EnableNativeAppHangTracking` (default `false`) to enable app hang detection via `sentry-native` on macOS, Windows, and Linux. On macOS, this requires the crash reporting backend to be switched to `Native` in the Advanced -> Experimental settings. `sentry-native` monitors the main thread and produces an event including a stack trace for the hang, reusing the top-level `AppHangTimeout` (default `5s`). When effective, the Unity SDK's C# watchdog is skipped to avoid duplicate reports. iOS app hang detection remains controlled by the top-level `EnableAppHangTracking`. ([#2709](https://github.com/getsentry/sentry-unity/pull/2709))
+- Added the experimental `options.Experimental.EnableNativeAppHangTracking` (default `false`) to enable app hang detection via `sentry-native` on macOS, Windows, and Linux. On macOS, this requires the macOS backend to be switched to `Native` instead of `Cocoa` in the Advanced -> Experimental settings. `sentry-native` monitors the main thread and produces an event including a stack trace for the hang, reusing the top-level `AppHangTimeout` (default `5s`). When effective, the Unity SDK's C# watchdog is skipped to avoid duplicate reports. iOS app hang detection remains controlled by the top-level `EnableAppHangTracking`. ([#2709](https://github.com/getsentry/sentry-unity/pull/2709))
 
 ## 4.5.0
 
