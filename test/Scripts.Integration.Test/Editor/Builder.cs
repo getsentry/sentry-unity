@@ -80,8 +80,9 @@ public class Builder
             PlayerSettings.Android.minifyDebug = PlayerSettings.Android.minifyRelease = true;
 
 #if UNITY_6000_0_OR_NEWER
-            Debug.Log("Builder: Setting target architectures");
-            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.All;
+            // X86_64 has been deprecated and was removed with 6.5
+            Debug.Log("Builder: Setting target architecture to ARM64");
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
 #endif
         }
 
