@@ -31,8 +31,7 @@ public partial class SentryMonoBehaviour
         // monitored target and arms detection. The monitor no-op without having received a 
         // heartbeat. During startup, splash screen plus the first scene load routinely block the 
         // main thread longer than the hang timeout and would cause false positives.
-        // This also works in batchmode/headless (e.g. LinuxServer).
-        // (unlike WaitForEndOfFrame)
+        // This also works in batchmode/headless (e.g. LinuxServer), unlike WaitForEndOfFrame.
         yield return null;
         heartbeat();
 
