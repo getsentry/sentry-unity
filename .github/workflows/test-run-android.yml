@@ -59,7 +59,7 @@ jobs:
       - name: Add Android build-tools to PATH
         if: ${{ steps.device.outputs.device == 'emulator' }}
         run: |
-          $buildToolsDir = (Get-ChildItem "$env:ANDROID_HOME/build-tools" -Directory | Sort-Object Name | Select-Object -Last 1).FullName
+          $buildToolsDir = (Get-ChildItem "$env:ANDROID_HOME/build-tools" -Directory | Sort-Object { [version]$_.Name } | Select-Object -Last 1).FullName
           Write-Host "Found build-tools at: $buildToolsDir"
           $buildToolsDir >> $env:GITHUB_PATH
 
