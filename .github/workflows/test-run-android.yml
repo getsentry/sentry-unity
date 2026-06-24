@@ -129,6 +129,7 @@ jobs:
           sudo modprobe binder_linux devices="binder,hwbinder,vndbinder"
           $PSNativeCommandUseErrorActionPreference = $false
           sudo modprobe ashmem_linux  # built into the kernel on newer releases; ignore if absent
+          $PSNativeCommandUseErrorActionPreference = $true
           $hasBinder = (Test-Path /dev/binderfs) -or
                        (Select-String -Path /proc/filesystems -Pattern '\bbinder\b' -Quiet) -or
                        (Test-Path /dev/binder)
