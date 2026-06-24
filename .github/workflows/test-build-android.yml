@@ -94,11 +94,20 @@ jobs:
           path: build-size-measurements/*.json
           retention-days: 1
 
+      - name: Bundle build & symbol-upload logs with the APK (Runtime)
+        run: |
+          Copy-Item unity.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
+          Copy-Item samples/IntegrationTest/Logs/sentry-*-upload.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
+
       - name: Upload .apk
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: testapp-android-compiled-${{ env.UNITY_VERSION }}-runtime
-          path: samples/IntegrationTest/Build/*.apk # Collect app but ignore the files that are not required for the test.
+          path: |
+            samples/IntegrationTest/Build/*.apk
+            samples/IntegrationTest/Build/unity.log
+            samples/IntegrationTest/Build/sentry-symbols-upload.log
+            samples/IntegrationTest/Build/sentry-mapping-upload.log
           retention-days: 14 # Lower retention period - we only need this to retry CI.
 
       - name: Overwrite IntegrationOptionsConfiguration for build-time initialization
@@ -111,11 +120,20 @@ jobs:
       - name: Export APK - Build-Time Initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
 
+      - name: Bundle build & symbol-upload logs with the APK (Build-Time)
+        run: |
+          Copy-Item unity.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
+          Copy-Item samples/IntegrationTest/Logs/sentry-*-upload.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
+
       - name: Upload .apk
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: testapp-android-compiled-${{ env.UNITY_VERSION }}-buildtime
-          path: samples/IntegrationTest/Build/*.apk
+          path: |
+            samples/IntegrationTest/Build/*.apk
+            samples/IntegrationTest/Build/unity.log
+            samples/IntegrationTest/Build/sentry-symbols-upload.log
+            samples/IntegrationTest/Build/sentry-mapping-upload.log
           retention-days: 14
 
       - name: Upload IntegrationTest project on failure
