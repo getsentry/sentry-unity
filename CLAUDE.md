@@ -218,13 +218,12 @@ Downloads prebuilt native SDKs from CI artifacts or releases:
 
 ### Assembly Aliasing
 
-Prevents symbol conflicts with user dependencies using `assemblyalias` tool:
+Prevents symbol conflicts with user dependencies using `assemblyalias` tool. The
+invocation (alias patterns + the BCL exclude list) lives in one place,
+`scripts/alias-assemblies.ps1`, which `repack.ps1` and CI (`build.yml`) both call:
 
-```bash
-pwsh scripts/build-and-alias.ps1
-```
-
-- Runtime assemblies: `Microsoft*`, `System*` → prefixed with `Sentry.`
+- Runtime assemblies: `Microsoft*`, `System*` → prefixed with `Sentry.` (excluding the
+  BCL facades Unity's unityaot profile already provides — see the script's comment)
 - Editor assemblies: `Microsoft*`, `Mono.Cecil*` → prefixed with `Sentry.`
 
 ### Package Structure
@@ -249,7 +248,7 @@ Scripts involved:
 
 - `scripts/pack.ps1` - Creates the release package
 - `scripts/repack.ps1` - Full preparation pipeline
-- `scripts/build-and-alias.ps1` - Build with assembly aliasing
+- `scripts/alias-assemblies.ps1` - Single source of truth for the assembly-aliasing invocation
 
 ### Package Validation
 
@@ -611,6 +610,26 @@ Located in `test/Scripts.Integration.Test/`:
 | `build-project.ps1`      | Builds for target platform           |
 | `measure-build-size.ps1` | Compares build size with/without SDK |
 | `integration-test.ps1`   | Full local integration test          |
+| `add-dependency-conflict.ps1` | Adds the DependencyConflict alias stress-test package |
+
+### Assembly Aliasing Regression Test (`DependencyConflict`)
+
+`test/Scripts.Integration.Test/DependencyConflictPackage/` is a committed fixture that
+stress-tests the SDK's assembly aliasing. It is a tiny UPM package shipping
+**plain, unaliased** `System.*`/`Microsoft.*` assemblies at versions that differ
+from the ones the SDK ships aliased in `package-dev`. Both packages are installed
+into the same integration test project; `IntegrationTester.cs` calls into it on
+startup (logging `"Dependencies say hi"`), forcing the unaliased assemblies to be
+linked alongside Sentry's aliased copies.
+
+- The DLLs are built in `build.yml` (it has the pinned .NET SDK) and uploaded as
+  the `dependency-conflict-package` artifact; integration jobs download it and run
+  `add-dependency-conflict.ps1` to embed it in the test project.
+- Only the Unity metadata (`.meta`, asmdef, `package.json`) is committed;
+  `DependencyConflict/Runtime/*.dll` is gitignored and rebuilt via
+  `dotnet build test/Scripts.Integration.Test/DependencyConflictPackage`.
+- **A red integration build is the regression signal** — if aliasing breaks, the
+  duplicate assemblies collide and the project no longer builds.
 
 ### Local Integration Testing
 

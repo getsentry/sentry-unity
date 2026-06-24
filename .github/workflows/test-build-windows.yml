@@ -30,7 +30,7 @@ jobs:
           "unityChangeset=$($u.changeset)" >> $env:GITHUB_OUTPUT
 
       - name: Setup Unity
-        uses: getsentry/setup-unity@1bbd385ae3b0505069aacc56d47f0a16366f10b1
+        uses: getsentry/setup-unity@61c0c0944851685b6c1225e940d1b1ab349e3aa3
         with:
           unity-version: ${{ steps.env.outputs.unityVersion }}
           unity-version-changeset: ${{ steps.env.outputs.unityChangeset }}
@@ -82,6 +82,15 @@ jobs:
       - name: Add Sentry to the project
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
+      - name: Download DependencyConflict package
+        uses: ./.github/actions/wait-for-artifact
+        with:
+          name: dependency-conflict-package
+          path: dependency-conflict-package
+
+      - name: Add DependencyConflict to the project
+        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
+
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows
         env:
@@ -104,6 +113,7 @@ jobs:
       - name: Create archive (Crashpad backend)
         run: |
           Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
+          Copy-Item unity.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
           tar -cvzf test-app-desktop.tar.gz samples/IntegrationTest/Build
 
       - name: Upload test app (Crashpad backend)
@@ -128,6 +138,7 @@ jobs:
         run: |
           Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
           Remove-Item -Force test-app-desktop.tar.gz -ErrorAction SilentlyContinue
+          Copy-Item unity.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
           tar -cvzf test-app-desktop.tar.gz samples/IntegrationTest/Build
 
       - name: Upload test app (Native backend)

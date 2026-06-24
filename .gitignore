@@ -32,6 +32,15 @@ package-dev/**/TestSentryOptions.json
 package-dev/Tests/Editor/TestFiles/
 package-dev/Plugins/*/Sentry/crashpad_handler*
 
+# DependencyConflict integration-test fixture: the DLLs are rebuilt fresh in CI
+# (and locally) from DependencyConflictPackage.csproj. Only the hand-authored Unity
+# metadata (.meta, asmdef, package.json) is tracked.
+test/Scripts.Integration.Test/DependencyConflictPackage/DependencyConflict/Runtime/*.dll
+test/Scripts.Integration.Test/DependencyConflictPackage/DependencyConflict/Runtime/*.pdb
+test/Scripts.Integration.Test/DependencyConflictPackage/DependencyConflict/Runtime/*.xml
+test/Scripts.Integration.Test/DependencyConflictPackage/obj/
+test/Scripts.Integration.Test/DependencyConflictPackage/bin/
+
 # Download cache for native SDKs
 modules/sentry-native-ndk
 

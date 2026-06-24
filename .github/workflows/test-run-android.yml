@@ -11,11 +11,6 @@ on:
       init-type:
         required: true
         type: string
-    # Map the workflow outputs to job outputs
-    outputs:
-      status:
-        description: "Integration test status"
-        value: ${{ jobs.run.outputs.status }}
 
 defaults:
   run:
@@ -24,15 +19,14 @@ defaults:
 jobs:
   run:
     name: ${{ inputs.unity-version }} ${{ inputs.api-level }} ${{ inputs.init-type }}
-    runs-on: ubuntu-latest
+    # Unity 6000.x builds ARM64 so we run Redroid (containerized arm64 Android) on an 
+    # arm64 Linux runner.
+    runs-on: ${{ fromJSON(inputs.unity-version) >= 6000 && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
       SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-    # Map the job outputs to step outputs
-    outputs:
-      status: ${{ steps.integration-test.outputs.status }}
 
     steps:
       - name: Checkout
@@ -48,8 +42,30 @@ jobs:
           name: testapp-android-compiled-${{ inputs.unity-version }}-${{ inputs.init-type }}
           path: samples/IntegrationTest/Build
 
+      - name: Determine device
+        id: device
+        run: |
+          if ([double]"${{ inputs.unity-version }}" -ge 6000) {
+            $device = "redroid"; $arch = "arm64-v8a"
+          } else {
+            $device = "emulator"; $arch = "x86_64"
+          }
+          "device=$device" >> $env:GITHUB_OUTPUT
+          "arch=$arch" >> $env:GITHUB_OUTPUT
+          Write-Host "Using device: $device ($arch)"
+
+      # --- x86_64 path: hardware-accelerated emulator on the x86 Linux runner ---
+
+      - name: Add Android build-tools to PATH
+        if: ${{ steps.device.outputs.device == 'emulator' }}
+        run: |
+          $buildToolsDir = (Get-ChildItem "$env:ANDROID_HOME/build-tools" -Directory | Sort-Object { [version]$_.Name } | Select-Object -Last 1).FullName
+          Write-Host "Found build-tools at: $buildToolsDir"
+          $buildToolsDir >> $env:GITHUB_PATH
+
       # See https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
       - name: Enable KVM group perms
+        if: ${{ steps.device.outputs.device == 'emulator' }}
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
@@ -57,19 +73,14 @@ jobs:
 
       # Make sure that the required directories and .cfg do exists. Workaround to keep ADV happy on `ubuntu-latest`.
       - name: Setup Android directories
+        if: ${{ steps.device.outputs.device == 'emulator' }}
         run: |
           mkdir -p $HOME/.android
           mkdir -p $HOME/.android/avd
           touch $HOME/.android/repositories.cfg
 
-      - name: Add Android build-tools to PATH
-        run: |
-          BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -1)
-          echo "Found build-tools at: $BUILD_TOOLS_DIR"
-          echo "$BUILD_TOOLS_DIR" >> $GITHUB_PATH
-        shell: bash
-
-      - name: Run Android Integration Tests
+      - name: Run Android Integration Tests (emulator)
+        if: ${{ steps.device.outputs.device == 'emulator' }}
         uses: reactivecircus/android-emulator-runner@0a638108440efd5c7f980e6ba145dbcdd8f32009 # v2.37.0
         id: integration-test
         timeout-minutes: 30
@@ -90,12 +101,71 @@ jobs:
             -camera-front none
             -timezone US/Pacific
             -no-metrics
-          arch: x86_64
+          arch: ${{ steps.device.outputs.arch }}
           script: |
             adb wait-for-device
             adb shell input keyevent 82
             adb devices -l
             pwsh -Command '$env:SENTRY_TEST_PLATFORM = "Android"; $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.apk"; Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI'
+
+      # --- arm64 path: Redroid container on the arm64 runner (no hypervisor needed) ---
+
+      - name: Start Redroid container
+        if: ${{ steps.device.outputs.device == 'redroid' }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          $kernel = uname -r
+          sudo apt-get update
+          sudo apt-get install -y adb aapt "linux-modules-extra-$kernel"
+          sudo modprobe binder_linux devices="binder,hwbinder,vndbinder"
+          $PSNativeCommandUseErrorActionPreference = $false
+          sudo modprobe ashmem_linux  # built into the kernel on newer releases; ignore if absent
+          $PSNativeCommandUseErrorActionPreference = $true
+          $hasBinder = (Test-Path /dev/binderfs) -or
+                       (Select-String -Path /proc/filesystems -Pattern '\bbinder\b' -Quiet) -or
+                       (Test-Path /dev/binder)
+          if (-not $hasBinder) {
+            Write-Error "binder is unavailable on this kernel ($kernel); Redroid cannot run."
+            exit 1
+          }
+          docker run -d --rm --privileged `
+            --name redroid `
+            -p 5555:5555 `
+            redroid/redroid:13.0.0_64only-latest `
+            androidboot.redroid_gpu_mode=guest
+
+      - name: Run Android Integration Tests (redroid)
+        if: ${{ steps.device.outputs.device == 'redroid' }}
+        id: integration-test-redroid
+        timeout-minutes: 30
+        env:
+          # adb auto-detects Redroid both on the emulator console port (emulator-5554) and via our
+          # `adb connect` (localhost:5555). Pin a single serial so bare `adb` commands in the test
+          # (e.g. the launcher-activity dumpsys) don't fail/misfire with "more than one device".
+          ANDROID_SERIAL: localhost:5555
+        run: |
+          $ErrorActionPreference = "Stop"
+          # adbd inside Redroid takes a while to come up. `adb connect` reports success even when the
+          # port isn't serving yet and the transport stays 'offline', so poll connect + boot state
+          # together instead of relying on `adb wait-for-device`.
+          for ($i = 1; $i -le 60; $i++) {
+            adb connect localhost:5555 *> $null
+            $booted = (adb -s localhost:5555 shell getprop sys.boot_completed 2>$null | Out-String).Trim()
+            if ($booted -eq "1") { Write-Host "Redroid booted after $($i * 5)s"; break }
+            if ($i -eq 60) {
+              Write-Host "Redroid did not boot in time"
+              adb devices -l
+              docker logs redroid 2>&1 | Select-Object -Last 80
+              adb -s localhost:5555 logcat -d 2>&1 | Select-Object -Last 100
+              exit 1
+            }
+            Start-Sleep -Seconds 5
+          }
+          adb devices -l
+          $env:SENTRY_TEST_PLATFORM = "Android"
+          $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.apk"
+          Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
 
       - name: Upload test results on failure
         if: ${{ failure() }}
