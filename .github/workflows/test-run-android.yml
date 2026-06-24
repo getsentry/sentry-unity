@@ -11,11 +11,6 @@ on:
       init-type:
         required: true
         type: string
-    # Map the workflow outputs to job outputs
-    outputs:
-      status:
-        description: "Integration test status"
-        value: ${{ jobs.run.outputs.status }}
 
 defaults:
   run:
@@ -32,9 +27,6 @@ jobs:
       HOMEBREW_NO_INSTALL_CLEANUP: 1
       SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-    # Map the job outputs to step outputs
-    outputs:
-      status: ${{ steps.integration-test.outputs.status }}
 
     steps:
       - name: Checkout
