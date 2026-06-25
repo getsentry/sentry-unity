@@ -43,8 +43,8 @@ try {
         # Exclude arm64e from the binary. Since Xcode 26, apps without arm64e in the main binary
         # can't include frameworks with arm64e slices (App Store rejection). The sentry-cocoa SDK
         # ships separate "-WithARM64e" variants for apps that need it; Unity games don't.
-        & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "iOSOnly" "arm64e"
-        & ./scripts/validate-xcframework-format.sh "Sentry-Dynamic.xcframework"
+        & ./scripts/build-xcframework-variant.sh --scheme "Sentry" --suffix "-Dynamic" --mach-o-type "mh_dylib" --sdks "iOSOnly" --excluded-archs "arm64e"
+        & ./scripts/validate-xcframework-format.sh --xcframework "Sentry-Dynamic.xcframework"
         # build-xcframework-variant.sh outputs to the working directory — move into our build cache
         Move-Item -Path "Sentry-Dynamic.xcframework" -Destination $iOSXcframeworkPath -Force
         # Clean up intermediate archives, keep the final xcframework
@@ -76,8 +76,8 @@ try {
 
     if (-not (Test-Path $macOSXcframeworkPath)) {
         Write-Host "Building macOS xcframework..." -ForegroundColor Yellow
-        & ./scripts/build-xcframework-variant.sh "Sentry" "-Dynamic" "mh_dylib" "" "macOSOnly" ""
-        & ./scripts/validate-xcframework-format.sh "Sentry-Dynamic.xcframework"
+        & ./scripts/build-xcframework-variant.sh --scheme "Sentry" --suffix "-Dynamic" --mach-o-type "mh_dylib" --sdks "macOSOnly"
+        & ./scripts/validate-xcframework-format.sh --xcframework "Sentry-Dynamic.xcframework"
         Move-Item -Path "Sentry-Dynamic.xcframework" -Destination $macOSXcframeworkPath -Force
         # Clean up all remaining build intermediates
         foreach ($dir in @("archive", "DerivedData")) {
