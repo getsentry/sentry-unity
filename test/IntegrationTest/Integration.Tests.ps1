@@ -408,3 +408,55 @@ if ($env:SENTRY_TEST_PLATFORM -ne "WebGL") {
         }
     }
 }
+
+# In-proc app-hang detection is driven by the C# heartbeat coroutine that pings sentry-native, so it
+# is active for every desktop configuration that uses the sentry-native code path. The exception
+# is macOS with the Cocoa backend: there the SDK uses sentry-cocoa, which has its own app-hang path
+# and never starts the in-proc heartbeat, so skip that one configuration.
+$isCocoaBackend = $env:SENTRY_TEST_BACKEND -eq "cocoa"
+if ($env:SENTRY_TEST_PLATFORM -eq "Desktop" -and -not $isCocoaBackend) {
+    Describe "Unity $($env:SENTRY_TEST_PLATFORM) App Hang Tests" {
+
+        Context "App Hang Capture" {
+            BeforeAll {
+                $script:runEvent = $null
+                $script:runResult = Invoke-TestAction -Action "app-hang-capture"
+
+                # The native app-hang event is captured in-proc (same run, no relaunch). Its event ID
+                # is generated natively, so look it up by the unique scope tag the app sets instead.
+                $hangId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
+                if ($hangId) {
+                    Write-Host "::group::Getting event content"
+                    $script:runEvent = Get-SentryTestEvent -TagName "test.app_hang_id" -TagValue "$hangId" -TimeoutSeconds 300
+                    Write-Host "::endgroup::"
+                }
+            }
+
+            It "<Name>" -ForEach $CommonTestCases {
+                & $testBlock -SentryEvent $runEvent -TestType "app-hang-capture" -RunResult $runResult -TestSetup $script:TestSetup
+            }
+
+            It "Has error level" {
+                ($runEvent.tags | Where-Object { $_.key -eq "level" }).value | Should -Be "error"
+            }
+
+            It "Has AppHang exception with stacktrace" {
+                $runEvent.exception | Should -Not -BeNullOrEmpty
+                $runEvent.exception.values | Should -Not -BeNullOrEmpty
+                $exception = $runEvent.exception.values[0]
+                $exception | Should -Not -BeNullOrEmpty
+                $exception.type | Should -Be "AppHang"
+                $exception.value | Should -Match "App hung for at least"
+                $exception.stacktrace | Should -Not -BeNullOrEmpty
+            }
+
+            It "Has AppHang mechanism" {
+                $mechanism = $runEvent.exception.values[0].mechanism
+                $mechanism | Should -Not -BeNullOrEmpty
+                $mechanism.type | Should -Be "AppHang"
+                $mechanism.handled | Should -Be $true
+                $mechanism.synthetic | Should -Be $true
+            }
+        }
+    }
+}
