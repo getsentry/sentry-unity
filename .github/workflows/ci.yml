@@ -217,6 +217,7 @@ jobs:
           path: dependency-conflict-package
 
       - name: Add DependencyConflict to the project
+        if: ${{ !startsWith(matrix.unity-version, '2021') }}
         run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
 
       - name: Configure Sentry
