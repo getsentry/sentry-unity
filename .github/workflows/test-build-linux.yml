@@ -60,10 +60,9 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
-          key: Library-IntegrationTest-linux-${{ env.UNITY_VERSION }}-v1
+          key: Library-IntegrationTest-linux-${{ env.UNITY_VERSION }}-v2
           restore-keys: |
             Library-IntegrationTest-linux-${{ env.UNITY_VERSION }}-
-            Library-IntegrationTest-linux-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry

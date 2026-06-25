@@ -182,10 +182,9 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
-          key: Library-IntegrationTest-${{ matrix.platform }}-${{ matrix.unity-version }}-v1
+          key: Library-IntegrationTest-${{ matrix.platform }}-${{ matrix.unity-version }}-v2
           restore-keys: |
             Library-IntegrationTest-${{ matrix.platform }}-${{ matrix.unity-version }}-
-            Library-IntegrationTest-${{ matrix.platform }}-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry

@@ -55,10 +55,9 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
-          key: Library-IntegrationTest-windows-${{ env.UNITY_VERSION }}-v1
+          key: Library-IntegrationTest-windows-${{ env.UNITY_VERSION }}-v2
           restore-keys: |
             Library-IntegrationTest-windows-${{ env.UNITY_VERSION }}-
-            Library-IntegrationTest-windows-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry
