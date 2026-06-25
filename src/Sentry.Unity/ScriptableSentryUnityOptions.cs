@@ -237,6 +237,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         options.Experimental.MacosBackend = Experimental.MacosBackend;
         options.Experimental.WindowsBackend = Experimental.WindowsBackend;
         options.Experimental.LinuxBackend = Experimental.LinuxBackend;
+        options.Experimental.EnableNativeAppHangTracking = Experimental.EnableNativeAppHangTracking;
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
         if (!EnableOfflineCaching)

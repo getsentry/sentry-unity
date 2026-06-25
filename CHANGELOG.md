@@ -5,6 +5,7 @@
 ### Features
 
 - Updated the dependency resolution within the SDK. This enables .NET Standard 2.1 both for building the SDK from source and for setting the Api Compatibility Level in the Player Settings in your project. The assembly aliasing was originally intended to prevent dependency conflicts the SDK might introduce by deeply renaming its bundled dependencies. However, this prevented Unity from resolving these dependencies at build time, creating ambiguity for certain types. To resolve this, the SDK now excludes `System.Buffers`, `System.Memory`, `System.Numerics.Vectors`, and `System.Threading.Tasks.Extensions` from being aliased, letting the Unity build pipeline handle them. ([#2726](https://github.com/getsentry/sentry-unity/pull/2726))
+- Added the experimental `options.Experimental.EnableNativeAppHangTracking` (default `false`) to enable app hang detection via `sentry-native` on macOS, Windows, and Linux. On macOS, this requires the macOS backend to be switched to `Native` instead of `Cocoa` in the Advanced -> Experimental settings. `sentry-native` monitors the main thread and produces an event including a stack trace for the hang, reusing the top-level `AppHangTimeout` (default `5s`). When effective, the Unity SDK's C# watchdog is skipped to avoid duplicate reports. iOS app hang detection remains controlled by the top-level `EnableAppHangTracking`. ([#2709](https://github.com/getsentry/sentry-unity/pull/2709))
 
 ### Dependencies
 
