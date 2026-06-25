@@ -38,4 +38,13 @@ public class ExperimentalSentryUnityOptions
     /// a minimum of 10 seconds so the out-of-process handler has time to flush before the player exits.
     /// </summary>
     [field: SerializeField] public LinuxBackend LinuxBackend { get; set; } = LinuxBackend.Breakpad;
+
+    /// <summary>
+    /// Enables app hang detection via <c>sentry-native</c> on macOS, Windows, and Linux. Defaults to
+    /// <c>false</c>. Requires the backend to be switched to <see cref="Sentry.Unity.MacosBackend.Native"/>
+    /// on macOS. <c>sentry-native</c> monitors the main thread and
+    /// produces an app hang event including a stack trace. When enabled, the C# watchdog is skipped to avoid
+    /// duplicate reports. The timeout is taken from <c>AppHangTimeout</c>.
+    /// </summary>
+    [field: SerializeField] public bool EnableNativeAppHangTracking { get; set; } = false;
 }
