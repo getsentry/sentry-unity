@@ -51,17 +51,17 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-      - name: Cache Unity Library
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - name: Restore Unity Library cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
-          key: Library-IntegrationTest-windows-${{ env.UNITY_VERSION }}-v2
+          key: it-library-windows-${{ env.UNITY_VERSION }}-${{ github.run_id }}
           restore-keys: |
-            Library-IntegrationTest-windows-${{ env.UNITY_VERSION }}-
+            it-library-windows-${{ env.UNITY_VERSION }}-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Build-NoSentry
           key: build-nosentry-Windows-${{ inputs.unity-version }}
@@ -69,6 +69,13 @@ jobs:
       - name: Build without Sentry SDK
         if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows -BuildDirName "Build-NoSentry"
+
+      - name: Save cached build without Sentry
+        if: github.ref == 'refs/heads/main' && steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/IntegrationTest/Build-NoSentry
+          key: build-nosentry-Windows-${{ inputs.unity-version }}
 
       - name: Download UPM package
         uses: ./.github/actions/wait-for-artifact
@@ -147,6 +154,13 @@ jobs:
           if-no-files-found: error
           path: test-app-desktop.tar.gz
           retention-days: 14
+
+      - name: Save Unity Library cache
+        if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/IntegrationTest/Library
+          key: it-library-windows-${{ env.UNITY_VERSION }}-${{ github.run_id }}
 
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
