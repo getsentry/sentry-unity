@@ -15,6 +15,7 @@ public static class SentryNative
 
     private static bool ShouldReinstallBackend;
     private static IDiagnosticLogger? Logger;
+    private static Action? OnQuitting;
 
     /// <summary>
     /// Configures the native SDK.
@@ -56,11 +57,17 @@ public static class SentryNative
             return;
         }
 
-        ApplicationAdapter.Instance.Quitting += () =>
+        if (OnQuitting is not null)
+        {
+            ApplicationAdapter.Instance.Quitting -= OnQuitting;
+        }
+
+        OnQuitting = () =>
         {
             Logger?.LogDebug("Closing the sentry-native SDK");
             SentryNativeBridge.Close();
         };
+        ApplicationAdapter.Instance.Quitting += OnQuitting;
         options.ScopeObserver = new NativeScopeObserver(options);
         options.EnableScopeSync = true;
         options.NativeContextWriter = new NativeContextWriter();
@@ -86,6 +93,22 @@ public static class SentryNative
             }
         }
         options.CrashedLastRun = () => crashedLastRun;
+
+        if (options.Experimental.EnableNativeAppHangTracking)
+        {
+            Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
+            SentryMonoBehaviour.Instance.StartAppHangHeartbeat(SentryNativeBridge.AppHangHeartbeat);
+
+            // sentry-native handles app-hang detection on the desktop platforms. Where it is effective, skip the
+            // C# ANR watchdog so a hang isn't reported twice (mirrors the iOS/sentry-cocoa behavior).
+            if (platform is RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer
+                or RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer
+                or RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer)
+            {
+                Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-native handles app hang detection.");
+                options.DisableAnrIntegration();
+            }
+        }
 
         ShouldReinstallBackend = true;
     }

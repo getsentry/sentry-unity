@@ -156,4 +156,19 @@ public sealed class SentryUnityOptionsTests
         options.Experimental.LinuxBackend = LinuxBackend.Native;
         Assert.AreEqual(LinuxBackend.Native, options.Experimental.LinuxBackend);
     }
+
+    [Test]
+    public void Options_Experimental_EnableNativeAppHangTracking_DefaultsToFalse()
+    {
+        var options = new SentryUnityOptions();
+        Assert.IsFalse(options.Experimental.EnableNativeAppHangTracking);
+    }
+
+    [Test]
+    public void Options_Experimental_EnableNativeAppHangTracking_IsSettable()
+    {
+        var options = new SentryUnityOptions();
+        options.Experimental.EnableNativeAppHangTracking = true;
+        Assert.IsTrue(options.Experimental.EnableNativeAppHangTracking);
+    }
 }

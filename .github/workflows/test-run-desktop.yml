@@ -66,6 +66,8 @@ jobs:
       - name: Run Integration Tests (macOS)
         if: inputs.platform == 'macos'
         timeout-minutes: 20
+        env:
+          SENTRY_TEST_BACKEND: ${{ inputs.backend }}
         run: |
           $env:SENTRY_TEST_PLATFORM = "Desktop"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.app/Contents/MacOS/IntegrationTest"
