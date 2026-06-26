@@ -43,6 +43,7 @@ jobs:
         run: |
           $env:SENTRY_TEST_PLATFORM = "WebGL"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build"
+          $env:SENTRY_TEST_UNITY_VERSION = "${{ inputs.unity-version }}"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
 
       - name: Upload test results on failure

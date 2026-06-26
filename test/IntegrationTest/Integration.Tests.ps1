@@ -272,6 +272,7 @@ BeforeAll {
     # Initialize test parameters
     $script:TestSetup = [PSCustomObject]@{
         Platform = $script:Platform
+        UnityVersion = $env:SENTRY_TEST_UNITY_VERSION
         Dsn = $env:SENTRY_DSN
         AuthToken = $env:SENTRY_AUTH_TOKEN
     }

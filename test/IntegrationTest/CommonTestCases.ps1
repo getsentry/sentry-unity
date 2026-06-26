@@ -22,6 +22,13 @@ $CommonTestCases = @(
             # sets coexist at runtime. The build already fails to compile/link if aliasing
             # regresses; this asserts the runtime path too, so a runtime conflict turns the
             # build red rather than being swallowed into a log line.
+
+            # The DependencyConflict package is not installed on Unity 2021 + WebGL
+            if ($TestSetup.Platform -eq "WebGL" -and $TestSetup.UnityVersion -like "2021*") {
+                Set-ItResult -Skipped -Because "DependencyConflict is not installed on Unity 2021 + WebGL"
+                return
+            }
+
             $RunResult.Output | Where-Object { $_ -match "DependencyConflict: FAILED" } |
                 Should -BeNullOrEmpty -Because "the DependencyConflict package threw at runtime - assembly aliasing likely regressed"
             $RunResult.Output | Where-Object { $_ -match "DependencyConflict: Dependencies say hi" } |
