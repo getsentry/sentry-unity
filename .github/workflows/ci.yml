@@ -178,17 +178,17 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-      - name: Cache Unity Library
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - name: Restore Unity Library cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
-          key: Library-IntegrationTest-${{ matrix.platform }}-${{ matrix.unity-version }}-v2
+          key: it-library-ubuntu-${{ matrix.unity-version }}-${{ github.run_id }}
           restore-keys: |
-            Library-IntegrationTest-${{ matrix.platform }}-${{ matrix.unity-version }}-
+            it-library-ubuntu-${{ matrix.unity-version }}-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Build-NoSentry
           key: build-nosentry-${{ matrix.build_platform }}-${{ matrix.unity-version }}
@@ -198,6 +198,13 @@ jobs:
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -BuildDirName "Build-NoSentry"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
+
+      - name: Save cached build without Sentry
+        if: github.ref == 'refs/heads/main' && steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/IntegrationTest/Build-NoSentry
+          key: build-nosentry-${{ matrix.build_platform }}-${{ matrix.unity-version }}
 
       - name: Download UPM package
         uses: ./.github/actions/wait-for-artifact
@@ -260,6 +267,8 @@ jobs:
           path: test-app-webgl.tar.gz
           retention-days: 14
           
+      # Library cache for the shared `ubuntu` flavour is written only by the Linux job
+      # (see test-build-linux.yml) - the other ubuntu targets are restore-only.
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

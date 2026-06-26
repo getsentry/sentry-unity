@@ -51,17 +51,17 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
-      - name: Cache Unity Library
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - name: Restore Unity Library cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
-          key: Library-IntegrationTest-iOS-${{ env.UNITY_VERSION }}-v2
+          key: it-library-ubuntu-${{ env.UNITY_VERSION }}-${{ github.run_id }}
           restore-keys: |
-            Library-IntegrationTest-iOS-${{ env.UNITY_VERSION }}-
+            it-library-ubuntu-${{ env.UNITY_VERSION }}-
 
       - name: Restore cached build without Sentry
         id: cache-build-nosentry
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Build-NoSentry
           key: build-nosentry-iOS-${{ inputs.unity-version }}
@@ -69,6 +69,13 @@ jobs:
       - name: Build without Sentry SDK
         if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "iOS" -BuildDirName "Build-NoSentry"
+
+      - name: Save cached build without Sentry
+        if: github.ref == 'refs/heads/main' && steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/IntegrationTest/Build-NoSentry
+          key: build-nosentry-iOS-${{ inputs.unity-version }}
 
       - name: Create archive for build without Sentry
         shell: bash
@@ -157,6 +164,8 @@ jobs:
           path: test-app-buildtime.tar.gz
           retention-days: 14
           
+      # Library cache for the shared `ubuntu` flavour is written only by the Linux job
+      # (see test-build-linux.yml) - the other ubuntu targets are restore-only.
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -30,9 +30,9 @@ jobs:
         username: ${{ env.GITHUB_ACTOR }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Cache IntegrationTest Project
+    - name: Restore IntegrationTest Project cache
       id: cache-project
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: samples/IntegrationTest
         key: IntegrationTest-Project-${{ env.UNITY_VERSION }}-${{ hashFiles('test/Scripts.Integration.Test/**') }}-v1
@@ -49,6 +49,13 @@ jobs:
     - name: Create new Project
       if: steps.cache-project.outputs.cache-hit != 'true'
       run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "$env:UNITY_PATH"
+
+    - name: Save IntegrationTest Project cache
+      if: github.ref == 'refs/heads/main' && steps.cache-project.outputs.cache-hit != 'true'
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: samples/IntegrationTest
+        key: IntegrationTest-Project-${{ env.UNITY_VERSION }}-${{ hashFiles('test/Scripts.Integration.Test/**') }}-v1
 
     # We create tar explicitly because upload-artifact is slow for many files.
     - name: Create archive
