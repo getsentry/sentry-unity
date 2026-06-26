@@ -13,8 +13,9 @@ on:
         value: ${{ jobs.create-unity-matrix.outputs.unity-matrix }}
 
 env:
-  # Unity versions used in PRs
-  PR_UNITY_VERSIONS: '["2022.3", "6000.3", "6000.5"]'
+  # Unity versions used in PRs - the compatibility envelope's bookends:
+  # 2021.3 (oldest supported) and 6000.5 (newest). The middle versions run on main.
+  PR_UNITY_VERSIONS: '["2021.3", "6000.5"]'
   # Unity versions used on main branch
   FULL_UNITY_VERSIONS: '["2021.3", "2022.3", "6000.0", "6000.3", "6000.5"]'
 
