@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using DependencyConflictPackage;
 using Sentry;
 using Sentry.Unity;
 using UnityEngine;
@@ -39,15 +38,17 @@ public class IntegrationTester : MonoBehaviour
     // the build red too instead of being swallowed into a log line.
     private void ExerciseConflictingDependencies()
     {
+#if !(UNITY_WEBGL && !UNITY_2022_1_OR_NEWER)
         try
         {
-            var greeting = DependencyConflictPackageClient.SayHiAsync().GetAwaiter().GetResult();
+            var greeting = DependencyConflictPackage.DependencyConflictPackageClient.SayHiAsync().GetAwaiter().GetResult();
             Logger.Log($"DependencyConflict: {greeting}");
         }
         catch (Exception ex)
         {
             Logger.LogError($"DependencyConflict: FAILED - {ex}");
         }
+#endif
     }
 
     public void Start()
