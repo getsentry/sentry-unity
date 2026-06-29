@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- The SDK now correctly syncs attachments to the native layer on iOS and macOS (with the Cococa backend) for non-crashing events. ([#2743](https://github.com/getsentry/sentry-unity/pull/2743))
+
 ### Dependencies
 
 - Bump CLI from v3.5.1 to v3.6.0 ([#2741](https://github.com/getsentry/sentry-unity/pull/2741))
