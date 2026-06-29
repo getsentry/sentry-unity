@@ -252,9 +252,13 @@ public class Builder
         serializedManager.ApplyModifiedProperties();
     }
 
-    // The Progressive Lightmapper does not work on silicone CPUs and there is no GPU in CI
+    // The Progressive Lightmapper does not work on silicone CPUs and there is no GPU in CI.
+    // BuildPlayer otherwise kicks off a GI bake when opening the scene, which dead-ends and
+    // fails the build under StrictMode. Switch GI to OnDemand and clear any baked data so no
+    // bake is ever attempted.
     private static void DisableProgressiveLightMapper()
     {
+        Lightmapping.giWorkflowMode = Lightmapping.GIWorkflowMode.OnDemand;
 #if UNITY_2021_1_OR_NEWER
         Lightmapping.lightingSettings = new LightingSettings
         {
@@ -262,5 +266,7 @@ public class Builder
             realtimeGI = false
         };
 #endif
+        Lightmapping.ClearLightingDataAsset();
+        Lightmapping.Clear();
     }
 }
