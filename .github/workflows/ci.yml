@@ -227,6 +227,10 @@ jobs:
         if: ${{ !startsWith(matrix.unity-version, '2021') }}
         run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
 
+      - name: Disable DependencyConflict (WebGL 2021)
+        if: ${{ startsWith(matrix.unity-version, '2021') }}
+        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -Disable
+
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM"
         env:
