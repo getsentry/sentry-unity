@@ -151,4 +151,13 @@ internal static class SentryCocoaBridgeProxy
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeSetTrace")]
     public static extern void SetTrace(string traceId, string spanId);
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeAddFileAttachment")]
+    public static extern void AddFileAttachment(string path, string fileName, string? contentType);
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeAddByteAttachment")]
+    public static extern void AddByteAttachment(byte[] bytes, int length, string fileName, string? contentType);
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeClearAttachments")]
+    public static extern void ClearAttachments();
 }

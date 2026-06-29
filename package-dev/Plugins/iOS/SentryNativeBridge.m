@@ -255,6 +255,47 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
     }
 }
 
+void SentryNativeBridgeAddFileAttachment(
+    const char *path, const char *filename, const char *contentType)
+{
+    if (path == NULL) {
+        return;
+    }
+
+    NSString *pathStr = [NSString stringWithUTF8String:path];
+    NSString *filenameStr = _NSStringOrNil(filename);
+    NSString *contentTypeStr = _NSStringOrNil(contentType);
+
+    SentryAttachment *attachment = [[SentryAttachment alloc] initWithPath:pathStr
+                                                                 filename:filenameStr
+                                                              contentType:contentTypeStr];
+
+    [SentrySDK configureScope:^(SentryScope *scope) { [scope addAttachment:attachment]; }];
+}
+
+void SentryNativeBridgeAddByteAttachment(
+    const uint8_t *bytes, int32_t length, const char *filename, const char *contentType)
+{
+    if (bytes == NULL || filename == NULL) {
+        return;
+    }
+
+    NSData *data = [NSData dataWithBytes:bytes length:length];
+    NSString *filenameStr = [NSString stringWithUTF8String:filename];
+    NSString *contentTypeStr = _NSStringOrNil(contentType);
+
+    SentryAttachment *attachment = [[SentryAttachment alloc] initWithData:data
+                                                                 filename:filenameStr
+                                                              contentType:contentTypeStr];
+
+    [SentrySDK configureScope:^(SentryScope *scope) { [scope addAttachment:attachment]; }];
+}
+
+void SentryNativeBridgeClearAttachments()
+{
+    [SentrySDK configureScope:^(SentryScope *scope) { [scope clearAttachments]; }];
+}
+
 void SentryNativeBridgeWriteScope( // clang-format off
     // // const char *AppStartTime,
     // const char *AppBuildType,
