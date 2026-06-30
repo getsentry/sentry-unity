@@ -40,9 +40,9 @@ public class ExperimentalSentryUnityOptions
     [field: SerializeField] public LinuxBackend LinuxBackend { get; set; } = LinuxBackend.Breakpad;
 
     /// <summary>
-    /// Enables app hang detection via <c>sentry-native</c> on macOS, Windows, and Linux. Defaults to
+    /// Enables app hang detection via <c>sentry-native</c> on macOS, Windows, Linux, and Android. Defaults to
     /// <c>false</c>. Requires the backend to be switched to <see cref="Sentry.Unity.MacosBackend.Native"/>
-    /// on macOS. <c>sentry-native</c> monitors the main thread and
+    /// on macOS. On Android it is routed through the NDK integration. <c>sentry-native</c> monitors the main thread and
     /// produces an app hang event including a stack trace. When enabled, the C# watchdog is skipped to avoid
     /// duplicate reports. The timeout is taken from <c>AppHangTimeout</c>.
     /// </summary>

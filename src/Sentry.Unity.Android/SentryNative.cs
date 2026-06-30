@@ -26,10 +26,20 @@ public static class SentryNative
     /// </summary>
     public static void ReinstallBackend() => ReinstallSentryNativeBackendStrategy();
 
+    /// <summary>
+    /// Records an app-hang heartbeat with sentry-native from the calling thread. The first call
+    /// latches the calling thread as the monitored target, so this must run on the Unity main thread.
+    /// </summary>
+    public static void AppHangHeartbeat() => AppHangHeartbeatStrategy();
+
     // libsentry.io
     [DllImport("sentry")]
     private static extern void sentry_reinstall_backend();
 
+    [DllImport("sentry")]
+    private static extern void sentry_app_hang_heartbeat();
+
     // Testing
     internal static Action ReinstallSentryNativeBackendStrategy = sentry_reinstall_backend;
+    internal static Action AppHangHeartbeatStrategy = sentry_app_hang_heartbeat;
 }

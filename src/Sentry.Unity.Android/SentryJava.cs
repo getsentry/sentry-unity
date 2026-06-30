@@ -145,6 +145,9 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setReportHistoricalAnrs", options.AndroidReportHistoricalAnrs);
                 androidOptions.Call("setAttachAnrThreadDump", options.AndroidAttachAnrThreadDump);
 
+                androidOptions.Call("setEnableAppHangTracking", options.Experimental.EnableNativeAppHangTracking);
+                androidOptions.Call("setAppHangTimeoutIntervalMillis", (long)options.AppHangTimeout.TotalMilliseconds);
+
                 using (var logsOptions = androidOptions.Call<AndroidJavaObject>("getLogs"))
                 {
                     logsOptions.Call("setEnabled", options.EnableLogs);

@@ -110,6 +110,17 @@ public static class SentryNativeAndroid
 
         options.NativeSupportCloseCallback = () => Close(options);
 
+        if (options.Experimental.EnableNativeAppHangTracking)
+        {
+            Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
+            SentryMonoBehaviour.Instance.StartAppHangHeartbeat(SentryNative.AppHangHeartbeat);
+
+            // sentry-native handles app-hang detection on the monitored main thread. Skip the C# ANR
+            // watchdog so a hang isn't reported twice (mirrors the iOS/sentry-cocoa and desktop behavior).
+            Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-native handles app hang detection.");
+            options.DisableAnrIntegration();
+        }
+
         Logger?.LogDebug("Fetching installation ID");
 
         var installationId = SentryJava.GetInstallationId();
