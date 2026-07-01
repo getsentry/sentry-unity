@@ -47,6 +47,7 @@ static Class SentryId;
 static Class SentrySpanId;
 static Class PrivateSentrySDKOnly;
 static Class SentryHttpStatusCodeRange;
+static Class SentryAttachment;
 
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
     name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #name);                                    \
@@ -90,6 +91,7 @@ int SentryNativeBridgeLoadLibrary()
             LOAD_CLASS_OR_BREAK(SentrySpanId)
             LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
             LOAD_CLASS_OR_BREAK(SentryHttpStatusCodeRange)
+            LOAD_CLASS_OR_BREAK(SentryAttachment)
 
             // everything above passed - mark as successfully loaded
             loadStatus = 1;
@@ -357,10 +359,61 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
         performSelector:@selector(initWithValue:)
         withObject:[NSString stringWithUTF8String:spanId]];
     
-    [PrivateSentrySDKOnly 
-        performSelector:@selector(setTrace:spanId:) 
-        withObject:sentryTraceId 
+    [PrivateSentrySDKOnly
+        performSelector:@selector(setTrace:spanId:)
+        withObject:sentryTraceId
         withObject:sentrySpanId];
+}
+
+void SentryNativeBridgeAddFileAttachment(
+    const char *path, const char *filename, const char *contentType)
+{
+    if (path == NULL) {
+        return;
+    }
+
+    NSString *pathStr = [NSString stringWithUTF8String:path];
+    NSString *filenameStr = _NSStringOrNil(filename);
+    NSString *contentTypeStr = _NSStringOrNil(contentType);
+
+    // initWithPath:filename:contentType: - use objc_msgSend directly for the multi-arg init
+    id attachment = ((id (*)(id, SEL, NSString *, NSString *, NSString *))objc_msgSend)(
+        [SentryAttachment alloc], @selector(initWithPath:filename:contentType:), pathStr,
+        filenameStr, contentTypeStr);
+    if (!attachment) {
+        return;
+    }
+
+    SentryConfigureScope(
+        ^(id scope) { [scope performSelector:@selector(addAttachment:) withObject:attachment]; });
+}
+
+void SentryNativeBridgeAddByteAttachment(
+    const uint8_t *bytes, int32_t length, const char *filename, const char *contentType)
+{
+    if (bytes == NULL || filename == NULL) {
+        return;
+    }
+
+    NSData *data = [NSData dataWithBytes:bytes length:length];
+    NSString *filenameStr = [NSString stringWithUTF8String:filename];
+    NSString *contentTypeStr = _NSStringOrNil(contentType);
+
+    // initWithData:filename:contentType: - use objc_msgSend directly for the multi-arg init
+    id attachment = ((id (*)(id, SEL, NSData *, NSString *, NSString *))objc_msgSend)(
+        [SentryAttachment alloc], @selector(initWithData:filename:contentType:), data, filenameStr,
+        contentTypeStr);
+    if (!attachment) {
+        return;
+    }
+
+    SentryConfigureScope(
+        ^(id scope) { [scope performSelector:@selector(addAttachment:) withObject:attachment]; });
+}
+
+void SentryNativeBridgeClearAttachments()
+{
+    SentryConfigureScope(^(id scope) { [scope performSelector:@selector(clearAttachments)]; });
 }
 
 void SentryNativeBridgeWriteScope( // clang-format off
