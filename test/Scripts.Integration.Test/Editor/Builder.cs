@@ -127,7 +127,16 @@ public class Builder
     public static void BuildMacIl2CPPPlayer()
     {
         Debug.Log("Builder: Building macOS IL2CPP Player");
-        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+#if UNITY_2022_1_OR_NEWER
+        var buildOptions = BuildOptions.StrictMode;
+#else
+        // On 2021.3 the Apple silicon CI has no usable lightmapper (CPU unsupported, no OpenCL GPU
+        // device), so BuildPlayer always logs "Falling back to CPU lightmapper" as an error.
+        // StrictMode would escalate that unavoidable log to a build failure even though the build
+        // succeeds. Real failures are still caught via summary.result.
+        var buildOptions = BuildOptions.None;
+#endif
+        BuildIl2CPPPlayer(BuildTarget.StandaloneOSX, BuildTargetGroup.Standalone, buildOptions,
             defaultBuildPath: "./Builds/macOS/test.app");
     }
 

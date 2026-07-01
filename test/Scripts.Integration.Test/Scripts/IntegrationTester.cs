@@ -38,7 +38,7 @@ public class IntegrationTester : MonoBehaviour
     // the build red too instead of being swallowed into a log line.
     private void ExerciseConflictingDependencies()
     {
-#if !(UNITY_WEBGL && !UNITY_2022_1_OR_NEWER)
+#if !SENTRY_DISABLE_DEPENDENCY_CONFLICT
         try
         {
             var greeting = DependencyConflictPackage.DependencyConflictPackageClient.SayHiAsync().GetAwaiter().GetResult();

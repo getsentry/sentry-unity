@@ -227,6 +227,10 @@ jobs:
         if: ${{ !startsWith(matrix.unity-version, '2021') }}
         run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
 
+      - name: Disable DependencyConflict (WebGL 2021)
+        if: ${{ startsWith(matrix.unity-version, '2021') }}
+        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -Disable
+
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM"
         env:
@@ -351,7 +355,8 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-        ios-version: ["17.0", "latest"]
+        # On PRs only the newest simulator runs; `17.0` is an OS-compat axis (not SDK behavior) and runs on main.
+        ios-version: ${{ github.event_name == 'pull_request' && fromJSON('["latest"]') || fromJSON('["17.0", "latest"]') }}
         init-type: ["runtime", "buildtime"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
         # https://developer.apple.com/support/app-store/ shows that of all iOS devices
@@ -411,10 +416,6 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-        # The progressive lightmapper requires a GPU, which the Apple silicon CI runners don't have.
-        # On Unity 2021 this fails the player build outright (instead of warning), so skip macOS 2021.3.
-        exclude:
-          - unity-version: "2021.3"
     uses: ./.github/workflows/test-build-macos.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -461,10 +462,6 @@ jobs:
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
         backend: ["cocoa", "native"]
-        # See test-build-macos: the progressive lightmapper needs a GPU the Apple silicon
-        # CI runners lack, which fails the Unity 2021 player build. Skip macOS 2021.3.
-        exclude:
-          - unity-version: "2021.3"
     uses: ./.github/workflows/test-run-desktop.yml
     with:
       unity-version: ${{ matrix.unity-version }}

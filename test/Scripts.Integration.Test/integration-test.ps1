@@ -46,13 +46,21 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)")) {
     Write-PhaseSuccess "Sentry added"
 
     Write-PhaseHeader "Adding DependencyConflict (alias stress-test)"
-    dotnet build test/Scripts.Integration.Test/DependencyConflictPackage
-    if ($LASTEXITCODE -ne 0)
+    if ($Platform -eq "WebGL" -and $UnityVersion.StartsWith("2021"))
     {
-        Write-Error "Failed to build the DependencyConflict package."
+        ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -Disable
+        Write-PhaseSuccess "DependencyConflict disabled (WebGL 2021)"
     }
-    ./test/Scripts.Integration.Test/add-dependency-conflict.ps1
-    Write-PhaseSuccess "DependencyConflict added"
+    else
+    {
+        dotnet build test/Scripts.Integration.Test/DependencyConflictPackage
+        if ($LASTEXITCODE -ne 0)
+        {
+            Write-Error "Failed to build the DependencyConflict package."
+        }
+        ./test/Scripts.Integration.Test/add-dependency-conflict.ps1
+        Write-PhaseSuccess "DependencyConflict added"
+    }
 
     Write-PhaseHeader "Configuring Sentry"
     ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform
