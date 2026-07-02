@@ -186,6 +186,28 @@ public class AndroidManifestTests
     }
 
     [Test]
+    public void ModifyManifest_AndroidNativeTombstoneEnabled_True_WritesTombstoneMetadataEnabled()
+    {
+        _fixture.SentryUnityOptions!.AndroidNativeTombstoneEnabled = true;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.enable\" android:value=\"True\" />", manifest);
+    }
+
+    [Test]
+    public void ModifyManifest_AndroidNativeTombstoneEnabled_False_WritesTombstoneMetadataDisabled()
+    {
+        _fixture.SentryUnityOptions!.AndroidNativeTombstoneEnabled = false;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.enable\" android:value=\"False\" />", manifest);
+    }
+
+    [Test]
     public void ModifyManifest_ManifestHasDsn()
     {
         var expected = _fixture.SentryUnityOptions!.Dsn;
