@@ -2,8 +2,6 @@
 # release script (repack.ps1) and by CI (build.yml, which runs it inside the Unity
 # docker container).
 #
-# --assemblies-to-exclude: BCL assemblies Unity's unityaot profile already provides
-# For more info see sentry-unity #2717, #1777).
 param(
     # Pass an empty string to skip either target.
     [string]$RuntimeDir = "package-dev/Runtime",
@@ -18,8 +16,7 @@ $ErrorActionPreference = "Stop"
 if ($RuntimeDir)
 {
     & $AssemblyAlias --target-directory $RuntimeDir --internalize --prefix "Sentry." `
-        --assemblies-to-alias "Microsoft*;System*" `
-        --assemblies-to-exclude "System.Buffers;System.Memory;System.Numerics.Vectors;System.Threading.Tasks.Extensions"
+        --assemblies-to-alias "Microsoft*;System*"
     if ($LASTEXITCODE -ne 0) { throw "assemblyalias failed for '$RuntimeDir' (exit $LASTEXITCODE)" }
 }
 
