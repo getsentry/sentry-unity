@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed an issue with the updated dependency resolution introduced in `4.6.0` where usage of the `Metrics` API would cause Unity to error with `The type 'ReadOnlySpan<>' is defined in an assembly that is not referenced`. ([#2754](https://github.com/getsentry/sentry-unity/pull/2754))
+
 ### Dependencies
 
 - Bump CLI from v3.5.1 to v3.6.0 ([#2741](https://github.com/getsentry/sentry-unity/pull/2741))
