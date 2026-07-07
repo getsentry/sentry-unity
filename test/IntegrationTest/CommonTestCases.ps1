@@ -45,6 +45,38 @@ $CommonTestCases = @(
             $SentryEvent.title | Should -Not -BeNullOrEmpty
         }
     }
+    @{ Name = "Captures structured log in sentry.io"; TestBlock = {
+            param($TestSetup, $TestType, $SentryEvent, $RunResult)
+            # IntegrationTester emits a structured log alongside every captured event,
+            # tagged with a unique telemetry id it also prints as a LOG_CAPTURED marker.
+            if ($TestType -eq "crash-capture") {
+                Set-ItResult -Skipped -Because "the native crash kills the process before the log batch flushes"
+                return
+            }
+            $line = $RunResult.Output | Where-Object { $_ -match "LOG_CAPTURED: (.+)" } | Select-Object -First 1
+            $line | Should -Not -BeNullOrEmpty -Because "the app must emit a LOG_CAPTURED marker"
+            $telemetryId = ($line | Select-String -Pattern "LOG_CAPTURED: (.+)").Matches.Groups[1].Value.Trim()
+
+            $logs = Get-SentryTestLog -AttributeName "test.telemetry_id" -AttributeValue $telemetryId
+            $logs | Should -Not -BeNullOrEmpty
+        }
+    }
+    @{ Name = "Captures metric in sentry.io"; TestBlock = {
+            param($TestSetup, $TestType, $SentryEvent, $RunResult)
+            # IntegrationTester emits a counter metric alongside every captured event,
+            # tagged with a unique telemetry id it also prints as a METRIC_CAPTURED marker.
+            if ($TestType -eq "crash-capture") {
+                Set-ItResult -Skipped -Because "the native crash kills the process before the metric batch flushes"
+                return
+            }
+            $line = $RunResult.Output | Where-Object { $_ -match "METRIC_CAPTURED: (.+)" } | Select-Object -First 1
+            $line | Should -Not -BeNullOrEmpty -Because "the app must emit a METRIC_CAPTURED marker"
+            $telemetryId = ($line | Select-String -Pattern "METRIC_CAPTURED: (.+)").Matches.Groups[1].Value.Trim()
+
+            $metrics = Get-SentryTestMetric -MetricName "test.integration.counter" -AttributeName "test.telemetry_id" -AttributeValue $telemetryId
+            $metrics | Should -Not -BeNullOrEmpty
+        }
+    }
     @{ Name = "Has correct release version"; TestBlock = {
             param($TestSetup, $TestType, $SentryEvent, $RunResult)
             $SentryEvent.release.version | Should -Be "sentry-unity-test@1.0.0"
