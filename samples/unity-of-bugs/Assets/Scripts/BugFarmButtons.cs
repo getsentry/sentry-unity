@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Sentry.Unity;
 using UnityEngine;
@@ -7,7 +8,15 @@ public class BugFarmButtons : MonoBehaviour
 {
     private void Awake()
     {
-        Debug.Log("The 🐛s awaken!");
+        var telemetryId = Guid.NewGuid().ToString();
+        SentrySdk.Logger.LogInfo(
+            log => log.SetAttribute("telemetry_id", telemetryId),
+            "The 🐛s awaken!");
+
+        SentrySdk.Metrics.EmitCounter(
+            "test.integration.counter",
+            1,
+            new Dictionary<string, object> { ["telemetry_id"] = telemetryId });
     }
 
     private void Start()

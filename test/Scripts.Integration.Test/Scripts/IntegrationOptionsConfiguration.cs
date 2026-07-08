@@ -26,6 +26,9 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.DiagnosticLogger = Logger.Instance;
         options.TracesSampleRate = 1.0d;
 
+        options.EnableLogs = true;
+        options.EnableMetrics = true;
+
         // No custom HTTP handler -- events go to real sentry.io
 
         // Filtering test output from breadcrumbs

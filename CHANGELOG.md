@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Fixed an issue with the updated dependency resolution introduced in `4.6.0` where usage of the `Metrics` API would cause Unity to error with `The type 'ReadOnlySpan<>' is defined in an assembly that is not referenced`. ([#2754](https://github.com/getsentry/sentry-unity/pull/2754))
 - When targeting Nintendo Switch, the SDK will now properly log the state of the native support instead of silently swallowing any configuration issues ([#2753](https://github.com/getsentry/sentry-unity/pull/2753))
 
 ### Dependencies
