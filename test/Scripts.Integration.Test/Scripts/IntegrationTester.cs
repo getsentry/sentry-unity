@@ -128,33 +128,31 @@ public class IntegrationTester : MonoBehaviour
             };
         });
 
-        EmitLogAndMetric(testType);
-
         SentrySdk.AddBreadcrumb("Context configuration finished");
     }
 
-    // Emits a structured log and a metric alongside every captured event. Each carries a unique
-    // telemetry id so the test harness can look them up via the Sentry API independently of the
-    // event. The "LOG_CAPTURED"/"METRIC_CAPTURED" markers are parsed by CommonTestCases.ps1.
     private void EmitLogAndMetric(string testType)
     {
+        Logger.Log($"Emitting log and metric.");
+
         var telemetryId = Guid.NewGuid().ToString();
 
         SentrySdk.Logger.LogInfo(
             log => log.SetAttribute("test.telemetry_id", telemetryId),
             "Integration test log");
-        Logger.Log($"LOG_CAPTURED: {telemetryId}");
 
         SentrySdk.Metrics.EmitCounter(
             "test.integration.counter",
             1,
             new Dictionary<string, object> { ["test.telemetry_id"] = telemetryId });
-        Logger.Log($"METRIC_CAPTURED: {telemetryId}");
+
+        Logger.Log($"Emitting log and metric finished.");
     }
 
     private IEnumerator MessageCapture()
     {
         AddIntegrationTestContext("message-capture");
+        EmitLogAndMetric("message-capture");
 
         var eventId = SentrySdk.CaptureMessage("Integration test message");
         Logger.Log($"EVENT_CAPTURED: {eventId}");
@@ -165,6 +163,7 @@ public class IntegrationTester : MonoBehaviour
     private IEnumerator ExceptionCapture()
     {
         AddIntegrationTestContext("exception-capture");
+        EmitLogAndMetric("exception-capture");
 
         try
         {

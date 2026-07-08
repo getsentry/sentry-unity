@@ -26,8 +26,8 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.DiagnosticLogger = Logger.Instance;
         options.TracesSampleRate = 1.0d;
 
-        // Structured logs default off; metrics default on
         options.EnableLogs = true;
+        options.EnableMetrics = true;
 
         // No custom HTTP handler -- events go to real sentry.io
 

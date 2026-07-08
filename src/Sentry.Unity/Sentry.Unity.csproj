@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <Target Name="RemoveUnityProvidedBclAssemblies" AfterTargets="Build">
-    <!-- Unity ships these BCL assemblies as type-forwarding facades in every supported profile. -->
+    <!-- Unity ships these BCL assemblies as type-forwarding facades in every supported version. -->
     <ItemGroup>
       <UnityProvidedBcl Include="$(OutDir)/System.Memory.dll" />
       <UnityProvidedBcl Include="$(OutDir)/System.Buffers.dll" />
