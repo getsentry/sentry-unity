@@ -144,6 +144,7 @@ public class IntegrationTester : MonoBehaviour
         Logger.Log($"Emitting structured log finished.");
 
 #if UNITY_2022_1_OR_NEWER
+        // Unity needs to be newer than 2022 for its AOT to generate the code for the generic implementation
         Logger.Log($"Emitting metric.");
 
         SentrySdk.Metrics.EmitCounter(
