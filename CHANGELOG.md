@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- When targeting Nintendo Switch, the SDK will now properly log the state of the native support instead of silently swallowing any configuration issues ([#2753](https://github.com/getsentry/sentry-unity/pull/2753))
+
 ### Dependencies
 
 - Bump CLI from v3.5.1 to v3.6.0 ([#2741](https://github.com/getsentry/sentry-unity/pull/2741))
