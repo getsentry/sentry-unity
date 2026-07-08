@@ -133,7 +133,7 @@ public class IntegrationTester : MonoBehaviour
 
     private void EmitLogAndMetric(string testType)
     {
-        Logger.Log($"Emitting log and metric.");
+        Logger.Log($"Emitting structured log.");
 
         var telemetryId = Guid.NewGuid().ToString();
 
@@ -141,12 +141,18 @@ public class IntegrationTester : MonoBehaviour
             log => log.SetAttribute("test.telemetry_id", telemetryId),
             "Integration test log");
 
+        Logger.Log($"Emitting structured log finished.");
+
+#if UNITY_2022_1_OR_NEWER
+        Logger.Log($"Emitting metric.");
+
         SentrySdk.Metrics.EmitCounter(
             "test.integration.counter",
             1,
             new Dictionary<string, object> { ["test.telemetry_id"] = telemetryId });
 
-        Logger.Log($"Emitting log and metric finished.");
+        Logger.Log($"Emitting metric finished.");
+#endif
     }
 
     private IEnumerator MessageCapture()
