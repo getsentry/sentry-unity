@@ -76,6 +76,9 @@ jobs:
         run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
         timeout-minutes: 20
 
+      - name: Assert symbols and sources were uploaded
+        run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath samples/IntegrationTest/Build/sentry-symbols-upload.log
+
       - name: Upload integration-test project on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

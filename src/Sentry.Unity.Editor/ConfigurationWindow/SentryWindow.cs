@@ -174,7 +174,7 @@ public class SentryWindow : EditorWindow
         // Make sure the actual config asset exists before validating/saving. Crashes the editor otherwise.
         if (!File.Exists(ScriptableSentryUnityOptions.GetConfigPath(SentryOptionsAssetName)))
         {
-            _logger.LogWarning("Options could not been saved. The configuration asset is missing.");
+            _logger.LogWarning("Options could not be saved. The configuration asset is missing.");
             return;
         }
 

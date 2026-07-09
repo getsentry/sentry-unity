@@ -186,6 +186,50 @@ public class AndroidManifestTests
     }
 
     [Test]
+    public void ModifyManifest_AndroidTombstoneEnabledTrue_WritesCorrectMetaData()
+    {
+        _fixture.SentryUnityOptions!.AndroidTombstoneEnabled = true;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.enable\" android:value=\"True\" />", manifest);
+    }
+
+    [Test]
+    public void ModifyManifest_AndroidTombstoneEnabledFalse_WritesCorrectMetaData()
+    {
+        _fixture.SentryUnityOptions!.AndroidTombstoneEnabled = false;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.enable\" android:value=\"False\" />", manifest);
+    }
+
+    [Test]
+    public void ModifyManifest_AndroidTombstoneReportHistoricalTrue_WritesCorrectMetaData()
+    {
+        _fixture.SentryUnityOptions!.AndroidReportHistoricalTombstones = true;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.report-historical\" android:value=\"True\" />", manifest);
+    }
+
+    [Test]
+    public void ModifyManifest_AndroidTombstoneReportHistoricalFalse_WritesCorrectMetaData()
+    {
+        _fixture.SentryUnityOptions!.AndroidReportHistoricalTombstones = false;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.report-historical\" android:value=\"False\" />", manifest);
+    }
+
+    [Test]
     public void ModifyManifest_ManifestHasDsn()
     {
         var expected = _fixture.SentryUnityOptions!.Dsn;

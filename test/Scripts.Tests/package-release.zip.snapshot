@@ -303,14 +303,6 @@ Runtime/SentryInitialization.cs
 Runtime/SentryInitialization.cs.meta
 Runtime/SentryUserFeedback.cs
 Runtime/SentryUserFeedback.cs.meta
-Runtime/System.Buffers.dll
-Runtime/System.Buffers.dll.meta
-Runtime/System.Memory.dll
-Runtime/System.Memory.dll.meta
-Runtime/System.Numerics.Vectors.dll
-Runtime/System.Numerics.Vectors.dll.meta
-Runtime/System.Threading.Tasks.Extensions.dll
-Runtime/System.Threading.Tasks.Extensions.dll.meta
 Samples~/unity-of-bugs/Scenes.meta
 Samples~/unity-of-bugs/Scripts.meta
 Samples~/unity-of-bugs/Scenes/1_BugFarm.unity

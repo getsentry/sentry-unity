@@ -76,7 +76,6 @@ PlayerSettings:
   androidMinimumWindowHeight: 300
   androidFullscreenMode: 1
   androidAutoRotationBehavior: 1
-  androidPredictiveBackSupport: 1
   defaultIsNativeResolution: 1
   macRetinaSupport: 1
   runInBackground: 1
@@ -826,6 +825,7 @@ PlayerSettings:
     PS4: 1
     PS5: 1
     Stadia: 1
+    Standalone: 3
     WebGL: 1
     Windows Store Apps: 1
     XboxOne: 1
