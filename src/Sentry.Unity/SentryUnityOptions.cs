@@ -261,12 +261,12 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Enables reporting of native crashes captured by Android's <c>ApplicationExitInfo</c> API as Tombstones
     /// (<c>REASON_CRASH_NATIVE</c>) through the sentry-java SDK.
     /// </summary>
-    public bool AndroidNativeTombstoneEnabled { get; set; } = false;
+    public bool AndroidTombstoneEnabled { get; set; } = false;
 
     /// <summary>
-    /// When <see cref="AndroidNativeTombstoneEnabled"/> is enabled, controls whether sentry-java reports historical
+    /// When <see cref="AndroidTombstoneEnabled"/> is enabled, controls whether sentry-java reports historical
     /// Tombstones recorded by the OS (<c>ApplicationExitInfo</c>) from prior runs. Has no effect when
-    /// <see cref="AndroidNativeTombstoneEnabled"/> is <c>false</c>.
+    /// <see cref="AndroidTombstoneEnabled"/> is <c>false</c>.
     /// </summary>
     public bool AndroidReportHistoricalTombstones { get; set; } = false;
 

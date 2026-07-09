@@ -221,7 +221,8 @@ public class AndroidManifestConfiguration
         androidManifest.SetAnr(_options.AndroidNativeAnrEnabled);
         androidManifest.SetPersistentScopeObserver(_options.AndroidNativeAnrEnabled);
         androidManifest.SetAttachAnrThreadDump(_options.AndroidAttachAnrThreadDump);
-        androidManifest.SetTombstone(_options.AndroidNativeTombstoneEnabled);
+        androidManifest.SetTombstone(_options.AndroidTombstoneEnabled);
+        androidManifest.SetTombstoneReportHistorical(_options.AndroidReportHistoricalTombstones);
         // Disable user interaction tracking to prevent conflicts with VR platforms (e.g., Oculus InputHooks)
         androidManifest.SetEnableUserInteractionBreadcrumbs(false);
         androidManifest.SetEnableUserInteractionTracing(false);
