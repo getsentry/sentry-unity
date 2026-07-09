@@ -5,6 +5,17 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
+  <Target Name="RemoveUnityProvidedBclAssemblies" AfterTargets="Build">
+    <!-- Unity ships these BCL assemblies as type-forwarding facades in every supported version. -->
+    <ItemGroup>
+      <UnityProvidedBcl Include="$(OutDir)/System.Memory.dll" />
+      <UnityProvidedBcl Include="$(OutDir)/System.Buffers.dll" />
+      <UnityProvidedBcl Include="$(OutDir)/System.Numerics.Vectors.dll" />
+      <UnityProvidedBcl Include="$(OutDir)/System.Threading.Tasks.Extensions.dll" />
+    </ItemGroup>
+    <Delete Files="@(UnityProvidedBcl)" />
+  </Target>
+
   <Target Name="CleanDotnetSdkFiles" AfterTargets="Clean">
     <!-- CopyLocalLockFileAssemblies brings the .NET SDK assemblies to the output dir.
          For that reason they are not clean by the Sentry project clean Target. -->

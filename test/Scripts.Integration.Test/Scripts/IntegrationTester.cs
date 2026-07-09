@@ -38,7 +38,7 @@ public class IntegrationTester : MonoBehaviour
     // the build red too instead of being swallowed into a log line.
     private void ExerciseConflictingDependencies()
     {
-#if !(UNITY_WEBGL && !UNITY_2022_1_OR_NEWER)
+#if !SENTRY_DISABLE_DEPENDENCY_CONFLICT
         try
         {
             var greeting = DependencyConflictPackage.DependencyConflictPackageClient.SayHiAsync().GetAwaiter().GetResult();
@@ -131,9 +131,35 @@ public class IntegrationTester : MonoBehaviour
         SentrySdk.AddBreadcrumb("Context configuration finished");
     }
 
+    private void EmitLogAndMetric(string testType)
+    {
+        Logger.Log($"Emitting structured log.");
+
+        var telemetryId = Guid.NewGuid().ToString();
+
+        SentrySdk.Logger.LogInfo(
+            log => log.SetAttribute("test.telemetry_id", telemetryId),
+            "Integration test log");
+
+        Logger.Log($"Emitting structured log finished.");
+
+#if UNITY_2022_1_OR_NEWER
+        // Unity needs to be newer than 2022 for its AOT to generate the code for the generic implementation
+        Logger.Log($"Emitting metric.");
+
+        SentrySdk.Metrics.EmitCounter(
+            "test.integration.counter",
+            1,
+            new Dictionary<string, object> { ["test.telemetry_id"] = telemetryId });
+
+        Logger.Log($"Emitting metric finished.");
+#endif
+    }
+
     private IEnumerator MessageCapture()
     {
         AddIntegrationTestContext("message-capture");
+        EmitLogAndMetric("message-capture");
 
         var eventId = SentrySdk.CaptureMessage("Integration test message");
         Logger.Log($"EVENT_CAPTURED: {eventId}");
@@ -144,6 +170,7 @@ public class IntegrationTester : MonoBehaviour
     private IEnumerator ExceptionCapture()
     {
         AddIntegrationTestContext("exception-capture");
+        EmitLogAndMetric("exception-capture");
 
         try
         {

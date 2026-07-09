@@ -99,6 +99,9 @@ jobs:
       - name: Export APK - Runtime Initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
 
+      - name: Assert symbols and sources were uploaded (Runtime)
+        run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath samples/IntegrationTest/Logs/sentry-symbols-upload.log
+
       - name: Compare build sizes (Runtime)
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
 
@@ -134,6 +137,9 @@ jobs:
 
       - name: Export APK - Build-Time Initialization
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
+
+      - name: Assert symbols and sources were uploaded (Build-Time)
+        run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath samples/IntegrationTest/Logs/sentry-symbols-upload.log
 
       - name: Bundle build & symbol-upload logs with the APK (Build-Time)
         run: |

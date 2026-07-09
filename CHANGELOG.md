@@ -6,11 +6,25 @@
 
 - Added `options.AndroidNativeTombstoneEnabled` (default `false`) and `options.AndroidReportHistoricalTombstones` (default `false`) to enable reporting of native crashes captured by Android's `ApplicationExitInfo` API as Tombstones through `sentry-java` ([#2742](https://github.com/getsentry/sentry-unity/pull/2742))
 
+### Fixes
+
+- Fixed an issue with the updated dependency resolution introduced in `4.6.0` where usage of the `Metrics` API would cause Unity to error with `The type 'ReadOnlySpan<>' is defined in an assembly that is not referenced`. ([#2754](https://github.com/getsentry/sentry-unity/pull/2754))
+- When targeting Nintendo Switch, the SDK will now properly log the state of the native support instead of silently swallowing any configuration issues ([#2753](https://github.com/getsentry/sentry-unity/pull/2753))
+
 ### Dependencies
 
 - Bump CLI from v3.5.1 to v3.6.0 ([#2741](https://github.com/getsentry/sentry-unity/pull/2741))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#360)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.5.1...3.6.0)
+- Bump Cocoa SDK from v9.19.0 to v9.21.0 ([#2748](https://github.com/getsentry/sentry-unity/pull/2748), [#2756](https://github.com/getsentry/sentry-unity/pull/2756), [#2759](https://github.com/getsentry/sentry-unity/pull/2759))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9210)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.19.0...9.21.0)
+- Bump Java SDK from v8.46.0 to v8.48.0 ([#2750](https://github.com/getsentry/sentry-unity/pull/2750), [#2758](https://github.com/getsentry/sentry-unity/pull/2758))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8480)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.46.0...8.48.0)
+- Bump Native SDK from v0.15.2 to v0.15.3 ([#2755](https://github.com/getsentry/sentry-unity/pull/2755))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0153)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.15.2...0.15.3)
 
 ## 4.6.0
 

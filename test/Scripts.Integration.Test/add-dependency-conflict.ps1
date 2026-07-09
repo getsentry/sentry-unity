@@ -5,7 +5,11 @@ param(
     # `dotnet build test/Scripts.Integration.Test/DependencyConflictPackage`. In CI the
     # DLLs are built in build.yml and downloaded as an artifact, so the caller
     # points this at the downloaded copy.
-    [string] $PackagePath
+    [string] $PackagePath,
+
+    # Skip installing the package and instead define SENTRY_DISABLE_DEPENDENCY_CONFLICT
+    # so IntegrationTester.cs compiles out its call into the package.
+    [switch] $Disable
 )
 
 if (-not $Global:NewProjectPathCache)
@@ -14,6 +18,14 @@ if (-not $Global:NewProjectPathCache)
 }
 
 . $PSScriptRoot/common.ps1
+
+if ($Disable)
+{
+    $cscRspPath = "$(GetNewProjectAssetsPath)/csc.rsp"
+    Write-Log "Defining SENTRY_DISABLE_DEPENDENCY_CONFLICT via '$cscRspPath'..."
+    Add-Content -Path $cscRspPath -Value "-define:SENTRY_DISABLE_DEPENDENCY_CONFLICT"
+    return
+}
 
 # The DependencyConflict package ships plain, UNALIASED System.*/Microsoft.*
 # assemblies at versions that differ from the ones the Sentry SDK ships aliased.

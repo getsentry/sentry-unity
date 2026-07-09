@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Sentry.Infrastructure;
 using Sentry.Protocol.Envelopes;
+using Sentry.Unity.Integrations;
 
 namespace Sentry.Unity;
 
@@ -334,8 +335,8 @@ public static partial class SentrySdk
     /// <param name="hint">An optional hint providing high-level context for the source of the event.</param>
     /// <returns>The Id of the captured feedback. Returns <see cref="SentryId.Empty"/> when capture failed.</returns>
     /// <remarks>
-    /// Capturing is asynchronous and non-blocking. The envelope is handed to a background worker. Non-success 
-    /// results inform only on whether the capture succeeded or failed on the client, i.e. empty message, 
+    /// Capturing is asynchronous and non-blocking. The envelope is handed to a background worker. Non-success
+    /// results inform only on whether the capture succeeded or failed on the client, i.e. empty message,
     /// disabled SDK, dropped by an event processor.
     /// </remarks>
     [DebuggerStepThrough]
@@ -367,8 +368,8 @@ public static partial class SentrySdk
     /// <param name="hint">An optional hint providing high-level context for the source of the event.</param>
     /// <returns>The Id of the captured feedback. Returns <see cref="SentryId.Empty"/> when capture failed.</returns>
     /// <remarks>
-    /// Capturing is asynchronous and non-blocking. The envelope is handed to a background worker. Non-success 
-    /// results inform only on whether the capture succeeded or failed on the client, i.e. empty message, 
+    /// Capturing is asynchronous and non-blocking. The envelope is handed to a background worker. Non-success
+    /// results inform only on whether the capture succeeded or failed on the client, i.e. empty message,
     /// disabled SDK, dropped by an event processor.
     /// </remarks>
     [DebuggerStepThrough]

@@ -110,6 +110,9 @@ jobs:
       - name: Build with Sentry SDK (Breakpad backend)
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
 
+      - name: Assert symbols and sources were uploaded (Breakpad backend)
+        run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log
+
       - name: Compare build sizes
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
 
@@ -144,6 +147,9 @@ jobs:
 
       - name: Build with Sentry SDK (Native backend)
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
+
+      - name: Assert symbols and sources were uploaded (Native backend)
+        run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log
 
       - name: Create archive (Native backend)
         run: |

@@ -45,8 +45,8 @@ void* sentry_options_new(void)
 
 int sentry_init(void* options)
 {
-    /* Return 0 to indicate success */
-    return 0;
+    /* Return -1 to indicate failure to let sentry-unity degrade gracefully */
+    return -1;
 }
 
 void sentry_close(void)
