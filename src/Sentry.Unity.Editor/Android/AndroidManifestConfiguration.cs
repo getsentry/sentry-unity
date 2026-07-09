@@ -503,6 +503,9 @@ internal class AndroidManifest : AndroidXmlDocument
     internal void SetTombstone(bool enableTombstone)
         => SetMetaData($"{SentryPrefix}.tombstone.enable", enableTombstone.ToString());
 
+    internal void SetTombstoneReportHistorical(bool enableTombstoneReportHistorical)
+        => SetMetaData($"{SentryPrefix}.tombstone.report-historical", enableTombstoneReportHistorical.ToString());
+
     internal void SetNdkEnabled(bool enableNdk)
         => SetMetaData($"{SentryPrefix}.ndk.enable", enableNdk.ToString());
 

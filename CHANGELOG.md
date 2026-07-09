@@ -4,7 +4,7 @@
 
 ### Features
 
-- Added `options.AndroidNativeTombstoneEnabled` (default `false`) and `options.AndroidReportHistoricalTombstones` (default `false`) to enable reporting of native crashes captured by Android's `ApplicationExitInfo` API as Tombstones through `sentry-java` ([#2742](https://github.com/getsentry/sentry-unity/pull/2742))
+- Added `options.AndroidNativeTombstoneEnabled` (default `false`) and `options.AndroidReportHistoricalTombstones` (default `false`) to enable reporting of native crashes captured by Android's `ApplicationExitInfo` API as Tombstones ([#2742](https://github.com/getsentry/sentry-unity/pull/2742))
 
 ### Fixes
 
