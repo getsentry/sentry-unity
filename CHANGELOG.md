@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added `options.AndroidNativeTombstoneEnabled` (default `false`) and `options.AndroidReportHistoricalTombstones` (default `false`) to enable reporting of native crashes captured by Android's `ApplicationExitInfo` API as Tombstones ([#2749](https://github.com/getsentry/sentry-unity/pull/2749))
+
 ### Fixes
 
 - Fixed an issue with the updated dependency resolution introduced in `4.6.0` where usage of the `Metrics` API would cause Unity to error with `The type 'ReadOnlySpan<>' is defined in an assembly that is not referenced`. ([#2754](https://github.com/getsentry/sentry-unity/pull/2754))
