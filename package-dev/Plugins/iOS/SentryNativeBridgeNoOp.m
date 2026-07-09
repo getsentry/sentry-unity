@@ -34,6 +34,14 @@ char *SentryNativeBridgeGetInstallationId() { return NULL; }
 
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId) { }
 
+void SentryNativeBridgeAddFileAttachment(
+    const char *path, const char *filename, const char *contentType) { }
+
+void SentryNativeBridgeAddByteAttachment(
+    const uint8_t *bytes, int32_t length, const char *filename, const char *contentType) { }
+
+void SentryNativeBridgeClearAttachments() { }
+
 void SentryNativeBridgeWriteScope( // clang-format off
     // // const char *AppStartTime,
     // const char *AppBuildType,
