@@ -81,7 +81,6 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/Priv
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryLogC.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryNSDataUtils.h
-Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryOptionsInternal.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentryRequestOperation.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentrySDK+Private.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64_x86_64-simulator/Sentry.framework/PrivateHeaders/SentrySwift.h
@@ -159,7 +158,6 @@ Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/Sentry
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryInternalSerializable.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryLogC.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryNSDataUtils.h
-Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryOptionsInternal.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentryRequestOperation.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentrySDK+Private.h
 Plugins/iOS/Sentry.xcframework~/ios-arm64/Sentry.framework/PrivateHeaders/SentrySwift.h
