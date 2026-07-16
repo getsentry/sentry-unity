@@ -183,6 +183,15 @@ void SentryNativeBridgeSetTag(const char *key, const char *value)
     }];
 }
 
+void SentryNativeBridgeSetEnvironment(const char *environment)
+{
+    NSString *environmentString = _NSStringOrNil(environment);
+
+    [SentrySDK configureScope:^(SentryScope *scope) {
+        [scope setEnvironment:environmentString];
+    }];
+}
+
 void SentryNativeBridgeUnsetTag(const char *key)
 {
     if (key == NULL) {

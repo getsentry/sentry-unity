@@ -166,6 +166,9 @@ internal static class C
     internal static extern void sentry_set_trace(string traceId, string parentSpanId);
 
     [DllImport(SentryLib)]
+    internal static extern void sentry_set_environment(string? environment);
+
+    [DllImport(SentryLib)]
     internal static extern IntPtr sentry_attach_file(string path);
 
     [DllImport(SentryLib)]

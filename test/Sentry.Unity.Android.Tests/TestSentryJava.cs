@@ -55,6 +55,8 @@ internal class TestSentryJava : ISentryJava
 
     public void SetTrace(SentryId traceId, SpanId spanId) { }
 
+    public void SetEnvironment(string? environment) { }
+
     public void AddAttachment(string path, string fileName, string? contentType) { }
 
     public void AddAttachmentBytes(byte[] data, string fileName, string? contentType) { }

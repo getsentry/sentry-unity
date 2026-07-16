@@ -423,6 +423,56 @@ public sealed class UnityEventProcessorTests
     }
 
     [Test]
+    public void Environment_ScopeSync_ForwardedToObserver()
+    {
+        // arrange - enable scope sync with a tracking observer
+        var options = new SentryUnityOptions(application: _testApplication);
+        var observer = new TestScopeObserver(options);
+        options.ScopeObserver = observer;
+        options.EnableScopeSync = true;
+
+        var scope = new Scope(options);
+
+        // act
+        scope.Environment = "the-environment";
+
+        // assert
+        Assert.AreEqual("the-environment", observer.LastEnvironment);
+    }
+
+    [Test]
+    public void Environment_ScopeSyncDisabled_NotForwardedToObserver()
+    {
+        // arrange
+        var options = new SentryUnityOptions(application: _testApplication);
+        var observer = new TestScopeObserver(options);
+        options.ScopeObserver = observer;
+        options.EnableScopeSync = false;
+
+        var scope = new Scope(options);
+
+        // act
+        scope.Environment = "the-environment";
+
+        // assert
+        Assert.IsNull(observer.LastEnvironment);
+    }
+
+    [Test]
+    public void SetEnvironment_DelegatesToImpl()
+    {
+        // arrange
+        var options = new SentryUnityOptions(application: _testApplication);
+        var observer = new TestScopeObserver(options);
+
+        // act
+        observer.SetEnvironment("the-environment");
+
+        // assert
+        Assert.AreEqual("the-environment", observer.LastEnvironment);
+    }
+
+    [Test]
     public void OperatingSystemProtocol_Assigned()
     {
         // arrange
@@ -668,6 +718,7 @@ internal sealed class TestSentrySystemInfo : ISentrySystemInfo
 internal sealed class TestScopeObserver : ScopeObserver
 {
     public SentryUser? LastUser { get; set; }
+    public string? LastEnvironment { get; set; }
 
     public TestScopeObserver(SentryOptions options) : base("Test", options) { }
 
@@ -678,6 +729,7 @@ internal sealed class TestScopeObserver : ScopeObserver
     public override void SetUserImpl(SentryUser user) => LastUser = user;
     public override void UnsetUserImpl() => LastUser = null;
     public override void SetTraceImpl(SentryId traceId, SpanId spanId) { }
+    public override void SetEnvironmentImpl(string? environment) => LastEnvironment = environment;
     public override void AddFileAttachmentImpl(string filePath, string fileName, string? contentType) { }
     public override void AddByteAttachmentImpl(byte[] data, string fileName, string? contentType) { }
     public override void ClearAttachmentsImpl() { }
