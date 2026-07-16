@@ -157,7 +157,7 @@ internal class UnityApplicationLoggingIntegration : ISdkIntegration
         _hub.GetTraceIdAndSpanId(out var traceId, out var spanId);
         SentryLog log = new(_clock.GetUtcNow(), traceId, ToLogLevel(logType), message) { SpanId = spanId };
 
-        log.SetDefaultAttributes(_options, UnitySdkInfo.Sdk);
+        log.SetDefaultAttributes(_options, _hub.GetScope(), UnitySdkInfo.Sdk);
         log.SetOrigin("auto.log.unity");
 
         _hub.Logger.CaptureLog(log);
