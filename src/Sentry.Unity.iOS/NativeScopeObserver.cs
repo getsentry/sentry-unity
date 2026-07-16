@@ -6,17 +6,17 @@ public class NativeScopeObserver : ScopeObserver
 {
     public NativeScopeObserver(string name, SentryOptions options) : base(name, options) { }
 
-public override void AddBreadcrumbImpl(Breadcrumb breadcrumb)
-{
-    var level = GetBreadcrumbLevel(breadcrumb.Level);
-    var timestamp = GetTimestamp(breadcrumb.Timestamp);
+    public override void AddBreadcrumbImpl(Breadcrumb breadcrumb)
+    {
+        var level = GetBreadcrumbLevel(breadcrumb.Level);
+        var timestamp = GetTimestamp(breadcrumb.Timestamp);
 
-    // Pass breadcrumb.Data as two parallel key/value arrays for the __Internal P/Invoke boundary.
-    var dataCount = GetBreadcrumbData(breadcrumb, out var dataKeys, out var dataValues);
+        // Pass breadcrumb.Data as two parallel key/value arrays for the __Internal P/Invoke boundary.
+        var dataCount = GetBreadcrumbData(breadcrumb, out var dataKeys, out var dataValues);
 
-    SentryCocoaBridgeProxy.AddBreadcrumb(timestamp, breadcrumb.Message, breadcrumb.Type, breadcrumb.Category, level,
-        dataKeys, dataValues, dataCount);
-}
+        SentryCocoaBridgeProxy.AddBreadcrumb(timestamp, breadcrumb.Message, breadcrumb.Type, breadcrumb.Category, level,
+            dataKeys, dataValues, dataCount);
+    }
 
     internal static int GetBreadcrumbData(Breadcrumb breadcrumb, out string[]? keys, out string[]? values)
     {
