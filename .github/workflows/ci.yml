@@ -31,6 +31,7 @@ jobs:
     uses: ./.github/workflows/create-unity-matrix.yml
     with:
       event-name: ${{ github.event_name }}
+      head-ref: ${{ github.head_ref }}
 
   sdk:
     strategy:

@@ -7,6 +7,11 @@ on:
         description: 'Event name (pull_request, push, etc.)'
         required: true
         type: string
+      head-ref:
+        description: 'PR head branch name'
+        required: false
+        type: string
+        default: ''
     outputs:
       unity-matrix:
         description: 'Unity version matrix'
@@ -29,10 +34,15 @@ jobs:
         shell: bash
         env:
           EVENT_NAME: ${{ inputs.event-name }}
+          HEAD_REF: ${{ inputs.head-ref }}
           PR_UNITY_VERSIONS_VALUE: ${{ env.PR_UNITY_VERSIONS }}
           FULL_UNITY_VERSIONS_VALUE: ${{ env.FULL_UNITY_VERSIONS }}
         run: |
-          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+          # Unity-bump PRs follow the naming convention `chore/unity-<version>`
+          # The bumps only need to run on those specific versions
+          if [[ "$EVENT_NAME" == "pull_request" && "$HEAD_REF" =~ ^chore/unity-([0-9]+\.[0-9]+)\. ]]; then
+            versions="[\"${BASH_REMATCH[1]}\"]"
+          elif [[ "$EVENT_NAME" == "pull_request" ]]; then
             versions="$PR_UNITY_VERSIONS_VALUE"
           else
             versions="$FULL_UNITY_VERSIONS_VALUE"
