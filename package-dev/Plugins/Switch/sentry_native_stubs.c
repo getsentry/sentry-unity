@@ -305,6 +305,11 @@ void sentry_set_trace(const char* trace_id, const char* parent_span_id)
     (void)parent_span_id;
 }
 
+void sentry_set_environment(const char* environment)
+{
+    (void)environment;
+}
+
 /*
  * =============================================================================
  * Crash Detection Functions

@@ -55,6 +55,9 @@ public class NativeScopeObserver : ScopeObserver
     public override void SetTraceImpl(SentryId traceId, SpanId spanId) =>
         SentryCocoaBridgeProxy.SetTrace(traceId.ToString(), spanId.ToString());
 
+    public override void SetEnvironmentImpl(string? environment) =>
+        SentryCocoaBridgeProxy.SetEnvironment(environment);
+
     public override void AddFileAttachmentImpl(string filePath, string fileName, string? contentType)
     {
         // iOS/macOS attachment sync to sentry-cocoa is not yet supported.
