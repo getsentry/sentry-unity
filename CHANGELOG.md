@@ -2,8 +2,15 @@
 
 ## Unreleased
 
+### Fixes
+
+- Migrated the native support for iOS and macOS to use the Obj-C flavour of `sentry-cocoa` ([#2767](https://github.com/getsentry/sentry-unity/pull/2767))
+
 ### Dependencies
 
+- Bump Cocoa SDK from v9.21.0 to v9.22.0 ([#2763](https://github.com/getsentry/sentry-unity/pull/2763))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9220)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.21.0...9.22.0)
 - Bump .NET SDK from v6.5.0-33-g0140be0a to v6.6.0 ([#2761](https://github.com/getsentry/sentry-unity/pull/2761))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#660)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.5.0-33-g0140be0a...6.6.0)
