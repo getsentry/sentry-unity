@@ -9,14 +9,14 @@ internal static class NativeMain
 {
     public const string Include = @"#import <UIKit/UIKit.h>
 #import <MetricKit/MetricKit.h>
-#import <Sentry/Sentry-Swift.h>
+#import <SentryObjC/SentryObjC.h>
 #include ""SentryOptions.m""
 ";
     private const string Init = @"
-        SentryOptions* options = getSentryOptions();
+        SentryObjCOptions* options = getSentryOptions();
         if(options != nil)
         {
-            [SentrySDK startWithOptions:options];
+            [SentryObjCSDK startWithOptions:options];
         }
 ";
 

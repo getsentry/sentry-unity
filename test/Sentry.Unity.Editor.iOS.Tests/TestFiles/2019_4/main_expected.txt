@@ -1,6 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <MetricKit/MetricKit.h>
-#import <Sentry/Sentry-Swift.h>
+#import <SentryObjC/SentryObjC.h>
 #include "SentryOptions.m"
 #include <UnityFramework/UnityFramework.h>
 
@@ -26,10 +26,10 @@ int main(int argc, char* argv[])
 {
     @autoreleasepool
     {
-        SentryOptions* options = getSentryOptions();
+        SentryObjCOptions* options = getSentryOptions();
         if(options != nil)
         {
-            [SentrySDK startWithOptions:options];
+            [SentryObjCSDK startWithOptions:options];
         }
 
         id ufw = UnityFrameworkLoad();

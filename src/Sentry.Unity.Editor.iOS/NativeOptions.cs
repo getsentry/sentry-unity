@@ -11,17 +11,16 @@ internal static class NativeOptions
     {
         var failedRequestStatusCodesArray = GetFailedRequestStatusCodesArray(options.FailedRequestStatusCodes);
         var nativeOptions = $@"#import <Foundation/Foundation.h>
-#import <Sentry/SentryOptionsInternal.h>
-#import <Sentry/PrivateSentrySDKOnly.h>
+#import <SentryObjC/SentryObjC.h>
 
 // IMPORTANT: Changes to this file will be lost!
 // This file is generated during the Xcode project creation.
 
 // To learn more please take a look at our docs at: https://docs.sentry.io/platforms/unity/native-support/
 
-static SentryOptions* getSentryOptions()
+static SentryObjCOptions* getSentryOptions()
 {{
-    [PrivateSentrySDKOnly setSdkName:@""sentry.cocoa.unity""];
+    [SentryObjCSDK internal].sdk.name = @""sentry.cocoa.unity"";
 
     NSDictionary* optionsDictionary = @{{
         @""dsn"" : @""{options.Dsn}"",
@@ -43,14 +42,14 @@ static SentryOptions* getSentryOptions()
     }};
 
     NSError *error = nil;
-    SentryOptions *sentryOptions = [SentryOptionsInternal initWithDict:optionsDictionary didFailWithError:&error];
+    SentryObjCOptions *sentryOptions = [[SentryObjCSDK internal] optionsFromDictionary:optionsDictionary error:&error];
     if (error != nil)
     {{
         NSLog(@""%@"",[error localizedDescription]);
         return nil;
     }}
 
-    {(options.FilterBadGatewayExceptions ? @"sentryOptions.beforeSend = ^SentryEvent * _Nullable(SentryEvent * _Nonnull event) {
+    {(options.FilterBadGatewayExceptions ? @"sentryOptions.beforeSend = ^SentryObjCEvent * _Nullable(SentryObjCEvent * _Nonnull event) {
         if ([event.request.url containsString:@""operate-sdk-telemetry.unity3d.com""]) return nil;
         return event;
     };" : "")}
@@ -81,7 +80,7 @@ static SentryOptions* getSentryOptions()
         var codeRanges = string.Empty;
         for (var i = 0; i < httpStatusCodeRanges.Count; i++)
         {
-            codeRanges += $"[[SentryHttpStatusCodeRange alloc] initWithMin:{httpStatusCodeRanges[i].Start} max:{httpStatusCodeRanges[i].End}]";
+            codeRanges += $"[[SentryObjCHttpStatusCodeRange alloc] initWithMin:{httpStatusCodeRanges[i].Start} max:{httpStatusCodeRanges[i].End}]";
             if (i < httpStatusCodeRanges.Count - 1)
             {
                 codeRanges += ", ";

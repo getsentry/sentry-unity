@@ -14,7 +14,7 @@ namespace Sentry.Unity.Editor.iOS;
 
 internal class SentryXcodeProject : IDisposable
 {
-    internal const string FrameworkName = "Sentry.xcframework";
+    internal const string FrameworkName = "SentryObjC.xcframework";
     internal const string BridgeName = "SentryNativeBridge.m";
     internal const string NoOpBridgeName = "SentryNativeBridgeNoOp.m";
     internal const string OptionsName = "SentryOptions.m";

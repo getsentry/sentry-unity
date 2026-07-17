@@ -106,7 +106,7 @@ jobs:
         with:
           name: ${{ env.TARGET }}-sdk
           path: |
-            package-dev/Plugins/iOS/Sentry.xcframework~
+            package-dev/Plugins/iOS/SentryObjC.xcframework~
             package-dev/Plugins/macOS/Sentry~
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
