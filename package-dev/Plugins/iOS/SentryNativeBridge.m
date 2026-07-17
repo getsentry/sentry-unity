@@ -1,8 +1,5 @@
-#import <Sentry/Sentry.h>
 #import <MetricKit/MetricKit.h>
-#import <Sentry/Sentry-Swift.h>
-#import <Sentry/PrivateSentrySDKOnly.h>
-#import <Sentry/SentryOptionsInternal.h>
+#import <SentryObjC/SentryObjC.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -43,7 +40,7 @@ static inline NSNumber *_NSBoolOrNil(int8_t value)
 // On iOS, the SDK is linked statically so we don't need to dlopen() it.
 int SentryNativeBridgeLoadLibrary() { return 1; }
 
-int SentryNativeBridgeIsEnabled() { return [SentrySDK isEnabled] ? 1 : 0; }
+int SentryNativeBridgeIsEnabled() { return [SentryObjCSDK isEnabled] ? 1 : 0; }
 
 const void *SentryNativeBridgeOptionsNew()
 {
@@ -80,7 +77,7 @@ void SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange(const void *option
         ranges = [[NSMutableArray alloc] init];
         dictOptions[@"failedRequestStatusCodes"] = ranges;
     }
-    [ranges addObject:[[SentryHttpStatusCodeRange alloc] initWithMin:min max:max]];
+    [ranges addObject:[[SentryObjCHttpStatusCodeRange alloc] initWithMin:min max:max]];
 }
 
 int SentryNativeBridgeStartWithOptions(const void *options)
@@ -88,24 +85,24 @@ int SentryNativeBridgeStartWithOptions(const void *options)
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
     NSError *error = nil;
 
-    SentryOptions *sentryOptions = [SentryOptionsInternal initWithDict:dictOptions didFailWithError:&error];
+    SentryObjCOptions *sentryOptions = [[SentryObjCSDK internal] optionsFromDictionary:dictOptions error:&error];
     if (error != nil)
     {
         return 0;
     }
 
-    [SentrySDK startWithOptions:sentryOptions];
+    [SentryObjCSDK startWithOptions:sentryOptions];
     return 1;
 }
 
 void SentryNativeBridgeSetSdkName()
 {
-    [PrivateSentrySDKOnly performSelector:@selector(setSdkName:) withObject:@"sentry.cocoa.unity"];
+    [SentryObjCSDK internal].sdk.name = @"sentry.cocoa.unity";
 }
 
-int SentryNativeBridgeCrashedLastRun() { return [SentrySDK crashedLastRun] ? 1 : 0; }
+int SentryNativeBridgeCrashedLastRun() { return [SentryObjCSDK crashedLastRun] ? 1 : 0; }
 
-void SentryNativeBridgeClose() { [SentrySDK close]; }
+void SentryNativeBridgeClose() { [SentryObjCSDK close]; }
 
 void SentryNativeBridgeAddBreadcrumb(const char *timestamp, const char *message, const char *type,
     const char *category, int level, const char **dataKeys, const char **dataValues, int dataCount)
@@ -119,8 +116,8 @@ void SentryNativeBridgeAddBreadcrumb(const char *timestamp, const char *message,
     NSString *typeString = _NSStringOrNil(type);
     NSString *categoryString = _NSStringOrNil(category) ?: @"default"; // Category cannot be nil
 
-    [SentrySDK configureScope:^(SentryScope *scope) {
-        SentryBreadcrumb *breadcrumb = [[SentryBreadcrumb alloc]
+    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
+        SentryObjCBreadcrumb *breadcrumb = [[SentryObjCBreadcrumb alloc]
             initWithLevel:level
                  category:categoryString];
 
@@ -164,7 +161,7 @@ void SentryNativeBridgeSetExtra(const char *key, const char *value)
     NSString *keyString = [NSString stringWithUTF8String:key];
     NSString *valueString = _NSStringOrNil(value);
 
-    [SentrySDK configureScope:^(SentryScope *scope) {
+    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
         [scope setExtraValue:valueString forKey:keyString];
     }];
 }
@@ -178,7 +175,7 @@ void SentryNativeBridgeSetTag(const char *key, const char *value)
     NSString *keyString = [NSString stringWithUTF8String:key];
     NSString *valueString = _NSStringOrNil(value);
 
-    [SentrySDK configureScope:^(SentryScope *scope) {
+    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
         [scope setTagValue:valueString forKey:keyString];
     }];
 }
@@ -191,7 +188,7 @@ void SentryNativeBridgeUnsetTag(const char *key)
 
     NSString *keyString = [NSString stringWithUTF8String:key];
 
-    [SentrySDK configureScope:^(SentryScope *scope) {
+    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
         [scope removeTagForKey:keyString];
     }];
 }
@@ -204,8 +201,8 @@ void SentryNativeBridgeSetUser(
     NSString *ipAddressString = _NSStringOrNil(ipAddress);
     NSString *usernameString = _NSStringOrNil(username);
     
-    [SentrySDK configureScope:^(SentryScope *scope) {
-        SentryUser *user = [[SentryUser alloc] init];
+    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
+        SentryObjCUser *user = [[SentryObjCUser alloc] init];
 
         user.email = emailString;
         user.userId = userIdString;
@@ -218,14 +215,14 @@ void SentryNativeBridgeSetUser(
 
 void SentryNativeBridgeUnsetUser()
 {
-    [SentrySDK configureScope:^(SentryScope *scope) { [scope setUser:nil]; }];
+    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) { [scope setUser:nil]; }];
 }
 
 char *SentryNativeBridgeGetInstallationId()
 {
     // Create a null terminated C string on the heap as expected by marshalling.
     // See Tips for iOS in https://docs.unity3d.com/Manual/PluginsForIOS.html
-    const char *nsStringUtf8 = [[PrivateSentrySDKOnly installationID] UTF8String];
+    const char *nsStringUtf8 = [[SentryObjCSDK internal].sdk.installationID UTF8String];
     size_t len = strlen(nsStringUtf8) + 1;
     char *cString = (char *)malloc(len);
     memcpy(cString, nsStringUtf8, len);
@@ -241,17 +238,11 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
     NSString *traceIdStr = [NSString stringWithUTF8String:traceId];
     NSString *spanIdStr = [NSString stringWithUTF8String:spanId];
 
-    // This is a workaround to deal with SentryId living inside the Swift header
-    Class sentryIdClass = NSClassFromString(@"SentryId");
-    Class sentrySpanIdClass = NSClassFromString(@"SentrySpanId");
+    SentryObjCId *sentryTraceId = [[SentryObjCId alloc] initWithUUIDString:traceIdStr];
+    SentryObjCSpanId *sentrySpanId = [[SentryObjCSpanId alloc] initWithValue:spanIdStr];
 
-    if (sentryIdClass && sentrySpanIdClass) {
-        id sentryTraceId = [[sentryIdClass alloc] initWithUUIDString:traceIdStr];
-        id sentrySpanId = [[sentrySpanIdClass alloc] initWithValue:spanIdStr];
-
-        if (sentryTraceId && sentrySpanId) {
-            [PrivateSentrySDKOnly setTrace:sentryTraceId spanId:sentrySpanId];
-        }
+    if (sentryTraceId && sentrySpanId) {
+        [[SentryObjCSDK internal] setTrace:sentryTraceId spanId:sentrySpanId];
     }
 }
 
@@ -292,7 +283,7 @@ void SentryNativeBridgeWriteScope( // clang-format off
 ) // clang-format on
 {
     // Note: we're using a NSMutableDictionary because it will skip fields with nil values.
-    [SentrySDK configureScope:^(SentryScope *scope) {
+    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
         NSMutableDictionary *gpu = [[NSMutableDictionary alloc] init];
         gpu[@"id"] = _NSNumberOrNil(GpuId);
         gpu[@"name"] = _NSStringOrNil(GpuName);
@@ -309,7 +300,7 @@ void SentryNativeBridgeWriteScope( // clang-format off
         gpu[@"vendor_id"] = _NSStringOrNil(GpuVendorId);
         gpu[@"multi_threaded_rendering"] = _NSBoolOrNil(GpuMultiThreadedRendering);
         gpu[@"graphics_shader_level"] = _NSStringOrNil(GpuGraphicsShaderLevel);
-        [scope performSelector:@selector(setContextValue:forKey:) withObject:gpu withObject:@"gpu"];
+        [scope setContextValue:gpu forKey:@"gpu"];
 
         NSMutableDictionary *unity = [[NSMutableDictionary alloc] init];
         unity[@"editor_version"] = _NSStringOrNil(EditorVersion);
@@ -317,9 +308,7 @@ void SentryNativeBridgeWriteScope( // clang-format off
         unity[@"target_frame_rate"] = _NSStringOrNil(UnityTargetFrameRate);
         unity[@"copy_texture_support"] = _NSStringOrNil(UnityCopyTextureSupport);
         unity[@"rendering_threading_mode"] = _NSStringOrNil(UnityRenderingThreadingMode);
-        [scope performSelector:@selector(setContextValue:forKey:)
-                    withObject:unity
-                    withObject:@"unity"];
+        [scope setContextValue:unity forKey:@"unity"];
     }];
 }
 

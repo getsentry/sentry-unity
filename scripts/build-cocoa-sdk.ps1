@@ -24,8 +24,8 @@ if (-not (Test-Path (Join-Path $CocoaRoot "Sentry.xcodeproj"))) {
 
 # All build artifacts go under XCFrameworkBuildPath/ which is already in sentry-cocoa's .gitignore.
 $buildPath = Join-Path $CocoaRoot "XCFrameworkBuildPath"
-$iOSXcframeworkPath = Join-Path $buildPath "Sentry-Dynamic-iOS.xcframework"
-$macOSXcframeworkPath = Join-Path $buildPath "Sentry-Dynamic-macOS.xcframework"
+$iOSXcframeworkPath = Join-Path $buildPath "SentryObjC-Dynamic-iOS.xcframework"
+$macOSXcframeworkPath = Join-Path $buildPath "SentryObjC-Dynamic-macOS.xcframework"
 
 if ($Clean -and (Test-Path $buildPath)) {
     Write-Host "Clean build requested — removing $buildPath" -ForegroundColor Yellow
@@ -40,13 +40,14 @@ try {
 
     if (-not (Test-Path $iOSXcframeworkPath)) {
         Write-Host "Building iOS xcframework..." -ForegroundColor Yellow
-        # Exclude arm64e from the binary. Since Xcode 26, apps without arm64e in the main binary
-        # can't include frameworks with arm64e slices (App Store rejection). The sentry-cocoa SDK
-        # ships separate "-WithARM64e" variants for apps that need it; Unity games don't.
-        & ./scripts/build-xcframework-variant.sh --scheme "Sentry" --suffix "-Dynamic" --mach-o-type "mh_dylib" --sdks "iOSOnly" --excluded-archs "arm64e"
-        & ./scripts/validate-xcframework-format.sh --xcframework "Sentry-Dynamic.xcframework"
-        # build-xcframework-variant.sh outputs to the working directory — move into our build cache
-        Move-Item -Path "Sentry-Dynamic.xcframework" -Destination $iOSXcframeworkPath -Force
+        # SentryObjC is the public ObjC wrapper SDK. The dynamic xcframework embeds the full SDK
+        # (SentryObjC + SentryObjCCompat + SentryObjCInternal) into a single self-contained framework,
+        # so Unity links/dlopens only one binary. The dynamic slices are arm64-only (no arm64e), so no
+        # architecture stripping is needed — unlike the main `Sentry` scheme's Xcode-project build.
+        & ./scripts/build-xcframework-sentryobjc.sh --sdks "iphoneos,iphonesimulator" --variant dynamic
+        & ./scripts/validate-xcframework-format.sh --xcframework "SentryObjC-Dynamic.xcframework"
+        # build-xcframework-sentryobjc.sh outputs to the working directory — move into our build cache
+        Move-Item -Path "SentryObjC-Dynamic.xcframework" -Destination $iOSXcframeworkPath -Force
         # Clean up intermediate archives, keep the final xcframework
         $archivePath = Join-Path $buildPath "archive"
         if (Test-Path $archivePath) {
@@ -76,9 +77,9 @@ try {
 
     if (-not (Test-Path $macOSXcframeworkPath)) {
         Write-Host "Building macOS xcframework..." -ForegroundColor Yellow
-        & ./scripts/build-xcframework-variant.sh --scheme "Sentry" --suffix "-Dynamic" --mach-o-type "mh_dylib" --sdks "macOSOnly"
-        & ./scripts/validate-xcframework-format.sh --xcframework "Sentry-Dynamic.xcframework"
-        Move-Item -Path "Sentry-Dynamic.xcframework" -Destination $macOSXcframeworkPath -Force
+        & ./scripts/build-xcframework-sentryobjc.sh --sdks "macosx" --variant dynamic
+        & ./scripts/validate-xcframework-format.sh --xcframework "SentryObjC-Dynamic.xcframework"
+        Move-Item -Path "SentryObjC-Dynamic.xcframework" -Destination $macOSXcframeworkPath -Force
         # Clean up all remaining build intermediates
         foreach ($dir in @("archive", "DerivedData")) {
             $dirPath = Join-Path $buildPath $dir
@@ -95,8 +96,8 @@ try {
         Write-Error "No macOS slice found in xcframework at: $macOSXcframeworkPath"
         exit 1
     }
-    $macOSFrameworkPath = Join-Path $macOSSlice.FullName "Sentry.framework/Versions/A/Sentry"
-    $macOSdSYMPath = Join-Path $macOSSlice.FullName "dSYMs/Sentry.framework.dSYM/Contents/Resources/DWARF/Sentry"
+    $macOSFrameworkPath = Join-Path $macOSSlice.FullName "SentryObjC.framework/Versions/A/SentryObjC"
+    $macOSdSYMPath = Join-Path $macOSSlice.FullName "dSYMs/SentryObjC.framework.dSYM/Contents/Resources/DWARF/SentryObjC"
 
     $macOSDestDir = Split-Path $macOSDestination -Parent
     if (-not (Test-Path $macOSDestDir)) {

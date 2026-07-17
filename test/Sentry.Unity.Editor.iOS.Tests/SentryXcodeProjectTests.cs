@@ -84,7 +84,7 @@ public class SentryXcodeProjectTests
 
         xcodeProject.AddSentryFramework();
 
-        StringAssert.Contains("/* Sentry.xcframework in Embed Frameworks */", xcodeProject.ProjectToString());
+        StringAssert.Contains("/* SentryObjC.xcframework in Embed Frameworks */", xcodeProject.ProjectToString());
     }
 
     [Test]
