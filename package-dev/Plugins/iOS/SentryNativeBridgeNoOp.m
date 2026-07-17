@@ -34,6 +34,8 @@ char *SentryNativeBridgeGetInstallationId() { return NULL; }
 
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId) { }
 
+void SentryNativeBridgeSetEnvironment(const char *environment) { }
+
 void SentryNativeBridgeWriteScope( // clang-format off
     // // const char *AppStartTime,
     // const char *AppBuildType,
