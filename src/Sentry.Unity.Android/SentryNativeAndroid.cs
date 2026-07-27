@@ -73,6 +73,15 @@ public static class SentryNativeAndroid
         options.ScopeObserver = new AndroidJavaScopeObserver(options, SentryJava);
         options.EnableScopeSync = true;
         options.NativeDebugImageProvider = new Native.NativeDebugImageProvider();
+
+        if (options.Experimental.EnableNativeAppHangTracking && options.NdkIntegrationEnabled)
+        {
+            Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
+            SentryMonoBehaviour.Instance.StartAppHangHeartbeat(SentryNative.AppHangHeartbeat);
+            Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-native handles app hang detection.");
+            options.DisableAnrIntegration();
+        }
+
         options.CrashedLastRun = () =>
         {
             Logger?.LogDebug("Checking for 'CrashedLastRun'");
