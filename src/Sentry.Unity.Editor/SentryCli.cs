@@ -74,8 +74,9 @@ internal static class SentryCli
 
     internal static string GetSentryCliPath(string sentryCliPlatformName)
     {
-        var sentryCliPath = Path.GetFullPath(
-            Path.Combine("Packages", SentryPackageInfo.GetName(), "Editor", "sentry-cli", sentryCliPlatformName));
+        var projectRoot = Directory.GetParent(Application.dataPath)!.FullName;
+        var sentryCliPath = Path.Combine(
+            projectRoot, "Packages", SentryPackageInfo.GetName(), "Editor", "sentry-cli", sentryCliPlatformName);
 
         if (!File.Exists(sentryCliPath))
         {
