@@ -34,9 +34,8 @@ public class SentryCliTests
     public void GetSentryCliPath_ValidFileName_ReturnsPath()
     {
         var sentryCliPlatformName = SentryCli.GetSentryCliPlatformExecutable(Application.platform);
-        var projectRoot = Directory.GetParent(Application.dataPath)!.FullName;
-        var expectedPath = Path.Combine(
-            projectRoot, "Packages", SentryPackageInfo.GetName(), "Editor", "sentry-cli", sentryCliPlatformName);
+        var expectedPath = Path.GetFullPath(
+            Path.Combine("Packages", SentryPackageInfo.GetName(), "Editor", "sentry-cli", sentryCliPlatformName));
 
         var actualPath = SentryCli.GetSentryCliPath(sentryCliPlatformName);
 
