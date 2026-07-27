@@ -5,6 +5,7 @@
 ### Fixes
 
 - Migrated the native support for iOS and macOS to use the Obj-C flavour of `sentry-cocoa` ([#2767](https://github.com/getsentry/sentry-unity/pull/2767))
+- The SDK now correctly synchronizes the `Environment` set on the `Scope` events coming from the native layer ([#2764](https://github.com/getsentry/sentry-unity/pull/2764))
 
 ### Dependencies
 
@@ -14,9 +15,9 @@
 - Bump .NET SDK from v6.5.0-33-g0140be0a to v6.7.0 ([#2761](https://github.com/getsentry/sentry-unity/pull/2761), [#2762](https://github.com/getsentry/sentry-unity/pull/2762))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#670)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.5.0-33-g0140be0a...6.7.0)
-- Bump Java SDK from v8.48.0 to v8.49.0 ([#2766](https://github.com/getsentry/sentry-unity/pull/2766))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8490)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.48.0...8.49.0)
+- Bump Java SDK from v8.48.0 to v8.50.1 ([#2766](https://github.com/getsentry/sentry-unity/pull/2766), [#2775](https://github.com/getsentry/sentry-unity/pull/2775))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8501)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.48.0...8.50.1)
 
 ## 4.7.0
 
