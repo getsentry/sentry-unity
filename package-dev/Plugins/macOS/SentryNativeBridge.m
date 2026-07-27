@@ -19,7 +19,7 @@ static inline NSString *_NSStringOrNil(const char *value)
     return value ? [NSString stringWithUTF8String:value] : nil;
 }
 
-static inline NSString *_NSNumberOrNil(int32_t value)
+static inline NSNumber *_NSNumberOrNil(int32_t value)
 {
     return value == 0 ? nil : @(value);
 }
@@ -89,7 +89,10 @@ int SentryNativeBridgeLoadLibrary()
     return loadStatus;
 }
 
-int SentryNativeBridgeIsEnabled() { return [SentryObjCSDK isEnabled] ? 1 : 0; }
+int SentryNativeBridgeIsEnabled()
+{
+    return ((BOOL (*)(id, SEL))objc_msgSend)(SentryObjCSDK, @selector(isEnabled)) ? 1 : 0;
+}
 
 const void *SentryNativeBridgeOptionsNew()
 {
@@ -352,13 +355,13 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
         return;
     }
 
-    id sentryTraceId = [[SentryObjCId alloc] 
-        performSelector:@selector(initWithUUIDString:) 
-        withObject:[NSString stringWithUTF8String:traceId]];
-        
-    id sentrySpanId = [[SentryObjCSpanId alloc]
-        performSelector:@selector(initWithValue:)
-        withObject:[NSString stringWithUTF8String:spanId]];
+    id sentryTraceId = ((id (*)(id, SEL, NSString *))objc_msgSend)(
+        [SentryObjCId alloc], @selector(initWithUUIDString:),
+        [NSString stringWithUTF8String:traceId]);
+
+    id sentrySpanId = ((id (*)(id, SEL, NSString *))objc_msgSend)(
+        [SentryObjCSpanId alloc], @selector(initWithValue:),
+        [NSString stringWithUTF8String:spanId]);
     
     [SentryInternalApi()
         performSelector:@selector(setTrace:spanId:)

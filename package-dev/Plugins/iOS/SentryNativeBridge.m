@@ -100,7 +100,10 @@ void SentryNativeBridgeSetSdkName()
     [SentryObjCSDK internal].sdk.name = @"sentry.cocoa.unity";
 }
 
-int SentryNativeBridgeCrashedLastRun() { return [SentryObjCSDK crashedLastRun] ? 1 : 0; }
+int SentryNativeBridgeCrashedLastRun()
+{
+    return SentryObjCSDK.lastRunStatus == SentryObjCLastRunStatusDidCrash ? 1 : 0;
+}
 
 void SentryNativeBridgeClose() { [SentryObjCSDK close]; }
 
@@ -184,7 +187,7 @@ void SentryNativeBridgeSetEnvironment(const char *environment)
 {
     NSString *environmentString = _NSStringOrNil(environment);
 
-    [SentrySDK configureScope:^(SentryScope *scope) {
+    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) {
         [scope setEnvironment:environmentString];
     }];
 }
