@@ -135,6 +135,48 @@ public sealed class SentryUnityOptions : SentryOptions
     public int MaxViewHierarchyDepth { get; set; } = 10;
 
     /// <summary>
+    /// EXPERIMENTAL: Automatically collect per-frame performance metrics (frame time and FPS) and
+    /// send them to Sentry as metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain
+    /// enabled (the default).
+    /// </summary>
+    public bool AutoFrameTimeMetrics { get; set; } = false;
+
+    /// <summary>
+    /// How often, in frames, the per-frame metrics are sampled. For example, a value of 30 emits a
+    /// sample every 30th frame. Minimum 1.
+    /// </summary>
+    public int FrameTimeMetricSampleInterval { get; set; } = 30;
+
+    /// <summary>
+    /// EXPERIMENTAL: Periodically collect game statistics (memory usage) and send them to Sentry as
+    /// metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain enabled (the default).
+    /// </summary>
+    public bool AutoGameStatsMetrics { get; set; } = false;
+
+    /// <summary>
+    /// EXPERIMENTAL: Periodically collect garbage-collection counts (per generation) and send them
+    /// to Sentry as metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain enabled.
+    /// </summary>
+    public bool AutoGcMetrics { get; set; } = false;
+
+    /// <summary>
+    /// EXPERIMENTAL: Periodically collect basic multiplayer network metrics - round-trip time (on
+    /// clients) and connected-client count (on the server) - and send them to Sentry as metrics.
+    /// Requires the Netcode for GameObjects package and <see cref="SentryOptions.EnableMetrics"/>.
+    /// </summary>
+    public bool AutoNetworkMetrics { get; set; } = false;
+
+    /// <summary>
+    /// How often, in seconds, the periodic game-stats and GC metrics are sampled. Minimum 1.
+    /// </summary>
+    public int GameStatsMetricSampleIntervalSeconds { get; set; } = 60;
+
+    /// <summary>
+    /// How often, in seconds, the network metrics are sampled. Minimum 1.
+    /// </summary>
+    public int NetworkMetricsSampleIntervalSeconds { get; set; } = 10;
+
+    /// <summary>
     /// The quality of the attached screenshot
     /// </summary>
     public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
@@ -494,6 +536,7 @@ public sealed class SentryUnityOptions : SentryOptions
         AddIntegration(new LifeCycleIntegration(behaviour));
         AddIntegration(new TraceGenerationIntegration(behaviour));
         AddIntegration(new LowMemoryIntegration());
+        AddIntegration(new AutoMetricsIntegration(behaviour));
 
         AddExceptionFilter(new UnityBadGatewayExceptionFilter());
         AddExceptionFilter(new UnityWebExceptionFilter());

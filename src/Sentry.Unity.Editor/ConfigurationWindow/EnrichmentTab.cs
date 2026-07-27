@@ -104,6 +104,66 @@ internal static class EnrichmentTab
         EditorGUILayout.Space();
 
         {
+            GUILayout.Label("EXPERIMENTAL: Auto-collect common game performance metrics and send them " +
+                            "to Sentry. Requires 'Enable Metrics'.", EditorStyles.wordWrappedMiniLabel);
+
+            options.AutoFrameTimeMetrics = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Auto Frame-Time Metrics", "Periodically emit frame time and FPS as Sentry metrics."),
+                options.AutoFrameTimeMetrics);
+            EditorGUI.indentLevel++;
+
+            options.FrameTimeMetricSampleInterval = EditorGUILayout.IntField(
+                new GUIContent("Sample Interval (frames)", "Emit a frame-time sample every Nth frame." +
+                                                           "\nDefault: 30"),
+                options.FrameTimeMetricSampleInterval);
+            if (options.FrameTimeMetricSampleInterval < 1)
+            {
+                options.FrameTimeMetricSampleInterval = 1;
+            }
+
+            EditorGUI.indentLevel--;
+            EditorGUILayout.EndToggleGroup();
+
+            options.AutoGameStatsMetrics = EditorGUILayout.Toggle(
+                new GUIContent("Auto Game-Stats Metrics", "Periodically emit memory usage as Sentry metrics."),
+                options.AutoGameStatsMetrics);
+
+            options.AutoGcMetrics = EditorGUILayout.Toggle(
+                new GUIContent("Auto GC Metrics", "Periodically emit garbage-collection counts (per generation) " +
+                                                  "as Sentry metrics."),
+                options.AutoGcMetrics);
+
+            options.AutoNetworkMetrics = EditorGUILayout.Toggle(
+                new GUIContent("Auto Network Metrics", "Periodically emit basic multiplayer network metrics " +
+                                                       "(round-trip time and connected-client count) as Sentry " +
+                                                       "metrics. Requires the Netcode for GameObjects package."),
+                options.AutoNetworkMetrics);
+
+            options.GameStatsMetricSampleIntervalSeconds = EditorGUILayout.IntField(
+                new GUIContent("Game-Stats/GC Interval (s)", "How often, in seconds, the game-stats and GC " +
+                                                             "metrics are sampled." +
+                                                             "\nDefault: 60"),
+                options.GameStatsMetricSampleIntervalSeconds);
+            if (options.GameStatsMetricSampleIntervalSeconds < 1)
+            {
+                options.GameStatsMetricSampleIntervalSeconds = 1;
+            }
+
+            options.NetworkMetricsSampleIntervalSeconds = EditorGUILayout.IntField(
+                new GUIContent("Network Interval (s)", "How often, in seconds, the network metrics are sampled." +
+                                                       "\nDefault: 10"),
+                options.NetworkMetricsSampleIntervalSeconds);
+            if (options.NetworkMetricsSampleIntervalSeconds < 1)
+            {
+                options.NetworkMetricsSampleIntervalSeconds = 1;
+            }
+        }
+
+        EditorGUILayout.Space();
+        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
+        EditorGUILayout.Space();
+
+        {
             options.ReleaseOverride = EditorGUILayout.TextField(
                 new GUIContent("Override Release", "By default release is built from the Application info as: " +
                                                    "\"{productName}@{version}+{buildGUID}\". " +

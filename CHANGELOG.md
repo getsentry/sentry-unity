@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added experimental auto game-metrics. When enabled, the SDK periodically collects common performance metrics and sends them to Sentry via the metrics API. ([#2777](https://github.com/getsentry/sentry-unity/pull/2777))
+
 ### Fixes
 
 - The SDK now correctly synchronizes the `Environment` set on the `Scope` events coming from the native layer ([#2764](https://github.com/getsentry/sentry-unity/pull/2764))
