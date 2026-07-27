@@ -42,6 +42,7 @@ internal interface ISentryJava
     public void SetUser(SentryUser user);
     public void UnsetUser();
     public void SetTrace(SentryId traceId, SpanId spanId);
+    public void SetEnvironment(string? environment);
     void AddAttachment(string path, string fileName, string? contentType);
     void AddAttachmentBytes(byte[] data, string fileName, string? contentType);
     void ClearAttachments();
@@ -385,6 +386,19 @@ internal class SentryJava : ISentryJava
             // We have to explicitly cast to `(Double?)`
             sentry.CallStatic("setTrace", traceId.ToString(), spanId.ToString(), (Double?)null, (Double?)null);
         });
+    }
+
+    public void SetEnvironment(string? environment)
+    {
+        // TODO: sentry-java lacks this API
+        // RunJniSafe(() =>
+        // {
+        //     using var sentry = GetSentryJava();
+        //     sentry.CallStatic("configureScope", new ScopeCallback(scope =>
+        //     {
+        //         scope.Call("setEnvironment", environment);
+        //     }));
+        // });
     }
 
     public void AddAttachment(string path, string fileName, string? contentType)

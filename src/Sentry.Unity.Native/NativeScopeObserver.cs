@@ -52,6 +52,9 @@ public class NativeScopeObserver : ScopeObserver
     public override void SetTraceImpl(SentryId traceId, SpanId spanId) =>
         C.sentry_set_trace(traceId.ToString(), spanId.ToString());
 
+    public override void SetEnvironmentImpl(string? environment) =>
+        C.sentry_set_environment(environment);
+
     public override void AddFileAttachmentImpl(string filePath, string fileName, string? contentType) =>
         C.sentry_attach_file(filePath);
 

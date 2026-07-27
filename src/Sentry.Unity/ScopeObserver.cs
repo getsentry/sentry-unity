@@ -87,6 +87,14 @@ public abstract class ScopeObserver : IScopeObserver
 
     public abstract void SetTraceImpl(SentryId traceId, SpanId spanId);
 
+    public void SetEnvironment(string? environment)
+    {
+        _options.LogDebug("{0} Scope Sync - Setting Environment e:\"{1}\"", _name, environment);
+        SetEnvironmentImpl(environment);
+    }
+
+    public abstract void SetEnvironmentImpl(string? environment);
+
     public void AddAttachment(SentryAttachment attachment)
     {
         if (attachment.Content is FileAttachmentContent fileContent)
