@@ -58,8 +58,8 @@ function Test-UnityProject([string] $Path) {
 
     $major = [int]$versionMatch.Groups["major"].Value
     $minor = [int]$versionMatch.Groups["minor"].Value
-    if (($major -eq 6000 -and $minor -lt 5) -or ($major -eq 6 -and $minor -lt 5) -or ($major -ne 6000 -and $major -ne 6)) {
-        throw "Unity project at $Path uses $projectVersion. This harness requires Unity 6.5 (6000.5) or newer."
+    if (($major -eq 6000 -and $minor -lt 6) -or ($major -eq 6 -and $minor -lt 6) -or ($major -ne 6000 -and $major -ne 6)) {
+        throw "Unity project at $Path uses $projectVersion. This harness requires Unity 6.6 (6000.6) or newer."
     }
 
     $manifestFile = Join-Path $Path "Packages/manifest.json"
@@ -284,7 +284,7 @@ if (-not (Get-Command unity -ErrorAction SilentlyContinue)) {
 
 $ProjectPath = Join-Path $repoRoot "samples/unity-of-bugs-local"
 if (-not (Test-Path $ProjectPath -PathType Container)) {
-    throw "Local test project was not found at $ProjectPath. Create it with Unity 6.5+, com.unity.pipeline, and io.sentry.unity.dev linked to $repoRoot/package-dev."
+    throw "Local test project was not found at $ProjectPath. Create it with Unity 6.6+, com.unity.pipeline, and io.sentry.unity.dev linked to $repoRoot/package-dev."
 }
 
 $ProjectPath = (Resolve-Path $ProjectPath).Path
