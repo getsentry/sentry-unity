@@ -21,16 +21,17 @@ dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 # Build the Unity SDK (always from root, never target specific .csproj files)
 dotnet build
 
-# Run all tests (builds SDK first)
+# Local test harness: create and open samples/unity-of-bugs-local with Unity
+# 6.5+, com.unity.pipeline, and io.sentry.unity.dev linked to package-dev.
 pwsh scripts/run-tests.ps1
 
 # Run specific test types
-pwsh scripts/run-tests.ps1 -PlayMode
-pwsh scripts/run-tests.ps1 -EditMode
+pwsh scripts/run-tests.ps1 -Mode PlayMode
+pwsh scripts/run-tests.ps1 -Mode EditMode
 
 # Run filtered tests
 pwsh scripts/run-tests.ps1 -Filter "TestClassName"
-pwsh scripts/run-tests.ps1 -PlayMode -Filter "Throttler"
+pwsh scripts/run-tests.ps1 -Mode PlayMode -Filter "Throttler"
 
 # Skip build for faster iteration
 pwsh scripts/run-tests.ps1 -SkipBuild -Filter "MyTest"
@@ -587,6 +588,11 @@ Key options:
 
 ### Running All Tests
 
+`scripts/run-tests.ps1` is a local connected-editor harness. Before running it,
+open the target project with Unity Pipeline installed. It builds the SDK, waits
+for compilation, runs both modes separately, and exits nonzero for failed,
+inconclusive, or empty results.
+
 ```bash
 # Run all tests (builds SDK first)
 pwsh scripts/run-tests.ps1
@@ -663,7 +669,7 @@ dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 
 1. Make changes to source code in `src/`
 2. Run `dotnet build` to build and update `package-dev/`
-3. Run `pwsh scripts/run-tests.ps1` to build and run all tests
+3. Open the Pipeline-enabled sample, then run `pwsh scripts/run-tests.ps1` to build and run all tests
 4. Test changes using the sample project or integration tests
 5. Run `pwsh scripts/repack.ps1` before creating releases
 

@@ -97,7 +97,20 @@ Run from the command line:
 dotnet msbuild /t:"UnityPlayModeTest;UnityEditModeTest" /p:Configuration=Release test/Sentry.Unity.Tests
 ```
 
-Or use the TestRunner window inside the Unity Editor.
+For local development, create `samples/unity-of-bugs-local` from a Unity 6.5
+(6000.5) or newer project. Install `com.unity.pipeline`, link
+`io.sentry.unity.dev` to this checkout's `package-dev/`, open that project, then
+run the connected-editor test harness:
+
+```pwsh
+pwsh scripts/run-tests.ps1
+```
+
+It builds the SDK, waits for Unity to compile, runs EditMode and PlayMode tests
+separately, and exits with code `1` for failed, inconclusive, or empty runs.
+Use `-Mode EditMode`, `-Mode PlayMode`, or `-Filter "TestClassName"` to narrow
+the run. The command exits with `0` when all selected tests pass and `1`
+otherwise.
 
 ### Integration Tests
 
