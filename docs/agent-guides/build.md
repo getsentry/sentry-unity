@@ -3,7 +3,7 @@
 ## Toolchain
 
 - Use .NET SDK `10.0.302`; `global.json` disables roll-forward.
-- Run `dotnet workload restore` after cloning or changing SDK workloads.
+- Run `pwsh bootstrap.ps1` after cloning. It restores workloads and attempts optional local setup.
 - Unity is resolved from `samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt`; set `UNITY_VERSION` to override it.
 - `FindUnity` also honors `HubInstallDir` and `HubDefaultEditor` MSBuild properties.
 
@@ -18,17 +18,28 @@ dotnet build
 - Runtime assemblies are written to `package-dev/Runtime`.
 - Editor assemblies are written to `package-dev/Editor`.
 - `netstandard2.0` is the default runtime target; Unity `2022.*` and `6000.*` use `netstandard2.1`.
+- Does not download Sentry CLI or build native SDKs.
 
-## Native SDK Bootstrap
+## Bootstrap
 
-Fastest bootstrap path; requires `gh`:
+Run from repository root:
+
+```pwsh
+pwsh bootstrap.ps1
+```
+
+- Initializes submodules, restores workloads, downloads missing native artifacts and Sentry CLI, builds the managed SDK, and configures samples when matching environment variables are available.
+- Continues past recoverable failures and prints remediation for each stage.
+- `APPLE_ID` configures both sample projects' Apple Developer Team ID. `SENTRY_AUTH_TOKEN` configures shared Sentry CLI options.
+
+## Prebuilt Native SDKs
 
 ```sh
 dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 ```
 
 - Downloads missing artifacts from successful GitHub Actions CI runs, preferring `main` then current branch.
-- Missing plugins trigger host-specific local native builds during `dotnet build`; download is recommended, not required.
+- Refuses to overwrite tracked changes under `package-dev/Plugins/`.
 - Do not edit downloaded plugin artifacts in `package-dev/Plugins/`.
 
 ## Native Targets
