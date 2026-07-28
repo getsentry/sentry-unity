@@ -10,22 +10,29 @@ if (-not $Env:APPLE_ID)
 }
 
 $appleId = $Env:APPLE_ID
-$projectSettingsPath = "$PSScriptRoot/../samples/unity-of-bugs/ProjectSettings/ProjectSettings.asset"
-if (-not (Test-Path -Path $projectSettingsPath)) 
-{
-    Write-Error "ProjectSettings.asset not found at path: $projectSettingsPath"
-    exit
-}
+$projectSettingsPaths = @(
+    "$PSScriptRoot/../samples/unity-of-bugs/ProjectSettings/ProjectSettings.asset"
+    "$PSScriptRoot/../samples/unity-of-bugs-local/ProjectSettings/ProjectSettings.asset"
+)
 
-$content = Get-Content -Path $projectSettingsPath -Raw
-if ($content -match '(\s*)appleDeveloperTeamID:.*') 
+foreach ($projectSettingsPath in $projectSettingsPaths)
 {
-    $updatedContent = $content -replace '(\s*)appleDeveloperTeamID:.*', "`${1}appleDeveloperTeamID: $appleId"
-    Set-Content -Path $projectSettingsPath -Value $updatedContent
-    Write-Output "Successfully updated appleDeveloperTeamID in ProjectSettings.asset"
-} 
-else 
-{
-    Write-Error "Could not find appleDeveloperTeamID property in ProjectSettings.asset"
-    exit
+    if (-not (Test-Path -Path $projectSettingsPath))
+    {
+        Write-Error "ProjectSettings.asset not found at path: $projectSettingsPath"
+        exit
+    }
+
+    $content = Get-Content -Path $projectSettingsPath -Raw
+    if ($content -match '(\s*)appleDeveloperTeamID:.*')
+    {
+        $updatedContent = $content -replace '(\s*)appleDeveloperTeamID:.*', "`${1}appleDeveloperTeamID: $appleId"
+        Set-Content -Path $projectSettingsPath -Value $updatedContent
+        Write-Output "Successfully updated appleDeveloperTeamID in ProjectSettings.asset"
+    }
+    else
+    {
+        Write-Error "Could not find appleDeveloperTeamID property in ProjectSettings.asset"
+        exit
+    }
 }
