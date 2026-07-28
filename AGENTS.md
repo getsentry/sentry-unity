@@ -3,21 +3,23 @@
 ## Build
 
 ```sh
-dotnet workload restore
+pwsh bootstrap.ps1
 dotnet build
 ```
 
 - Run standard SDK builds from repository root.
+- Bootstrap initializes submodules, restores workloads, and attempts optional native, CLI, and sample setup.
 - Build outputs and native plugins live in `package-dev/`; do not hand-edit generated assemblies or downloaded native artifacts.
 - See `docs/agent-guides/build.md` for target ownership, Unity selection, and local native builds.
 
-## Prebuilt Native SDKs
+## Native SDKs
 
 ```sh
 dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 ```
 
-- Downloads prebuilt native SDKs from CI. Fastest bootstrap path; requires `gh`.
+- Downloads prebuilt native SDKs from CI. Bootstrap attempts this automatically; requires `gh`.
+- `dotnet build` never downloads or builds native SDKs. Use a dedicated target when artifacts are missing.
 
 ## Test
 
