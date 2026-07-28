@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Deprecations
+
+- The C# ANR watchdog and its configuration options (`AnrDetectionEnabled`, `AnrTimeout`, and `DisableAnrIntegration`) are now marked as `[Obsolete]`. Use `Experimental.EnableNativeAppHangTracking` instead. ([#2784](https://github.com/getsentry/sentry-unity/pull/2784))
+
 ### Fixes
 
 - The SDK now correctly synchronizes the `Environment` set on the `Scope` events coming from the native layer ([#2764](https://github.com/getsentry/sentry-unity/pull/2764))
