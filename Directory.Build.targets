@@ -77,10 +77,6 @@
     <RemoveDir Directories="$(PlayerBuildPath)" />
   </Target>
 
-  <Target Name="DownloadCLI" BeforeTargets="BeforeBuild" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND !Exists('$(RepoRoot)package-dev/Editor/sentry-cli')">
-    <Exec Command="pwsh &quot;$(RepoRoot)scripts/download-sentry-cli.ps1&quot;"></Exec>
-  </Target>
-
   <!-- Even with a successful build, Unity will error on 'usbmuxd' or log out to std-error which breaks msbuild.
 We need to run a unity build to restore the test packages and for that reason we'll ignore errors here and assume a later step will validate the build is actually working:
   The offending error:

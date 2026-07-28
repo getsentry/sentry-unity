@@ -43,7 +43,7 @@ $SDKs = @(
         Name = "Cocoa"
         Destination = $ArtifactsDestination
         CheckFiles = @(
-            "iOS/Sentry.xcframework~/Info.plist",
+            "iOS/SentryObjC.xcframework~/Info.plist",
             "macOS/Sentry~/Sentry.dylib"
         )
     },
@@ -148,6 +148,12 @@ function Try-DownloadSDK {
     return $true
 }
 
+function Test-TrackedPluginChanges {
+    $unstaged = git -C $RepoRoot diff --name-only -- package-dev/Plugins
+    $staged = git -C $RepoRoot diff --cached --name-only -- package-dev/Plugins
+    return [bool]($unstaged -or $staged)
+}
+
 # Main logic
 Write-Host "Checking native SDK status..." -ForegroundColor Cyan
 Write-Host ""
@@ -169,6 +175,10 @@ Write-Host ""
 if ($sdksToDownload.Count -eq 0) {
     Write-Host "All native SDKs are already present." -ForegroundColor Green
     exit 0
+}
+
+if (Test-TrackedPluginChanges) {
+    throw "package-dev/Plugins has tracked changes. Commit, stash, or revert them before downloading native SDKs."
 }
 
 # Primary source is main's latest successful run. For artifacts not yet on
@@ -200,16 +210,6 @@ if ($failed.Count -gt 0) {
     $names = $failed -join ', '
     Write-Error "Could not download these SDK artifacts: $names. Push the branch so CI publishes the artifact, or build locally with Build<Name>SDK."
     exit 1
-}
-
-Write-Host ""
-Write-Host "Restoring package-dev/Plugins to latest git commit..." -ForegroundColor Yellow
-Push-Location $RepoRoot
-try {
-    git restore package-dev/Plugins
-}
-finally {
-    Pop-Location
 }
 
 Write-Host ""
