@@ -79,7 +79,7 @@ public static class SentryNativeAndroid
             Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
             SentryMonoBehaviour.Instance.StartAppHangHeartbeat(SentryNative.AppHangHeartbeat);
             Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-native handles app hang detection.");
-            options.DisableAnrIntegration();
+            options.RemoveIntegration<AnrIntegration>();
         }
 
         options.CrashedLastRun = () =>
