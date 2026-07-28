@@ -188,7 +188,7 @@ public sealed class SentryUnityOptions : SentryOptions
 
     /// <summary>
     /// Enables app hang detection on iOS through <c>sentry-cocoa</c>, which monitors the main thread.
-    /// App hang detection on macOS, Windows, and Linux is experimental and controlled separately via 
+    /// App hang detection on Android, macOS, Windows, and Linux is experimental and controlled separately via
     /// <c>Experimental.EnableNativeAppHangTracking</c>.
     /// </summary>
     public bool EnableAppHangTracking { get; set; } = true;

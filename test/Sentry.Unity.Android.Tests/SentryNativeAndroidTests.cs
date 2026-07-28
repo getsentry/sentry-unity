@@ -111,6 +111,25 @@ public class SentryNativeAndroidTests
     }
 
     [Test]
+    public void AppHangHeartbeat_InvokesNativeHeartbeat()
+    {
+        var heartbeatCalled = false;
+        var originalStrategy = Interlocked.Exchange(ref SentryNative.AppHangHeartbeatStrategy,
+            () => heartbeatCalled = true);
+
+        try
+        {
+            SentryNative.AppHangHeartbeat();
+
+            Assert.True(heartbeatCalled);
+        }
+        finally
+        {
+            Interlocked.Exchange(ref SentryNative.AppHangHeartbeatStrategy, originalStrategy);
+        }
+    }
+
+    [Test]
     public void Configure_InstallationIdReturned_SetsDefaultUserId()
     {
         var options = new SentryUnityOptions();
