@@ -115,6 +115,9 @@ internal static class SentryNativeBridge
         {
             Logger?.LogDebug("Setting the native logger");
             sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
+
+            // Crash handlers must not invoke Unity's managed logger from the faulting thread.
+            sentry_options_set_logger_enabled_when_crashed(cOptions, 0);
         }
         else
         {
@@ -213,6 +216,9 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_logger(IntPtr options, sentry_logger_function_t logger, IntPtr userData);
+
+    [DllImport(SentryLib)]
+    private static extern void sentry_options_set_logger_enabled_when_crashed(IntPtr options, int enabled);
 
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
     [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
