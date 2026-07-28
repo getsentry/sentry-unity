@@ -117,7 +117,7 @@ public static class BuildPostProcess
 
         try
         {
-            // The Sentry.xcframework ends in '~' to hide it from Unity. This prevents Unity from exporting it with the Xcode build.
+            // The SentryObjC.xcframework ends in '~' to hide it from Unity. This prevents Unity from exporting it with the Xcode build.
             // Ideally, we would let Unity copy this over but:
             // - Detection of `.xcframework` as datatype and non-folder happened in Unity 2021
             // - Without a `.meta` file we cannot opt-in embedding the framework

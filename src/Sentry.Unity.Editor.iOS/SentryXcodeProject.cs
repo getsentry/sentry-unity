@@ -14,7 +14,7 @@ namespace Sentry.Unity.Editor.iOS;
 
 internal class SentryXcodeProject : IDisposable
 {
-    internal const string FrameworkName = "Sentry.xcframework";
+    internal const string FrameworkName = "SentryObjC.xcframework";
     internal const string BridgeName = "SentryNativeBridge.m";
     internal const string NoOpBridgeName = "SentryNativeBridgeNoOp.m";
     internal const string OptionsName = "SentryOptions.m";
@@ -72,8 +72,10 @@ fi";
         _project = Activator.CreateInstance(_pbxProjectType);
 
         _projectRoot = projectRoot;
-        _projectPath = (string)_pbxProjectType.GetMethod("GetPBXProjectPath", BindingFlags.Public | BindingFlags.Static)
-            .Invoke(null, new[] { _projectRoot });
+        _projectPath = Directory.Exists(_projectRoot)
+            ? (string)_pbxProjectType.GetMethod("GetPBXProjectPath", BindingFlags.Public | BindingFlags.Static)
+                .Invoke(null, new[] { _projectRoot })
+            : Path.Combine(_projectRoot, "Unity-iPhone.xcodeproj", "project.pbxproj");
     }
 
     public static SentryXcodeProject Open(string path, IDiagnosticLogger? logger = null)

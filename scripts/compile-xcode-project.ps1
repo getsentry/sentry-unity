@@ -5,7 +5,8 @@ param (
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
 $ProjectName = "Unity-iPhone"
-$XcodeArtifactPath = "samples/IntegrationTest/Build"
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+$XcodeArtifactPath = Join-Path $repoRoot "samples/IntegrationTest/Build"
 $ArchivePath = "$XcodeArtifactPath/archive"
 
 MakeExecutable "$XcodeArtifactPath/MapFileParser.sh"

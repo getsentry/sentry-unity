@@ -221,6 +221,8 @@ public class AndroidManifestConfiguration
         androidManifest.SetAnr(_options.AndroidNativeAnrEnabled);
         androidManifest.SetPersistentScopeObserver(_options.AndroidNativeAnrEnabled);
         androidManifest.SetAttachAnrThreadDump(_options.AndroidAttachAnrThreadDump);
+        androidManifest.SetNdkAppHangTracking(_options.Experimental.EnableNativeAppHangTracking);
+        androidManifest.SetNdkAppHangTimeout((long)Math.Max(0, _options.AppHangTimeout.TotalMilliseconds));
         androidManifest.SetTombstone(_options.AndroidTombstoneEnabled);
         androidManifest.SetTombstoneReportHistorical(_options.AndroidReportHistoricalTombstones);
         // Disable user interaction tracking to prevent conflicts with VR platforms (e.g., Oculus InputHooks)
@@ -500,6 +502,12 @@ internal class AndroidManifest : AndroidXmlDocument
 
     internal void SetAttachAnrThreadDump(bool attachAnrThreadDump)
         => SetMetaData($"{SentryPrefix}.anr.attach-thread-dumps", attachAnrThreadDump.ToString());
+
+    internal void SetNdkAppHangTracking(bool enableNdkAppHangTracking)
+        => SetMetaData($"{SentryPrefix}.ndk.app-hang.enable", enableNdkAppHangTracking.ToString());
+
+    internal void SetNdkAppHangTimeout(long ndkAppHangTimeout)
+        => SetMetaData($"{SentryPrefix}.ndk.app-hang.timeout-interval-millis", ndkAppHangTimeout.ToString(CultureInfo.InvariantCulture));
 
     internal void SetTombstone(bool enableTombstone)
         => SetMetaData($"{SentryPrefix}.tombstone.enable", enableTombstone.ToString());

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using NUnit.Framework;
 
@@ -5,28 +6,36 @@ namespace Sentry.Unity.Editor.iOS.Tests;
 
 public class NativeOptionsTests
 {
+    private string _testOptionsFilePath = null!;
+
+    [SetUp]
+    public void SetUp() => _testOptionsFilePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.m");
+
+    [TearDown]
+    public void TearDown()
+    {
+        if (File.Exists(_testOptionsFilePath))
+        {
+            File.Delete(_testOptionsFilePath);
+        }
+    }
+
     [Test]
     public void CreateOptionsFile_NewSentryOptions_FileCreated()
     {
-        const string testOptionsFileName = "testOptions.m";
+        NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions());
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
-
-        Assert.IsTrue(File.Exists(testOptionsFileName));
-
-        File.Delete(testOptionsFileName);
+        Assert.IsTrue(File.Exists(_testOptionsFilePath));
     }
 
     [Test]
     public void CreateOptionsFile_NewSentryOptions_ContainsBaseOptions()
     {
-        const string testOptionsFileName = "testOptions.m";
+        NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions());
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
+        Assert.IsTrue(File.Exists(_testOptionsFilePath)); // Sanity check
 
-        Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
-
-        var options = File.ReadAllText(testOptionsFileName);
+        var options = File.ReadAllText(_testOptionsFilePath);
         StringAssert.Contains("dsn", options);
         StringAssert.Contains("debug", options);
         StringAssert.Contains("diagnosticLevel", options);
@@ -39,92 +48,66 @@ public class NativeOptionsTests
         StringAssert.Contains("attachScreenshot", options);
         StringAssert.Contains("release", options);
         StringAssert.Contains("environment", options);
-
-        File.Delete(testOptionsFileName);
     }
 
     [Test]
     public void CreateOptionsFile_NewSentryOptions_ContainsSdkNameSetting()
     {
-        const string testOptionsFileName = "testOptions.m";
+        NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions());
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions());
+        Assert.IsTrue(File.Exists(_testOptionsFilePath)); // Sanity check
 
-        Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
-
-        var nativeOptions = File.ReadAllText(testOptionsFileName);
+        var nativeOptions = File.ReadAllText(_testOptionsFilePath);
         StringAssert.Contains("sentry.cocoa.unity", nativeOptions);
-
-        File.Delete(testOptionsFileName);
     }
 
     [Test]
     public void CreateOptionsFile_EnableAppHangTracking_SetsYes()
     {
-        const string testOptionsFileName = "testOptions.m";
+        NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions { EnableAppHangTracking = true });
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { EnableAppHangTracking = true });
-
-        var nativeOptions = File.ReadAllText(testOptionsFileName);
+        var nativeOptions = File.ReadAllText(_testOptionsFilePath);
         StringAssert.Contains("@\"enableAppHangTracking\": @YES", nativeOptions);
-
-        File.Delete(testOptionsFileName);
     }
 
     [Test]
     public void CreateOptionsFile_AppHangTrackingDisabled_SetsNo()
     {
-        const string testOptionsFileName = "testOptions.m";
+        NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions { EnableAppHangTracking = false });
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { EnableAppHangTracking = false });
-
-        var nativeOptions = File.ReadAllText(testOptionsFileName);
+        var nativeOptions = File.ReadAllText(_testOptionsFilePath);
         StringAssert.Contains("@\"enableAppHangTracking\": @NO", nativeOptions);
-
-        File.Delete(testOptionsFileName);
     }
 
     [Test]
     public void CreateOptionsFile_AppHangTimeout_WrittenAsSeconds()
     {
-        const string testOptionsFileName = "testOptions.m";
-
-        NativeOptions.CreateFile(testOptionsFileName,
+        NativeOptions.CreateFile(_testOptionsFilePath,
             new SentryUnityOptions { AppHangTimeout = System.TimeSpan.FromMilliseconds(7500) });
 
-        var nativeOptions = File.ReadAllText(testOptionsFileName);
+        var nativeOptions = File.ReadAllText(_testOptionsFilePath);
         StringAssert.Contains("@\"appHangTimeoutInterval\": @7.5", nativeOptions);
-
-        File.Delete(testOptionsFileName);
     }
 
     [Test]
     public void CreateOptionsFile_FilterBadGatewayEnabled_AddsFiltering()
     {
-        const string testOptionsFileName = "testOptions.m";
+        NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions { FilterBadGatewayExceptions = true });
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { FilterBadGatewayExceptions = true });
+        Assert.IsTrue(File.Exists(_testOptionsFilePath)); // Sanity check
 
-        Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
-
-        var nativeOptions = File.ReadAllText(testOptionsFileName);
+        var nativeOptions = File.ReadAllText(_testOptionsFilePath);
         StringAssert.Contains("event.request.url containsString:@\"operate-sdk-telemetry.unity3d.com\"", nativeOptions);
-
-        File.Delete(testOptionsFileName);
     }
 
     [Test]
     public void CreateOptionsFile_FilterBadGatewayDisabled_DoesNotAddFiltering()
     {
-        const string testOptionsFileName = "testOptions.m";
+        NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions { FilterBadGatewayExceptions = false });
 
-        NativeOptions.CreateFile(testOptionsFileName, new SentryUnityOptions { FilterBadGatewayExceptions = false });
+        Assert.IsTrue(File.Exists(_testOptionsFilePath)); // Sanity check
 
-        Assert.IsTrue(File.Exists(testOptionsFileName)); // Sanity check
-
-        var nativeOptions = File.ReadAllText(testOptionsFileName);
+        var nativeOptions = File.ReadAllText(_testOptionsFilePath);
         StringAssert.DoesNotContain("event.request.url containsString:@\"operate-sdk-telemetry.unity3d.com\"", nativeOptions);
-
-        File.Delete(testOptionsFileName);
     }
 }

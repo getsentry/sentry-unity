@@ -64,7 +64,7 @@ internal static class AdvancedTab
 
                 options.EnableAppHangTracking = EditorGUILayout.Toggle(
                     new GUIContent("Enable",
-                        "Enables app hang detection on iOS via sentry-cocoa. App hang detection on macOS, " +
+                        "Enables app hang detection on iOS via sentry-cocoa. App hang detection on Android, macOS, " +
                         "Windows, and Linux is experimental and controlled separately in the Experimental section."),
                     options.EnableAppHangTracking);
 
@@ -275,9 +275,9 @@ internal static class AdvancedTab
             options.Experimental.EnableNativeAppHangTracking = EditorGUILayout.Toggle(
                 new GUIContent(
                     "Native App Hang Tracking",
-                    "Enables app hang detection via sentry-native on macOS, Windows, and Linux. Requires the " +
-                    "corresponding platform backend above to be set to 'Native'. Shares the App Hang Timeout " +
-                    "configured in the App Hang Tracking section. iOS is unaffected by this option."),
+                    "Enables app hang detection via sentry-native on Android, macOS, Windows, and Linux. Android " +
+                    "requires NDK Integration; macOS requires its backend above to be set to 'Native'. Shares the " +
+                    "App Hang Timeout configured in the App Hang Tracking section. iOS is unaffected by this option."),
                 options.Experimental.EnableNativeAppHangTracking);
         }
         EditorGUI.indentLevel--;

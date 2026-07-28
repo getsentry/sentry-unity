@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -20,11 +21,13 @@ namespace Sentry.Unity.Editor.iOS.Tests
 
             Assert.That(entryPoints, Is.Not.Empty); // Sanity check
 
-            const string? bridgePath = "../../package-dev/Plugins/iOS/SentryNativeBridge.m";
-            const string? noOpBridgePath = "../../package-dev/Plugins/iOS/SentryNativeBridgeNoOp.m";
+            var packageRoot = Path.GetFullPath(Path.Combine(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..", ".."));
+            var bridgePath = Path.Combine(packageRoot, "Plugins", "iOS", "SentryNativeBridge.m");
+            var noOpBridgePath = Path.Combine(packageRoot, "Plugins", "iOS", "SentryNativeBridgeNoOp.m");
 
-            var bridgeContent = System.IO.File.ReadAllText(bridgePath);
-            var noOpBridgeContent = System.IO.File.ReadAllText(noOpBridgePath);
+            var bridgeContent = File.ReadAllText(bridgePath);
+            var noOpBridgeContent = File.ReadAllText(noOpBridgePath);
 
             foreach (var entryPoint in entryPoints)
             {
