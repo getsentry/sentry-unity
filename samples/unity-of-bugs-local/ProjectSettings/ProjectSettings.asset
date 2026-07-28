@@ -230,7 +230,7 @@ PlayerSettings:
   metalAPIValidation: 1
   iOSRenderExtraFrameOnPause: 0
   iosCopyPluginsCodeInsteadOfSymlink: 0
-  appleDeveloperTeamID: 97JCY7859U
+  appleDeveloperTeamID:
   iOSManualSigningProvisioningProfileID: 
   tvOSManualSigningProvisioningProfileID: 
   iOSManualSigningProvisioningProfileType: 0
@@ -926,7 +926,5 @@ PlayerSettings:
   playerDataPath: 
   forceSRGBBlit: 1
   virtualTexturingSupportEnabled: 0
-
-
 
 
