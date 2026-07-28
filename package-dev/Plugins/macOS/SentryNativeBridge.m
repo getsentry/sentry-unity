@@ -44,6 +44,12 @@ static Class SentryObjCId;
 static Class SentryObjCSpanId;
 static Class SentryObjCHttpStatusCodeRange;
 
+typedef NS_ENUM(NSInteger, SentryObjCLastRunStatus) {
+    SentryObjCLastRunStatusUnknown = 0,
+    SentryObjCLastRunStatusDidNotCrash,
+    SentryObjCLastRunStatusDidCrash,
+};
+
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
     name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #name);                                    \
     if (!name) {                                                                                   \
@@ -188,9 +194,11 @@ void SentryNativeBridgeSetSdkName()
 int SentryNativeBridgeCrashedLastRun()
 {
     @try {
-        return [SentryObjCSDK performSelector:@selector(crashedLastRun)] ? 1 : 0;
+        NSInteger lastRunStatus =
+            ((NSInteger (*)(id, SEL))objc_msgSend)(SentryObjCSDK, @selector(lastRunStatus));
+        return lastRunStatus == SentryObjCLastRunStatusDidCrash ? 1 : 0;
     } @catch (NSException *exception) {
-        NSLog(@"Sentry (bridge): failed to get crashedLastRun: %@", exception.reason);
+        NSLog(@"Sentry (bridge): failed to get lastRunStatus: %@", exception.reason);
     }
     return -1;
 }
