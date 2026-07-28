@@ -10,13 +10,7 @@ The following tools are **required** before you can build and develop the SDK:
 | Unity with iOS Build Support | The iOS module is required by `Sentry.Unity.Editor.iOS`. Install via Unity Hub. |
 | [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) | Version pinned in [`global.json`](global.json) |
 | PowerShell | Install via `dotnet tool install --global PowerShell` |
-| [GitHub CLI](https://github.com/cli/cli/releases) | Required to download prebuilt native SDKs. On macOS: `brew install gh` |
-
-After installing the .NET SDK and PowerShell, restore the required workloads:
-
-```sh
-dotnet workload restore
-```
+| [GitHub CLI](https://github.com/cli/cli/releases) | Recommended for downloading prebuilt native SDKs. On macOS: `brew install gh` |
 
 ### Optional Unity Modules
 
@@ -34,25 +28,25 @@ git clone https://github.com/getsentry/sentry-unity.git
 cd sentry-unity
 ```
 
-### 2. Download Prebuilt Native SDKs
+### 2. Bootstrap
 
-This step downloads prebuilt Android, Cocoa/iOS/macOS, Windows, and Linux native artifacts from the latest successful CI build. This is the fastest way to get started.
+Run the bootstrap script to initialize submodules, restore workloads, download prebuilt native SDKs and Sentry CLI, build the managed SDK, and configure optional sample settings.
 
-```sh
-dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
+```pwsh
+pwsh bootstrap.ps1
 ```
 
-### 3. Build
+Bootstrap continues after recoverable failures and prints the command needed to retry each step. Set `APPLE_ID` to configure Apple signing and `SENTRY_AUTH_TOKEN` to configure CLI symbol upload before running it.
+
+### 3. Build Changes
 
 ```sh
 dotnet build
 ```
 
-That's it! The SDK is now built and ready for development.
+`dotnet build` compiles the managed SDK only. It does not download dependencies or build native SDKs.
 
-> **Note:** Submodules ([sentry-dotnet](https://github.com/getsentry/sentry-dotnet), [Ben.Demystifier](https://github.com/benaadams/Ben.Demystifier)) are restored automatically. If this fails, run `git submodule update --init --recursive`.
-
-> **Note:** The build also downloads and caches Sentry CLI and the Sentry SDK for Cocoa automatically.
+> **Note:** Bootstrap initializes submodules. To recover from a failed submodule update, run `git submodule update --init --recursive`.
 
 ## Building Native SDKs Locally (Optional)
 
@@ -91,10 +85,9 @@ Required tools:
 
 ### Unit Tests (PlayMode and EditMode)
 
-Run locally with the connected-editor harness. Create `samples/unity-of-bugs-local`
-from a Unity 6.6 (6000.6) or newer project. Install `com.unity.pipeline`, link
-`io.sentry.unity.dev` to this checkout's `package-dev/`, open that project, then
-run the connected-editor test harness:
+Run locally with the connected-editor harness. Open the tracked Unity 6
+`samples/unity-of-bugs-local` project after bootstrap, then run the connected-editor
+test harness:
 
 ```pwsh
 pwsh scripts/run-tests.ps1
@@ -125,7 +118,8 @@ The wrapper locates Unity, builds and packages the SDK, then calls the core inte
 
 - `package-dev/` - Development UPM package
 - `package/` - Release package template (used for publishing)
-- `samples/unity-of-bugs/` - Sample Unity project for local testing
+- `samples/unity-of-bugs/` - Unity 2021 compatibility sample project
+- `samples/unity-of-bugs-local/` - Unity 6 development sample project with shared assets
 - `src/` - Source code
 - `test/` - Tests and integration test scripts
 
@@ -133,7 +127,7 @@ The wrapper locates Unity, builds and packages the SDK, then calls the core inte
 
 1. Open `Sentry.Unity.sln` in your IDE (e.g., Rider, Visual Studio)
 2. Build the solution — artifacts are placed in `package-dev/`
-3. Open `samples/unity-of-bugs` via Unity Hub
+3. Open `samples/unity-of-bugs-local` via Unity Hub
 4. Configure via Tools → Sentry and enter your DSN
 5. Click Play and test your changes
 
