@@ -6,6 +6,8 @@
     This local test harness connects to the Unity Editor already running the
     target project. It validates the test result payload and exits with code 1
     for failed, inconclusive, empty, or malformed test runs.
+    Filter accepts literal, case-insensitive partial test names. Unity CLI does
+    not support regular expression filters.
 
 .EXAMPLE
     pwsh scripts/run-tests.ps1
@@ -27,11 +29,6 @@ param(
 Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
 
-trap {
-    Write-Error $_.Exception.Message
-    exit 1
-}
-
 $repoRoot = (Resolve-Path "$PSScriptRoot/..").Path
 $testTimeout = 300
 
@@ -50,7 +47,12 @@ function Test-UnityProject([string] $Path) {
         throw "Unity project at $Path has no ProjectSettings/ProjectVersion.txt."
     }
 
-    $projectVersion = (Get-Content $projectVersionFile -Raw | Select-String -Pattern "m_EditorVersion:\s*(.+)").Matches.Groups[1].Value.Trim()
+    $projectVersionMatch = [regex]::Match((Get-Content $projectVersionFile -Raw), "m_EditorVersion:\s*(.+)")
+    if (-not $projectVersionMatch.Success) {
+        throw "Could not parse Unity version from $projectVersionFile."
+    }
+
+    $projectVersion = $projectVersionMatch.Groups[1].Value.Trim()
     $versionMatch = [regex]::Match($projectVersion, "^(?<major>\d+)\.(?<minor>\d+)")
     if (-not $versionMatch.Success) {
         throw "Could not parse Unity version '$projectVersion' from $projectVersionFile."
@@ -58,7 +60,7 @@ function Test-UnityProject([string] $Path) {
 
     $major = [int]$versionMatch.Groups["major"].Value
     $minor = [int]$versionMatch.Groups["minor"].Value
-    if (($major -eq 6000 -and $minor -lt 6) -or ($major -eq 6 -and $minor -lt 6) -or ($major -ne 6000 -and $major -ne 6)) {
+    if (($major -ne 6 -and $major -ne 6000) -or $minor -lt 6) {
         throw "Unity project at $Path uses $projectVersion. This harness requires Unity 6.6 (6000.6) or newer."
     }
 
@@ -67,12 +69,7 @@ function Test-UnityProject([string] $Path) {
         throw "Unity project at $Path has no Packages/manifest.json."
     }
 
-    try {
-        $manifest = Get-Content $manifestFile -Raw | ConvertFrom-Json
-    }
-    catch {
-        throw "Could not parse $manifestFile."
-    }
+    $manifest = Get-Content $manifestFile -Raw | ConvertFrom-Json
 
     if (-not $manifest.dependencies."com.unity.pipeline") {
         throw "Unity project at $Path must install com.unity.pipeline before this harness can connect."
@@ -103,7 +100,6 @@ function Test-UnityProject([string] $Path) {
     if ($packagePath -ne $expectedPackagePath) {
         throw "io.sentry.unity.dev points to $packagePath. This harness requires $expectedPackagePath so it tests this checkout's SDK build."
     }
-
 }
 
 function Invoke-UnityCommand([string] $Command, [string[]] $CommandArguments = @(), [int] $CommandTimeout = 30) {
@@ -139,20 +135,23 @@ function Wait-ForEditorReady {
     while ((Get-Date) -lt $deadline) {
         try {
             $status = Invoke-UnityCommand "editor_status"
-            if ($status.status -eq "ready" -and -not $status.compiling -and -not $status.domainReloadInProgress) {
-                if ($status.playMode -ne "stopped") {
-                    throw "Unity Editor must be stopped before running tests. Current play mode: $($status.playMode)."
-                }
-
-                if ((Resolve-Path $status.projectPath).Path -ne $ProjectPath) {
-                    throw "Unity Pipeline is connected to $($status.projectPath), not $ProjectPath."
-                }
-
-                return
-            }
         }
         catch {
             $lastError = $_
+            Start-Sleep -Seconds 1
+            continue
+        }
+
+        if ($status.status -eq "ready" -and -not $status.compiling -and -not $status.domainReloadInProgress) {
+            if ($status.playMode -ne "stopped") {
+                throw "Unity Editor must be stopped before running tests. Current play mode: $($status.playMode)."
+            }
+
+            if ((Resolve-Path $status.projectPath).Path -ne $ProjectPath) {
+                throw "Unity Pipeline is connected to $($status.projectPath), not $ProjectPath."
+            }
+
+            return
         }
 
         Start-Sleep -Seconds 1
@@ -179,17 +178,19 @@ function Wait-ForRecompile {
             if ($status -is [string]) {
                 $status = $status | ConvertFrom-Json
             }
-
-            if ($status.status -in @("completed", "up_to_date", "idle")) {
-                return
-            }
-
-            if ($status.status -eq "failed") {
-                throw "Unity script recompilation failed."
-            }
         }
         catch {
             $lastError = $_
+            Start-Sleep -Seconds 1
+            continue
+        }
+
+        if ($status.failed) {
+            throw "Unity script recompilation failed:`n$($status.errors -join "`n")"
+        }
+
+        if ($status.status -in @("completed", "up_to_date", "idle")) {
+            return
         }
 
         Start-Sleep -Seconds 1
@@ -211,28 +212,30 @@ function Wait-ForPlayModeTests {
             if ($status -is [string]) {
                 $status = $status | ConvertFrom-Json
             }
-
-            if ($status.status -eq "completed") {
-                return [pscustomobject]@{
-                    Mode = "PlayMode"
-                    Duration = $status.duration
-                    Summary = [pscustomobject]@{
-                        Total = $status.summary.total
-                        Passed = $status.summary.passed
-                        Failed = $status.summary.failed
-                        Skipped = $status.summary.skipped
-                        Inconclusive = $status.summary.inconclusive
-                    }
-                    Results = $status.results
-                }
-            }
-
-            if ($status.status -notin @("running", "queued")) {
-                throw "Unity PlayMode tests ended with status '$($status.status)'."
-            }
         }
         catch {
             $lastError = $_
+            Start-Sleep -Seconds 1
+            continue
+        }
+
+        if ($status.status -eq "completed") {
+            return [pscustomobject]@{
+                Mode = "PlayMode"
+                Duration = $status.duration
+                Summary = [pscustomobject]@{
+                    Total = $status.summary.total
+                    Passed = $status.summary.passed
+                    Failed = $status.summary.failed
+                    Skipped = $status.summary.skipped
+                    Inconclusive = $status.summary.inconclusive
+                }
+                Results = $status.results
+            }
+        }
+
+        if ($status.status -notin @("running", "queued")) {
+            throw "Unity PlayMode tests ended with status '$($status.status)': $($status.message)"
         }
 
         Start-Sleep -Seconds 1
