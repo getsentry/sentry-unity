@@ -87,11 +87,7 @@ else {
     Add-Result -Status "WARN" -Name "Prebuilt native SDKs" -Detail "dotnet is unavailable." -Fix "Install the SDK pinned in global.json, then rerun: pwsh bootstrap.ps1"
 }
 
-$cliDirectory = Join-Path $repoRoot "package-dev/Editor/sentry-cli"
-if (Test-Path $cliDirectory) {
-    Add-Result -Status "PASS" -Name "Sentry CLI" -Detail "Already downloaded."
-}
-elseif (Test-Path (Join-Path $repoRoot "modules/sentry-cli.properties")) {
+if (Test-Path (Join-Path $repoRoot "modules/sentry-cli.properties")) {
     Invoke-Stage -Name "Sentry CLI" -Action { & (Join-Path $repoRoot "scripts/download-sentry-cli.ps1") } -FailureStatus "WARN" -Fix "Check network access, then rerun: pwsh bootstrap.ps1"
 }
 else {
@@ -105,12 +101,16 @@ else {
     Add-Result -Status "FAIL" -Name "Managed SDK build" -Detail "dotnet is unavailable." -Fix "Install the SDK pinned in global.json, then run: dotnet build"
 }
 
-$appleSettings = Join-Path $repoRoot "samples/unity-of-bugs-local/ProjectSettings/ProjectSettings.asset"
+$appleSettings = @(
+    (Join-Path $repoRoot "samples/unity-of-bugs/ProjectSettings/ProjectSettings.asset"),
+    (Join-Path $repoRoot "samples/unity-of-bugs-local/ProjectSettings/ProjectSettings.asset")
+)
+$missingAppleSettings = @($appleSettings | Where-Object { -not (Test-Path $_) })
 if (-not $Env:APPLE_ID) {
     Add-Result -Status "SKIP" -Name "Apple Developer Team ID" -Detail "APPLE_ID is not set." -Fix "Set APPLE_ID, then rerun: pwsh bootstrap.ps1"
 }
-elseif (-not (Test-Path $appleSettings)) {
-    Add-Result -Status "WARN" -Name "Apple Developer Team ID" -Detail "Local sample project settings are unavailable." -Fix "Restore samples/unity-of-bugs-local, then rerun: pwsh bootstrap.ps1"
+elseif ($missingAppleSettings.Count -gt 0) {
+    Add-Result -Status "WARN" -Name "Apple Developer Team ID" -Detail "Sample project settings are unavailable: $($missingAppleSettings -join ', ')." -Fix "Restore the sample projects, then rerun: pwsh bootstrap.ps1"
 }
 else {
     Invoke-Stage -Name "Apple Developer Team ID" -Action { & (Join-Path $repoRoot "scripts/samples-setup-apple-id.ps1") } -FailureStatus "WARN" -Fix "Confirm APPLE_ID is a valid Apple Developer Team ID, then rerun: pwsh bootstrap.ps1"
