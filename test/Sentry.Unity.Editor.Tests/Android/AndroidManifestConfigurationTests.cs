@@ -186,6 +186,19 @@ public class AndroidManifestTests
     }
 
     [Test]
+    public void ModifyManifest_NativeAppHangTracking_UsesExperimentalConfiguration()
+    {
+        _fixture.SentryUnityOptions!.Experimental.EnableNativeAppHangTracking = true;
+        _fixture.SentryUnityOptions.AppHangTimeout = TimeSpan.FromSeconds(2);
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.ndk.app-hang.enable\" android:value=\"True\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.ndk.app-hang.timeout-interval-millis\" android:value=\"2000\" />", manifest);
+    }
+
+    [Test]
     public void ModifyManifest_AndroidTombstoneEnabledTrue_WritesCorrectMetaData()
     {
         _fixture.SentryUnityOptions!.AndroidTombstoneEnabled = true;

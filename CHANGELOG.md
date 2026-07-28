@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Extended experimental `options.Experimental.EnableNativeAppHangTracking` to Android. It now configures the Android NDK app-hang detector and emits Unity main-thread heartbeats. This option requires `NdkIntegrationEnabled` to be set to `true` ([#2778](https://github.com/getsentry/sentry-unity/pull/2778))
+
 ### Fixes
 
 - The SDK now correctly synchronizes the `Environment` set on the `Scope` events coming from the native layer ([#2764](https://github.com/getsentry/sentry-unity/pull/2764))
