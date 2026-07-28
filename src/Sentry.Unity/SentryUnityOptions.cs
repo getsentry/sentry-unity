@@ -168,6 +168,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// <summary>
     /// The duration in [ms] for how long the game has to be unresponsive before an ANR event is reported.
     /// </summary>
+    [Obsolete("The C# ANR watchdog is deprecated. Use Experimental.EnableNativeAppHangTracking instead. This property will be removed in a future version.")]
     public TimeSpan AnrTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
     /// <summary>

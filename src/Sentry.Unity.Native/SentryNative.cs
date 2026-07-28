@@ -106,7 +106,9 @@ public static class SentryNative
                 or RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer)
             {
                 Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-native handles app hang detection.");
+#pragma warning disable CS0618 // Type or member is obsolete
                 options.DisableAnrIntegration();
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 

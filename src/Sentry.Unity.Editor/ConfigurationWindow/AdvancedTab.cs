@@ -40,8 +40,13 @@ internal static class AdvancedTab
             EditorGUILayout.Space();
 
             {
-                GUILayout.Label("C# Watchdog", EditorStyles.boldLabel);
+                GUILayout.Label("C# Watchdog (Deprecated)", EditorStyles.boldLabel);
+                EditorGUILayout.HelpBox(
+                    "The C# ANR watchdog is deprecated. Use Experimental.EnableNativeAppHangTracking instead. " +
+                    "These settings will be removed in a future version.",
+                    MessageType.Warning);
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 options.AnrDetectionEnabled = EditorGUILayout.Toggle(
                     new GUIContent("Enable", "Whether the SDK should run the C# main-thread watchdog " +
                                              "to report 'Application Not Responding' events."),
@@ -53,6 +58,7 @@ internal static class AdvancedTab
                         "before the C# watchdog reports an ANR event.\nDefault: 5000ms"),
                     options.AnrTimeout);
                 options.AnrTimeout = Math.Max(0, options.AnrTimeout);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             EditorGUILayout.Space();

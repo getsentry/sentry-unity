@@ -42,7 +42,9 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         };
 
         // Disable ANR to avoid test interference
+#pragma warning disable CS0618 // Type or member is obsolete
         options.DisableAnrIntegration();
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // App Hang tracking
         options.Experimental.EnableNativeAppHangTracking = true;

@@ -28,6 +28,7 @@ internal class AnrIntegration : ISdkIntegration
         {
             if (Watchdog is null)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 if (options.MultiThreading)
                 {
                     Watchdog = new AnrWatchDogMultiThreaded(options.DiagnosticLogger,
@@ -40,6 +41,7 @@ internal class AnrIntegration : ISdkIntegration
                         _monoBehaviour,
                         options.AnrTimeout);
                 }
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
         Watchdog.OnApplicationNotResponding += (_, e) => hub.CaptureException(e);

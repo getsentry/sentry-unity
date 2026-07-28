@@ -106,8 +106,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public int ShutdownTimeout { get; set; } = 2000;
     [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
 
-    [field: SerializeField] public bool AnrDetectionEnabled { get; set; } = true;
-    [field: SerializeField] public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
+    [field: SerializeField]
+    [Obsolete("The C# ANR watchdog is deprecated. Use Experimental.EnableNativeAppHangTracking instead. This property will be removed in a future version.")]
+    public bool AnrDetectionEnabled { get; set; } = true;
+
+    [field: SerializeField]
+    [Obsolete("The C# ANR watchdog is deprecated. Use Experimental.EnableNativeAppHangTracking instead. This property will be removed in a future version.")]
+    public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
     [field: SerializeField] public bool EnableAppHangTracking { get; set; } = true;
     [field: SerializeField] public int AppHangTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
 
@@ -203,7 +208,9 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             Debug = ShouldDebug(application.IsEditor && !isBuilding),
             DiagnosticLevel = DiagnosticLevel,
             CaptureLogErrorEvents = CaptureLogErrorEvents,
+#pragma warning disable CS0618 // Type or member is obsolete
             AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
+#pragma warning restore CS0618
             EnableAppHangTracking = EnableAppHangTracking,
             AppHangTimeout = TimeSpan.FromMilliseconds(AppHangTimeout),
             CaptureFailedRequests = CaptureFailedRequests,
@@ -302,12 +309,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         // ExceptionFilters are added by default to the options.
         HandleExceptionFilter(options);
 
-        // The AnrDetectionIntegration is added by default. Since it is a ScriptableUnityOptions-only property we have to
-        // remove the integration when creating the options through here
+#pragma warning disable CS0618 // Type or member is obsolete
+        // The deprecated ANR watchdog is added by default. Preserve existing serialized configuration.
         if (!AnrDetectionEnabled)
         {
             options.DisableAnrIntegration();
         }
+#pragma warning restore CS0618
 
         return options;
     }

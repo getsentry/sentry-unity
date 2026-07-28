@@ -47,7 +47,9 @@ public static class SentryNativeCocoa
             if (options.EnableAppHangTracking)
             {
                 Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-cocoa handles app hang detection.");
+#pragma warning disable CS0618 // Type or member is obsolete
                 options.DisableAnrIntegration();
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
         }
