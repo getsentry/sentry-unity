@@ -410,7 +410,7 @@ package-dev/Plugins/
 │       ├── sentry-android-ndk-release.aar
 │       └── sentry-native-ndk-release.aar
 ├── iOS/
-│   ├── Sentry.xcframework~/
+│   ├── SentryObjC.xcframework~/
 │   ├── SentryNativeBridge.m
 │   └── SentryCxaThrowHook.cpp
 ├── macOS/

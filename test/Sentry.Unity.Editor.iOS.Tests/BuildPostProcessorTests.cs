@@ -53,7 +53,7 @@ public class BuildPostProcessorTests
             SentryXcodeProject.BridgeName);
 
         Assert.IsTrue(File.Exists(noOpBridgePath));
-        StringAssert.DoesNotContain("[SentrySDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
+        StringAssert.DoesNotContain("[SentryObjCSDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
     }
 
     [Test]
@@ -72,7 +72,7 @@ public class BuildPostProcessorTests
         var noOpBridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName);
 
         Assert.IsTrue(File.Exists(noOpBridgePath));
-        StringAssert.DoesNotContain("[SentrySDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
+        StringAssert.DoesNotContain("[SentryObjCSDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
         Assert.IsFalse(NativeMain.ContainsSentry(mainFile, null)); // The main.mm must not contain Sentry
     }
 
@@ -165,7 +165,7 @@ public class BuildPostProcessorTests
             SentryXcodeProject.BridgeName);
 
         Assert.IsTrue(File.Exists(noOpBridgePath));
-        StringAssert.DoesNotContain("[SentrySDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
+        StringAssert.DoesNotContain("[SentryObjCSDK", File.ReadAllText(noOpBridgePath)); // The NoOp bridge does not call into the Cocoa SDK
     }
 
     [Test]
@@ -183,7 +183,7 @@ public class BuildPostProcessorTests
         Assert.IsTrue(File.Exists(bridgePath));
         Assert.IsTrue(Directory.Exists(frameworkPath));
 
-        StringAssert.Contains("[SentrySDK", File.ReadAllText(bridgePath)); // Sanity check
+        StringAssert.Contains("[SentryObjCSDK", File.ReadAllText(bridgePath)); // Sanity check
     }
 
     [Test]

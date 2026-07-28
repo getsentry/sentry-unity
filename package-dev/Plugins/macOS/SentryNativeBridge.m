@@ -19,7 +19,7 @@ static inline NSString *_NSStringOrNil(const char *value)
     return value ? [NSString stringWithUTF8String:value] : nil;
 }
 
-static inline NSString *_NSNumberOrNil(int32_t value)
+static inline NSNumber *_NSNumberOrNil(int32_t value)
 {
     return value == 0 ? nil : @(value);
 }
@@ -37,16 +37,18 @@ static inline NSNumber *_NSBoolOrNil(int8_t value)
 
 static int loadStatus = -1; // unitialized
 
-static Class SentrySDK;
-static Class SentryScope;
-static Class SentryBreadcrumb;
-static Class SentryUser;
-static Class SentryOptions;
-static Class SentryOptionsInternal;
-static Class SentryId;
-static Class SentrySpanId;
-static Class PrivateSentrySDKOnly;
-static Class SentryHttpStatusCodeRange;
+static Class SentryObjCSDK;
+static Class SentryObjCBreadcrumb;
+static Class SentryObjCUser;
+static Class SentryObjCId;
+static Class SentryObjCSpanId;
+static Class SentryObjCHttpStatusCodeRange;
+
+typedef NS_ENUM(NSInteger, SentryObjCLastRunStatus) {
+    SentryObjCLastRunStatusUnknown = 0,
+    SentryObjCLastRunStatusDidNotCrash,
+    SentryObjCLastRunStatusDidCrash,
+};
 
 #define LOAD_CLASS_OR_BREAK(name)                                                                  \
     name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #name);                                    \
@@ -55,12 +57,11 @@ static Class SentryHttpStatusCodeRange;
         break;                                                                                     \
     }
 
-#define LOAD_SWIFT_CLASS_OR_BREAK(name, mangled_name)                                              \
-    name = (__bridge Class)dlsym(dylib, "OBJC_CLASS_$_" #mangled_name);                            \
-    if (!name) {                                                                                   \
-        NSLog(@"Sentry (bridge): Couldn't load class '" #name "' from the dynamic library");       \
-        break;                                                                                     \
-    }
+// The SentryObjC wrapper classes are plain Objective-C (@objc(SentryObjC...)), so unlike the
+// previous `SentrySDK` Swift class they load by their unmangled OBJC_CLASS_$_ symbol.
+// [SentryObjCSDK internal] is the hybrid-SDK entry point used for options parsing, SDK metadata,
+// and trace propagation.
+static id SentryInternalApi(void) { return [SentryObjCSDK performSelector:@selector(internal)]; }
 
 // Returns (bool): 0 on failure, 1 on success
 // WARNING: you may only call other Sentry* functions AFTER calling this AND only if it returned "1"
@@ -80,16 +81,12 @@ int SentryNativeBridgeLoadLibrary()
                 }
             }
 
-            LOAD_SWIFT_CLASS_OR_BREAK(SentrySDK, _TtC6Sentry9SentrySDK)
-            LOAD_CLASS_OR_BREAK(SentryScope)
-            LOAD_CLASS_OR_BREAK(SentryBreadcrumb)
-            LOAD_CLASS_OR_BREAK(SentryUser)
-            LOAD_CLASS_OR_BREAK(SentryOptions)
-            LOAD_CLASS_OR_BREAK(SentryOptionsInternal)
-            LOAD_CLASS_OR_BREAK(SentryId)
-            LOAD_CLASS_OR_BREAK(SentrySpanId)
-            LOAD_CLASS_OR_BREAK(PrivateSentrySDKOnly)
-            LOAD_CLASS_OR_BREAK(SentryHttpStatusCodeRange)
+            LOAD_CLASS_OR_BREAK(SentryObjCSDK)
+            LOAD_CLASS_OR_BREAK(SentryObjCBreadcrumb)
+            LOAD_CLASS_OR_BREAK(SentryObjCUser)
+            LOAD_CLASS_OR_BREAK(SentryObjCId)
+            LOAD_CLASS_OR_BREAK(SentryObjCSpanId)
+            LOAD_CLASS_OR_BREAK(SentryObjCHttpStatusCodeRange)
 
             // everything above passed - mark as successfully loaded
             loadStatus = 1;
@@ -98,7 +95,10 @@ int SentryNativeBridgeLoadLibrary()
     return loadStatus;
 }
 
-int SentryNativeBridgeIsEnabled() { return [SentrySDK isEnabled] ? 1 : 0; }
+int SentryNativeBridgeIsEnabled()
+{
+    return ((BOOL (*)(id, SEL))objc_msgSend)(SentryObjCSDK, @selector(isEnabled)) ? 1 : 0;
+}
 
 const void *SentryNativeBridgeOptionsNew()
 {
@@ -135,7 +135,7 @@ void SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange(const void *option
         ranges = [[NSMutableArray alloc] init];
         dictOptions[@"failedRequestStatusCodes"] = ranges;
     }
-    id instance = [SentryHttpStatusCodeRange alloc];
+    id instance = [SentryObjCHttpStatusCodeRange alloc];
     // initWithMin:max: takes NSInteger args - use objc_msgSend directly
     id range = ((id (*)(id, SEL, NSInteger, NSInteger))objc_msgSend)(
         instance, @selector(initWithMin:max:), (NSInteger)min, (NSInteger)max);
@@ -149,16 +149,17 @@ int SentryNativeBridgeStartWithOptions(const void *options)
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
     NSError *error = nil;
 
-    id sentryOptions = [SentryOptionsInternal
-        performSelector:@selector(initWithDict:didFailWithError:)
-        withObject:dictOptions withObject:&error];
+    id (*optionsFromDictionary)(id, SEL, NSDictionary *, NSError * __autoreleasing *) =
+        (void *)objc_msgSend;
+    id sentryOptions = optionsFromDictionary(SentryInternalApi(), @selector(optionsFromDictionary:error:),
+        dictOptions, &error);
 
     if (error != nil)
     {
         return 0;
     }
 
-    [SentrySDK performSelector:@selector(startWithOptions:) withObject:sentryOptions];
+    [SentryObjCSDK performSelector:@selector(startWithOptions:) withObject:sentryOptions];
     return 1;
 }
 
@@ -168,7 +169,7 @@ void SentryConfigureScope(void (^callback)(id))
     // Even though this shouldn't happen, better not take the chance of letting an unhandled
     // exception while setting error info - it would just crash the app immediately.
     @try {
-        [SentrySDK performSelector:@selector(configureScope:) withObject:callback];
+        [SentryObjCSDK performSelector:@selector(configureScope:) withObject:callback];
     } @catch (NSException *exception) {
         NSLog(@"Sentry (bridge): failed to configure scope: %@", exception.reason);
     }
@@ -186,15 +187,18 @@ void SentryConfigureScope(void (^callback)(id))
 
 void SentryNativeBridgeSetSdkName()
 {
-    [PrivateSentrySDKOnly performSelector:@selector(setSdkName:) withObject:@"sentry.cocoa.unity"];
+    id sdkApi = [SentryInternalApi() performSelector:@selector(sdk)];
+    [sdkApi performSelector:@selector(setName:) withObject:@"sentry.cocoa.unity"];
 }
 
 int SentryNativeBridgeCrashedLastRun()
 {
     @try {
-        return [SentrySDK performSelector:@selector(crashedLastRun)] ? 1 : 0;
+        NSInteger lastRunStatus =
+            ((NSInteger (*)(id, SEL))objc_msgSend)(SentryObjCSDK, @selector(lastRunStatus));
+        return lastRunStatus == SentryObjCLastRunStatusDidCrash ? 1 : 0;
     } @catch (NSException *exception) {
-        NSLog(@"Sentry (bridge): failed to get crashedLastRun: %@", exception.reason);
+        NSLog(@"Sentry (bridge): failed to get lastRunStatus: %@", exception.reason);
     }
     return -1;
 }
@@ -202,7 +206,7 @@ int SentryNativeBridgeCrashedLastRun()
 void SentryNativeBridgeClose()
 {
     @try {
-        [SentrySDK performSelector:@selector(close)];
+        [SentryObjCSDK performSelector:@selector(close)];
     } @catch (NSException *exception) {
         NSLog(@"Sentry (bridge): failed to close: %@", exception.reason);
     }
@@ -221,7 +225,7 @@ void SentryNativeBridgeAddBreadcrumb(const char *timestamp, const char *message,
     NSString *categoryString = _NSStringOrNil(category) ?: @"default"; // Category cannot be nil
 
     SentryConfigureScope(^(id scope) {
-        id breadcrumb = [[SentryBreadcrumb alloc] init];
+        id breadcrumb = [[SentryObjCBreadcrumb alloc] init];
 
         if (timestampString != nil && timestampString.length > 0) {
             NSDate *date = [sentry_cachedISO8601Formatter() dateFromString:timestampString];
@@ -323,7 +327,7 @@ void SentryNativeBridgeSetUser(
     NSString *usernameString = _NSStringOrNil(username);
 
     SentryConfigureScope(^(id scope) {
-        id user = [[SentryUser alloc] init];
+        id user = [[SentryObjCUser alloc] init];
 
         [user setValue:emailString forKey:@"email"];
         [user setValue:userIdString forKey:@"userId"];
@@ -344,8 +348,9 @@ char *SentryNativeBridgeGetInstallationId()
 {
     // Create a null terminated C string on the heap as expected by marshalling.
     // See Tips for iOS in https://docs.unity3d.com/Manual/PluginsForIOS.html
+    id sdkApi = [SentryInternalApi() performSelector:@selector(sdk)];
     const char *nsStringUtf8 =
-        [[PrivateSentrySDKOnly performSelector:@selector(installationID)] UTF8String];
+        [[sdkApi performSelector:@selector(installationID)] UTF8String];
     size_t len = strlen(nsStringUtf8) + 1;
     char *cString = (char *)malloc(len);
     memcpy(cString, nsStringUtf8, len);
@@ -358,17 +363,17 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
         return;
     }
 
-    id sentryTraceId = [[SentryId alloc] 
-        performSelector:@selector(initWithUUIDString:) 
-        withObject:[NSString stringWithUTF8String:traceId]];
-        
-    id sentrySpanId = [[SentrySpanId alloc]
-        performSelector:@selector(initWithValue:)
-        withObject:[NSString stringWithUTF8String:spanId]];
+    id sentryTraceId = ((id (*)(id, SEL, NSString *))objc_msgSend)(
+        [SentryObjCId alloc], @selector(initWithUUIDString:),
+        [NSString stringWithUTF8String:traceId]);
+
+    id sentrySpanId = ((id (*)(id, SEL, NSString *))objc_msgSend)(
+        [SentryObjCSpanId alloc], @selector(initWithValue:),
+        [NSString stringWithUTF8String:spanId]);
     
-    [PrivateSentrySDKOnly 
-        performSelector:@selector(setTrace:spanId:) 
-        withObject:sentryTraceId 
+    [SentryInternalApi()
+        performSelector:@selector(setTrace:spanId:)
+        withObject:sentryTraceId
         withObject:sentrySpanId];
 }
 
