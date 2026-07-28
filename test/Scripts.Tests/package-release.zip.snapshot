@@ -69,6 +69,7 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/
 Plugins/iOS/SentryObjC.xcframework~/Info.plist
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/dSYMs/
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Info.plist
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/PrivacyInfo.xcprivacy
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/SentryObjC
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjC.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCAttachment.h
@@ -165,6 +166,7 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/dSYMs/SentryObjC.
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/dSYMs/SentryObjC.framework.dSYM/Contents/Resources/DWARF/SentryObjC
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/dSYMs/
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Info.plist
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/PrivacyInfo.xcprivacy
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/SentryObjC
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjC.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCAttachment.h

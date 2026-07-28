@@ -55,6 +55,28 @@ try {
         }
     }
 
+    $privacyManifest = Join-Path $CocoaRoot "Sources/Resources/PrivacyInfo.xcprivacy"
+    if (-not (Test-Path $privacyManifest)) {
+        Write-Error "Privacy manifest not found at: $privacyManifest"
+        exit 1
+    }
+
+    $iOSFrameworks = @(Get-ChildItem -Path $iOSXcframeworkPath -Directory |
+        Where-Object { $_.Name -like "ios-*" } |
+        ForEach-Object { Join-Path $_.FullName "SentryObjC.framework" })
+    if ($iOSFrameworks.Count -eq 0) {
+        Write-Error "iOS framework slices not found in: $iOSXcframeworkPath"
+        exit 1
+    }
+
+    foreach ($iOSFramework in $iOSFrameworks) {
+        if (-not (Test-Path $iOSFramework)) {
+            Write-Error "iOS framework slice not found at: $iOSFramework"
+            exit 1
+        }
+        Copy-Item -Path $privacyManifest -Destination $iOSFramework -Force
+    }
+
     Write-Host "Setting up iOS frameworks..." -ForegroundColor Yellow
 
     if (Test-Path $iOSDestination) {
