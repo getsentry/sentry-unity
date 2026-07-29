@@ -38,29 +38,6 @@ function Get-UnityCliErrorCode([object] $Response) {
     return $null
 }
 
-function Test-UnityProjectIsLocked {
-    $lockFile = Join-Path $ProjectPath "Temp/UnityLockfile"
-    if (-not (Test-Path $lockFile -PathType Leaf)) {
-        return $false
-    }
-
-    try {
-        $stream = [System.IO.File]::Open(
-            $lockFile,
-            [System.IO.FileMode]::Open,
-            [System.IO.FileAccess]::ReadWrite,
-            [System.IO.FileShare]::None)
-        $stream.Dispose()
-        return $false
-    }
-    catch [System.IO.IOException] {
-        return $true
-    }
-    catch [System.UnauthorizedAccessException] {
-        return $true
-    }
-}
-
 function Get-TestExecutionMode {
     $projectName = Split-Path $ProjectPath -Leaf
     $status = Invoke-UnityCli @("status", "--project", $projectName, "--format", "json")
@@ -75,10 +52,6 @@ function Get-TestExecutionMode {
 
     $errorCode = Get-UnityCliErrorCode $status.Response
     if ($errorCode -eq "STATUS_NO_INSTANCES") {
-        if (Test-UnityProjectIsLocked) {
-            return "Pipeline"
-        }
-
         return "Headless"
     }
 
