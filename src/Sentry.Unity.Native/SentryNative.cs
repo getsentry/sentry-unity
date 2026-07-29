@@ -94,7 +94,7 @@ public static class SentryNative
         }
         options.CrashedLastRun = () => crashedLastRun;
 
-        if (options.Experimental.EnableNativeAppHangTracking)
+        if (options.NativeAppHangTrackingEnabled)
         {
             Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
             SentryMonoBehaviour.Instance.StartAppHangHeartbeat(SentryNativeBridge.AppHangHeartbeat);

@@ -221,7 +221,7 @@ public class AndroidManifestConfiguration
         androidManifest.SetAnr(_options.AndroidNativeAnrEnabled);
         androidManifest.SetPersistentScopeObserver(_options.AndroidNativeAnrEnabled);
         androidManifest.SetAttachAnrThreadDump(_options.AndroidAttachAnrThreadDump);
-        androidManifest.SetNdkAppHangTracking(_options.Experimental.EnableNativeAppHangTracking);
+        androidManifest.SetNdkAppHangTracking(_options.NativeAppHangTrackingEnabled);
         androidManifest.SetNdkAppHangTimeout((long)Math.Max(0, _options.AppHangTimeout.TotalMilliseconds));
         androidManifest.SetTombstone(_options.AndroidTombstoneEnabled);
         androidManifest.SetTombstoneReportHistorical(_options.AndroidReportHistoricalTombstones);

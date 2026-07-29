@@ -124,8 +124,8 @@ internal static class SentryNativeBridge
             Logger?.LogInfo("Passing the native logs back to the C# layer is not supported on Mono - skipping native logger.");
         }
 
-        Logger?.LogDebug("Setting EnableNativeAppHangTracking: {0}", options.Experimental.EnableNativeAppHangTracking);
-        sentry_options_set_enable_app_hang_tracking(cOptions, options.Experimental.EnableNativeAppHangTracking ? 1 : 0);
+        Logger?.LogDebug("Setting EnableAppHangTracking: {0}", options.NativeAppHangTrackingEnabled);
+        sentry_options_set_enable_app_hang_tracking(cOptions, options.NativeAppHangTrackingEnabled ? 1 : 0);
 
         var appHangTimeoutMs = (ulong)Math.Max(0, options.AppHangTimeout.TotalMilliseconds);
         Logger?.LogDebug("Setting AppHangTimeout: {0}ms", appHangTimeoutMs);

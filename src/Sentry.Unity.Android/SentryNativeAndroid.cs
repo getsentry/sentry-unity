@@ -74,7 +74,7 @@ public static class SentryNativeAndroid
         options.EnableScopeSync = true;
         options.NativeDebugImageProvider = new Native.NativeDebugImageProvider();
 
-        if (options.Experimental.EnableNativeAppHangTracking && options.NdkIntegrationEnabled)
+        if (options.NativeAppHangTrackingEnabled && options.NdkIntegrationEnabled)
         {
             Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
             SentryMonoBehaviour.Instance.StartAppHangHeartbeat(SentryNative.AppHangHeartbeat);

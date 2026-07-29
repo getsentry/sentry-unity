@@ -74,7 +74,7 @@ public class ScriptableSentryUnityOptionsEditor : UnityEditor.Editor
         EditorGUILayout.IntField("Watchdog Timeout [ms]", options.AnrTimeout);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        EditorGUILayout.LabelField("App Hang Tracking", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("App Hang Tracking (Experimental)", EditorStyles.boldLabel);
         EditorGUILayout.Toggle("Enable", options.EnableAppHangTracking);
         EditorGUILayout.IntField("App Hang Timeout [ms]", options.AppHangTimeout);
 

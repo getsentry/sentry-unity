@@ -186,9 +186,9 @@ public class AndroidManifestTests
     }
 
     [Test]
-    public void ModifyManifest_NativeAppHangTracking_UsesExperimentalConfiguration()
+    public void ModifyManifest_NativeAppHangTracking_UsesAppHangConfiguration()
     {
-        _fixture.SentryUnityOptions!.Experimental.EnableNativeAppHangTracking = true;
+        _fixture.SentryUnityOptions!.EnableAppHangTracking = true;
         _fixture.SentryUnityOptions.AppHangTimeout = TimeSpan.FromSeconds(2);
         var sut = _fixture.GetSut();
 
