@@ -163,6 +163,8 @@ internal static class SentryNativeBridge
 
     internal static void AppHangHeartbeat() => sentry_app_hang_heartbeat();
 
+    internal static void AppHangPause() => sentry_app_hang_pause();
+
     // libsentry.so
     [DllImport(SentryLib)]
     private static extern IntPtr sentry_options_new();
@@ -210,6 +212,9 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_app_hang_timeout(IntPtr options, ulong timeout);
+
+    [DllImport(SentryLib)]
+    private static extern void sentry_app_hang_pause();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
     private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
