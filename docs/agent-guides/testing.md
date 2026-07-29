@@ -1,39 +1,27 @@
 # Testing
 
+## Unity CLI Harness
+
+```pwsh
+pwsh scripts/run-tests.ps1
+pwsh scripts/run-tests.ps1 -Mode EditMode
+pwsh scripts/run-tests.ps1 -Mode PlayMode -Filter "Throttler"
+```
+
+- Targets `samples/unity-of-bugs-local`. It uses Pipeline for an open Editor or `unity test` headlessly when no Editor is running.
+- Make `unity` available on `PATH`. To reuse an Editor, open the sample in Unity 6.6+ with `com.unity.pipeline` and leave play mode stopped.
+- Run `dotnet build` before tests after SDK changes. `Filter` narrows selected tests.
+
 ## Batch Unity Tests
 
-Run from repository root with a discoverable Unity installation:
+Use only when Unity CLI harness is unavailable:
 
 ```sh
 dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests
 dotnet msbuild /t:UnityEditModeTest test/Sentry.Unity.Editor.Tests
 ```
 
-- PlayMode target applies only to `Sentry.Unity.Tests`.
-- EditMode target applies only to `Sentry.Unity.Editor.Tests`.
-- Results are written to `artifacts/test/playmode/results.xml` or `artifacts/test/editmode/results.xml`; the target validates the result XML.
-
-## Connected Editor Harness
-
-```pwsh
-pwsh scripts/run-tests.ps1
-pwsh scripts/run-tests.ps1 -Mode EditMode
-pwsh scripts/run-tests.ps1 -Mode PlayMode -Filter "Throttler"
-pwsh scripts/run-tests.ps1 -SkipBuild -Filter "MyTest"
-```
-
-Before running:
-
-- Create and open `samples/unity-of-bugs-local` in Unity `6000.6` or newer.
-- Install `com.unity.pipeline`.
-- Add `io.sentry.unity.dev` as a local `file:` dependency pointing to this checkout's `package-dev`.
-- Stop the Unity editor, connect Pipeline, and make `unity` available on `PATH`.
-
-The harness builds by default, then recompiles and runs selected Editor/PlayMode tests. It fails for failed, inconclusive, empty, malformed, timed-out, or command-error results.
-
 ## Integration Tests
-
-Use the local wrapper:
 
 ```pwsh
 pwsh ./test/Scripts.Integration.Test/dev-integration-test.ps1 `
@@ -41,11 +29,6 @@ pwsh ./test/Scripts.Integration.Test/dev-integration-test.ps1 `
   -Platform "MacOS" `
   -Repack
 ```
-
-- The wrapper locates Unity, builds, optionally repacks/extracts the package, then invokes the core script.
-- `-Clean`, `-Recreate`, `-Rebuild`, `-SkipTests`, and `-NativeSDKPath` are available.
-- `integration-test.ps1` is lower-level: it requires `-UnityPath`, `-UnityVersion`, `-Platform`, and `-PackagePath`.
-- Automated Pester execution covers desktop, Android, iOS, WebGL, and Xbox. Switch and PS5 are build-only.
 
 ## Relevant Tests
 

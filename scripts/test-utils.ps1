@@ -58,9 +58,14 @@ function Parse-TestResults([string] $Path) {
                 if ($_.failure -and $_.failure.message) {
                     $msg = $_.failure.message.InnerText
                 }
+                $stackTrace = $null
+                if ($_.failure -and $_.failure.'stack-trace') {
+                    $stackTrace = $_.failure.'stack-trace'.InnerText
+                }
                 @{
-                    Name    = $_.fullname
-                    Message = $msg
+                    Name       = $_.fullname
+                    Message    = $msg
+                    StackTrace = $stackTrace
                 }
             })
     }
