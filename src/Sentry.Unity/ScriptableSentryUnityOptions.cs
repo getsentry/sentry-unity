@@ -108,7 +108,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
     [field: SerializeField]
     [Obsolete("The C# ANR watchdog is deprecated. Use Experimental.EnableNativeAppHangTracking instead. This property will be removed in a future version.")]
-    public bool AnrDetectionEnabled { get; set; } = true;
+    public bool AnrDetectionEnabled { get; set; } = false;
 
     [field: SerializeField]
     [Obsolete("The C# ANR watchdog is deprecated. Use Experimental.EnableNativeAppHangTracking instead. This property will be removed in a future version.")]
@@ -274,6 +274,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
                 new HttpStatusCodeRange(FailedRequestStatusCodes[i], FailedRequestStatusCodes[i + 1]));
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
+        if (AnrDetectionEnabled)
+        {
+            options.AddIntegration(new AnrIntegration(SentryMonoBehaviour.Instance));
+        }
+#pragma warning restore CS0618
+
         if (OptionsConfiguration != null)
         {
             options.LogDebug("OptionsConfiguration found. Calling configure.");
@@ -308,14 +315,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
         // ExceptionFilters are added by default to the options.
         HandleExceptionFilter(options);
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        // The deprecated ANR watchdog is added by default. Preserve existing serialized configuration.
-        if (!AnrDetectionEnabled)
-        {
-            options.DisableAnrIntegration();
-        }
-#pragma warning restore CS0618
 
         return options;
     }

@@ -487,7 +487,6 @@ public sealed class SentryUnityOptions : SentryOptions
         AddIntegration(new UnityApplicationLoggingIntegration());
 
         AddIntegration(new StartupTracingIntegration());
-        AddIntegration(new AnrIntegration(behaviour));
         AddIntegration(new UnityScopeIntegration(application));
         AddIntegration(new UnityBeforeSceneLoadIntegration());
         AddIntegration(new SceneManagerIntegration());

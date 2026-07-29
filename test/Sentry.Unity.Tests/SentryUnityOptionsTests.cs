@@ -1,4 +1,6 @@
+using System.Linq;
 using NUnit.Framework;
+using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 
@@ -55,6 +57,10 @@ public sealed class SentryUnityOptionsTests
 
     [Test]
     public void Ctor_IsGlobalModeEnabled_IsTrue() => Assert.IsTrue(_fixture.GetSut().IsGlobalModeEnabled);
+
+    [Test]
+    public void Ctor_CSharpAnrWatchdog_IsNotRegistered() =>
+        Assert.That(_fixture.GetSut().Integrations.OfType<AnrIntegration>(), Is.Empty);
 
     [Test]
     public void Ctor_Release_IsProductNameAtVersion() =>

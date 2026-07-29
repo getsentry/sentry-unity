@@ -166,6 +166,29 @@ public class ScriptableSentryUnityOptionsTests
     }
 
     [Test]
+    public void ToSentryUnityOptions_CSharpAnrWatchdog_IsNotRegisteredByDefault()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.Application);
+
+        Assert.That(options.Integrations.OfType<AnrIntegration>(), Is.Empty);
+    }
+
+    [Test]
+    public void ToSentryUnityOptions_CSharpAnrWatchdog_IsRegisteredWhenExplicitlyEnabled()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+#pragma warning disable CS0618 // Type or member is obsolete
+        scriptableOptions.AnrDetectionEnabled = true;
+#pragma warning restore CS0618
+
+        var options = scriptableOptions.ToSentryUnityOptions(_fixture.Application);
+
+        Assert.AreEqual(1, options.Integrations.OfType<AnrIntegration>().Count());
+    }
+
+    [Test]
     public void Experimental_MacosBackend_DefaultValue_IsCocoa()
     {
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
