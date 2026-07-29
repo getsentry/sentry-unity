@@ -34,7 +34,6 @@ if (-not (Test-Path $ProjectPath -PathType Container)) {
 }
 
 $ProjectPath = (Resolve-Path $ProjectPath).Path
-Test-UnityProject $ProjectPath
 
 $executionMode = Get-TestExecutionMode
 

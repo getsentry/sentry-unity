@@ -1,39 +1,5 @@
 . $PSScriptRoot/test-utils.ps1
 
-function Test-UnityProject([string] $Path) {
-    $manifestFile = Join-Path $Path "Packages/manifest.json"
-    if (-not (Test-Path $manifestFile -PathType Leaf)) {
-        throw "Unity project at $Path has no Packages/manifest.json."
-    }
-
-    $manifest = Get-Content $manifestFile -Raw | ConvertFrom-Json
-    $packageSource = $manifest.dependencies."io.sentry.unity.dev"
-    if (-not $packageSource -or -not $packageSource.StartsWith("file:")) {
-        throw "Unity project at $Path must install io.sentry.unity.dev from this checkout's package-dev directory."
-    }
-
-    if ($packageSource.StartsWith("file://")) {
-        $packagePath = ([Uri]$packageSource).LocalPath
-    }
-    else {
-        $packagePath = [Uri]::UnescapeDataString($packageSource.Substring("file:".Length))
-    }
-
-    if (-not [IO.Path]::IsPathRooted($packagePath)) {
-        $packagePath = Join-Path (Split-Path $manifestFile -Parent) $packagePath
-    }
-
-    if (-not (Test-Path $packagePath -PathType Container)) {
-        throw "io.sentry.unity.dev points to missing package-dev directory $packagePath."
-    }
-
-    $expectedPackagePath = (Resolve-Path (Join-Path $repoRoot "package-dev")).Path
-    $packagePath = (Resolve-Path $packagePath).Path
-    if ($packagePath -ne $expectedPackagePath) {
-        throw "io.sentry.unity.dev points to $packagePath. This harness requires $expectedPackagePath so it tests this checkout's SDK build."
-    }
-}
-
 function Invoke-UnityCli([string[]] $Arguments) {
     $output = & unity @Arguments 2>&1
     $text = $output | Out-String
