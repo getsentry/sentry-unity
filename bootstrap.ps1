@@ -77,10 +77,26 @@ else {
     Add-Result -Status "FAIL" -Name "dotnet" -Detail "dotnet is not available on PATH." -Fix "Install the SDK pinned in global.json, then rerun: pwsh bootstrap.ps1"
 }
 
-if ($hasDotnet -and (Test-Command "gh")) {
+$hasGh = Test-Command "gh"
+if ($hasGh) {
+    Add-Result -Status "PASS" -Name "GitHub CLI" -Detail "Found gh."
+}
+else {
+    Add-Result -Status "WARN" -Name "GitHub CLI" -Detail "gh is not available on PATH." -Fix "Install gh and run 'gh auth login' to download prebuilt native SDKs."
+}
+
+$hasUnityCli = Test-Command "unity"
+if ($hasUnityCli) {
+    Add-Result -Status "PASS" -Name "Unity CLI" -Detail "Found unity."
+}
+else {
+    Add-Result -Status "WARN" -Name "Unity CLI" -Detail "unity is not available on PATH." -Fix "Install Unity CLI and add it to PATH before running: pwsh scripts/run-tests.ps1"
+}
+
+if ($hasDotnet -and $hasGh) {
     Invoke-Stage -Name "Prebuilt native SDKs" -Action { dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity } -FailureStatus "WARN" -Fix "Authenticate with 'gh auth login' and rerun, or build a platform SDK with: dotnet msbuild /t:Build<Platform>SDK src/Sentry.Unity"
 }
-elseif (-not (Test-Command "gh")) {
+elseif (-not $hasGh) {
     Add-Result -Status "WARN" -Name "Prebuilt native SDKs" -Detail "GitHub CLI is not available." -Fix "Install gh and run 'gh auth login', then rerun: pwsh bootstrap.ps1"
 }
 else {

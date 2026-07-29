@@ -7,8 +7,6 @@ pwsh bootstrap.ps1
 dotnet build
 ```
 
-- Run standard SDK builds from repository root.
-- Bootstrap initializes submodules, restores workloads, and attempts optional native, CLI, and sample setup.
 - Build outputs and native plugins live in `package-dev/`; do not hand-edit generated assemblies or downloaded native artifacts.
 - See `docs/agent-guides/build.md` for target ownership, Unity selection, and local native builds.
 
@@ -18,17 +16,20 @@ dotnet build
 dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
 ```
 
-- Downloads prebuilt native SDKs from CI. Bootstrap attempts this automatically; requires `gh`.
-- `dotnet build` never downloads or builds native SDKs. Use a dedicated target when artifacts are missing.
+- Requires `gh`. Use when native artifacts are missing; `dotnet build` does not download them.
 
 ## Test
 
-```sh
-dotnet msbuild /t:UnityPlayModeTest test/Sentry.Unity.Tests
-dotnet msbuild /t:UnityEditModeTest test/Sentry.Unity.Editor.Tests
+```pwsh
+pwsh scripts/run-tests.ps1
+pwsh scripts/run-tests.ps1 -Mode PlayMode -Filter "MyTest"
+pwsh scripts/run-tests.ps1 -Mode EditMode
 ```
 
-- See `docs/agent-guides/testing.md` before connected-editor or integration tests.
+- The harness targets `samples/unity-of-bugs-local`, using Pipeline for an open Editor or `unity test` headlessly when none is running.
+- Make `unity` available on `PATH`. To reuse an Editor, open the sample in Unity 6.6+ with `com.unity.pipeline` and leave play mode stopped.
+- Run `dotnet build` before tests after SDK changes. `Filter` narrows selected tests.
+- Use batch MSBuild test targets only when Unity CLI is unavailable. See `docs/agent-guides/testing.md` for commands and integration tests.
 
 ## Area Guides
 
