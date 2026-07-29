@@ -69,7 +69,7 @@ function Invoke-UnityHeadlessTest([string] $TestMode) {
 
     $arguments = @("test", $ProjectPath, "--mode", $TestMode, "--output", $resultPath, "--timeout", $testTimeout)
     if ($Filter) {
-        $arguments += "--filter", $Filter
+        $arguments += "--filter", ".*$([regex]::Escape($Filter)).*"
     }
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
