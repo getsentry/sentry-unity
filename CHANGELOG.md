@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-### Deprecations
+### Behavioural Changes and Deprecations
 
-- The C# ANR watchdog and its configuration options (`AnrDetectionEnabled`, `AnrTimeout`, and `DisableAnrIntegration`) are now marked as `[Obsolete]`. Use `Experimental.EnableNativeAppHangTracking` instead. ([#2784](https://github.com/getsentry/sentry-unity/pull/2784))
+- The C# ANR watchdog and its configuration options (`AnrDetectionEnabled`, `AnrTimeout`, and `DisableAnrIntegration`) are now marked as `[Obsolete]` and `false` by default. Use `Experimental.EnableNativeAppHangTracking` instead. ([#2784](https://github.com/getsentry/sentry-unity/pull/2784))
 
 ### Features
 
