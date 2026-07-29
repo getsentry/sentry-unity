@@ -28,7 +28,7 @@ Run from repository root:
 pwsh bootstrap.ps1
 ```
 
-- Initializes submodules, restores workloads, downloads missing native artifacts and Sentry CLI, builds the managed SDK, and configures samples when matching environment variables are available.
+- Checks for Git, .NET, GitHub CLI, and Unity CLI before initializing submodules, restoring workloads, downloading missing native artifacts and Sentry CLI, building the managed SDK, and configuring samples when matching environment variables are available.
 - Continues past recoverable failures and prints remediation for each stage.
 - `APPLE_ID` configures both sample projects' Apple Developer Team ID. `SENTRY_AUTH_TOKEN` configures shared Sentry CLI options.
 

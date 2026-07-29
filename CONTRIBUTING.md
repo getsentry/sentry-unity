@@ -11,6 +11,7 @@ The following tools are **required** before you can build and develop the SDK:
 | [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) | Version pinned in [`global.json`](global.json) |
 | PowerShell | Install via `dotnet tool install --global PowerShell` |
 | [GitHub CLI](https://github.com/cli/cli/releases) | Recommended for downloading prebuilt native SDKs. On macOS: `brew install gh` |
+| Unity CLI | Required for the Unity test harness; add `unity` to `PATH` |
 
 ### Optional Unity Modules
 
@@ -85,19 +86,17 @@ Required tools:
 
 ### Unit Tests (PlayMode and EditMode)
 
-Run locally with the connected-editor harness. Open the tracked Unity 6
-`samples/unity-of-bugs-local` project after bootstrap, then run the connected-editor
-test harness:
+The harness uses Pipeline when `samples/unity-of-bugs-local` is open, otherwise it runs
+tests headlessly through Unity CLI. Add `unity` to `PATH`; to reuse an Editor, open the
+sample in Unity 6.6+ with `com.unity.pipeline` and leave play mode stopped.
 
 ```pwsh
 pwsh scripts/run-tests.ps1
+pwsh scripts/run-tests.ps1 -Mode PlayMode -Filter "MyTest"
+pwsh scripts/run-tests.ps1 -Mode EditMode
 ```
 
-It builds the SDK, waits for Unity to compile, runs EditMode and PlayMode tests
-separately, and exits with code `1` for failed, inconclusive, or empty runs.
-Use `-Mode EditMode`, `-Mode PlayMode`, or `-Filter "TestClassName"` to narrow
-the run. The command exits with `0` when all selected tests pass and `1`
-otherwise.
+Run `dotnet build` before tests after SDK changes. `Filter` narrows selected tests.
 
 ### Integration Tests
 
