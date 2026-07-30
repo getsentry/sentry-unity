@@ -13,6 +13,7 @@
 
 ### Fixes
 
+- The app hang detection now correctly pauses and resumes when the game moves between background and foreground to prevent false positive events ([#2788](https://github.com/getsentry/sentry-unity/pull/2788))
 - Migrated the native support for iOS and macOS to use the Obj-C flavour of `sentry-cocoa` ([#2767](https://github.com/getsentry/sentry-unity/pull/2767))
 - The SDK now correctly synchronizes the `Environment` set on the `Scope` events coming from the native layer ([#2764](https://github.com/getsentry/sentry-unity/pull/2764))
 
