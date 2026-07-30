@@ -12,6 +12,16 @@ pwsh scripts/run-tests.ps1 -Mode PlayMode -Filter "Throttler"
 - Make `unity` available on `PATH`. To reuse an Editor, open the sample in Unity 6.6+ with `com.unity.pipeline` and leave play mode stopped.
 - Run `dotnet build` before tests after SDK changes. `Filter` narrows selected tests.
 
+## Local Sample Build
+
+```pwsh
+pwsh scripts/build-sample.ps1 -Target Android
+```
+
+- Requires a target: `StandaloneWindows64`, `StandaloneOSX`, `StandaloneLinux64`,
+  `Android`, `iOS`, or `WebGL`.
+- Outputs under `samples/unity-of-bugs-local/Builds/<Target>/`.
+
 ## Batch Unity Tests
 
 Use only when Unity CLI harness is unavailable:
