@@ -201,11 +201,11 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     public TimeSpan AppHangTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
+    // TODO: Remove with the next mayor. This is so we still support the experimental option
     internal bool NativeAppHangTrackingEnabled
     {
         get
         {
-            // Preserve existing native opt-ins while callers migrate to the canonical setting.
 #pragma warning disable CS0618 // Type or member is obsolete
             return EnableAppHangTracking || Experimental.EnableNativeAppHangTracking;
 #pragma warning restore CS0618 // Type or member is obsolete
