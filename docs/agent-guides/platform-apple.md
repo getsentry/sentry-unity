@@ -15,7 +15,8 @@
 ## Cocoa Behavior
 
 - Cocoa configuration initializes bridge, scope/context sync, SDK name, crashed-last-run, and IL2CPP installation ID.
-- iOS native app-hang tracking can disable C# ANR watchdog.
+- `EnableAppHangTracking` configures Cocoa app-hang tracking on iOS and macOS when the Cocoa backend is active.
+- App-hang tracking disables the C# ANR watchdog on iOS and macOS when the Cocoa backend is active.
 - macOS Cocoa screenshots are disabled because UIKit is unavailable.
 - Cocoa attachment synchronization is not implemented.
 

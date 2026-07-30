@@ -164,17 +164,28 @@ public sealed class SentryUnityOptionsTests
     }
 
     [Test]
-    public void Options_Experimental_EnableNativeAppHangTracking_DefaultsToFalse()
+    public void Options_EnableAppHangTracking_DefaultsToFalse()
     {
         var options = new SentryUnityOptions();
-        Assert.IsFalse(options.Experimental.EnableNativeAppHangTracking);
+        Assert.IsFalse(options.EnableAppHangTracking);
     }
 
     [Test]
-    public void Options_Experimental_EnableNativeAppHangTracking_IsSettable()
+    public void Options_EnableAppHangTracking_IsSettable()
     {
         var options = new SentryUnityOptions();
+        options.EnableAppHangTracking = true;
+        Assert.IsTrue(options.EnableAppHangTracking);
+    }
+
+    [Test]
+    public void Options_LegacyNativeAppHangTracking_EnablesNativeAppHangTracking()
+    {
+        var options = new SentryUnityOptions();
+#pragma warning disable CS0618 // Type or member is obsolete
         options.Experimental.EnableNativeAppHangTracking = true;
-        Assert.IsTrue(options.Experimental.EnableNativeAppHangTracking);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        Assert.IsTrue(options.NativeAppHangTrackingEnabled);
     }
 }

@@ -47,7 +47,7 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
 #pragma warning restore CS0618 // Type or member is obsolete
 
         // App Hang tracking
-        options.Experimental.EnableNativeAppHangTracking = true;
+        options.EnableAppHangTracking = true;
         options.AppHangTimeout = TimeSpan.FromSeconds(2);
 
         // Runtime initialization for integration tests
