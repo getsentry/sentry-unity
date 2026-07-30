@@ -13,6 +13,7 @@
 
 ### Fixes
 
+- The app hang detection now correctly pauses and resumes when the game moves between background and foreground to prevent false positive events ([#2788](https://github.com/getsentry/sentry-unity/pull/2788))
 - Migrated the native support for iOS and macOS to use the Obj-C flavour of `sentry-cocoa` ([#2767](https://github.com/getsentry/sentry-unity/pull/2767))
 - The SDK now correctly synchronizes the `Environment` set on the `Scope` events coming from the native layer ([#2764](https://github.com/getsentry/sentry-unity/pull/2764))
 
@@ -21,9 +22,9 @@
 - Bump .NET SDK from v6.5.0-33-g0140be0a to v6.8.0 ([#2761](https://github.com/getsentry/sentry-unity/pull/2761), [#2762](https://github.com/getsentry/sentry-unity/pull/2762), [#2776](https://github.com/getsentry/sentry-unity/pull/2776))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#680)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.5.0-33-g0140be0a...6.8.0)
-- Bump Native SDK from v0.15.3 to v0.16.0 ([#2769](https://github.com/getsentry/sentry-unity/pull/2769), [#2779](https://github.com/getsentry/sentry-unity/pull/2779))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0160)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.15.3...0.16.0)
+- Bump Native SDK from v0.15.3 to v0.16.1 ([#2769](https://github.com/getsentry/sentry-unity/pull/2769), [#2779](https://github.com/getsentry/sentry-unity/pull/2779), [#2788](https://github.com/getsentry/sentry-unity/pull/2788))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0161)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.15.3...0.16.1)
 - Bump Cocoa SDK from v9.21.0 to v9.23.0 ([#2767](https://github.com/getsentry/sentry-unity/pull/2767))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9230)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.21.0...9.23.0)

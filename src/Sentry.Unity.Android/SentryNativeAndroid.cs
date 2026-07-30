@@ -77,7 +77,9 @@ public static class SentryNativeAndroid
         if (options.NativeAppHangTrackingEnabled && options.NdkIntegrationEnabled)
         {
             Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
-            SentryMonoBehaviour.Instance.StartAppHangHeartbeat(SentryNative.AppHangHeartbeat);
+            SentryMonoBehaviour.Instance.StartAppHangHeartbeat(
+                SentryNative.AppHangHeartbeat,
+                SentryNative.AppHangPause);
             Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-native handles app hang detection.");
             options.RemoveIntegration<AnrIntegration>();
         }
