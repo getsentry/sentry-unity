@@ -68,11 +68,13 @@ public class ScriptableSentryUnityOptionsEditor : UnityEditor.Editor
         EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
         EditorGUILayout.Space();
 
-        EditorGUILayout.LabelField("C# Watchdog", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("C# Watchdog (Deprecated)", EditorStyles.boldLabel);
+#pragma warning disable CS0618 // Type or member is obsolete
         EditorGUILayout.Toggle("Enable", options.AnrDetectionEnabled);
         EditorGUILayout.IntField("Watchdog Timeout [ms]", options.AnrTimeout);
+#pragma warning restore CS0618 // Type or member is obsolete
 
-        EditorGUILayout.LabelField("App Hang Tracking", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("App Hang Tracking (Experimental)", EditorStyles.boldLabel);
         EditorGUILayout.Toggle("Enable", options.EnableAppHangTracking);
         EditorGUILayout.IntField("App Hang Timeout [ms]", options.AppHangTimeout);
 

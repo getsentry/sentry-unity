@@ -2,9 +2,14 @@
 
 ## Unreleased
 
+### Behavioural Changes and Deprecations
+
+- The C# ANR watchdog and its configuration options (`AnrDetectionEnabled`, `AnrTimeout`, and `DisableAnrIntegration`) are now marked as `[Obsolete]` and `false` by default. Use experimental `EnableAppHangTracking` instead. ([#2784](https://github.com/getsentry/sentry-unity/pull/2784), [#2787](https://github.com/getsentry/sentry-unity/pull/2787))
+- `EnableAppHangTracking` now controls native app-hang tracking on Android, iOS, Linux, macOS, and Windows and defaults to `false`. `Experimental.EnableNativeAppHangTracking` is deprecated.
+
 ### Features
 
-- Extended experimental `options.Experimental.EnableNativeAppHangTracking` to Android. It now configures the Android NDK app-hang detector and emits Unity main-thread heartbeats. This option requires `NdkIntegrationEnabled` to be set to `true` ([#2778](https://github.com/getsentry/sentry-unity/pull/2778))
+- Extended experimental `EnableAppHangTracking` to Android. It configures the Android NDK app-hang detector and emits Unity main-thread heartbeats. This requires `NdkIntegrationEnabled` to be set to `true` ([#2778](https://github.com/getsentry/sentry-unity/pull/2778))
 
 ### Fixes
 

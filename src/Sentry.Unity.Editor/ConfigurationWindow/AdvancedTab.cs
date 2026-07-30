@@ -40,8 +40,13 @@ internal static class AdvancedTab
             EditorGUILayout.Space();
 
             {
-                GUILayout.Label("C# Watchdog", EditorStyles.boldLabel);
+                GUILayout.Label("C# Watchdog (Deprecated)", EditorStyles.boldLabel);
+                EditorGUILayout.HelpBox(
+                    "The C# ANR watchdog is deprecated. Use EnableAppHangTracking instead. " +
+                    "These settings will be removed in a future version.",
+                    MessageType.Warning);
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 options.AnrDetectionEnabled = EditorGUILayout.Toggle(
                     new GUIContent("Enable", "Whether the SDK should run the C# main-thread watchdog " +
                                              "to report 'Application Not Responding' events."),
@@ -53,6 +58,7 @@ internal static class AdvancedTab
                         "before the C# watchdog reports an ANR event.\nDefault: 5000ms"),
                     options.AnrTimeout);
                 options.AnrTimeout = Math.Max(0, options.AnrTimeout);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             EditorGUILayout.Space();
@@ -60,12 +66,13 @@ internal static class AdvancedTab
             EditorGUILayout.Space();
 
             {
-                GUILayout.Label("App Hang Tracking", EditorStyles.boldLabel);
+                GUILayout.Label("App Hang Tracking (Experimental)", EditorStyles.boldLabel);
 
                 options.EnableAppHangTracking = EditorGUILayout.Toggle(
                     new GUIContent("Enable",
-                        "Enables app hang detection on iOS via sentry-cocoa. App hang detection on Android, macOS, " +
-                        "Windows, and Linux is experimental and controlled separately in the Experimental section."),
+                        "Enables experimental app hang detection via sentry-cocoa on iOS and macOS with the Cocoa " +
+                        "backend, and via sentry-native on Android and native desktop backends. Android requires NDK " +
+                        "Integration; macOS requires the Native backend when using sentry-native."),
                     options.EnableAppHangTracking);
 
                 options.AppHangTimeout = EditorGUILayout.IntField(
@@ -272,13 +279,6 @@ internal static class AdvancedTab
                     options.Experimental.LinuxBackend);
             }
 
-            options.Experimental.EnableNativeAppHangTracking = EditorGUILayout.Toggle(
-                new GUIContent(
-                    "Native App Hang Tracking",
-                    "Enables app hang detection via sentry-native on Android, macOS, Windows, and Linux. Android " +
-                    "requires NDK Integration; macOS requires its backend above to be set to 'Native'. Shares the " +
-                    "App Hang Timeout configured in the App Hang Tracking section. iOS is unaffected by this option."),
-                options.Experimental.EnableNativeAppHangTracking);
         }
         EditorGUI.indentLevel--;
         EditorGUILayout.EndFoldoutHeaderGroup();
