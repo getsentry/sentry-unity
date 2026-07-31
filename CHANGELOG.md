@@ -1,5 +1,11 @@
 # Changelog
 
+## Ureleased
+
+### Fixes
+
+- When targeting macOS and switching between native backends, the SDK now correctly removes stale artifacts during the build process ([#2793](https://github.com/getsentry/sentry-unity/pull/2793))
+
 ## 4.8.0
 
 ### Behavioural Changes and Deprecations
