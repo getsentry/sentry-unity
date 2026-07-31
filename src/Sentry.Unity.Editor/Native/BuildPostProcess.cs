@@ -247,7 +247,7 @@ public static class BuildPostProcess
     // (Sentry.dylib gets picked over libsentry.dylib, surfacing as
     // `sentry_options_new` not found at runtime). Wipe both candidates
     // before copying the current backend's files in.
-    private static void CleanupStaleMacOSArtifacts(IDiagnosticLogger logger, string executablePath)
+    internal static void CleanupStaleMacOSArtifacts(IDiagnosticLogger logger, string executablePath)
     {
         var contents = Path.Combine(executablePath, "Contents");
         foreach (var stale in new[]
@@ -262,6 +262,13 @@ public static class BuildPostProcess
                 logger.LogDebug("Removing stale Sentry artifact from prior build: '{0}'", stale);
                 File.Delete(stale);
             }
+        }
+
+        var staleDsym = Path.Combine(contents, "MacOS", "Sentry.dylib.dSYM");
+        if (Directory.Exists(staleDsym))
+        {
+            logger.LogDebug("Removing stale Sentry artifact from prior build: '{0}'", staleDsym);
+            Directory.Delete(staleDsym, recursive: true);
         }
     }
 

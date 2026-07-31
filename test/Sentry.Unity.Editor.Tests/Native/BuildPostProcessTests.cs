@@ -80,4 +80,33 @@ public class BuildPostProcessTests
             l.logLevel == SentryLevel.Warning &&
             l.message.Contains("Required path not found")));
     }
+
+    [Test]
+    public void CleanupStaleMacOSArtifacts_RemovesAllStaleArtifacts()
+    {
+        var appPath = Path.Combine(_testDir, "Game.app");
+        var contents = Path.Combine(appPath, "Contents");
+        var staleArtifacts = new[]
+        {
+            Path.Combine(contents, "PlugIns", "Sentry.dylib"),
+            Path.Combine(contents, "PlugIns", "libsentry.dylib"),
+            Path.Combine(contents, "MacOS", "sentry-crash"),
+        };
+        foreach (var staleArtifact in staleArtifacts)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(staleArtifact)!);
+            File.WriteAllText(staleArtifact, "stale");
+        }
+
+        var staleDsym = Path.Combine(contents, "MacOS", "Sentry.dylib.dSYM");
+        Directory.CreateDirectory(staleDsym);
+
+        BuildPostProcess.CleanupStaleMacOSArtifacts(_logger, appPath);
+
+        foreach (var staleArtifact in staleArtifacts)
+        {
+            Assert.False(File.Exists(staleArtifact));
+        }
+        Assert.False(Directory.Exists(staleDsym));
+    }
 }
