@@ -98,6 +98,18 @@ pwsh scripts/run-tests.ps1 -Mode EditMode
 
 Run `dotnet build` before tests after SDK changes. `Filter` narrows selected tests.
 
+### Local Sample Builds
+
+Build the Unity 6 sample for a specific platform through Unity CLI:
+
+```pwsh
+pwsh scripts/build-sample.ps1 -Target Android
+```
+
+Supported targets are `StandaloneWindows64`, `StandaloneOSX`, `StandaloneLinux64`,
+`Android`, `iOS`, and `WebGL`. Build output is under
+`samples/unity-of-bugs-local/Builds/<Target>/`.
+
 ### Integration Tests
 
 Run integration tests locally using the same scripts as CI:

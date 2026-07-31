@@ -14,3 +14,15 @@ dotnet build
 ```
 
 Unity restores the ignored `Library` directory on first open.
+
+## Build
+
+Build a target through Unity CLI:
+
+```pwsh
+pwsh scripts/build-sample.ps1 -Target Android
+```
+
+Supported targets are `StandaloneWindows64`, `StandaloneOSX`,
+`StandaloneLinux64`, `Android`, `iOS`, and `WebGL`. Output is written under
+`Builds/<Target>/`.
