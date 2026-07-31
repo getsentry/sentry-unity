@@ -145,6 +145,12 @@ void sentry_options_set_logger(void* options, void* logger, void* userdata)
     (void)userdata;
 }
 
+void sentry_options_set_logger_enabled_when_crashed(void* options, int enabled)
+{
+    (void)options;
+    (void)enabled;
+}
+
 /*
  * =============================================================================
  * sentry_value_* Functions
