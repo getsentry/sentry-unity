@@ -1,8 +1,9 @@
 using System;
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using Sentry.Unity.Metrics;
 
-namespace Sentry.Unity;
+namespace Sentry.Unity.Integrations;
 
 internal class GameStatsMetricsIntegration : ISdkIntegration
 {
@@ -15,8 +16,10 @@ internal class GameStatsMetricsIntegration : ISdkIntegration
 
     public void Register(IHub hub, SentryOptions sentryOptions)
     {
-        var options = (SentryUnityOptions)sentryOptions;
-        if (!options.AutoGameStatsMetrics)
+        var options = sentryOptions as SentryUnityOptions
+            ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
+
+        if (!options.AutoMemoryMetrics)
         {
             return;
         }
@@ -24,14 +27,16 @@ internal class GameStatsMetricsIntegration : ISdkIntegration
         if (!options.EnableMetrics)
         {
             options.DiagnosticLogger?.LogWarning(
-                "Game-stats metrics are enabled but 'EnableMetrics' is disabled. No metrics will be collected.");
+                "Memory metrics are enabled but 'EnableMetrics' is disabled. No metrics will be collected.");
             return;
         }
 
-        var monitor = new GameStatsMonitor(new GameMetricAttributes(), options.DiagnosticLogger);
-        var interval = TimeSpan.FromSeconds(Math.Max(1, options.GameStatsMetricSampleIntervalSeconds));
-        _monoBehaviour.StartGameStatsMetrics(monitor, interval);
-        options.DiagnosticLogger?.LogInfo("Game-stats metrics sampling every {0}s.",
-            options.GameStatsMetricSampleIntervalSeconds);
+        var monitor = new GameStatsMonitor(options);
+        var interval = options.MemoryMetricsSampleInterval < TimeSpan.FromSeconds(1)
+            ? TimeSpan.FromSeconds(1)
+            : options.MemoryMetricsSampleInterval;
+        _monoBehaviour.StartMetricsMonitor(monitor, interval);
+
+        options.DiagnosticLogger?.LogInfo("Memory metrics sampling every {0}s.", interval.TotalSeconds);
     }
 }

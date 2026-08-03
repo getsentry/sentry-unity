@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Sentry.Extensibility;
 
-namespace Sentry.Unity;
+namespace Sentry.Unity.Metrics;
 
 /// <summary>
 /// Periodically emits basic multiplayer network metrics for Netcode for GameObjects (NGO): the
@@ -15,7 +15,7 @@ namespace Sentry.Unity;
 /// is running, the monitor is inert.
 /// </para>
 /// </summary>
-internal class NetworkMetricsMonitor
+internal class NetworkMetricsMonitor : IGameMetricMonitor
 {
     internal const string PingMetric = "game.perf.net.ping";
     internal const string NumClientsMetric = "game.perf.net.num_clients";
@@ -36,10 +36,10 @@ internal class NetworkMetricsMonitor
     private PropertyInfo? _networkTransportProperty;
     private bool _loggedMissingRtt;
 
-    public NetworkMetricsMonitor(GameMetricAttributes attributes, IDiagnosticLogger? logger)
+    public NetworkMetricsMonitor(SentryUnityOptions options)
     {
-        _attributes = attributes;
-        _logger = logger;
+        _attributes = options.GameMetricAttributes;
+        _logger = options.DiagnosticLogger;
 
         var networkManagerType = Type.GetType("Unity.Netcode.NetworkManager, Unity.Netcode.Runtime");
         if (networkManagerType is null)

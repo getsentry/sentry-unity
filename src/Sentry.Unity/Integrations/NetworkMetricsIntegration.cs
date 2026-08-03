@@ -1,8 +1,9 @@
 using System;
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using Sentry.Unity.Metrics;
 
-namespace Sentry.Unity;
+namespace Sentry.Unity.Integrations;
 
 internal class NetworkMetricsIntegration : ISdkIntegration
 {
@@ -15,7 +16,9 @@ internal class NetworkMetricsIntegration : ISdkIntegration
 
     public void Register(IHub hub, SentryOptions sentryOptions)
     {
-        var options = (SentryUnityOptions)sentryOptions;
+        var options = sentryOptions as SentryUnityOptions
+            ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
+
         if (!options.AutoNetworkMetrics)
         {
             return;
@@ -28,9 +31,12 @@ internal class NetworkMetricsIntegration : ISdkIntegration
             return;
         }
 
-        var monitor = new NetworkMetricsMonitor(new GameMetricAttributes(), options.DiagnosticLogger);
-        var interval = TimeSpan.FromSeconds(Math.Max(1, options.NetworkMetricsSampleIntervalSeconds));
-        _monoBehaviour.StartNetworkMetrics(monitor.Sample, interval);
-        options.DiagnosticLogger?.LogInfo("Network metrics sampling every {0}s.", options.NetworkMetricsSampleIntervalSeconds);
+        var monitor = new NetworkMetricsMonitor(options);
+        var interval = options.NetworkMetricsSampleInterval < TimeSpan.FromSeconds(1)
+            ? TimeSpan.FromSeconds(1)
+            : options.NetworkMetricsSampleInterval;
+        _monoBehaviour.StartMetricsMonitor(monitor, interval);
+
+        options.DiagnosticLogger?.LogInfo("Network metrics sampling every {0}s.", interval.TotalSeconds);
     }
 }

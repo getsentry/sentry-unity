@@ -1,5 +1,6 @@
 using System.Linq;
 using NUnit.Framework;
+using Sentry.Unity.Metrics;
 
 namespace Sentry.Unity.Tests;
 
@@ -24,11 +25,13 @@ public class GameMetricAttributesTests
     {
         var sceneManager = CreateSceneManager("MainMenu");
         var attributes = new GameMetricAttributes(sceneManager);
+        var current = attributes.Current;
 
         sceneManager.OnActiveSceneChanged(new SceneAdapter("MainMenu"), new SceneAdapter("Level1"));
 
         var map = attributes.Current.First(kvp => kvp.Key == "map");
         Assert.AreEqual("Level1", map.Value);
+        Assert.AreSame(current, attributes.Current);
     }
 
     [Test]

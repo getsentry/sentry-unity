@@ -1,7 +1,9 @@
+using System;
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using Sentry.Unity.Metrics;
 
-namespace Sentry.Unity;
+namespace Sentry.Unity.Integrations;
 
 internal class FrameTimeMetricsIntegration : ISdkIntegration
 {
@@ -14,8 +16,10 @@ internal class FrameTimeMetricsIntegration : ISdkIntegration
 
     public void Register(IHub hub, SentryOptions sentryOptions)
     {
-        var options = (SentryUnityOptions)sentryOptions;
-        if (!options.AutoFrameTimeMetrics)
+        var options = sentryOptions as SentryUnityOptions
+            ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
+
+        if (!options.AutoFrameMetrics)
         {
             return;
         }
@@ -27,13 +31,10 @@ internal class FrameTimeMetricsIntegration : ISdkIntegration
             return;
         }
 
-        var monitor = new FrameTimeMonitor(
-            options.FrameTimeMetricSampleInterval,
-            new GameMetricAttributes(),
-            options.DiagnosticLogger,
-            options.UnityInfo);
-        _monoBehaviour.StartFrameTimeMetrics(monitor);
+        var monitor = new FrameTimeMonitor(options);
+        _monoBehaviour.StartMetricsMonitor(monitor);
+
         options.DiagnosticLogger?.LogInfo("Frame-time metrics enabled (sampling every {0} frames).",
-            options.FrameTimeMetricSampleInterval);
+            options.FrameMetricsSampleIntervalFrames);
     }
 }

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using Sentry.Extensibility;
 using UnityEngine;
 
-namespace Sentry.Unity;
+namespace Sentry.Unity.Metrics;
 
 /// <summary>
 /// Samples per-frame performance and emits frame-time and FPS metrics every Nth frame, plus the
 /// CPU main-/render-thread times when the engine's <see cref="FrameTimingManager"/> has data.
 /// Driven once per frame from <see cref="SentryMonoBehaviour"/>.
 /// </summary>
-internal class FrameTimeMonitor
+internal class FrameTimeMonitor : IGameMetricMonitor
 {
     internal const string FrameTimeMetric = "game.perf.frame_time";
     internal const string FpsMetric = "game.perf.fps";
@@ -24,23 +24,19 @@ internal class FrameTimeMonitor
 
     private int _framesUntilSample;
 
-    public FrameTimeMonitor(
-        int sampleInterval,
-        GameMetricAttributes attributes,
-        IDiagnosticLogger? logger,
-        ISentryUnityInfo unityInfo)
+    public FrameTimeMonitor(SentryUnityOptions options)
     {
-        _sampleInterval = Math.Max(1, sampleInterval);
+        _sampleInterval = Math.Max(1, options.FrameMetricsSampleIntervalFrames);
         _framesUntilSample = _sampleInterval;
-        _attributes = attributes;
-        _logger = logger;
-        _unityInfo = unityInfo;
+        _attributes = options.GameMetricAttributes;
+        _logger = options.DiagnosticLogger;
+        _unityInfo = options.UnityInfo;
     }
 
     /// <summary>
     /// Called once per frame on the main thread. Emits a sample every <c>sampleInterval</c> frames.
     /// </summary>
-    public void OnFrame()
+    public void Sample()
     {
         if (--_framesUntilSample > 0)
         {

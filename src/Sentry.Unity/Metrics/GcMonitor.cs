@@ -2,18 +2,13 @@ using System;
 using System.Collections.Generic;
 using Sentry.Extensibility;
 
-namespace Sentry.Unity;
+namespace Sentry.Unity.Metrics;
 
 /// <summary>
 /// Periodically samples the garbage collector and emits the number of collections per generation
 /// since the previous sample as a counter metric.
-/// <para>
-/// Note: unlike the Unreal SDK's FSentryPerfGCMonitor, this reports collection <b>counts</b> rather
-/// than pause <b>duration</b> - Unity's Mono/IL2CPP runtime does not expose a reliable GC pause
-/// callback.
-/// </para>
 /// </summary>
-internal class GcMonitor
+internal class GcMonitor : IGameMetricMonitor
 {
     internal const string GcCollectionsMetric = "game.perf.gc_collections";
 
@@ -21,10 +16,10 @@ internal class GcMonitor
     private readonly IDiagnosticLogger? _logger;
     private readonly int[] _previousCounts;
 
-    public GcMonitor(GameMetricAttributes attributes, IDiagnosticLogger? logger)
+    public GcMonitor(SentryUnityOptions options)
     {
-        _attributes = attributes;
-        _logger = logger;
+        _attributes = options.GameMetricAttributes;
+        _logger = options.DiagnosticLogger;
 
         _previousCounts = new int[GC.MaxGeneration + 1];
         for (var generation = 0; generation < _previousCounts.Length; generation++)

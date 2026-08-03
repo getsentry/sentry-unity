@@ -2,14 +2,14 @@ using System;
 using Sentry.Extensibility;
 using UnityEngine.Profiling;
 
-namespace Sentry.Unity;
+namespace Sentry.Unity.Metrics;
 
 /// <summary>
 /// Periodically samples game statistics (memory usage) and emits them as gauge metrics. Mirrors the
 /// Unreal SDK's FSentryPerfGameStatsMonitor (Unity has no UObject count, so managed/native heap
 /// sizes are reported instead).
 /// </summary>
-internal class GameStatsMonitor
+internal class GameStatsMonitor : IGameMetricMonitor
 {
     internal const string UsedMemoryMetric = "game.perf.used_memory";
     internal const string ReservedMemoryMetric = "game.perf.reserved_memory";
@@ -18,10 +18,10 @@ internal class GameStatsMonitor
     private readonly GameMetricAttributes _attributes;
     private readonly IDiagnosticLogger? _logger;
 
-    public GameStatsMonitor(GameMetricAttributes attributes, IDiagnosticLogger? logger)
+    public GameStatsMonitor(SentryUnityOptions options)
     {
-        _attributes = attributes;
-        _logger = logger;
+        _attributes = options.GameMetricAttributes;
+        _logger = options.DiagnosticLogger;
     }
 
     public void Sample()

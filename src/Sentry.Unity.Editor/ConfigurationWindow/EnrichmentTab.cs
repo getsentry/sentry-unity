@@ -107,26 +107,26 @@ internal static class EnrichmentTab
             GUILayout.Label("EXPERIMENTAL: Auto-collect common game performance metrics and send them " +
                             "to Sentry. Requires 'Enable Metrics'.", EditorStyles.wordWrappedMiniLabel);
 
-            options.AutoFrameTimeMetrics = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Auto Frame-Time Metrics", "Periodically emit frame time and FPS as Sentry metrics."),
-                options.AutoFrameTimeMetrics);
+            options.AutoFrameMetrics = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Auto Frame Metrics", "Periodically emit frame time, FPS, and CPU thread timings as Sentry metrics."),
+                options.AutoFrameMetrics);
             EditorGUI.indentLevel++;
 
-            options.FrameTimeMetricSampleInterval = EditorGUILayout.IntField(
+            options.FrameMetricsSampleIntervalFrames = EditorGUILayout.IntField(
                 new GUIContent("Sample Interval (frames)", "Emit a frame-time sample every Nth frame." +
                                                            "\nDefault: 30"),
-                options.FrameTimeMetricSampleInterval);
-            if (options.FrameTimeMetricSampleInterval < 1)
+                options.FrameMetricsSampleIntervalFrames);
+            if (options.FrameMetricsSampleIntervalFrames < 1)
             {
-                options.FrameTimeMetricSampleInterval = 1;
+                options.FrameMetricsSampleIntervalFrames = 1;
             }
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
 
-            options.AutoGameStatsMetrics = EditorGUILayout.Toggle(
-                new GUIContent("Auto Game-Stats Metrics", "Periodically emit memory usage as Sentry metrics."),
-                options.AutoGameStatsMetrics);
+            options.AutoMemoryMetrics = EditorGUILayout.Toggle(
+                new GUIContent("Auto Memory Metrics", "Periodically emit memory usage as Sentry metrics."),
+                options.AutoMemoryMetrics);
 
             options.AutoGcMetrics = EditorGUILayout.Toggle(
                 new GUIContent("Auto GC Metrics", "Periodically emit garbage-collection counts (per generation) " +
@@ -139,14 +139,22 @@ internal static class EnrichmentTab
                                                        "metrics. Requires the Netcode for GameObjects package."),
                 options.AutoNetworkMetrics);
 
-            options.GameStatsMetricSampleIntervalSeconds = EditorGUILayout.IntField(
-                new GUIContent("Game-Stats/GC Interval (s)", "How often, in seconds, the game-stats and GC " +
-                                                             "metrics are sampled." +
-                                                             "\nDefault: 60"),
-                options.GameStatsMetricSampleIntervalSeconds);
-            if (options.GameStatsMetricSampleIntervalSeconds < 1)
+            options.MemoryMetricsSampleIntervalSeconds = EditorGUILayout.IntField(
+                new GUIContent("Memory Interval (s)", "How often, in seconds, memory metrics are sampled." +
+                                                      "\nDefault: 60"),
+                options.MemoryMetricsSampleIntervalSeconds);
+            if (options.MemoryMetricsSampleIntervalSeconds < 1)
             {
-                options.GameStatsMetricSampleIntervalSeconds = 1;
+                options.MemoryMetricsSampleIntervalSeconds = 1;
+            }
+
+            options.GcMetricsSampleIntervalSeconds = EditorGUILayout.IntField(
+                new GUIContent("GC Interval (s)", "How often, in seconds, GC metrics are sampled." +
+                                                  "\nDefault: 60"),
+                options.GcMetricsSampleIntervalSeconds);
+            if (options.GcMetricsSampleIntervalSeconds < 1)
+            {
+                options.GcMetricsSampleIntervalSeconds = 1;
             }
 
             options.NetworkMetricsSampleIntervalSeconds = EditorGUILayout.IntField(

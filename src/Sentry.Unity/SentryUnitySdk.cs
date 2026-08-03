@@ -67,6 +67,7 @@ internal class SentryUnitySdk
         try
         {
             ApplicationAdapter.Instance.Quitting -= Close;
+            _options.DisposeGameMetricAttributes();
             _options.NativeSupportCloseCallback?.Invoke();
             _options.NativeSupportCloseCallback = null;
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
+using Sentry.Unity.Metrics;
 using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
@@ -135,23 +136,23 @@ public sealed class SentryUnityOptions : SentryOptions
     public int MaxViewHierarchyDepth { get; set; } = 10;
 
     /// <summary>
-    /// EXPERIMENTAL: Automatically collect per-frame performance metrics (frame time and FPS) and
-    /// send them to Sentry as metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain
+    /// EXPERIMENTAL: Automatically collect per-frame performance metrics, including frame time, FPS,
+    /// and CPU thread timings, and send them to Sentry as metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain
     /// enabled (the default).
     /// </summary>
-    public bool AutoFrameTimeMetrics { get; set; } = false;
+    public bool AutoFrameMetrics { get; set; } = false;
 
     /// <summary>
     /// How often, in frames, the per-frame metrics are sampled. For example, a value of 30 emits a
     /// sample every 30th frame. Minimum 1.
     /// </summary>
-    public int FrameTimeMetricSampleInterval { get; set; } = 30;
+    public int FrameMetricsSampleIntervalFrames { get; set; } = 30;
 
     /// <summary>
-    /// EXPERIMENTAL: Periodically collect game statistics (memory usage) and send them to Sentry as
+    /// EXPERIMENTAL: Periodically collect memory usage and send it to Sentry as
     /// metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain enabled (the default).
     /// </summary>
-    public bool AutoGameStatsMetrics { get; set; } = false;
+    public bool AutoMemoryMetrics { get; set; } = false;
 
     /// <summary>
     /// EXPERIMENTAL: Periodically collect garbage-collection counts (per generation) and send them
@@ -167,14 +168,19 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool AutoNetworkMetrics { get; set; } = false;
 
     /// <summary>
-    /// How often, in seconds, the periodic game-stats and GC metrics are sampled. Minimum 1.
+    /// How often memory metrics are sampled. Minimum one second.
     /// </summary>
-    public int GameStatsMetricSampleIntervalSeconds { get; set; } = 60;
+    public TimeSpan MemoryMetricsSampleInterval { get; set; } = TimeSpan.FromSeconds(60);
 
     /// <summary>
-    /// How often, in seconds, the network metrics are sampled. Minimum 1.
+    /// How often GC metrics are sampled. Minimum one second.
     /// </summary>
-    public int NetworkMetricsSampleIntervalSeconds { get; set; } = 10;
+    public TimeSpan GcMetricsSampleInterval { get; set; } = TimeSpan.FromSeconds(60);
+
+    /// <summary>
+    /// How often network metrics are sampled. Minimum one second.
+    /// </summary>
+    public TimeSpan NetworkMetricsSampleInterval { get; set; } = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// The quality of the attached screenshot
@@ -493,6 +499,15 @@ public sealed class SentryUnityOptions : SentryOptions
 
     internal ISentryUnityInfo UnityInfo { get; private set; }
     internal Action<SentryUnityOptions>? PlatformConfiguration { get; private set; }
+
+    private GameMetricAttributes? _gameMetricAttributes;
+    internal GameMetricAttributes GameMetricAttributes => _gameMetricAttributes ??= new GameMetricAttributes();
+
+    internal void DisposeGameMetricAttributes()
+    {
+        _gameMetricAttributes?.Dispose();
+        _gameMetricAttributes = null;
+    }
 
     public SentryUnityOptions() : this(isBuilding: false) { }
 

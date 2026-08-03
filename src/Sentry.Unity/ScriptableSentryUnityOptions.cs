@@ -74,12 +74,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
     [field: SerializeField] public int MaxViewHierarchyDepth { get; set; } = 10;
 
-    [field: SerializeField] public bool AutoFrameTimeMetrics { get; set; } = false;
-    [field: SerializeField] public int FrameTimeMetricSampleInterval { get; set; } = 30;
-    [field: SerializeField] public bool AutoGameStatsMetrics { get; set; } = false;
+    [field: SerializeField] public bool AutoFrameMetrics { get; set; } = false;
+    [field: SerializeField] public int FrameMetricsSampleIntervalFrames { get; set; } = 30;
+    [field: SerializeField] public bool AutoMemoryMetrics { get; set; } = false;
     [field: SerializeField] public bool AutoGcMetrics { get; set; } = false;
     [field: SerializeField] public bool AutoNetworkMetrics { get; set; } = false;
-    [field: SerializeField] public int GameStatsMetricSampleIntervalSeconds { get; set; } = 60;
+    [field: SerializeField] public int MemoryMetricsSampleIntervalSeconds { get; set; } = 60;
+    [field: SerializeField] public int GcMetricsSampleIntervalSeconds { get; set; } = 60;
     [field: SerializeField] public int NetworkMetricsSampleIntervalSeconds { get; set; } = 10;
 
     [field: SerializeField] public bool EnableStructuredLogging { get; set; } = false;
@@ -202,13 +203,14 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             MaxViewHierarchyRootObjects = MaxViewHierarchyRootObjects,
             MaxViewHierarchyObjectChildCount = MaxViewHierarchyObjectChildCount,
             MaxViewHierarchyDepth = MaxViewHierarchyDepth,
-            AutoFrameTimeMetrics = AutoFrameTimeMetrics,
-            FrameTimeMetricSampleInterval = FrameTimeMetricSampleInterval,
-            AutoGameStatsMetrics = AutoGameStatsMetrics,
+            AutoFrameMetrics = AutoFrameMetrics,
+            FrameMetricsSampleIntervalFrames = FrameMetricsSampleIntervalFrames,
+            AutoMemoryMetrics = AutoMemoryMetrics,
             AutoGcMetrics = AutoGcMetrics,
             AutoNetworkMetrics = AutoNetworkMetrics,
-            GameStatsMetricSampleIntervalSeconds = GameStatsMetricSampleIntervalSeconds,
-            NetworkMetricsSampleIntervalSeconds = NetworkMetricsSampleIntervalSeconds,
+            MemoryMetricsSampleInterval = TimeSpan.FromSeconds(MemoryMetricsSampleIntervalSeconds),
+            GcMetricsSampleInterval = TimeSpan.FromSeconds(GcMetricsSampleIntervalSeconds),
+            NetworkMetricsSampleInterval = TimeSpan.FromSeconds(NetworkMetricsSampleIntervalSeconds),
             MaxBreadcrumbs = MaxBreadcrumbs,
             ReportAssembliesMode = ReportAssembliesMode,
             SendDefaultPii = SendDefaultPii,

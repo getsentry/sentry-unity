@@ -1,8 +1,9 @@
 using System;
 using Sentry.Extensibility;
 using Sentry.Integrations;
+using Sentry.Unity.Metrics;
 
-namespace Sentry.Unity;
+namespace Sentry.Unity.Integrations;
 
 internal class GcMetricsIntegration : ISdkIntegration
 {
@@ -15,7 +16,9 @@ internal class GcMetricsIntegration : ISdkIntegration
 
     public void Register(IHub hub, SentryOptions sentryOptions)
     {
-        var options = (SentryUnityOptions)sentryOptions;
+        var options = sentryOptions as SentryUnityOptions
+            ?? throw new ArgumentException("Options is not of type 'SentryUnityOptions'.");
+
         if (!options.AutoGcMetrics)
         {
             return;
@@ -28,9 +31,12 @@ internal class GcMetricsIntegration : ISdkIntegration
             return;
         }
 
-        var monitor = new GcMonitor(new GameMetricAttributes(), options.DiagnosticLogger);
-        var interval = TimeSpan.FromSeconds(Math.Max(1, options.GameStatsMetricSampleIntervalSeconds));
-        _monoBehaviour.StartGcMetrics(monitor, interval);
-        options.DiagnosticLogger?.LogInfo("GC metrics sampling every {0}s.", options.GameStatsMetricSampleIntervalSeconds);
+        var monitor = new GcMonitor(options);
+        var interval = options.GcMetricsSampleInterval < TimeSpan.FromSeconds(1)
+            ? TimeSpan.FromSeconds(1)
+            : options.GcMetricsSampleInterval;
+        _monoBehaviour.StartMetricsMonitor(monitor, interval);
+
+        options.DiagnosticLogger?.LogInfo("GC metrics sampling every {0}s.", interval.TotalSeconds);
     }
 }
