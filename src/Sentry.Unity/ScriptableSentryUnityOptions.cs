@@ -114,9 +114,14 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public int ShutdownTimeout { get; set; } = 2000;
     [field: SerializeField] public int MaxQueueItems { get; set; } = 30;
 
-    [field: SerializeField] public bool AnrDetectionEnabled { get; set; } = true;
-    [field: SerializeField] public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
-    [field: SerializeField] public bool EnableAppHangTracking { get; set; } = true;
+    [field: SerializeField]
+    [Obsolete("The C# ANR watchdog is deprecated. Use EnableAppHangTracking instead. This property will be removed in a future version.")]
+    public bool AnrDetectionEnabled { get; set; } = false;
+
+    [field: SerializeField]
+    [Obsolete("The C# ANR watchdog is deprecated. Use EnableAppHangTracking instead. This property will be removed in a future version.")]
+    public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
+    [field: SerializeField] public bool EnableAppHangTracking { get; set; } = false;
     [field: SerializeField] public int AppHangTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
 
     [field: SerializeField] public bool CaptureFailedRequests { get; set; } = true;
@@ -218,7 +223,9 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             Debug = ShouldDebug(application.IsEditor && !isBuilding),
             DiagnosticLevel = DiagnosticLevel,
             CaptureLogErrorEvents = CaptureLogErrorEvents,
+#pragma warning disable CS0618 // Type or member is obsolete
             AnrTimeout = TimeSpan.FromMilliseconds(AnrTimeout),
+#pragma warning restore CS0618
             EnableAppHangTracking = EnableAppHangTracking,
             AppHangTimeout = TimeSpan.FromMilliseconds(AppHangTimeout),
             CaptureFailedRequests = CaptureFailedRequests,
@@ -252,7 +259,9 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         options.Experimental.MacosBackend = Experimental.MacosBackend;
         options.Experimental.WindowsBackend = Experimental.WindowsBackend;
         options.Experimental.LinuxBackend = Experimental.LinuxBackend;
+#pragma warning disable CS0618 // Type or member is obsolete
         options.Experimental.EnableNativeAppHangTracking = Experimental.EnableNativeAppHangTracking;
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // By default, the cacheDirectoryPath gets set on known platforms. We're overwriting this behaviour here.
         if (!EnableOfflineCaching)
@@ -281,6 +290,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             options.FailedRequestStatusCodes.Add(
                 new HttpStatusCodeRange(FailedRequestStatusCodes[i], FailedRequestStatusCodes[i + 1]));
         }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        if (AnrDetectionEnabled)
+        {
+            options.AddIntegration(new AnrIntegration(SentryMonoBehaviour.Instance));
+        }
+#pragma warning restore CS0618
 
         if (OptionsConfiguration != null)
         {
@@ -316,13 +332,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
         // ExceptionFilters are added by default to the options.
         HandleExceptionFilter(options);
-
-        // The AnrDetectionIntegration is added by default. Since it is a ScriptableUnityOptions-only property we have to
-        // remove the integration when creating the options through here
-        if (!AnrDetectionEnabled)
-        {
-            options.DisableAnrIntegration();
-        }
 
         return options;
     }

@@ -4,7 +4,7 @@
 
     <!-- Cocoa -->
     <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
-    <SentryiOSArtifactsDestination>$(SentryArtifactsDestination)iOS/Sentry.xcframework~/</SentryiOSArtifactsDestination>
+    <SentryiOSArtifactsDestination>$(SentryArtifactsDestination)iOS/SentryObjC.xcframework~/</SentryiOSArtifactsDestination>
     <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)macOS/Sentry~/</SentrymacOSArtifactsDestination>
     <SentryMacOSNativeArtifactsDestination>$(SentryArtifactsDestination)macOS/SentryNative~/</SentryMacOSNativeArtifactsDestination>
 
@@ -44,15 +44,6 @@
     <Error Condition="!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM')" Text="Failed to set up the macOS SDK." />
   </Target>
 
-  <!-- Hooks into 'dotnet build' so a missing iOS/macOS plugin auto-triggers BuildCocoaSDK. -->
-  <Target Name="EnsureCocoaSDK"
-          BeforeTargets="BeforeBuild"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-            And !$([MSBuild]::IsOSPlatform('Windows'))
-            And (!Exists('$(SentryiOSArtifactsDestination)') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib'))">
-    <CallTarget Targets="BuildCocoaSDK" />
-  </Target>
-
   <!--
     Build the Sentry Native SDK for Linux:
         dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity
@@ -80,15 +71,6 @@
     <Exec WorkingDirectory="$(SentryLinuxArtifactsDestination)" Command="objcopy --add-gnu-debuglink=libsentry.dbg.so libsentry.so" />
 
     <Error Condition="!Exists('$(SentryLinuxArtifactsDestination)libsentry.so')" Text="Failed to set up the Linux SDK." />
-  </Target>
-
-  <!-- Hooks into 'dotnet build' so a missing Linux plugin auto-triggers BuildLinuxSDK. -->
-  <Target Name="EnsureLinuxSDK"
-          BeforeTargets="BeforeBuild"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-            And $([MSBuild]::IsOSPlatform('Linux'))
-            And !Exists('$(SentryLinuxArtifactsDestination)libsentry.so')">
-    <CallTarget Targets="BuildLinuxSDK" />
   </Target>
 
   <!--
@@ -131,15 +113,6 @@
     <Error Condition="!Exists('$(SentryLinuxNativeArtifactsDestination)sentry-crash')" Text="Failed to set up the Linux Native SDK crash daemon." />
   </Target>
 
-  <!-- Hooks into 'dotnet build' so a missing Linux Native plugin auto-triggers BuildLinuxNativeSDK. -->
-  <Target Name="EnsureLinuxNativeSDK"
-          BeforeTargets="BeforeBuild"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-            And $([MSBuild]::IsOSPlatform('Linux'))
-            And !Exists('$(SentryLinuxNativeArtifactsDestination)libsentry.so')">
-    <CallTarget Targets="BuildLinuxNativeSDK" />
-  </Target>
-
   <!--
     Build the Sentry Native SDK for Windows:
         dotnet msbuild /t:BuildWindowsSDK src/Sentry.Unity
@@ -176,15 +149,6 @@
     <Copy SourceFiles="@(NativeSdkArtifacts)" DestinationFolder="$(SentryWindowsArtifactsDestination)" />
 
     <Error Condition="!Exists('$(SentryWindowsArtifactsDestination)sentry.dll')" Text="Failed to set up the Windows SDK." />
-  </Target>
-
-  <!-- Hooks into 'dotnet build' so a missing Windows plugin auto-triggers BuildWindowsSDK. -->
-  <Target Name="EnsureWindowsSDK"
-          BeforeTargets="BeforeBuild"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-            And $([MSBuild]::IsOSPlatform('Windows'))
-            And !Exists('$(SentryWindowsArtifactsDestination)sentry.dll')">
-    <CallTarget Targets="BuildWindowsSDK" />
   </Target>
 
   <!--
@@ -229,15 +193,6 @@
     <Error Condition="!Exists('$(SentryWindowsNativeArtifactsDestination)sentry.dll')" Text="Failed to set up the Windows Native SDK." />
   </Target>
 
-  <!-- Hooks into 'dotnet build' so a missing Windows Native plugin auto-triggers BuildWindowsNativeSDK. -->
-  <Target Name="EnsureWindowsNativeSDK"
-          BeforeTargets="BeforeBuild"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-            And $([MSBuild]::IsOSPlatform('Windows'))
-            And !Exists('$(SentryWindowsNativeArtifactsDestination)sentry.dll')">
-    <CallTarget Targets="BuildWindowsNativeSDK" />
-  </Target>
-
   <!--
     Build the Sentry Native SDK for macOS:
         dotnet msbuild /t:BuildMacOSNativeSDK src/Sentry.Unity
@@ -278,15 +233,6 @@
     <Exec Command="strip -x $(SentryMacOSNativeArtifactsDestination)sentry-crash" />
 
     <Error Condition="!Exists('$(SentryMacOSNativeArtifactsDestination)libsentry.dylib')" Text="Failed to set up the macOS Native SDK." />
-  </Target>
-
-  <!-- Hooks into 'dotnet build' so a missing macOS Native plugin auto-triggers BuildMacOSNativeSDK. -->
-  <Target Name="EnsureMacOSNativeSDK"
-          BeforeTargets="BeforeBuild"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-            And $([MSBuild]::IsOSPlatform('OSX'))
-            And !Exists('$(SentryMacOSNativeArtifactsDestination)libsentry.dylib')">
-    <CallTarget Targets="BuildMacOSNativeSDK" />
   </Target>
 
   <!--
@@ -371,14 +317,4 @@
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to set up the Android SDK." />
   </Target>
 
-  <!-- Hooks into 'dotnet build' so a missing/incomplete Android plugin auto-triggers BuildAndroidSDK.
-       BuildAndroidSDK copies exactly 4 artifacts into $(SentryAndroidArtifactsDestination); any
-       other count means the previous run was interrupted and we should rebuild. -->
-  <Target Name="EnsureAndroidSDK"
-          BeforeTargets="BeforeBuild"
-          Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'
-            And (!Exists('$(SentryAndroidArtifactsDestination)')
-              Or $([System.IO.Directory]::GetFiles('$(SentryAndroidArtifactsDestination)').Length) != 4)">
-    <CallTarget Targets="BuildAndroidSDK" />
-  </Target>
 </Project>

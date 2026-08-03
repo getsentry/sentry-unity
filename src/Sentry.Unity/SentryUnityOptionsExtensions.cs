@@ -1,3 +1,4 @@
+using System;
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
@@ -103,6 +104,7 @@ public static class SentryUnityOptionsExtensions
     /// <summary>
     /// Disables the application-not-responding detection.
     /// </summary>
+    [Obsolete("The C# ANR watchdog is deprecated. Use EnableAppHangTracking instead. This method will be removed in a future version.")]
     public static void DisableAnrIntegration(this SentryUnityOptions options) =>
         options.RemoveIntegration<AnrIntegration>();
 

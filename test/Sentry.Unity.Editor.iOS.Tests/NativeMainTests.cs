@@ -60,15 +60,21 @@ public class NativeMainTests
     public void AddSentry_CleanMain_OutputMatchesExpected()
     {
         var expectedMain = GetFileContents("main_expected.txt");
-        var workingMainPath = "temp.txt";
-        File.WriteAllText(workingMainPath, GetFileContents("main.txt"));
+        var workingMainPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.txt");
 
-        NativeMain.AddSentry(workingMainPath, null);
-        var actualMain = File.ReadAllText(workingMainPath);
+        try
+        {
+            File.WriteAllText(workingMainPath, GetFileContents("main.txt"));
 
-        Assert.AreEqual(expectedMain, actualMain);
+            NativeMain.AddSentry(workingMainPath, null);
+            var actualMain = File.ReadAllText(workingMainPath);
 
-        File.Delete(workingMainPath);
+            Assert.AreEqual(expectedMain, actualMain);
+        }
+        finally
+        {
+            File.Delete(workingMainPath);
+        }
     }
 
     private string GetFileContents(string fileName)

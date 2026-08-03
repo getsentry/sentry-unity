@@ -6,18 +6,46 @@
 
 - Added experimental auto game-metrics. When enabled, the SDK periodically collects common performance metrics and sends them to Sentry via the metrics API. ([#2777](https://github.com/getsentry/sentry-unity/pull/2777))
 
+### Dependencies
+
+- Bump Cocoa SDK from v9.23.0 to v9.24.0 ([#2792](https://github.com/getsentry/sentry-unity/pull/2792))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9240)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.23.0...9.24.0)
+
+## 4.8.0
+
+### Behavioural Changes and Deprecations
+
+- The C# ANR watchdog and its configuration options (`AnrDetectionEnabled`, `AnrTimeout`, and `DisableAnrIntegration`) are now marked as `[Obsolete]` and `false` by default. Use experimental `EnableAppHangTracking` instead. ([#2784](https://github.com/getsentry/sentry-unity/pull/2784), [#2787](https://github.com/getsentry/sentry-unity/pull/2787))
+- `EnableAppHangTracking` now controls native app-hang tracking on Android, iOS, Linux, macOS, and Windows and defaults to `false`. `Experimental.EnableNativeAppHangTracking` is deprecated.
+
+### Features
+
+- Extended experimental `EnableAppHangTracking` to Android. It configures the Android NDK app-hang detector and emits Unity main-thread heartbeats. This requires `NdkIntegrationEnabled` to be set to `true` ([#2778](https://github.com/getsentry/sentry-unity/pull/2778))
+
 ### Fixes
 
+- The app hang detection now correctly pauses and resumes when the game moves between background and foreground to prevent false positive events ([#2788](https://github.com/getsentry/sentry-unity/pull/2788))
+- Migrated the native support for iOS and macOS to use the Obj-C flavour of `sentry-cocoa` ([#2767](https://github.com/getsentry/sentry-unity/pull/2767))
 - The SDK now correctly synchronizes the `Environment` set on the `Scope` events coming from the native layer ([#2764](https://github.com/getsentry/sentry-unity/pull/2764))
 
 ### Dependencies
 
-- Bump .NET SDK from v6.5.0-33-g0140be0a to v6.7.0 ([#2761](https://github.com/getsentry/sentry-unity/pull/2761), [#2762](https://github.com/getsentry/sentry-unity/pull/2762))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#670)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.5.0-33-g0140be0a...6.7.0)
-- Bump Java SDK from v8.48.0 to v8.49.0 ([#2766](https://github.com/getsentry/sentry-unity/pull/2766))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8490)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.48.0...8.49.0)
+- Bump .NET SDK from v6.5.0-33-g0140be0a to v6.8.0 ([#2761](https://github.com/getsentry/sentry-unity/pull/2761), [#2762](https://github.com/getsentry/sentry-unity/pull/2762), [#2776](https://github.com/getsentry/sentry-unity/pull/2776))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#680)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.5.0-33-g0140be0a...6.8.0)
+- Bump Native SDK from v0.15.3 to v0.16.1 ([#2769](https://github.com/getsentry/sentry-unity/pull/2769), [#2779](https://github.com/getsentry/sentry-unity/pull/2779), [#2788](https://github.com/getsentry/sentry-unity/pull/2788))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0161)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.15.3...0.16.1)
+- Bump Cocoa SDK from v9.21.0 to v9.23.0 ([#2767](https://github.com/getsentry/sentry-unity/pull/2767))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9230)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.21.0...9.23.0)
+- Bump Java SDK from v8.48.0 to v8.51.0 ([#2766](https://github.com/getsentry/sentry-unity/pull/2766), [#2775](https://github.com/getsentry/sentry-unity/pull/2775), [#2790](https://github.com/getsentry/sentry-unity/pull/2790))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8510)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.48.0...8.51.0)
+- Bump CLI from v3.6.0 to v3.6.2 ([#2772](https://github.com/getsentry/sentry-unity/pull/2772))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#362)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.6.0...3.6.2)
 
 ## 4.7.0
 

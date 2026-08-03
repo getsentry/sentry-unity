@@ -58,4 +58,20 @@ public class SentryMonoBehaviourAppHangTests
 
         Assert.AreEqual(countAfterDestroy, count);
     }
+
+    [Test]
+    public void StartAppHangHeartbeat_PausesNativeDetectorWhenApplicationPauses()
+    {
+        var sut = GetSut();
+        var pauses = 0;
+
+        sut.StartAppHangHeartbeat(() => { }, () => pauses++);
+
+        sut.UpdatePauseStatus(true);
+        Assert.AreEqual(1, pauses);
+
+        sut.UpdatePauseStatus(false);
+        sut.UpdatePauseStatus(true);
+        Assert.AreEqual(2, pauses);
+    }
 }

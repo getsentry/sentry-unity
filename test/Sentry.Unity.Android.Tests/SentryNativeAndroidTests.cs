@@ -111,6 +111,44 @@ public class SentryNativeAndroidTests
     }
 
     [Test]
+    public void AppHangHeartbeat_InvokesNativeHeartbeat()
+    {
+        var heartbeatCalled = false;
+        var originalStrategy = Interlocked.Exchange(ref SentryNative.AppHangHeartbeatStrategy,
+            () => heartbeatCalled = true);
+
+        try
+        {
+            SentryNative.AppHangHeartbeat();
+
+            Assert.True(heartbeatCalled);
+        }
+        finally
+        {
+            Interlocked.Exchange(ref SentryNative.AppHangHeartbeatStrategy, originalStrategy);
+        }
+    }
+
+    [Test]
+    public void AppHangPause_InvokesNativePause()
+    {
+        var pauseCalled = false;
+        var originalStrategy = Interlocked.Exchange(ref SentryNative.AppHangPauseStrategy,
+            () => pauseCalled = true);
+
+        try
+        {
+            SentryNative.AppHangPause();
+
+            Assert.True(pauseCalled);
+        }
+        finally
+        {
+            Interlocked.Exchange(ref SentryNative.AppHangPauseStrategy, originalStrategy);
+        }
+    }
+
+    [Test]
     public void Configure_InstallationIdReturned_SetsDefaultUserId()
     {
         var options = new SentryUnityOptions();

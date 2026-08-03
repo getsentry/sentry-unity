@@ -145,6 +145,8 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setEnableScopePersistence", options.AndroidNativeAnrEnabled);
                 androidOptions.Call("setReportHistoricalAnrs", options.AndroidReportHistoricalAnrs);
                 androidOptions.Call("setAttachAnrThreadDump", options.AndroidAttachAnrThreadDump);
+                androidOptions.Call("setEnableNdkAppHangTracking", options.NativeAppHangTrackingEnabled);
+                androidOptions.Call("setNdkAppHangTimeoutIntervalMillis", (long)Math.Max(0, options.AppHangTimeout.TotalMilliseconds));
 
                 androidOptions.Call("setTombstoneEnabled", options.AndroidTombstoneEnabled);
                 androidOptions.Call("setReportHistoricalTombstones", options.AndroidReportHistoricalTombstones);

@@ -11,12 +11,13 @@ public class ScriptableSentryUnityOptionsTests
     public void ScriptableSentryUnityOptions_Creation_AllPropertiesPresent()
     {
         const string testOptionsPath = "Assets/TestOptions.asset";
+        var testOptionsFilePath = Path.Combine(Application.dataPath, "TestOptions.asset");
 
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
         AssetDatabase.CreateAsset(scriptableOptions, testOptionsPath);
         AssetDatabase.SaveAssets();
 
-        var optionsAsString = File.ReadAllText(testOptionsPath);
+        var optionsAsString = File.ReadAllText(testOptionsFilePath);
 
         StringAssert.Contains("Enabled", optionsAsString);
         StringAssert.Contains("Dsn", optionsAsString);

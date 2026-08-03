@@ -14,6 +14,7 @@ public partial class SentryMonoBehaviour
     private static readonly TimeSpan AppHangHeartbeatInterval = TimeSpan.FromSeconds(1);
 
     private Coroutine? _appHangHeartbeat;
+    private Action? _appHangPause;
 
     /// <summary>
     /// Starts the app-hang heartbeat on the main thread at a fixed 1-second interval. Arming is
@@ -22,6 +23,18 @@ public partial class SentryMonoBehaviour
     /// </summary>
     public Coroutine StartAppHangHeartbeat(Action heartbeat) =>
         StartAppHangHeartbeat(heartbeat, AppHangHeartbeatInterval);
+
+    internal Coroutine StartAppHangHeartbeat(Action heartbeat, Action pause)
+    {
+        if (_appHangPause is not null)
+        {
+            ApplicationPausing -= _appHangPause;
+        }
+
+        _appHangPause = pause;
+        ApplicationPausing += pause;
+        return StartAppHangHeartbeat(heartbeat, AppHangHeartbeatInterval);
+    }
 
     // Internal overload so tests can use a short interval.
     internal Coroutine StartAppHangHeartbeat(Action heartbeat, TimeSpan interval)

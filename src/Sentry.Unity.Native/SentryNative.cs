@@ -94,10 +94,12 @@ public static class SentryNative
         }
         options.CrashedLastRun = () => crashedLastRun;
 
-        if (options.Experimental.EnableNativeAppHangTracking)
+        if (options.NativeAppHangTrackingEnabled)
         {
             Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
-            SentryMonoBehaviour.Instance.StartAppHangHeartbeat(SentryNativeBridge.AppHangHeartbeat);
+            SentryMonoBehaviour.Instance.StartAppHangHeartbeat(
+                SentryNativeBridge.AppHangHeartbeat,
+                SentryNativeBridge.AppHangPause);
 
             // sentry-native handles app-hang detection on the desktop platforms. Where it is effective, skip the
             // C# ANR watchdog so a hang isn't reported twice (mirrors the iOS/sentry-cocoa behavior).
@@ -106,7 +108,9 @@ public static class SentryNative
                 or RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer)
             {
                 Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-native handles app hang detection.");
+#pragma warning disable CS0618 // Type or member is obsolete
                 options.DisableAnrIntegration();
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 

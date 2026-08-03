@@ -210,6 +210,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// <summary>
     /// The duration in [ms] for how long the game has to be unresponsive before an ANR event is reported.
     /// </summary>
+    [Obsolete("The C# ANR watchdog is deprecated. Use EnableAppHangTracking instead. This property will be removed in a future version.")]
     public TimeSpan AnrTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
     /// <summary>
@@ -228,17 +229,30 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool IosWatchdogTerminationIntegrationEnabled { get; set; } = false;
 
     /// <summary>
-    /// Enables app hang detection on iOS through <c>sentry-cocoa</c>, which monitors the main thread.
-    /// App hang detection on macOS, Windows, and Linux is experimental and controlled separately via 
-    /// <c>Experimental.EnableNativeAppHangTracking</c>.
+    /// Enables experimental native app hang detection. This is disabled by default.
+    /// On iOS and macOS with the Cocoa backend, this uses <c>sentry-cocoa</c>. On Android and native desktop
+    /// backends, this uses <c>sentry-native</c>. Android requires <see cref="NdkIntegrationEnabled"/> and macOS
+    /// requires <see cref="ExperimentalSentryUnityOptions.MacosBackend"/> to be set to
+    /// <see cref="MacosBackend.Native"/> when using sentry-native.
     /// </summary>
-    public bool EnableAppHangTracking { get; set; } = true;
+    public bool EnableAppHangTracking { get; set; } = false;
 
     /// <summary>
     /// The minimum duration for which the main thread must be blocked before <see cref="EnableAppHangTracking"/>
     /// reports an app hang.
     /// </summary>
     public TimeSpan AppHangTimeout { get; set; } = TimeSpan.FromSeconds(5);
+
+    // TODO: Remove with the next mayor. This is so we still support the experimental option
+    internal bool NativeAppHangTrackingEnabled
+    {
+        get
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            return EnableAppHangTracking || Experimental.EnableNativeAppHangTracking;
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+    }
 
     /// <summary>
     /// Whether the SDK should initialize the native SDK before the game starts. This bakes the options at build-time into
@@ -528,7 +542,6 @@ public sealed class SentryUnityOptions : SentryOptions
         AddIntegration(new UnityApplicationLoggingIntegration());
 
         AddIntegration(new StartupTracingIntegration());
-        AddIntegration(new AnrIntegration(behaviour));
         AddIntegration(new UnityScopeIntegration(application));
         AddIntegration(new UnityBeforeSceneLoadIntegration());
         AddIntegration(new SceneManagerIntegration());

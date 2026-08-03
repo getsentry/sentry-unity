@@ -26,10 +26,22 @@ public static class SentryNative
     /// </summary>
     public static void ReinstallBackend() => ReinstallSentryNativeBackendStrategy();
 
+    internal static void AppHangHeartbeat() => AppHangHeartbeatStrategy();
+
+    internal static void AppHangPause() => AppHangPauseStrategy();
+
     // libsentry.io
     [DllImport("sentry")]
     private static extern void sentry_reinstall_backend();
 
+    [DllImport("sentry")]
+    private static extern void sentry_app_hang_heartbeat();
+
+    [DllImport("sentry")]
+    private static extern void sentry_app_hang_pause();
+
     // Testing
     internal static Action ReinstallSentryNativeBackendStrategy = sentry_reinstall_backend;
+    internal static Action AppHangHeartbeatStrategy = sentry_app_hang_heartbeat;
+    internal static Action AppHangPauseStrategy = sentry_app_hang_pause;
 }

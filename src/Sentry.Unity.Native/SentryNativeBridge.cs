@@ -115,14 +115,17 @@ internal static class SentryNativeBridge
         {
             Logger?.LogDebug("Setting the native logger");
             sentry_options_set_logger(cOptions, new sentry_logger_function_t(nativeLog), IntPtr.Zero);
+
+            // Crash handlers must not invoke Unity's managed logger from the faulting thread.
+            sentry_options_set_logger_enabled_when_crashed(cOptions, 0);
         }
         else
         {
             Logger?.LogInfo("Passing the native logs back to the C# layer is not supported on Mono - skipping native logger.");
         }
 
-        Logger?.LogDebug("Setting EnableNativeAppHangTracking: {0}", options.Experimental.EnableNativeAppHangTracking);
-        sentry_options_set_enable_app_hang_tracking(cOptions, options.Experimental.EnableNativeAppHangTracking ? 1 : 0);
+        Logger?.LogDebug("Setting EnableAppHangTracking: {0}", options.NativeAppHangTrackingEnabled);
+        sentry_options_set_enable_app_hang_tracking(cOptions, options.NativeAppHangTrackingEnabled ? 1 : 0);
 
         var appHangTimeoutMs = (ulong)Math.Max(0, options.AppHangTimeout.TotalMilliseconds);
         Logger?.LogDebug("Setting AppHangTimeout: {0}ms", appHangTimeoutMs);
@@ -159,6 +162,8 @@ internal static class SentryNativeBridge
     internal static void ReinstallBackend() => sentry_reinstall_backend();
 
     internal static void AppHangHeartbeat() => sentry_app_hang_heartbeat();
+
+    internal static void AppHangPause() => sentry_app_hang_pause();
 
     // libsentry.so
     [DllImport(SentryLib)]
@@ -208,11 +213,17 @@ internal static class SentryNativeBridge
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_app_hang_timeout(IntPtr options, ulong timeout);
 
+    [DllImport(SentryLib)]
+    private static extern void sentry_app_hang_pause();
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
     private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_logger(IntPtr options, sentry_logger_function_t logger, IntPtr userData);
+
+    [DllImport(SentryLib)]
+    private static extern void sentry_options_set_logger_enabled_when_crashed(IntPtr options, int enabled);
 
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
     [MonoPInvokeCallback(typeof(sentry_logger_function_t))]
