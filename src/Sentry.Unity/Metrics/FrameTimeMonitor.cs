@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Sentry.Extensibility;
 using UnityEngine;
 
@@ -21,9 +22,16 @@ internal class FrameTimeMonitor
     private readonly int _sampleInterval;
     private readonly GameMetricAttributes _attributes;
     private readonly IDiagnosticLogger? _logger;
+    private readonly bool _supportsThreadTimings;
 
     // Reused between samples to avoid a per-sample allocation.
     private readonly FrameTiming[] _timings = new FrameTiming[1];
+
+    // These fields are available starting with Unity 2022.3.
+    private static readonly FieldInfo? CpuMainThreadFrameTime =
+        typeof(FrameTiming).GetField("cpuMainThreadFrameTime");
+    private static readonly FieldInfo? CpuRenderThreadFrameTime =
+        typeof(FrameTiming).GetField("cpuRenderThreadFrameTime");
 
     private int _frameCount;
 
@@ -32,6 +40,7 @@ internal class FrameTimeMonitor
         _sampleInterval = Math.Max(1, sampleInterval);
         _attributes = attributes;
         _logger = logger;
+        _supportsThreadTimings = SentryUnityVersion.IsNewerOrEqualThan("2022.3");
     }
 
     /// <summary>
@@ -62,13 +71,15 @@ internal class FrameTimeMonitor
         }
     }
 
-    // CPU main-/render-thread times from the FrameTimingManager. These are already tracked by the
-    // engine (no GPU timer queries are involved), so reading them adds no measurable overhead. GPU
-    // timing is intentionally not read. The data is only available when 'Frame Timing Stats' is
-    // enabled (implicit in development builds), so these metrics are emitted best-effort and are
-    // silently skipped when unavailable.
+    // The per-thread fields are available in newer Unity versions only. Resolve them dynamically so
+    // this precompiled assembly remains usable with Unity 2021.
     private void EmitThreadTimings(IReadOnlyList<KeyValuePair<string, object>> attributes)
     {
+        if (!_supportsThreadTimings)
+        {
+            return;
+        }
+
         FrameTimingManager.CaptureFrameTimings();
         if (FrameTimingManager.GetLatestTimings(1, _timings) == 0)
         {
@@ -77,16 +88,20 @@ internal class FrameTimeMonitor
 
         var timing = _timings[0];
 
-        if (timing.cpuMainThreadFrameTime > 0.0)
-        {
-            SentrySdk.Metrics.EmitDistribution(
-                GameThreadMetric, timing.cpuMainThreadFrameTime, MeasurementUnit.Duration.Millisecond, attributes);
-        }
+        EmitThreadTiming(GameThreadMetric, CpuMainThreadFrameTime, timing, attributes);
+        EmitThreadTiming(RenderThreadMetric, CpuRenderThreadFrameTime, timing, attributes);
+    }
 
-        if (timing.cpuRenderThreadFrameTime > 0.0)
+    private static void EmitThreadTiming(
+        string metric,
+        FieldInfo? timingField,
+        FrameTiming timing,
+        IReadOnlyList<KeyValuePair<string, object>> attributes)
+    {
+        if (timingField?.GetValue(timing) is double duration && duration > 0.0)
         {
             SentrySdk.Metrics.EmitDistribution(
-                RenderThreadMetric, timing.cpuRenderThreadFrameTime, MeasurementUnit.Duration.Millisecond, attributes);
+                metric, duration, MeasurementUnit.Duration.Millisecond, attributes);
         }
     }
 }
