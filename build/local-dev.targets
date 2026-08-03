@@ -53,6 +53,7 @@
     <Exec Command="pwsh -Command &quot;Invoke-Pester -Path '$(RepoRoot)test/IntegrationTest/Integration.Tests.ps1' -CI&quot;" EnvironmentVariables="SENTRY_TEST_PLATFORM=WebGL;SENTRY_TEST_APP=$(PlayerBuildPath)WebGL" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
+<<<<<<< Updated upstream
   <!--
     Downloads native SDKs from the latest successful GitHub Actions workflow run.
     Only downloads SDKs that are not already present.
@@ -64,4 +65,39 @@
     <Exec Command="pwsh &quot;$(RepoRoot)scripts/download-native-sdks.ps1&quot; -RepoRoot &quot;$(RepoRoot)&quot;" />
   </Target>
 
+||||||| Stash base
+  <!--
+    Downloads native SDKs from the latest successful GitHub Actions workflow run.
+    Only downloads SDKs that are not already present.
+    Depends on a GH CLI installation - https://cli.github.com/
+
+        dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity
+  -->
+  <Target Name="DownloadNativeSDKs" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/download-native-sdks.ps1&quot; -RepoRoot &quot;$(RepoRoot)&quot;" />
+  </Target>
+
+  <!--
+    When SENTRY_AUTH_TOKEN is set, create the SentryCliOptions.asset for the sample project.
+    Runs automatically after DownloadNativeSDKs.
+
+        dotnet msbuild /t:SamplesSetupCliOptions src/Sentry.Unity
+  -->
+  <Target Name="SamplesSetupCliOptions" AfterTargets="DownloadNativeSDKs" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND '$(SENTRY_AUTH_TOKEN)' != ''">
+    <Message Importance="High" Text="Found environment variable 'SENTRY_AUTH_TOKEN'. Creating Sentry CLI options for sample project." />
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/samples-setup-cli-options.ps1&quot;" />
+  </Target>
+
+  <!--
+    When APPLE_ID is set, modify ProjectSettings.asset for the sample project.
+    Runs automatically after SamplesSetupCliOptions.
+
+        dotnet msbuild /t:SamplesSetupAppleId src/Sentry.Unity
+  -->
+  <Target Name="SamplesSetupAppleId" AfterTargets="SamplesSetupCliOptions" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity' AND '$(APPLE_ID)' != ''">
+    <Message Importance="High" Text="Found environment variable 'APPLE_ID'. Setting Apple ID for sample project." />
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/samples-setup-apple-id.ps1&quot;" />
+  </Target>
+=======
+>>>>>>> Stashed changes
 </Project>

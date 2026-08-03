@@ -156,7 +156,6 @@ function Test-TrackedPluginChanges {
 
 # Main logic
 Write-Host "Checking native SDK status..." -ForegroundColor Cyan
-Write-Host ""
 
 $sdksToDownload = @()
 
@@ -169,8 +168,6 @@ foreach ($sdk in $SDKs) {
         $sdksToDownload += $sdk
     }
 }
-
-Write-Host ""
 
 if ($sdksToDownload.Count -eq 0) {
     Write-Host "All native SDKs are already present." -ForegroundColor Green
