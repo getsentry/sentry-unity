@@ -75,13 +75,21 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public int MaxViewHierarchyDepth { get; set; } = 10;
 
     [field: SerializeField] public bool AutoFrameMetrics { get; set; } = false;
-    [field: SerializeField] public int FrameMetricsSampleIntervalFrames { get; set; } = 30;
+    [field: SerializeField]
+    [field: FormerlySerializedAs("<FrameMetricsSampleIntervalFrames>k__BackingField")]
+    public int FrameMetricsIntervalFrames { get; set; } = 30;
     [field: SerializeField] public bool AutoMemoryMetrics { get; set; } = false;
     [field: SerializeField] public bool AutoGcMetrics { get; set; } = false;
     [field: SerializeField] public bool AutoNetworkMetrics { get; set; } = false;
-    [field: SerializeField] public int MemoryMetricsSampleIntervalSeconds { get; set; } = 60;
-    [field: SerializeField] public int GcMetricsSampleIntervalSeconds { get; set; } = 60;
-    [field: SerializeField] public int NetworkMetricsSampleIntervalSeconds { get; set; } = 10;
+    [field: SerializeField]
+    [field: FormerlySerializedAs("<MemoryMetricsSampleIntervalSeconds>k__BackingField")]
+    public int MemoryMetricsIntervalSeconds { get; set; } = 60;
+    [field: SerializeField]
+    [field: FormerlySerializedAs("<GcMetricsSampleIntervalSeconds>k__BackingField")]
+    public int GcMetricsIntervalSeconds { get; set; } = 60;
+    [field: SerializeField]
+    [field: FormerlySerializedAs("<NetworkMetricsSampleIntervalSeconds>k__BackingField")]
+    public int NetworkMetricsIntervalSeconds { get; set; } = 10;
 
     [field: SerializeField] public bool EnableStructuredLogging { get; set; } = false;
     [field: SerializeField] public bool StructuredLogOnDebugLog { get; set; } = false;
@@ -204,13 +212,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             MaxViewHierarchyObjectChildCount = MaxViewHierarchyObjectChildCount,
             MaxViewHierarchyDepth = MaxViewHierarchyDepth,
             AutoFrameMetrics = AutoFrameMetrics,
-            FrameMetricsSampleIntervalFrames = FrameMetricsSampleIntervalFrames,
+            FrameMetricsIntervalFrames = FrameMetricsIntervalFrames,
             AutoMemoryMetrics = AutoMemoryMetrics,
             AutoGcMetrics = AutoGcMetrics,
             AutoNetworkMetrics = AutoNetworkMetrics,
-            MemoryMetricsSampleInterval = TimeSpan.FromSeconds(MemoryMetricsSampleIntervalSeconds),
-            GcMetricsSampleInterval = TimeSpan.FromSeconds(GcMetricsSampleIntervalSeconds),
-            NetworkMetricsSampleInterval = TimeSpan.FromSeconds(NetworkMetricsSampleIntervalSeconds),
+            MemoryMetricsInterval = TimeSpan.FromSeconds(MemoryMetricsIntervalSeconds),
+            GcMetricsInterval = TimeSpan.FromSeconds(GcMetricsIntervalSeconds),
+            NetworkMetricsInterval = TimeSpan.FromSeconds(NetworkMetricsIntervalSeconds),
             MaxBreadcrumbs = MaxBreadcrumbs,
             ReportAssembliesMode = ReportAssembliesMode,
             SendDefaultPii = SendDefaultPii,

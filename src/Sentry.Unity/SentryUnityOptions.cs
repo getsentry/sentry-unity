@@ -143,10 +143,15 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool AutoFrameMetrics { get; set; } = false;
 
     /// <summary>
-    /// How often, in frames, the per-frame metrics are sampled. For example, a value of 30 emits a
-    /// sample every 30th frame. Minimum 1.
+    /// The lowest supported sampling interval for automatic frame metrics.
     /// </summary>
-    public int FrameMetricsSampleIntervalFrames { get; set; } = 30;
+    internal const int MinimumFrameMetricsIntervalFrames = 30;
+
+    /// <summary>
+    /// How often, in frames, the per-frame metrics are sampled. For example, a value of 30 emits a
+    /// sample every 30th frame. Minimum 30.
+    /// </summary>
+    public int FrameMetricsIntervalFrames { get; set; } = MinimumFrameMetricsIntervalFrames;
 
     /// <summary>
     /// EXPERIMENTAL: Periodically collect memory usage and send it to Sentry as
@@ -155,10 +160,20 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool AutoMemoryMetrics { get; set; } = false;
 
     /// <summary>
+    /// How often memory metrics are sampled. Minimum one second.
+    /// </summary>
+    public TimeSpan MemoryMetricsInterval { get; set; } = TimeSpan.FromSeconds(60);
+
+    /// <summary>
     /// EXPERIMENTAL: Periodically collect garbage-collection counts (per generation) and send them
     /// to Sentry as metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain enabled.
     /// </summary>
     public bool AutoGcMetrics { get; set; } = false;
+
+    /// <summary>
+    /// How often GC metrics are sampled. Minimum one second.
+    /// </summary>
+    public TimeSpan GcMetricsInterval { get; set; } = TimeSpan.FromSeconds(60);
 
     /// <summary>
     /// EXPERIMENTAL: Periodically collect basic multiplayer network metrics - round-trip time (on
@@ -168,19 +183,9 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool AutoNetworkMetrics { get; set; } = false;
 
     /// <summary>
-    /// How often memory metrics are sampled. Minimum one second.
-    /// </summary>
-    public TimeSpan MemoryMetricsSampleInterval { get; set; } = TimeSpan.FromSeconds(60);
-
-    /// <summary>
-    /// How often GC metrics are sampled. Minimum one second.
-    /// </summary>
-    public TimeSpan GcMetricsSampleInterval { get; set; } = TimeSpan.FromSeconds(60);
-
-    /// <summary>
     /// How often network metrics are sampled. Minimum one second.
     /// </summary>
-    public TimeSpan NetworkMetricsSampleInterval { get; set; } = TimeSpan.FromSeconds(10);
+    public TimeSpan NetworkMetricsInterval { get; set; } = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// The quality of the attached screenshot

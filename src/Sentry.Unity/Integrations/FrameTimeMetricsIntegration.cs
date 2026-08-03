@@ -31,10 +31,18 @@ internal class FrameTimeMetricsIntegration : ISdkIntegration
             return;
         }
 
+        if (options.FrameMetricsIntervalFrames < SentryUnityOptions.MinimumFrameMetricsIntervalFrames)
+        {
+            options.DiagnosticLogger?.LogWarning(
+                "Frame-time metrics sampling interval must be at least {0} frames. Using {0}.",
+                SentryUnityOptions.MinimumFrameMetricsIntervalFrames);
+            options.FrameMetricsIntervalFrames = SentryUnityOptions.MinimumFrameMetricsIntervalFrames;
+        }
+
         var monitor = new FrameTimeMonitor(options);
         _monoBehaviour.StartMetricsMonitor(monitor);
 
         options.DiagnosticLogger?.LogInfo("Frame-time metrics enabled (sampling every {0} frames).",
-            options.FrameMetricsSampleIntervalFrames);
+            options.FrameMetricsIntervalFrames);
     }
 }

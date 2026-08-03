@@ -22,7 +22,7 @@ internal class GameMetricAttributes
         Add("gpu.name", MainThreadData.GraphicsDeviceName);
         Add("cpu.cores", MainThreadData.ProcessorCount);
         // Unity reports the system memory size in megabytes.
-        Add("ram.gb", MainThreadData.SystemMemorySize.HasValue ? MainThreadData.SystemMemorySize.Value / 1024 : null);
+        Add("ram.gb", MainThreadData.SystemMemorySize.HasValue ? MainThreadData.SystemMemorySize.Value / 1024.0 : null);
         Add("res.x", Screen.width);
         Add("res.y", Screen.height);
         Add("platform", Application.platform.ToString());

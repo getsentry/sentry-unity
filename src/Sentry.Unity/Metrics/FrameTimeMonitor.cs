@@ -26,7 +26,8 @@ internal class FrameTimeMonitor : IGameMetricMonitor
 
     public FrameTimeMonitor(SentryUnityOptions options)
     {
-        _sampleInterval = Math.Max(1, options.FrameMetricsSampleIntervalFrames);
+        _sampleInterval = Math.Max(SentryUnityOptions.MinimumFrameMetricsIntervalFrames,
+            options.FrameMetricsIntervalFrames);
         _framesUntilSample = _sampleInterval;
         _attributes = options.GameMetricAttributes;
         _logger = options.DiagnosticLogger;
@@ -52,8 +53,11 @@ internal class FrameTimeMonitor : IGameMetricMonitor
 
             SentrySdk.Metrics.EmitDistribution(
                 FrameTimeMetric, deltaSeconds * 1000.0, MeasurementUnit.Duration.Millisecond, attributes);
-            SentrySdk.Metrics.EmitGauge(
-                FpsMetric, deltaSeconds > 0f ? 1.0 / deltaSeconds : 0.0, MeasurementUnit.None, attributes);
+            if (deltaSeconds > 0f)
+            {
+                SentrySdk.Metrics.EmitGauge(
+                    FpsMetric, 1.0 / deltaSeconds, MeasurementUnit.None, attributes);
+            }
 
             // Supported in Unity 2022 or newer
             if (_unityInfo.TryGetFrameThreadTimings(out var gameThreadTime, out var renderThreadTime))

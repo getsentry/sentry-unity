@@ -106,24 +106,24 @@ public class ScriptableSentryUnityOptionsTests
     {
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
         scriptableOptions.AutoFrameMetrics = true;
-        scriptableOptions.FrameMetricsSampleIntervalFrames = 30;
+        scriptableOptions.FrameMetricsIntervalFrames = 30;
         scriptableOptions.AutoMemoryMetrics = true;
-        scriptableOptions.MemoryMetricsSampleIntervalSeconds = 20;
+        scriptableOptions.MemoryMetricsIntervalSeconds = 20;
         scriptableOptions.AutoGcMetrics = true;
-        scriptableOptions.GcMetricsSampleIntervalSeconds = 40;
+        scriptableOptions.GcMetricsIntervalSeconds = 40;
         scriptableOptions.AutoNetworkMetrics = true;
-        scriptableOptions.NetworkMetricsSampleIntervalSeconds = 10;
+        scriptableOptions.NetworkMetricsIntervalSeconds = 10;
 
         var options = scriptableOptions.ToSentryUnityOptions(application: _fixture.Application);
 
         Assert.IsTrue(options.AutoFrameMetrics);
-        Assert.AreEqual(30, options.FrameMetricsSampleIntervalFrames);
+        Assert.AreEqual(30, options.FrameMetricsIntervalFrames);
         Assert.IsTrue(options.AutoMemoryMetrics);
-        Assert.AreEqual(TimeSpan.FromSeconds(20), options.MemoryMetricsSampleInterval);
+        Assert.AreEqual(TimeSpan.FromSeconds(20), options.MemoryMetricsInterval);
         Assert.IsTrue(options.AutoGcMetrics);
-        Assert.AreEqual(TimeSpan.FromSeconds(40), options.GcMetricsSampleInterval);
+        Assert.AreEqual(TimeSpan.FromSeconds(40), options.GcMetricsInterval);
         Assert.IsTrue(options.AutoNetworkMetrics);
-        Assert.AreEqual(TimeSpan.FromSeconds(10), options.NetworkMetricsSampleInterval);
+        Assert.AreEqual(TimeSpan.FromSeconds(10), options.NetworkMetricsInterval);
     }
 
     [Test]

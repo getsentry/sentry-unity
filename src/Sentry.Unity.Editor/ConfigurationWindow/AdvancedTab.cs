@@ -226,11 +226,83 @@ internal static class AdvancedTab
         {
             GUILayout.Label("Metrics", EditorStyles.boldLabel);
 
-            options.EnableMetrics = EditorGUILayout.Toggle(
+            options.EnableMetrics = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Enable Metrics",
                     "Whether the SDK sends metrics to Sentry. " +
                     "Metrics are connected to traces for correlation."),
                 options.EnableMetrics);
+            EditorGUI.indentLevel++;
+
+            GUILayout.Label("EXPERIMENTAL: Auto-collect common game performance metrics and send them to Sentry.",
+                EditorStyles.wordWrappedMiniLabel);
+
+            options.AutoFrameMetrics = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Auto Frame Metrics", "Periodically emit frame time, FPS, and CPU thread timings as Sentry metrics."),
+                options.AutoFrameMetrics);
+            EditorGUI.indentLevel++;
+
+            options.FrameMetricsIntervalFrames = EditorGUILayout.IntField(
+                new GUIContent("Frame Interval", "Emit a frame-time sample every Nth frame." +
+                                                           "\nDefault and minimum: 30"),
+                options.FrameMetricsIntervalFrames);
+            if (options.FrameMetricsIntervalFrames < SentryUnityOptions.MinimumFrameMetricsIntervalFrames)
+            {
+                options.FrameMetricsIntervalFrames = SentryUnityOptions.MinimumFrameMetricsIntervalFrames;
+            }
+
+            EditorGUI.indentLevel--;
+            EditorGUILayout.EndToggleGroup();
+
+            options.AutoMemoryMetrics = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Auto Memory Metrics", "Periodically emit memory usage as Sentry metrics."),
+                options.AutoMemoryMetrics);
+            EditorGUI.indentLevel++;
+            options.MemoryMetricsIntervalSeconds = EditorGUILayout.IntField(
+                new GUIContent("Memory Interval (s)", "How often, in seconds, memory metrics are sampled." +
+                                                      "\nDefault: 60"),
+                options.MemoryMetricsIntervalSeconds);
+            if (options.MemoryMetricsIntervalSeconds < 1)
+            {
+                options.MemoryMetricsIntervalSeconds = 1;
+            }
+            EditorGUI.indentLevel--;
+            EditorGUILayout.EndToggleGroup();
+
+            options.AutoGcMetrics = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Auto GC Metrics", "Periodically emit garbage-collection counts (per generation) " +
+                                                    "as Sentry metrics."),
+                options.AutoGcMetrics);
+            EditorGUI.indentLevel++;
+            options.GcMetricsIntervalSeconds = EditorGUILayout.IntField(
+                new GUIContent("GC Interval (s)", "How often, in seconds, GC metrics are sampled." +
+                                                  "\nDefault: 60"),
+                options.GcMetricsIntervalSeconds);
+            if (options.GcMetricsIntervalSeconds < 1)
+            {
+                options.GcMetricsIntervalSeconds = 1;
+            }
+            EditorGUI.indentLevel--;
+            EditorGUILayout.EndToggleGroup();
+
+            options.AutoNetworkMetrics = EditorGUILayout.BeginToggleGroup(
+                new GUIContent("Auto Network Metrics", "Periodically emit basic multiplayer network metrics " +
+                                                         "(round-trip time and connected-client count) as Sentry " +
+                                                         "metrics. Requires the Netcode for GameObjects package."),
+                options.AutoNetworkMetrics);
+            EditorGUI.indentLevel++;
+            options.NetworkMetricsIntervalSeconds = EditorGUILayout.IntField(
+                new GUIContent("Network Interval (s)", "How often, in seconds, the network metrics are sampled." +
+                                                       "\nDefault: 10"),
+                options.NetworkMetricsIntervalSeconds);
+            if (options.NetworkMetricsIntervalSeconds < 1)
+            {
+                options.NetworkMetricsIntervalSeconds = 1;
+            }
+            EditorGUI.indentLevel--;
+            EditorGUILayout.EndToggleGroup();
+
+            EditorGUI.indentLevel--;
+            EditorGUILayout.EndToggleGroup();
         }
 
         EditorGUILayout.Space();

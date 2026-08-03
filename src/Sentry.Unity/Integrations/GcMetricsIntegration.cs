@@ -32,9 +32,9 @@ internal class GcMetricsIntegration : ISdkIntegration
         }
 
         var monitor = new GcMonitor(options);
-        var interval = options.GcMetricsSampleInterval < TimeSpan.FromSeconds(1)
+        var interval = options.GcMetricsInterval < TimeSpan.FromSeconds(1)
             ? TimeSpan.FromSeconds(1)
-            : options.GcMetricsSampleInterval;
+            : options.GcMetricsInterval;
         _monoBehaviour.StartMetricsMonitor(monitor, interval);
 
         options.DiagnosticLogger?.LogInfo("GC metrics sampling every {0}s.", interval.TotalSeconds);

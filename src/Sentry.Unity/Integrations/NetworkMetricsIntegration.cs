@@ -32,9 +32,14 @@ internal class NetworkMetricsIntegration : ISdkIntegration
         }
 
         var monitor = new NetworkMetricsMonitor(options);
-        var interval = options.NetworkMetricsSampleInterval < TimeSpan.FromSeconds(1)
+        if (!monitor.IsAvailable)
+        {
+            return;
+        }
+
+        var interval = options.NetworkMetricsInterval < TimeSpan.FromSeconds(1)
             ? TimeSpan.FromSeconds(1)
-            : options.NetworkMetricsSampleInterval;
+            : options.NetworkMetricsInterval;
         _monoBehaviour.StartMetricsMonitor(monitor, interval);
 
         options.DiagnosticLogger?.LogInfo("Network metrics sampling every {0}s.", interval.TotalSeconds);

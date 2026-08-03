@@ -55,6 +55,8 @@ internal class NetworkMetricsMonitor : IGameMetricMonitor
         _networkConfigProperty = networkManagerType.GetProperty("NetworkConfig");
     }
 
+    internal bool IsAvailable => _singletonProperty is not null;
+
     public void Sample()
     {
         if (_singletonProperty is null)

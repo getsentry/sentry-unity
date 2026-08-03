@@ -32,9 +32,9 @@ internal class GameStatsMetricsIntegration : ISdkIntegration
         }
 
         var monitor = new GameStatsMonitor(options);
-        var interval = options.MemoryMetricsSampleInterval < TimeSpan.FromSeconds(1)
+        var interval = options.MemoryMetricsInterval < TimeSpan.FromSeconds(1)
             ? TimeSpan.FromSeconds(1)
-            : options.MemoryMetricsSampleInterval;
+            : options.MemoryMetricsInterval;
         _monoBehaviour.StartMetricsMonitor(monitor, interval);
 
         options.DiagnosticLogger?.LogInfo("Memory metrics sampling every {0}s.", interval.TotalSeconds);
