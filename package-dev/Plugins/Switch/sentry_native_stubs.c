@@ -145,6 +145,12 @@ void sentry_options_set_logger(void* options, void* logger, void* userdata)
     (void)userdata;
 }
 
+void sentry_options_set_logger_enabled_when_crashed(void* options, int enabled)
+{
+    (void)options;
+    (void)enabled;
+}
+
 /*
  * =============================================================================
  * sentry_value_* Functions
@@ -310,6 +316,25 @@ void sentry_set_environment(const char* environment)
     (void)environment;
 }
 
+void* sentry_attach_file(const char* path)
+{
+    (void)path;
+    return NULL;
+}
+
+void* sentry_attach_bytes(const char* buffer, size_t buffer_length, const char* filename)
+{
+    (void)buffer;
+    (void)buffer_length;
+    (void)filename;
+    return NULL;
+}
+
+void sentry_clear_attachments(void)
+{
+    /* No-op */
+}
+
 /*
  * =============================================================================
  * Crash Detection Functions
@@ -333,6 +358,11 @@ void sentry_reinstall_backend(void)
 }
 
 void sentry_app_hang_heartbeat(void)
+{
+    /* No-op */
+}
+
+void sentry_app_hang_pause(void)
 {
     /* No-op */
 }
