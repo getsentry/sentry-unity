@@ -8,12 +8,13 @@ namespace Sentry.Unity;
 /// Drives the sampling for the auto-collected game performance metrics. The per-frame coroutine
 /// resumes every frame during the player loop, so <see cref="FrameTimeMonitor.OnFrame"/> observes
 /// the current frame's <see cref="Time.unscaledDeltaTime"/> on the main thread. The periodic
-/// coroutine drives the game-stats and GC monitors at a fixed wall-clock interval.
+/// coroutines drive periodic monitors at fixed wall-clock intervals.
 /// </summary>
 public partial class SentryMonoBehaviour
 {
     private Coroutine? _frameMetricsCoroutine;
-    private Coroutine? _periodicMetricsCoroutine;
+    private Coroutine? _gameStatsMetricsCoroutine;
+    private Coroutine? _gcMetricsCoroutine;
     private Coroutine? _networkMetricsCoroutine;
 
     internal void StartFrameTimeMetrics(FrameTimeMonitor monitor)
@@ -26,14 +27,14 @@ public partial class SentryMonoBehaviour
         _frameMetricsCoroutine = StartCoroutine(FrameMetricsCoroutine(monitor));
     }
 
-    internal void StartPeriodicMetrics(Action sample, TimeSpan interval)
+    internal void StartGameStatsMetrics(GameStatsMonitor monitor, TimeSpan interval)
     {
-        if (_periodicMetricsCoroutine is not null)
-        {
-            StopCoroutine(_periodicMetricsCoroutine);
-        }
+        StartPeriodicMetrics(monitor.Sample, interval, ref _gameStatsMetricsCoroutine);
+    }
 
-        _periodicMetricsCoroutine = StartCoroutine(PeriodicMetricsCoroutine(sample, interval));
+    internal void StartGcMetrics(GcMonitor monitor, TimeSpan interval)
+    {
+        StartPeriodicMetrics(monitor.Sample, interval, ref _gcMetricsCoroutine);
     }
 
     internal void StartNetworkMetrics(Action sample, TimeSpan interval)
@@ -44,6 +45,16 @@ public partial class SentryMonoBehaviour
         }
 
         _networkMetricsCoroutine = StartCoroutine(PeriodicMetricsCoroutine(sample, interval));
+    }
+
+    private void StartPeriodicMetrics(Action sample, TimeSpan interval, ref Coroutine? coroutine)
+    {
+        if (coroutine is not null)
+        {
+            StopCoroutine(coroutine);
+        }
+
+        coroutine = StartCoroutine(PeriodicMetricsCoroutine(sample, interval));
     }
 
     private static IEnumerator FrameMetricsCoroutine(FrameTimeMonitor monitor)

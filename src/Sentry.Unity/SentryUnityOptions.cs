@@ -549,7 +549,10 @@ public sealed class SentryUnityOptions : SentryOptions
         AddIntegration(new LifeCycleIntegration(behaviour));
         AddIntegration(new TraceGenerationIntegration(behaviour));
         AddIntegration(new LowMemoryIntegration());
-        AddIntegration(new AutoMetricsIntegration(behaviour));
+        AddIntegration(new FrameTimeMetricsIntegration(behaviour));
+        AddIntegration(new GameStatsMetricsIntegration(behaviour));
+        AddIntegration(new GcMetricsIntegration(behaviour));
+        AddIntegration(new NetworkMetricsIntegration(behaviour));
 
         AddExceptionFilter(new UnityBadGatewayExceptionFilter());
         AddExceptionFilter(new UnityWebExceptionFilter());

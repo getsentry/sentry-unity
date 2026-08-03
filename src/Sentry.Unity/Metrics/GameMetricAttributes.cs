@@ -7,7 +7,6 @@ namespace Sentry.Unity;
 /// <summary>
 /// Caches the set of attributes attached to every auto-collected game metric. The hardware
 /// attributes are captured once; the active scene name is refreshed whenever the scene changes.
-/// Mirrors the Unreal SDK's FSentryPerfMetricAttributes.
 /// </summary>
 internal class GameMetricAttributes
 {
