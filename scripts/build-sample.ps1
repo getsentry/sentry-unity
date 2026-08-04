@@ -1,6 +1,10 @@
 <#
 .SYNOPSIS
     Builds a player from the local Unity 6 sample through Unity CLI.
+
+.DESCRIPTION
+    Uses an open Unity Pipeline Editor when available. Otherwise, Unity CLI
+    launches a batch-mode Editor to run the sample builder.
 #>
 
 param(
@@ -12,6 +16,10 @@ param(
 Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
 
+$timeoutSeconds = 1800
+
+. $PSScriptRoot/unity-pipeline.ps1
+
 if (-not (Get-Command unity -ErrorAction SilentlyContinue)) {
     throw "Unity CLI executable 'unity' was not found on PATH."
 }
@@ -22,6 +30,7 @@ if (-not (Test-Path $projectPath -PathType Container)) {
     throw "Local sample project was not found at $projectPath."
 }
 
+$projectPath = (Resolve-Path $projectPath).Path
 $buildDirectory = Join-Path $projectPath "Builds/$Target"
 $outputPath = switch ($Target) {
     "StandaloneWindows64" { Join-Path $buildDirectory "unity-of-bugs-local.exe" }
@@ -33,20 +42,78 @@ $outputPath = switch ($Target) {
 
 New-Item -ItemType Directory -Force -Path $buildDirectory | Out-Null
 
-$arguments = @(
-    "build", $projectPath,
-    "--target", $Target,
-    "--execute-method", "Editor.SampleBuilder.Build",
-    "--output-path", $outputPath
-)
+function Wait-ForUnityPipelineBuild([string] $projectPath, [int] $timeoutSeconds) {
+    $deadline = (Get-Date).AddSeconds($timeoutSeconds)
+    $lastError = $null
 
-& unity --non-interactive @arguments
-if ($LASTEXITCODE -ne 0) {
-    throw "Unity CLI build for $Target failed with exit code $LASTEXITCODE."
+    while ((Get-Date) -lt $deadline) {
+        try {
+            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "build_status"
+        }
+        catch {
+            $lastError = $_
+            Start-Sleep -Seconds 1
+            continue
+        }
+
+        if ($status -is [string]) {
+            $status = $status | ConvertFrom-Json
+        }
+
+        if ($status.status -eq "completed") {
+            if ($status.result -ne "Succeeded") {
+                $errorsProperty = $status.PSObject.Properties["errors"]
+                $errors = if ($errorsProperty) { @($errorsProperty.Value) } else { @() }
+                $details = if ($errors.Count) { "`n$($errors.message -join "`n")" } else { "" }
+                throw "Unity Pipeline build failed with result '$($status.result)': $($status.totalErrors) error(s).$details"
+            }
+
+            return
+        }
+
+        if ($status.status -notin @("queued", "building")) {
+            throw "Unity Pipeline build ended with status '$($status.status)'."
+        }
+
+        Start-Sleep -Seconds 1
+    }
+
+    if ($lastError) {
+        throw "Unity Pipeline build did not finish within $timeoutSeconds seconds. $lastError"
+    }
+
+    throw "Unity Pipeline build did not finish within $timeoutSeconds seconds."
+}
+
+$executionMode = Get-UnityExecutionMode -ProjectPath $projectPath
+if ($executionMode -eq "Pipeline") {
+    Prepare-UnityPipelineEditor -ProjectPath $projectPath -TimeoutSeconds $timeoutSeconds
+    $started = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "build" -CommandArguments @("--target", $Target, "--outputPath", $outputPath, "--confirm", "true")
+    if ($started.status -ne "queued") {
+        $errorsProperty = $started.PSObject.Properties["validationErrors"]
+        $errors = if ($errorsProperty) { @($errorsProperty.Value) } else { @() }
+        $details = if ($errors.Count) { "`n$($errors.message -join "`n")" } else { "" }
+        throw "Unity Pipeline build could not start: $($started.message)$details"
+    }
+
+    Wait-ForUnityPipelineBuild -ProjectPath $projectPath -TimeoutSeconds $timeoutSeconds
+}
+else {
+    $arguments = @(
+        "build", $projectPath,
+        "--target", $Target,
+        "--execute-method", "Editor.SampleBuilder.Build",
+        "--output-path", $outputPath
+    )
+
+    $run = Invoke-UnityCli -Arguments $arguments
+    if ($run.ExitCode -ne 0) {
+        throw "Unity CLI build for $Target failed with exit code $($run.ExitCode):`n$($run.Output)"
+    }
 }
 
 if (-not (Test-Path $outputPath)) {
-    throw "Unity CLI build for $Target completed without producing $outputPath."
+    throw "Unity build for $Target completed without producing $outputPath."
 }
 
 Write-Host "Build artifact: $outputPath"

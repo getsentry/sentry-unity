@@ -18,7 +18,7 @@ Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
 
 $repoRoot = (Resolve-Path "$PSScriptRoot/..").Path
-$testTimeout = 300
+$timeoutSeconds = 300
 $headlessResultsDirectory = Join-Path $repoRoot "artifacts/test/unity-cli"
 
 . $PSScriptRoot/unity-test-cli.ps1
@@ -28,18 +28,18 @@ if (-not (Get-Command unity -ErrorAction SilentlyContinue)) {
     throw "Unity CLI executable 'unity' was not found on PATH."
 }
 
-$ProjectPath = Join-Path $repoRoot "samples/unity-of-bugs-local"
-if (-not (Test-Path $ProjectPath -PathType Container)) {
-    throw "Local test project was not found at $ProjectPath."
+$projectPath = Join-Path $repoRoot "samples/unity-of-bugs-local"
+if (-not (Test-Path $projectPath -PathType Container)) {
+    throw "Local test project was not found at $projectPath."
 }
 
-$ProjectPath = (Resolve-Path $ProjectPath).Path
+$projectPath = (Resolve-Path $projectPath).Path
 
-$executionMode = Get-TestExecutionMode
+$executionMode = Get-UnityExecutionMode -ProjectPath $projectPath
 
 $runs = @()
 if ($executionMode -eq "Pipeline") {
-    $runs += Invoke-UnityPipelineTests $Mode
+    $runs += Invoke-UnityPipelineTests -ProjectPath $projectPath -Mode $Mode -TimeoutSeconds $timeoutSeconds -Filter $Filter
 }
 else {
     $modes = switch ($Mode) {
@@ -49,7 +49,7 @@ else {
     }
 
     foreach ($testMode in $modes) {
-        $runs += Invoke-UnityHeadlessTest $testMode
+        $runs += Invoke-UnityHeadlessTest -ProjectPath $projectPath -TestMode $testMode -ResultsDirectory $headlessResultsDirectory -TimeoutSeconds $timeoutSeconds -Filter $Filter
     }
 }
 

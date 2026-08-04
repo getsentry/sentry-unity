@@ -20,6 +20,8 @@ pwsh scripts/build-sample.ps1 -Target Android
 
 - Requires a target: `StandaloneWindows64`, `StandaloneOSX`, `StandaloneLinux64`,
   `Android`, `iOS`, or `WebGL`.
+- Reuses a Pipeline-connected Editor; otherwise Unity CLI runs the sample builder
+  in batch mode.
 - Outputs under `samples/unity-of-bugs-local/Builds/<Target>/`.
 
 ## Batch Unity Tests
