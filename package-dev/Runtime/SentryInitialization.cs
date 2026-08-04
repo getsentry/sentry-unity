@@ -131,9 +131,11 @@ namespace Sentry.Unity
 #if SENTRY_NATIVE_COCOA
             SentryNativeCocoa.Configure(options);
 #else
+#if !UNITY_EDITOR
             options.DiagnosticLogger?.LogWarning(
                 "MacosBackend is set to Cocoa, but Cocoa requires IL2CPP. " +
                 "Native crash reporting is disabled. Set MacosBackend to Native or enable IL2CPP.");
+#endif
 #endif
         }
 
