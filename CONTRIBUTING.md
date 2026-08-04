@@ -106,6 +106,9 @@ Build the Unity 6 sample for a specific platform through Unity CLI:
 pwsh scripts/build-sample.ps1 -Target Android
 ```
 
+When the local sample is open in a Pipeline-enabled Unity Editor, the CLI uses
+that Editor. Otherwise it starts a batch-mode Editor without opening its UI.
+
 Supported targets are `StandaloneWindows64`, `StandaloneOSX`, `StandaloneLinux64`,
 `Android`, `iOS`, and `WebGL`. Build output is under
 `samples/unity-of-bugs-local/Builds/<Target>/`.

@@ -23,6 +23,9 @@ Build a target through Unity CLI:
 pwsh scripts/build-sample.ps1 -Target Android
 ```
 
+When this project is open in a Pipeline-enabled Unity Editor, the CLI uses that
+Editor. Otherwise it starts a batch-mode Editor without opening its UI.
+
 Supported targets are `StandaloneWindows64`, `StandaloneOSX`,
 `StandaloneLinux64`, `Android`, `iOS`, and `WebGL`. Output is written under
 `Builds/<Target>/`.
