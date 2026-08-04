@@ -58,7 +58,8 @@ jobs:
 
   build-unity-sdk:
     name: Build Unity SDK
-    secrets: inherit
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
     permissions:
       actions: read
       checks: write
@@ -116,7 +117,8 @@ jobs:
     name: Create ${{ matrix.unity-version }} Test Project
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [create-unity-matrix]
-    secrets: inherit
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
@@ -289,7 +291,10 @@ jobs:
     name: Build Android ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
-    secrets: inherit
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
@@ -301,7 +306,9 @@ jobs:
     name: Run Android ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-android, create-unity-matrix]
-    secrets: inherit
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     uses: ./.github/workflows/test-run-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -319,7 +326,10 @@ jobs:
     name: Build iOS ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
-    secrets: inherit
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
@@ -331,7 +341,6 @@ jobs:
     name: Compile iOS ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-ios, create-unity-matrix]
-    secrets: inherit
     strategy:
       fail-fast: false
       matrix:
@@ -351,7 +360,9 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       ios-version: ${{ matrix.ios-version }}
       init-type: ${{ matrix.init-type }}
-    secrets: inherit
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     strategy:
       fail-fast: false
       matrix:
@@ -373,7 +384,9 @@ jobs:
     name: Run WebGL ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-webgl, create-unity-matrix]
-    secrets: inherit
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     strategy:
       fail-fast: false
       matrix:
@@ -386,7 +399,10 @@ jobs:
     name: Build Linux ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
-    secrets: inherit
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     strategy:
       fail-fast: false
       matrix:
@@ -399,7 +415,10 @@ jobs:
     name: Build Windows ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
-    secrets: inherit
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     strategy:
       fail-fast: false
       matrix:
@@ -412,7 +431,10 @@ jobs:
     name: Build macOS ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
-    secrets: inherit
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     strategy:
       fail-fast: false
       matrix:
@@ -425,7 +447,9 @@ jobs:
     name: Run Linux ${{ matrix.backend }} ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-linux, create-unity-matrix]
-    secrets: inherit
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     strategy:
       fail-fast: false
       matrix:
@@ -441,7 +465,9 @@ jobs:
     name: Run Windows ${{ matrix.backend }} ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-windows, create-unity-matrix]
-    secrets: inherit
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     strategy:
       fail-fast: false
       matrix:
@@ -457,7 +483,9 @@ jobs:
     name: Run macOS ${{ matrix.backend }} ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-macos, create-unity-matrix]
-    secrets: inherit
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
     strategy:
       fail-fast: false
       matrix:
