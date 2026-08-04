@@ -1,5 +1,5 @@
-function Limit-Text([object] $Value) {
-    $text = [string] $Value
+function Limit-Text([object] $value) {
+    $text = [string] $value
     if ($text.Length -le 2000) {
         return $text
     }
@@ -7,113 +7,12 @@ function Limit-Text([object] $Value) {
     return "$($text.Substring(0, 2000))`n... truncated"
 }
 
-function Invoke-UnityCommand([string] $Command, [string[]] $CommandArguments = @(), [int] $CommandTimeout = 30) {
-    $arguments = @(
-        "--json", "command", $Command,
-        "--project-path", $ProjectPath,
-        "--timeout", $CommandTimeout
-    ) + $CommandArguments
-
-    $output = & unity @arguments 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "Unity command '$Command' failed:`n$($output | Out-String)"
-    }
-
-    try {
-        $response = $output | Out-String | ConvertFrom-Json
-    }
-    catch {
-        throw "Unity command '$Command' returned invalid JSON:`n$($output | Out-String)"
-    }
-
-    if (-not $response.success -or -not $response.data.success) {
-        throw "Unity command '$Command' failed:`n$($output | Out-String)"
-    }
-
-    return $response.data.result
-}
-
-function Wait-ForEditorReady {
-    $deadline = (Get-Date).AddSeconds($testTimeout)
-    $lastError = $null
-
-    while ((Get-Date) -lt $deadline) {
-        try {
-            $status = Invoke-UnityCommand "editor_status"
-        }
-        catch {
-            $lastError = $_
-            Start-Sleep -Seconds 1
-            continue
-        }
-
-        if ($status.status -eq "ready" -and -not $status.compiling -and -not $status.domainReloadInProgress) {
-            if ($status.playMode -ne "stopped") {
-                throw "Unity Editor must be stopped before running tests. Current play mode: $($status.playMode)."
-            }
-
-            if ((Resolve-Path $status.projectPath).Path -ne $ProjectPath) {
-                throw "Unity Pipeline is connected to $($status.projectPath), not $ProjectPath."
-            }
-
-            return
-        }
-
-        Start-Sleep -Seconds 1
-    }
-
-    if ($lastError) {
-        throw "Unity Editor did not become ready within $testTimeout seconds. $lastError"
-    }
-
-    throw "Unity Editor did not become ready within $testTimeout seconds."
-}
-
-function Wait-ForRecompile {
-    $recompile = Invoke-UnityCommand "recompile" @() $testTimeout
-    if ($recompile.status -eq "up_to_date") {
-        return
-    }
-
-    $deadline = (Get-Date).AddSeconds($testTimeout)
+function Wait-ForPlayModeTests([string] $projectPath, [int] $timeoutSeconds) {
+    $deadline = (Get-Date).AddSeconds($timeoutSeconds)
     $lastError = $null
     while ((Get-Date) -lt $deadline) {
         try {
-            $status = Invoke-UnityCommand "recompile_status"
-            if ($status -is [string]) {
-                $status = $status | ConvertFrom-Json
-            }
-        }
-        catch {
-            $lastError = $_
-            Start-Sleep -Seconds 1
-            continue
-        }
-
-        if ($status.failed) {
-            throw "Unity script recompilation failed:`n$($status.errors -join "`n")"
-        }
-
-        if ($status.status -in @("completed", "up_to_date", "idle")) {
-            return
-        }
-
-        Start-Sleep -Seconds 1
-    }
-
-    if ($lastError) {
-        throw "Unity script recompilation did not finish within $testTimeout seconds. $lastError"
-    }
-
-    throw "Unity script recompilation did not finish within $testTimeout seconds."
-}
-
-function Wait-ForPlayModeTests {
-    $deadline = (Get-Date).AddSeconds($testTimeout)
-    $lastError = $null
-    while ((Get-Date) -lt $deadline) {
-        try {
-            $status = Invoke-UnityCommand "test_status"
+            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "test_status"
             if ($status -is [string]) {
                 $status = $status | ConvertFrom-Json
             }
@@ -147,24 +46,24 @@ function Wait-ForPlayModeTests {
     }
 
     if ($lastError) {
-        throw "Unity PlayMode tests did not finish within $testTimeout seconds. $lastError"
+        throw "Unity PlayMode tests did not finish within $timeoutSeconds seconds. $lastError"
     }
 
-    throw "Unity PlayMode tests did not finish within $testTimeout seconds."
+    throw "Unity PlayMode tests did not finish within $timeoutSeconds seconds."
 }
 
-function Get-TestSummary([string] $RequestedMode, [object] $Result) {
-    if ($null -eq $Result -or $null -eq $Result.Summary) {
-        throw "Unity did not return a test summary for $RequestedMode tests."
+function Get-TestSummary([string] $requestedMode, [object] $result) {
+    if ($null -eq $result -or $null -eq $result.Summary) {
+        throw "Unity did not return a test summary for $requestedMode tests."
     }
 
-    $commandSuccess = $Result.PSObject.Properties["success"]
-    if ($commandSuccess -and -not $commandSuccess.Value -and $Result.error) {
-        throw "Unity $RequestedMode tests could not run: $($Result.error)"
+    $commandSuccess = $result.PSObject.Properties["success"]
+    if ($commandSuccess -and -not $commandSuccess.Value -and $result.error) {
+        throw "Unity $requestedMode tests could not run: $($result.error)"
     }
 
-    $summary = $Result.Summary
-    $failedTests = @($Result.Results | Where-Object { $_.Status -eq "Failed" } | ForEach-Object {
+    $summary = $result.Summary
+    $failedTests = @($result.Results | Where-Object { $_.Status -eq "Failed" } | ForEach-Object {
             [pscustomobject]@{
                 Name       = $_.FullName
                 Message    = Limit-Text $_.Message
@@ -174,8 +73,8 @@ function Get-TestSummary([string] $RequestedMode, [object] $Result) {
 
     $success = $summary.Total -gt 0 -and $summary.Failed -eq 0 -and $summary.Inconclusive -eq 0
     [pscustomobject]@{
-        Mode         = $Result.Mode
-        Duration     = $Result.Duration
+        Mode         = $result.Mode
+        Duration     = $result.Duration
         Total        = $summary.Total
         Passed       = $summary.Passed
         Failed       = $summary.Failed
@@ -186,12 +85,15 @@ function Get-TestSummary([string] $RequestedMode, [object] $Result) {
     }
 }
 
-function Invoke-UnityPipelineTests([string] $Mode) {
-    Wait-ForEditorReady
-    Invoke-UnityCommand "set_autotick" @("--enable", "true") | Out-Null
-    Wait-ForRecompile
+function Invoke-UnityPipelineTests(
+    [string] $projectPath,
+    [string] $mode,
+    [int] $timeoutSeconds,
+    [string] $filter
+) {
+    Prepare-UnityPipelineEditor -ProjectPath $projectPath -TimeoutSeconds $timeoutSeconds
 
-    $modes = switch ($Mode) {
+    $modes = switch ($mode) {
         "EditMode" { @("editor") }
         "PlayMode" { @("playmode") }
         default { @("editor", "playmode") }
@@ -200,22 +102,22 @@ function Invoke-UnityPipelineTests([string] $Mode) {
     $runs = @()
     foreach ($testPlatform in $modes) {
         $commandArguments = @("--mode", $testPlatform)
-        if ($Filter) {
-            $commandArguments += "--filter", $Filter, "--filter_type", "testName"
+        if ($filter) {
+            $commandArguments += "--filter", $filter, "--filter_type", "testName"
         }
 
         if ($testPlatform -eq "playmode") {
-            $started = Invoke-UnityCommand "run_tests" ($commandArguments + @("--async_tests", "true")) 30
+            $started = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "run_tests" -CommandArguments ($commandArguments + @("--async_tests", "true"))
             if (-not $started.success) {
                 throw "Unity PlayMode tests could not start: $($started.error)"
             }
-            $result = Wait-ForPlayModeTests
+            $result = Wait-ForPlayModeTests -ProjectPath $projectPath -TimeoutSeconds $timeoutSeconds
         }
         else {
-            $result = Invoke-UnityCommand "run_tests" $commandArguments ($testTimeout + 30)
+            $result = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "run_tests" -CommandArguments $commandArguments -TimeoutSeconds ($timeoutSeconds + 30)
         }
 
-        $runs += Get-TestSummary $testPlatform $result
+        $runs += Get-TestSummary -RequestedMode $testPlatform -Result $result
     }
 
     return $runs

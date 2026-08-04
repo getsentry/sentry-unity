@@ -20,8 +20,7 @@ namespace Editor
                 scenes = scenes,
                 locationPathName = outputPath,
                 target = target,
-                targetGroup = GetBuildTargetGroup(target),
-                options = BuildOptions.StrictMode
+                targetGroup = GetBuildTargetGroup(target)
             });
 
             if (report.summary.result != BuildResult.Succeeded)
