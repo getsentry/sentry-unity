@@ -44,9 +44,18 @@ New-Item -ItemType Directory -Force -Path $buildDirectory | Out-Null
 
 function Wait-ForUnityPipelineBuild([string] $projectPath, [int] $timeoutSeconds) {
     $deadline = (Get-Date).AddSeconds($timeoutSeconds)
+    $lastError = $null
 
     while ((Get-Date) -lt $deadline) {
-        $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "build_status"
+        try {
+            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "build_status"
+        }
+        catch {
+            $lastError = $_
+            Start-Sleep -Seconds 1
+            continue
+        }
+
         if ($status -is [string]) {
             $status = $status | ConvertFrom-Json
         }
@@ -67,6 +76,10 @@ function Wait-ForUnityPipelineBuild([string] $projectPath, [int] $timeoutSeconds
         }
 
         Start-Sleep -Seconds 1
+    }
+
+    if ($lastError) {
+        throw "Unity Pipeline build did not finish within $timeoutSeconds seconds. $lastError"
     }
 
     throw "Unity Pipeline build did not finish within $timeoutSeconds seconds."

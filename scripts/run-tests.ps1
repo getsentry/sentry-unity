@@ -21,7 +21,6 @@ $repoRoot = (Resolve-Path "$PSScriptRoot/..").Path
 $timeoutSeconds = 300
 $headlessResultsDirectory = Join-Path $repoRoot "artifacts/test/unity-cli"
 
-. $PSScriptRoot/unity-pipeline.ps1
 . $PSScriptRoot/unity-test-cli.ps1
 . $PSScriptRoot/unity-test-pipeline.ps1
 

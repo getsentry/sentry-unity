@@ -1,3 +1,4 @@
+. $PSScriptRoot/unity-pipeline.ps1
 . $PSScriptRoot/test-utils.ps1
 
 function Invoke-UnityHeadlessTest(

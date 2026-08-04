@@ -1,3 +1,5 @@
+. $PSScriptRoot/unity-pipeline.ps1
+
 function Limit-Text([object] $value) {
     $text = [string] $value
     if ($text.Length -le 2000) {
