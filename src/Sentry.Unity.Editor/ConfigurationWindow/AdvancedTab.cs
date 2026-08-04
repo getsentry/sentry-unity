@@ -241,13 +241,13 @@ internal static class AdvancedTab
                 options.AutoFrameMetrics);
             EditorGUI.indentLevel++;
 
-            options.FrameMetricsIntervalFrames = EditorGUILayout.IntField(
-                new GUIContent("Frame Interval", "Emit a frame-time sample every Nth frame." +
-                                                           "\nDefault and minimum: 30"),
-                options.FrameMetricsIntervalFrames);
-            if (options.FrameMetricsIntervalFrames < SentryUnityOptions.MinimumFrameMetricsIntervalFrames)
+            options.FrameMetricsIntervalSeconds = EditorGUILayout.IntField(
+                new GUIContent("Frame Interval (s)", "How often, in seconds, frame metrics are sampled." +
+                                                       "\nDefault: 1"),
+                options.FrameMetricsIntervalSeconds);
+            if (options.FrameMetricsIntervalSeconds < 1)
             {
-                options.FrameMetricsIntervalFrames = SentryUnityOptions.MinimumFrameMetricsIntervalFrames;
+                options.FrameMetricsIntervalSeconds = 1;
             }
 
             EditorGUI.indentLevel--;

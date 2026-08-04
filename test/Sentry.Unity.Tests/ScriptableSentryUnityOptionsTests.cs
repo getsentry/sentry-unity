@@ -106,7 +106,7 @@ public class ScriptableSentryUnityOptionsTests
     {
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
         scriptableOptions.AutoFrameMetrics = true;
-        scriptableOptions.FrameMetricsIntervalFrames = 30;
+        scriptableOptions.FrameMetricsIntervalSeconds = 2;
         scriptableOptions.AutoMemoryMetrics = true;
         scriptableOptions.MemoryMetricsIntervalSeconds = 20;
         scriptableOptions.AutoGcMetrics = true;
@@ -117,7 +117,7 @@ public class ScriptableSentryUnityOptionsTests
         var options = scriptableOptions.ToSentryUnityOptions(application: _fixture.Application);
 
         Assert.IsTrue(options.AutoFrameMetrics);
-        Assert.AreEqual(30, options.FrameMetricsIntervalFrames);
+        Assert.AreEqual(TimeSpan.FromSeconds(2), options.FrameMetricsInterval);
         Assert.IsTrue(options.AutoMemoryMetrics);
         Assert.AreEqual(TimeSpan.FromSeconds(20), options.MemoryMetricsInterval);
         Assert.IsTrue(options.AutoGcMetrics);

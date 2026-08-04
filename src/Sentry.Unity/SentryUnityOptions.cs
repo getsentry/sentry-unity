@@ -143,15 +143,9 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool AutoFrameMetrics { get; set; } = false;
 
     /// <summary>
-    /// The lowest supported sampling interval for automatic frame metrics.
+    /// How often frame metrics are sampled. Minimum one second.
     /// </summary>
-    internal const int MinimumFrameMetricsIntervalFrames = 30;
-
-    /// <summary>
-    /// How often, in frames, the per-frame metrics are sampled. For example, a value of 30 emits a
-    /// sample every 30th frame. Minimum 30.
-    /// </summary>
-    public int FrameMetricsIntervalFrames { get; set; } = MinimumFrameMetricsIntervalFrames;
+    public TimeSpan FrameMetricsInterval { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
     /// EXPERIMENTAL: Periodically collect memory usage and send it to Sentry as

@@ -6,9 +6,8 @@ using UnityEngine;
 namespace Sentry.Unity.Metrics;
 
 /// <summary>
-/// Samples per-frame performance and emits frame-time and FPS metrics every Nth frame, plus the
-/// CPU main-/render-thread times when the engine's <see cref="FrameTimingManager"/> has data.
-/// Driven once per frame from <see cref="SentryMonoBehaviour"/>.
+/// Samples frame performance and emits frame-time and FPS metrics, plus the CPU main-/render-thread
+/// times when the engine's <see cref="FrameTimingManager"/> has data.
 /// </summary>
 internal class FrameTimeMonitor : IGameMetricMonitor
 {
@@ -16,40 +15,30 @@ internal class FrameTimeMonitor : IGameMetricMonitor
     internal const string FpsMetric = "game.perf.fps";
     internal const string GameThreadMetric = "game.perf.game_thread";
     internal const string RenderThreadMetric = "game.perf.render_thread";
+    internal const string TargetFpsAttribute = "target_fps";
+    internal const string VsyncCountAttribute = "vsync_count";
 
-    private readonly int _sampleInterval;
     private readonly GameMetricAttributes _attributes;
     private readonly IDiagnosticLogger? _logger;
     private readonly ISentryUnityInfo _unityInfo;
-
-    private int _framesUntilSample;
+    private readonly List<KeyValuePair<string, object>> _frameAttributes = new(9);
 
     public FrameTimeMonitor(SentryUnityOptions options)
     {
-        _sampleInterval = Math.Max(SentryUnityOptions.MinimumFrameMetricsIntervalFrames,
-            options.FrameMetricsIntervalFrames);
-        _framesUntilSample = _sampleInterval;
         _attributes = options.GameMetricAttributes;
         _logger = options.DiagnosticLogger;
         _unityInfo = options.UnityInfo;
     }
 
     /// <summary>
-    /// Called once per frame on the main thread. Emits a sample every <c>sampleInterval</c> frames.
+    /// Called on the main thread at the configured realtime interval.
     /// </summary>
     public void Sample()
     {
-        if (--_framesUntilSample > 0)
-        {
-            return;
-        }
-
-        _framesUntilSample = _sampleInterval;
-
         try
         {
             var deltaSeconds = Time.unscaledDeltaTime;
-            var attributes = _attributes.Current;
+            var attributes = GetAttributes();
 
             SentrySdk.Metrics.EmitDistribution(
                 FrameTimeMetric, deltaSeconds * 1000.0, MeasurementUnit.Duration.Millisecond, attributes);
@@ -70,6 +59,15 @@ internal class FrameTimeMonitor : IGameMetricMonitor
         {
             _logger?.LogError(e, "Failed to emit frame-time metrics.");
         }
+    }
+
+    private IReadOnlyList<KeyValuePair<string, object>> GetAttributes()
+    {
+        _frameAttributes.Clear();
+        _frameAttributes.AddRange(_attributes.Current);
+        _frameAttributes.Add(new KeyValuePair<string, object>(TargetFpsAttribute, Application.targetFrameRate));
+        _frameAttributes.Add(new KeyValuePair<string, object>(VsyncCountAttribute, QualitySettings.vSyncCount));
+        return _frameAttributes;
     }
 
     private static void EmitThreadTiming(

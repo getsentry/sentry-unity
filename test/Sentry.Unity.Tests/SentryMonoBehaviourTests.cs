@@ -151,4 +151,21 @@ public class SentryMonoBehaviourTests
 
         Assert.AreEqual(1, monitor.SampleCount);
     }
+
+    [UnityTest]
+    public IEnumerator StartMetricsMonitor_Interval_SamplesAfterInterval()
+    {
+        var sut = _fixture.GetSut();
+        var monitor = new CountingMetricMonitor();
+
+        sut.StartMetricsMonitor(monitor, System.TimeSpan.FromSeconds(0.1));
+
+        yield return null;
+
+        Assert.AreEqual(0, monitor.SampleCount);
+
+        yield return new WaitForSecondsRealtime(0.1f);
+
+        Assert.AreEqual(1, monitor.SampleCount);
+    }
 }

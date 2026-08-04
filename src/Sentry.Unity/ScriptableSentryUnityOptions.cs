@@ -76,8 +76,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
     [field: SerializeField] public bool AutoFrameMetrics { get; set; } = false;
     [field: SerializeField]
-    [field: FormerlySerializedAs("<FrameMetricsSampleIntervalFrames>k__BackingField")]
-    public int FrameMetricsIntervalFrames { get; set; } = 30;
+    public int FrameMetricsIntervalSeconds { get; set; } = 1;
     [field: SerializeField] public bool AutoMemoryMetrics { get; set; } = false;
     [field: SerializeField] public bool AutoGcMetrics { get; set; } = false;
     [field: SerializeField] public bool AutoNetworkMetrics { get; set; } = false;
@@ -212,7 +211,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             MaxViewHierarchyObjectChildCount = MaxViewHierarchyObjectChildCount,
             MaxViewHierarchyDepth = MaxViewHierarchyDepth,
             AutoFrameMetrics = AutoFrameMetrics,
-            FrameMetricsIntervalFrames = FrameMetricsIntervalFrames,
+            FrameMetricsInterval = TimeSpan.FromSeconds(FrameMetricsIntervalSeconds),
             AutoMemoryMetrics = AutoMemoryMetrics,
             AutoGcMetrics = AutoGcMetrics,
             AutoNetworkMetrics = AutoNetworkMetrics,
