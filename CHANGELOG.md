@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added experimental auto game-metrics. When enabled, the SDK periodically collects common performance metrics and sends them to Sentry via the metrics API. ([#2777](https://github.com/getsentry/sentry-unity/pull/2777))
+
 ### Dependencies
 
 - Bump Cocoa SDK from v9.23.0 to v9.24.0 ([#2792](https://github.com/getsentry/sentry-unity/pull/2792))

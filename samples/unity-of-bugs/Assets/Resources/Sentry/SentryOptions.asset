@@ -37,6 +37,14 @@ MonoBehaviour:
   <MaxViewHierarchyRootObjects>k__BackingField: 100
   <MaxViewHierarchyObjectChildCount>k__BackingField: 20
   <MaxViewHierarchyDepth>k__BackingField: 10
+  <AutoFrameMetrics>k__BackingField: 1
+  <FrameMetricsIntervalSeconds>k__BackingField: 1
+  <AutoMemoryMetrics>k__BackingField: 1
+  <AutoGcMetrics>k__BackingField: 1
+  <AutoNetworkMetrics>k__BackingField: 1
+  <MemoryMetricsSampleIntervalSeconds>k__BackingField: 60
+  <GcMetricsSampleIntervalSeconds>k__BackingField: 60
+  <NetworkMetricsSampleIntervalSeconds>k__BackingField: 10
   <EnableStructuredLogging>k__BackingField: 1
   <StructuredLogOnDebugLog>k__BackingField: 0
   <StructuredLogOnDebugLogWarning>k__BackingField: 1
@@ -64,7 +72,7 @@ MonoBehaviour:
   <EnableAppHangTracking>k__BackingField: 1
   <AppHangTimeout>k__BackingField: 5000
   <CaptureFailedRequests>k__BackingField: 1
-  <FailedRequestStatusCodes>k__BackingField: f401000057020000
+  <FailedRequestStatusCodes>k__BackingField: f401000057020000i
   <FilterBadGatewayExceptions>k__BackingField: 1
   <FilterWebExceptions>k__BackingField: 1
   <FilterSocketExceptions>k__BackingField: 1

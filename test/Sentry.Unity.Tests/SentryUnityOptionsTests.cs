@@ -63,6 +63,17 @@ public sealed class SentryUnityOptionsTests
         Assert.That(_fixture.GetSut().Integrations.OfType<AnrIntegration>(), Is.Empty);
 
     [Test]
+    public void Ctor_RegistersAnIntegrationForEachAutoMetricsMonitor()
+    {
+        var integrations = _fixture.GetSut().Integrations;
+
+        Assert.That(integrations.OfType<FrameTimeMetricsIntegration>().Count(), Is.EqualTo(1));
+        Assert.That(integrations.OfType<GameStatsMetricsIntegration>().Count(), Is.EqualTo(1));
+        Assert.That(integrations.OfType<GcMetricsIntegration>().Count(), Is.EqualTo(1));
+        Assert.That(integrations.OfType<NetworkMetricsIntegration>().Count(), Is.EqualTo(1));
+    }
+
+    [Test]
     public void Ctor_Release_IsProductNameAtVersion() =>
         Assert.AreEqual(
             $"{_fixture.Application.ProductName}@{_fixture.Application.Version}",

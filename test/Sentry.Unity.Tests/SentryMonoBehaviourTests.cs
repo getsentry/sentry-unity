@@ -2,6 +2,7 @@ using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Sentry.Unity.Metrics;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -10,6 +11,13 @@ namespace Sentry.Unity.Tests;
 
 public class SentryMonoBehaviourTests
 {
+    private sealed class CountingMetricMonitor : IGameMetricMonitor
+    {
+        public int SampleCount { get; private set; }
+
+        public void Sample() => SampleCount++;
+    }
+
     private class Fixture
     {
         public SentryMonoBehaviour GetSut()
@@ -127,5 +135,37 @@ public class SentryMonoBehaviourTests
         yield return null;
 
         Assert.IsTrue(coroutineExecuted);
+    }
+
+    [UnityTest]
+    public IEnumerator StartMetricsMonitor_PerFrame_SamplesAfterFirstFrame()
+    {
+        var sut = _fixture.GetSut();
+        var monitor = new CountingMetricMonitor();
+
+        sut.StartMetricsMonitor(monitor);
+
+        Assert.AreEqual(0, monitor.SampleCount);
+
+        yield return null;
+
+        Assert.AreEqual(1, monitor.SampleCount);
+    }
+
+    [UnityTest]
+    public IEnumerator StartMetricsMonitor_Interval_SamplesAfterInterval()
+    {
+        var sut = _fixture.GetSut();
+        var monitor = new CountingMetricMonitor();
+
+        sut.StartMetricsMonitor(monitor, System.TimeSpan.FromSeconds(0.1));
+
+        yield return null;
+
+        Assert.AreEqual(0, monitor.SampleCount);
+
+        yield return new WaitForSecondsRealtime(0.1f);
+
+        Assert.AreEqual(1, monitor.SampleCount);
     }
 }

@@ -102,6 +102,31 @@ public class ScriptableSentryUnityOptionsTests
     }
 
     [Test]
+    public void ToSentryUnityOptions_MapsAutoMetricsOptions()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        scriptableOptions.AutoFrameMetrics = true;
+        scriptableOptions.FrameMetricsIntervalSeconds = 2;
+        scriptableOptions.AutoMemoryMetrics = true;
+        scriptableOptions.MemoryMetricsIntervalSeconds = 20;
+        scriptableOptions.AutoGcMetrics = true;
+        scriptableOptions.GcMetricsIntervalSeconds = 40;
+        scriptableOptions.AutoNetworkMetrics = true;
+        scriptableOptions.NetworkMetricsIntervalSeconds = 10;
+
+        var options = scriptableOptions.ToSentryUnityOptions(application: _fixture.Application);
+
+        Assert.IsTrue(options.AutoFrameMetrics);
+        Assert.AreEqual(TimeSpan.FromSeconds(2), options.FrameMetricsInterval);
+        Assert.IsTrue(options.AutoMemoryMetrics);
+        Assert.AreEqual(TimeSpan.FromSeconds(20), options.MemoryMetricsInterval);
+        Assert.IsTrue(options.AutoGcMetrics);
+        Assert.AreEqual(TimeSpan.FromSeconds(40), options.GcMetricsInterval);
+        Assert.IsTrue(options.AutoNetworkMetrics);
+        Assert.AreEqual(TimeSpan.FromSeconds(10), options.NetworkMetricsInterval);
+    }
+
+    [Test]
     [TestCase(true, true)]
     [TestCase(false, false)]
     public void ShouldDebug_DebugOnlyInEditor_ReturnsExpectedDebug(bool isEditorPlayer, bool expectedDebug)

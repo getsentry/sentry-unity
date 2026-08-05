@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Sentry.Unity.Integrations;
 using Sentry.Extensibility;
+using Sentry.Unity.Metrics;
 using Sentry.Unity.NativeUtils;
 using UnityEngine;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
@@ -133,6 +134,52 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Maximum depth of the hierarchy to capture. For example, setting 1 will only capture root GameObjects.
     /// </summary>
     public int MaxViewHierarchyDepth { get; set; } = 10;
+
+    /// <summary>
+    /// EXPERIMENTAL: Automatically collect per-frame performance metrics, including frame time, FPS,
+    /// and CPU thread timings, and send them to Sentry as metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain
+    /// enabled (the default).
+    /// </summary>
+    public bool AutoFrameMetrics { get; set; } = false;
+
+    /// <summary>
+    /// How often frame metrics are sampled. Minimum one second.
+    /// </summary>
+    public TimeSpan FrameMetricsInterval { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// EXPERIMENTAL: Periodically collect memory usage and send it to Sentry as
+    /// metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain enabled (the default).
+    /// </summary>
+    public bool AutoMemoryMetrics { get; set; } = false;
+
+    /// <summary>
+    /// How often memory metrics are sampled. Minimum one second.
+    /// </summary>
+    public TimeSpan MemoryMetricsInterval { get; set; } = TimeSpan.FromSeconds(60);
+
+    /// <summary>
+    /// EXPERIMENTAL: Periodically collect garbage-collection counts (per generation) and send them
+    /// to Sentry as metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain enabled.
+    /// </summary>
+    public bool AutoGcMetrics { get; set; } = false;
+
+    /// <summary>
+    /// How often GC metrics are sampled. Minimum one second.
+    /// </summary>
+    public TimeSpan GcMetricsInterval { get; set; } = TimeSpan.FromSeconds(60);
+
+    /// <summary>
+    /// EXPERIMENTAL: Periodically collect basic multiplayer network metrics - round-trip time (on
+    /// clients) and connected-client count (on the server) - and send them to Sentry as metrics.
+    /// Requires the Netcode for GameObjects package and <see cref="SentryOptions.EnableMetrics"/>.
+    /// </summary>
+    public bool AutoNetworkMetrics { get; set; } = false;
+
+    /// <summary>
+    /// How often network metrics are sampled. Minimum one second.
+    /// </summary>
+    public TimeSpan NetworkMetricsInterval { get; set; } = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// The quality of the attached screenshot
@@ -452,6 +499,15 @@ public sealed class SentryUnityOptions : SentryOptions
     internal ISentryUnityInfo UnityInfo { get; private set; }
     internal Action<SentryUnityOptions>? PlatformConfiguration { get; private set; }
 
+    private GameMetricAttributes? _gameMetricAttributes;
+    internal GameMetricAttributes GameMetricAttributes => _gameMetricAttributes ??= new GameMetricAttributes();
+
+    internal void DisposeGameMetricAttributes()
+    {
+        _gameMetricAttributes?.Dispose();
+        _gameMetricAttributes = null;
+    }
+
     public SentryUnityOptions() : this(isBuilding: false) { }
 
     // For testing
@@ -507,6 +563,10 @@ public sealed class SentryUnityOptions : SentryOptions
         AddIntegration(new LifeCycleIntegration(behaviour));
         AddIntegration(new TraceGenerationIntegration(behaviour));
         AddIntegration(new LowMemoryIntegration());
+        AddIntegration(new FrameTimeMetricsIntegration(behaviour));
+        AddIntegration(new GameStatsMetricsIntegration(behaviour));
+        AddIntegration(new GcMetricsIntegration(behaviour));
+        AddIntegration(new NetworkMetricsIntegration(behaviour));
 
         AddExceptionFilter(new UnityBadGatewayExceptionFilter());
         AddExceptionFilter(new UnityWebExceptionFilter());
