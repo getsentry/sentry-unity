@@ -7,6 +7,7 @@ public interface ISentryUnityInfo
 {
     public bool IL2CPP { get; }
     public Il2CppMethods? Il2CppMethods { get; }
+    public bool TryGetFrameThreadTimings(out double gameThreadTime, out double renderThreadTime);
 }
 
 public class Il2CppMethods

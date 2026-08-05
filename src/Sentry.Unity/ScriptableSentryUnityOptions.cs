@@ -74,6 +74,22 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public int MaxViewHierarchyObjectChildCount { get; set; } = 20;
     [field: SerializeField] public int MaxViewHierarchyDepth { get; set; } = 10;
 
+    [field: SerializeField] public bool AutoFrameMetrics { get; set; } = false;
+    [field: SerializeField]
+    public int FrameMetricsIntervalSeconds { get; set; } = 1;
+    [field: SerializeField] public bool AutoMemoryMetrics { get; set; } = false;
+    [field: SerializeField] public bool AutoGcMetrics { get; set; } = false;
+    [field: SerializeField] public bool AutoNetworkMetrics { get; set; } = false;
+    [field: SerializeField]
+    [field: FormerlySerializedAs("<MemoryMetricsSampleIntervalSeconds>k__BackingField")]
+    public int MemoryMetricsIntervalSeconds { get; set; } = 60;
+    [field: SerializeField]
+    [field: FormerlySerializedAs("<GcMetricsSampleIntervalSeconds>k__BackingField")]
+    public int GcMetricsIntervalSeconds { get; set; } = 60;
+    [field: SerializeField]
+    [field: FormerlySerializedAs("<NetworkMetricsSampleIntervalSeconds>k__BackingField")]
+    public int NetworkMetricsIntervalSeconds { get; set; } = 10;
+
     [field: SerializeField] public bool EnableStructuredLogging { get; set; } = false;
     [field: SerializeField] public bool StructuredLogOnDebugLog { get; set; } = false;
     [field: SerializeField] public bool StructuredLogOnDebugLogWarning { get; set; } = true;
@@ -194,6 +210,14 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             MaxViewHierarchyRootObjects = MaxViewHierarchyRootObjects,
             MaxViewHierarchyObjectChildCount = MaxViewHierarchyObjectChildCount,
             MaxViewHierarchyDepth = MaxViewHierarchyDepth,
+            AutoFrameMetrics = AutoFrameMetrics,
+            FrameMetricsInterval = TimeSpan.FromSeconds(FrameMetricsIntervalSeconds),
+            AutoMemoryMetrics = AutoMemoryMetrics,
+            AutoGcMetrics = AutoGcMetrics,
+            AutoNetworkMetrics = AutoNetworkMetrics,
+            MemoryMetricsInterval = TimeSpan.FromSeconds(MemoryMetricsIntervalSeconds),
+            GcMetricsInterval = TimeSpan.FromSeconds(GcMetricsIntervalSeconds),
+            NetworkMetricsInterval = TimeSpan.FromSeconds(NetworkMetricsIntervalSeconds),
             MaxBreadcrumbs = MaxBreadcrumbs,
             ReportAssembliesMode = ReportAssembliesMode,
             SendDefaultPii = SendDefaultPii,

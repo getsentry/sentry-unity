@@ -121,6 +121,8 @@ namespace Sentry.Unity
 
     public class SentryUnityInfo : ISentryUnityInfo
     {
+        private readonly FrameTiming[] _frameTimings = new FrameTiming[1];
+
         public bool IL2CPP
         {
             get =>
@@ -132,6 +134,23 @@ namespace Sentry.Unity
         }
 
         public Il2CppMethods Il2CppMethods => _il2CppMethods;
+
+        public bool TryGetFrameThreadTimings(out double gameThreadTime, out double renderThreadTime)
+        {
+#if UNITY_2022_3_OR_NEWER
+            FrameTimingManager.CaptureFrameTimings();
+            if (FrameTimingManager.GetLatestTimings(1, _frameTimings) > 0)
+            {
+                var timing = _frameTimings[0];
+                gameThreadTime = timing.cpuMainThreadFrameTime;
+                renderThreadTime = timing.cpuRenderThreadFrameTime;
+                return true;
+            }
+#endif
+            gameThreadTime = 0.0;
+            renderThreadTime = 0.0;
+            return false;
+        }
 
         private Il2CppMethods _il2CppMethods
             // Lowest supported version to have all required methods below

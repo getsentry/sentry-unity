@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using Sentry.Unity;
 using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Editor.Tests;

@@ -16,6 +16,11 @@ on:
       status:
         description: "Integration test status"
         value: ${{ jobs.run.outputs.status }}
+    secrets:
+      SENTRY_AUTH_TOKEN:
+        required: true
+      SENTRY_TEST_DSN:
+        required: true
 
 defaults:
   run:

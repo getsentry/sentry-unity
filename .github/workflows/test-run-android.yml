@@ -11,6 +11,11 @@ on:
       init-type:
         required: true
         type: string
+    secrets:
+      SENTRY_AUTH_TOKEN:
+        required: true
+      SENTRY_TEST_DSN:
+        required: true
 
 defaults:
   run:

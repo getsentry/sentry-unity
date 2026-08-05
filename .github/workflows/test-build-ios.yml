@@ -5,6 +5,13 @@ on:
       unity-version:
         required: true
         type: string
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG:
+        required: true
+      SENTRY_AUTH_TOKEN:
+        required: true
+      SENTRY_TEST_DSN:
+        required: true
 
 defaults:
   run:
