@@ -38,7 +38,7 @@ MonoBehaviour:
   <MaxViewHierarchyObjectChildCount>k__BackingField: 20
   <MaxViewHierarchyDepth>k__BackingField: 10
   <AutoFrameMetrics>k__BackingField: 1
-  <FrameMetricsIntervalFrames>k__BackingField: 30
+  <FrameMetricsIntervalSeconds>k__BackingField: 1
   <AutoMemoryMetrics>k__BackingField: 1
   <AutoGcMetrics>k__BackingField: 1
   <AutoNetworkMetrics>k__BackingField: 1
