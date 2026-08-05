@@ -14,6 +14,11 @@ on:
         type: string
         default: ""
         description: "macOS: native or cocoa. Windows: native or crashpad. Linux: native or breakpad."
+    secrets:
+      SENTRY_AUTH_TOKEN:
+        required: true
+      SENTRY_TEST_DSN:
+        required: true
 
 defaults:
   run:

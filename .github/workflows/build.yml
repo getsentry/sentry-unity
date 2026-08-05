@@ -5,6 +5,9 @@ on:
       unity-version:
         required: true
         type: string
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG:
+        required: true
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
