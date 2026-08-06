@@ -22,7 +22,9 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "!SENTRY_UNITY_DISABLED"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

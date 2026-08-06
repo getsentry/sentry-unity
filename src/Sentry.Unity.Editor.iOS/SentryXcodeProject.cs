@@ -172,6 +172,37 @@ fi";
         _logger?.LogDebug("Successfully added the Sentry Native Bridge.");
     }
 
+    public void RemoveSentryFiles()
+    {
+        RemoveFile(Path.Combine("Frameworks", FrameworkName));
+        RemoveFile(Path.Combine("Libraries", SentryPackageInfo.GetName(), BridgeName));
+        RemoveFile(_optionsPath);
+
+        var setBuildPropertyMethod = _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) });
+        foreach (var property in new[]
+                 {
+                     SymbolUploadPropertyName,
+                     IncludeSourcesPropertyName,
+                     AllowFailurePropertyName,
+                     PrintLogsPropertyName,
+                 })
+        {
+            setBuildPropertyMethod.Invoke(_project, new object[] { _mainTargetGuid, property, "NO" });
+        }
+    }
+
+    private void RemoveFile(string projectPath)
+    {
+        var findFileGuidMethod = _pbxProjectType.GetMethod("FindFileGuidByProjectPath", new[] { typeof(string) });
+        var fileGuid = (string)findFileGuidMethod.Invoke(_project, new object[] { projectPath });
+        if (string.IsNullOrEmpty(fileGuid))
+        {
+            return;
+        }
+
+        _pbxProjectType.GetMethod("RemoveFile", new[] { typeof(string) }).Invoke(_project, new object[] { fileGuid });
+    }
+
     // Used for testing
     internal void SetSearchPathBuildProperty(string path)
     {

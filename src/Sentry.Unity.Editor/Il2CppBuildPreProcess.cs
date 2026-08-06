@@ -15,6 +15,11 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
 
     public void OnPreprocessBuild(BuildReport report)
     {
+        if (SentryBuildDefines.IsDisabled(report.summary.platform))
+        {
+            return;
+        }
+
         var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(report.summary.platformGroup);
         if (PlayerSettings.GetScriptingBackend(namedBuildTarget) != ScriptingImplementation.IL2CPP)
         {

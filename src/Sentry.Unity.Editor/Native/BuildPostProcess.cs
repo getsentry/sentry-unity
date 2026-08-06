@@ -27,6 +27,13 @@ public static class BuildPostProcess
             return;
         }
 
+        if (SentryBuildDefines.IsDisabled(target))
+        {
+            var disabledLogger = new UnityLogger(new SentryUnityOptions());
+            CleanupSentryArtifacts(target, executablePath, disabledLogger);
+            return;
+        }
+
         var cliOptions = SentryScriptableObject.LoadCliOptions();
         var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
@@ -133,6 +140,23 @@ public static class BuildPostProcess
         BuildTarget.Switch => options.SwitchNativeSupportEnabled,
         _ => false,
     };
+
+    private static void CleanupSentryArtifacts(BuildTarget target, string executablePath, IDiagnosticLogger logger)
+    {
+        switch (target)
+        {
+            case BuildTarget.StandaloneOSX:
+                CleanupStaleMacOSArtifacts(logger, executablePath);
+                break;
+            case BuildTarget.StandaloneWindows:
+            case BuildTarget.StandaloneWindows64:
+                CleanupStaleWindowsArtifacts(logger, Path.GetDirectoryName(executablePath)!);
+                break;
+            case BuildTarget.StandaloneLinux64:
+                CleanupStaleLinuxArtifacts(logger, Path.GetDirectoryName(executablePath)!);
+                break;
+        }
+    }
 
     private readonly struct NativePluginArtifact(string source, string destination, bool isExecutable = false)
     {
@@ -275,6 +299,7 @@ public static class BuildPostProcess
         {
             Path.Combine(buildOutputDir, "crashpad_handler.exe"),
             Path.Combine(buildOutputDir, "crashpad_wer.dll"),
+            Path.Combine(buildOutputDir, "sentry.dll"),
             Path.Combine(buildOutputDir, "sentry-crash.exe"),
             Path.Combine(buildOutputDir, "sentry-wer.dll"),
         })

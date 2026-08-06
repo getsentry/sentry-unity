@@ -35,6 +35,12 @@ public class PostGenerateGradleAndroidProject : IPostGenerateGradleAndroidProjec
     public void OnPostGenerateGradleAndroidProject(string basePath)
     {
         var androidManifestConfiguration = new AndroidManifestConfiguration();
+        if (SentryBuildDefines.IsDisabled(BuildTarget.Android))
+        {
+            androidManifestConfiguration.RemoveSentryFromGradleProject(basePath);
+            return;
+        }
+
         androidManifestConfiguration.OnPostGenerateGradleAndroidProject(basePath);
     }
 }
@@ -111,6 +117,40 @@ public class AndroidManifestConfiguration
         SetupProguard(gradleProjectPath);
     }
 
+    internal void RemoveSentryFromGradleProject(string basePath)
+    {
+        RemoveSentryFromManifest(basePath);
+
+        var gradleProjectPath = Directory.GetParent(basePath).FullName;
+        var unityLibraryPath = Path.Combine(gradleProjectPath, "unityLibrary");
+        foreach (var fileName in new[]
+                 {
+                     "sentry-android-core-release.aar",
+                     "sentry-android-ndk-release.aar",
+                     "sentry-native-ndk-release.aar",
+                     "sentry.jar",
+                 })
+        {
+            var path = Path.Combine(unityLibraryPath, "libs", fileName);
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+
+        if (File.Exists(Path.Combine(unityLibraryPath, "build.gradle")))
+        {
+            new GradleSetup(_logger, gradleProjectPath).ClearGradleProject();
+            new ProguardSetup(_logger, gradleProjectPath).RemoveFromGradleProject();
+        }
+
+        var launcherBuildFile = Path.Combine(gradleProjectPath, "launcher", "build.gradle");
+        if (File.Exists(launcherBuildFile))
+        {
+            new DebugSymbolUpload(_logger, null, string.Empty, gradleProjectPath).RemoveUploadFromGradleFile();
+        }
+    }
+
     internal void ModifyManifest(string basePath)
     {
         var manifestPath = GetManifestPath(basePath);
@@ -143,6 +183,7 @@ public class AndroidManifestConfiguration
 
         if (!enableNativeSupport)
         {
+            _ = androidManifest.Save();
             return;
         }
 
@@ -231,6 +272,19 @@ public class AndroidManifestConfiguration
 
         // TODO: All SentryOptions and create specific Android options
 
+        _ = androidManifest.Save();
+    }
+
+    private void RemoveSentryFromManifest(string basePath)
+    {
+        var manifestPath = GetManifestPath(basePath);
+        if (!File.Exists(manifestPath))
+        {
+            return;
+        }
+
+        var androidManifest = new AndroidManifest(manifestPath, _logger);
+        androidManifest.RemovePreviousConfigurations();
         _ = androidManifest.Save();
     }
 

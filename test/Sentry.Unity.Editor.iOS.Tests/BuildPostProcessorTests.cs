@@ -125,6 +125,26 @@ public class BuildPostProcessorTests
     }
 
     [Test]
+    public void RemoveSentryFromXcodeProject_EnabledThenDisabled_RemovesSentryArtifacts()
+    {
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeSupportEnabled = true,
+            IosNativeInitializationType = NativeInitializationType.BuildTime
+        };
+
+        BuildPostProcess.AddSentryToXcodeProject(options, null, new TestLogger(), _outputProjectPath);
+        BuildPostProcess.RemoveSentryFromXcodeProject(_outputProjectPath);
+
+        var mainFile = File.ReadAllText(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
+        Assert.False(NativeMain.ContainsSentry(mainFile, null));
+        Assert.False(File.Exists(Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName)));
+        Assert.False(Directory.Exists(Path.Combine(_outputProjectPath, "Frameworks", SentryXcodeProject.FrameworkName)));
+        Assert.False(File.Exists(Path.Combine(_outputProjectPath, "MainApp", SentryXcodeProject.OptionsName)));
+    }
+
+    [Test]
     public void IsNativeSupportEnabled_OptionsDisabled_LogsAndReturnsFalse()
     {
         var options = new SentryUnityOptions { Enabled = false };

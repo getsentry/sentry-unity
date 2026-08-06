@@ -98,6 +98,29 @@ public class AndroidManifestTests
     }
 
     [Test]
+    public void ModifyManifest_DisabledAfterEnabled_RemovesPreviousSentryConfiguration()
+    {
+        var sut = _fixture.GetSut();
+        var basePath = GetFakeManifestFileBasePath();
+        var manifestPath = AndroidManifestConfiguration.GetManifestPath(basePath);
+
+        try
+        {
+            sut.ModifyManifest(basePath);
+            StringAssert.Contains("io.sentry.dsn", File.ReadAllText(manifestPath));
+
+            _fixture.SentryUnityOptions!.Enabled = false;
+            sut.ModifyManifest(basePath);
+
+            StringAssert.DoesNotContain("io.sentry.dsn", File.ReadAllText(manifestPath));
+        }
+        finally
+        {
+            Directory.Delete(basePath, true);
+        }
+    }
+
+    [Test]
     [TestCase(null)]
     [TestCase("")]
     [TestCase("  ")]
