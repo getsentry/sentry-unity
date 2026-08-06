@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Sentry.Extensibility;
+using Sentry.Unity.Editor;
 using Sentry.Unity.Editor.ConfigurationWindow;
 using UnityEngine;
 using UnityEditor;
@@ -19,11 +20,56 @@ public static class BuildPostProcess
             return;
         }
 
+        if (SentryBuildDefines.IsDisabled(target))
+        {
+            RemoveSentryFromXcodeProject(pathToProject);
+            return;
+        }
+
         var cliOptions = SentryScriptableObject.LoadCliOptions();
         var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
         AddSentryToXcodeProject(options, cliOptions, logger, pathToProject);
+    }
+
+    internal static void RemoveSentryFromXcodeProject(string pathToProject)
+    {
+        var logger = new UnityLogger(new SentryUnityOptions());
+
+        NativeMain.RemoveSentry(Path.Combine(pathToProject, SentryXcodeProject.MainPath), logger);
+
+        using (var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger))
+        {
+            sentryXcodeProject.RemoveSentryFiles();
+        }
+
+        DeleteFile(Path.Combine(pathToProject, "MainApp", SentryXcodeProject.OptionsName));
+        DeleteFile(Path.Combine(pathToProject, "sentry.properties"));
+        DeleteFile(Path.Combine(pathToProject, SentryCli.SentryCliMacOS));
+        DeleteFile(Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName));
+        DeleteDirectory(Path.Combine(pathToProject, "Frameworks", SentryXcodeProject.FrameworkName));
+
+        foreach (var path in Directory.GetFiles(pathToProject, "SentryCxaThrowHook.cpp", SearchOption.AllDirectories))
+        {
+            DeleteFile(path);
+        }
+    }
+
+    private static void DeleteFile(string path)
+    {
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+    }
+
+    private static void DeleteDirectory(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, true);
+        }
     }
 
     internal static bool IsNativeSupportEnabled(SentryUnityOptions options, IDiagnosticLogger logger)

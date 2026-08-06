@@ -41,6 +41,28 @@ internal static class NativeMain
         logger?.LogDebug("Successfully added Sentry to 'main'. ");
     }
 
+    public static void RemoveSentry(string pathToMain, IDiagnosticLogger? logger)
+    {
+        if (!File.Exists(pathToMain))
+        {
+            return;
+        }
+
+        var main = File.ReadAllText(pathToMain);
+        if (!ContainsSentry(main, logger))
+        {
+            return;
+        }
+
+        if (!main.Contains(Init))
+        {
+            throw new InvalidOperationException("Failed to remove the Sentry initialization from 'main.mm'.");
+        }
+
+        File.WriteAllText(pathToMain, main.Replace(Include, string.Empty).Replace(Init, string.Empty));
+        logger?.LogDebug("Removed Sentry from 'main'.");
+    }
+
     internal static bool ContainsSentry(string main, IDiagnosticLogger? logger)
     {
         if (main.Contains(Include))

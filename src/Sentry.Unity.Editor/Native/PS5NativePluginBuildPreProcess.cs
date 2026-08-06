@@ -28,6 +28,11 @@ internal class PS5NativePluginBuildPreProcess : IPreprocessBuildWithReport
             return;
         }
 
+        if (SentryBuildDefines.IsDisabled(report.summary.platform))
+        {
+            return;
+        }
+
         var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         if (options is null)
         {

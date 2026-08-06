@@ -5,7 +5,8 @@ PluginImporter:
   serializedVersion: 3
   iconMap: {}
   executionOrder: {}
-  defineConstraints: []
+  defineConstraints:
+  - !SENTRY_UNITY_DISABLED
   isPreloaded: 0
   isOverridable: 1
   isExplicitlyReferenced: 0
@@ -71,4 +72,4 @@ PluginImporter:
         FrameworkDependencies: 
   userData: 
   assetBundleName: 
-  assetBundleVariant: 
+  assetBundleVariant:
