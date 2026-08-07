@@ -6,10 +6,14 @@ using UnityEditor.Build.Reporting;
 
 namespace Sentry.Unity.Editor;
 
-internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
+internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport, IPostprocessBuildWithReport
 {
     internal const string SourceMappingArgument = "--emit-source-mapping";
+    internal const string LinkSymbolsArgument = "--link-symbols";
+    internal const string UnityLinkerAdditionalArgumentsEnvironmentVariable = "UNITYLINKER_ADDITIONAL_ARGS";
     private static IDiagnosticLogger? Logger;
+    private static string? UnityLinkerArgumentsBeforeBuild;
+    private static bool UnityLinkerArgumentsChanged;
 
     public int callbackOrder => 0;
 
@@ -33,6 +37,28 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
         SetAdditionalIl2CppArguments(options,
             PlayerSettings.GetAdditionalIl2CppArgs,
             PlayerSettings.SetAdditionalIl2CppArgs);
+
+        if (!options.Il2CppLineNumberSupportEnabled)
+        {
+            return;
+        }
+
+        UnityLinkerArgumentsBeforeBuild = Environment.GetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable);
+        UnityLinkerArgumentsChanged = AddUnityLinkerArgument(
+            () => UnityLinkerArgumentsBeforeBuild,
+            arguments => Environment.SetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable, arguments));
+    }
+
+    public void OnPostprocessBuild(BuildReport report)
+    {
+        if (!UnityLinkerArgumentsChanged)
+        {
+            return;
+        }
+
+        Environment.SetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable, UnityLinkerArgumentsBeforeBuild);
+        UnityLinkerArgumentsBeforeBuild = null;
+        UnityLinkerArgumentsChanged = false;
     }
 
     internal static void SetAdditionalIl2CppArguments(SentryUnityOptions options, Func<string> getArguments, Action<string> setArguments)
@@ -61,5 +87,21 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
                 setArguments.Invoke(arguments);
             }
         }
+    }
+
+    internal static bool AddUnityLinkerArgument(Func<string?> getArguments, Action<string> setArguments)
+    {
+        var arguments = getArguments.Invoke();
+        if (arguments?.IndexOf(LinkSymbolsArgument, StringComparison.Ordinal) >= 0)
+        {
+            Logger?.LogDebug("Additional UnityLinker argument '{0}' already present.", LinkSymbolsArgument);
+            return false;
+        }
+
+        Logger?.LogDebug("IL2CPP line number support enabled - Adding additional UnityLinker argument.");
+        setArguments.Invoke(string.IsNullOrWhiteSpace(arguments)
+            ? LinkSymbolsArgument
+            : $"{arguments} {LinkSymbolsArgument}");
+        return true;
     }
 }

@@ -82,4 +82,43 @@ public class Il2CppBuildPreProcessTests
         Assert.That(resultingArguments, Does.Contain(expectedArgument));
         Assert.That(resultingArguments, Does.Not.Contain(Il2CppBuildPreProcess.SourceMappingArgument));
     }
+
+    [Test]
+    public void AddUnityLinkerArgument_AddsLinkSymbolsArgument()
+    {
+        string? unityLinkerArguments = null;
+
+        var changed = Il2CppBuildPreProcess.AddUnityLinkerArgument(
+            () => unityLinkerArguments,
+            arguments => unityLinkerArguments = arguments);
+
+        Assert.That(changed, Is.True);
+        Assert.That(unityLinkerArguments, Is.EqualTo(Il2CppBuildPreProcess.LinkSymbolsArgument));
+    }
+
+    [Test]
+    public void AddUnityLinkerArgument_PreservesExistingArguments()
+    {
+        string? unityLinkerArguments = "--existing-argument";
+
+        var changed = Il2CppBuildPreProcess.AddUnityLinkerArgument(
+            () => unityLinkerArguments,
+            arguments => unityLinkerArguments = arguments);
+
+        Assert.That(changed, Is.True);
+        Assert.That(unityLinkerArguments, Is.EqualTo($"--existing-argument {Il2CppBuildPreProcess.LinkSymbolsArgument}"));
+    }
+
+    [Test]
+    public void AddUnityLinkerArgument_DoesNotDuplicateLinkSymbolsArgument()
+    {
+        string? unityLinkerArguments = $"--existing-argument {Il2CppBuildPreProcess.LinkSymbolsArgument}";
+
+        var changed = Il2CppBuildPreProcess.AddUnityLinkerArgument(
+            () => unityLinkerArguments,
+            arguments => unityLinkerArguments = arguments);
+
+        Assert.That(changed, Is.False);
+        Assert.That(unityLinkerArguments, Is.EqualTo($"--existing-argument {Il2CppBuildPreProcess.LinkSymbolsArgument}"));
+    }
 }
