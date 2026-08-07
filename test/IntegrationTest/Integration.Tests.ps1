@@ -348,6 +348,21 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
             $exception.stacktrace | Should -Not -BeNullOrEmpty
         }
 
+        It "Resolves the throw frame to its source line" {
+            if ($script:Platform -eq "WebGL") {
+                Set-ItResult -Skipped -Because "IL2CPP line number support is unsupported on WebGL"
+                return
+            }
+
+            $frame = $runEvent.exception.values[0].stacktrace.frames |
+                Where-Object { $_.function -match "IntegrationTester.*ThrowException" } |
+                Select-Object -First 1
+
+            $frame | Should -Not -BeNullOrEmpty
+            $frame.abs_path | Should -Match "[\\/]Assets[\\/]Scripts[\\/]IntegrationTester\.cs$"
+            $frame.lineno | Should -Be 218
+        }
+
         It "Has error level" {
             ($runEvent.tags | Where-Object { $_.key -eq "level" }).value | Should -Be "error"
         }
