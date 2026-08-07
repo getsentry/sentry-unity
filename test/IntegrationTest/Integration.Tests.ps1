@@ -355,12 +355,13 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
             }
 
             $frame = $runEvent.exception.values[0].stacktrace.frames |
-                Where-Object { $_.function -match "IntegrationTester.*ThrowException" } |
+                Where-Object { $_.module -eq "IntegrationTester" -and $_.function -eq "ThrowException" } |
                 Select-Object -First 1
 
             $frame | Should -Not -BeNullOrEmpty
-            $frame.abs_path | Should -Match "[\\/]Assets[\\/]Scripts[\\/]IntegrationTester\.cs$"
-            $frame.lineno | Should -Be 218
+            $frame.absPath | Should -Match "[\\/]Assets[\\/]Scripts[\\/]IntegrationTester\.cs$"
+            $frame.lineNo | Should -Be 218
+            $frame.symbolicatorStatus | Should -Be "symbolicated"
         }
 
         It "Has error level" {
