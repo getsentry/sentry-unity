@@ -1,0 +1,257 @@
+name: "Linux IL2CPP Line Number Diagnostics"
+
+on:
+  workflow_call:
+    inputs:
+      backend:
+        description: "Linux crash-reporting backend to include in the build"
+        required: false
+        default: native
+        type: string
+      unitylinker-additional-args:
+        description: "Value supplied to the Unity editor process as UNITYLINKER_ADDITIONAL_ARGS"
+        required: false
+        default: ""
+        type: string
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG:
+        required: true
+      SENTRY_AUTH_TOKEN:
+        required: true
+      SENTRY_TEST_DSN:
+        required: true
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+  UNITY_VERSION: "6000.5"
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  sdk:
+    name: Build Linux ${{ inputs.backend }} SDK
+    uses: ./.github/workflows/sdk.yml
+    with:
+      target: ${{ inputs.backend == 'native' && 'LinuxNative' || 'Linux' }}
+      runsOn: ubuntu-latest
+
+  package:
+    name: Build package
+    needs: sdk
+    runs-on: ubuntu-22.04
+    env:
+      GITHUB_ACTOR: ${{ github.actor }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8 # v1.3.0
+        with:
+          android: true
+          dotnet: false
+          haskell: true
+          large-packages: false
+          docker-images: false
+          swap-storage: true
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive src/sentry-dotnet
+
+      - name: Log into Docker
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ env.GITHUB_ACTOR }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start the Unity docker container
+        run: ./scripts/ci-docker.sh "2021.3" ios "$UNITY_LICENSE_SERVER_CONFIG"
+        shell: bash
+        env:
+          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore .NET workload
+        run: dotnet workload restore
+
+      - name: Download CLI
+        run: ./scripts/download-sentry-cli.ps1
+
+      - name: Download Linux ${{ inputs.backend }} SDK
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ inputs.backend == 'native' && 'LinuxNative-sdk' || 'Linux-sdk' }}
+          path: ${{ inputs.backend == 'native' && 'package-dev/Plugins/Linux/SentryNative~' || 'package-dev/Plugins/Linux/Sentry~' }}
+
+      - name: Build Sentry.Unity solution
+        run: docker exec unity dotnet build -c Release -v:d
+
+      - name: Install assembly alias tool
+        run: docker exec unity dotnet tool install --global Sentry.AssemblyAlias --version 0.5.0 --allow-roll-forward
+
+      - name: Alias assemblies
+        run: docker exec unity pwsh scripts/alias-assemblies.ps1 -AssemblyAlias /home/gh/.dotnet/tools/assemblyalias
+
+      - name: Package for diagnostics
+        run: |
+          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          ./scripts/pack.ps1
+
+      - name: Upload package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: diagnostic-package-release
+          if-no-files-found: error
+          path: package-release.zip
+
+  create-project:
+    name: Create Unity 6000.5 project
+    needs: package
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_ACTOR: ${{ github.actor }}
+      UNITY_PATH: docker exec unity unity-editor
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Log into Docker
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ env.GITHUB_ACTOR }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore IntegrationTest project cache
+        id: cache-project
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/IntegrationTest
+          key: IntegrationTest-Project-${{ env.UNITY_VERSION }}-${{ hashFiles('test/Scripts.Integration.Test/**') }}-v1
+          restore-keys: |
+            IntegrationTest-Project-${{ env.UNITY_VERSION }}-
+
+      - name: Start the Unity docker container
+        if: steps.cache-project.outputs.cache-hit != 'true'
+        run: ./scripts/ci-docker.sh "$UNITY_VERSION" base "$UNITY_LICENSE_SERVER_CONFIG"
+        shell: bash
+        env:
+          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+
+      - name: Create new project
+        if: steps.cache-project.outputs.cache-hit != 'true'
+        run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "$env:UNITY_PATH"
+
+      - name: Create project archive
+        run: tar -cvzf test-project.tar.gz samples/IntegrationTest
+
+      - name: Upload project
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: diagnostic-test-6000.5
+          if-no-files-found: error
+          path: test-project.tar.gz
+
+  build:
+    name: Build Linux IL2CPP
+    needs: [package, create-project]
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_ACTOR: ${{ github.actor }}
+      UNITY_PATH: docker exec unity unity-editor
+      UNITYLINKER_ADDITIONAL_ARGS: ${{ inputs.unitylinker-additional-args }}
+      SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8 # v1.3.0
+        with:
+          android: true
+          dotnet: false
+          haskell: true
+          large-packages: false
+          docker-images: false
+          swap-storage: true
+
+      - name: Log into Docker
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ env.GITHUB_ACTOR }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start the Unity docker container
+        run: ./scripts/ci-docker.sh "$UNITY_VERSION" Linux-il2cpp "$UNITY_LICENSE_SERVER_CONFIG"
+        shell: bash
+        env:
+          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+
+      - name: Download IntegrationTest project
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: diagnostic-test-6000.5
+
+      - name: Extract project archive
+        run: tar -xvzf test-project.tar.gz
+
+      - name: Restore Unity Library cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/IntegrationTest/Library
+          key: it-library-ubuntu-${{ env.UNITY_VERSION }}-${{ github.run_id }}
+          restore-keys: |
+            it-library-ubuntu-${{ env.UNITY_VERSION }}-
+
+      - name: Download UPM package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: diagnostic-package-release
+
+      - name: Extract UPM package
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
+
+      - name: Add Sentry to the project
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath test-package-release
+
+      - name: Select Linux backend
+        run: |
+          if ('${{ inputs.backend }}' -eq 'native') {
+            $optionsPath = 'samples/IntegrationTest/Assets/Scripts/IntegrationOptionsConfiguration.cs'
+            (Get-Content $optionsPath -Raw) -replace 'LinuxBackend = LinuxBackend.Breakpad', 'LinuxBackend = LinuxBackend.Native' | Set-Content $optionsPath
+          }
+
+      - name: Configure Sentry
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux
+
+      - name: Build Linux IL2CPP player
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
+
+      - name: Verify UnityLinker received --link-symbols
+        run: |
+          if (-not (Select-String -Path unity.log -SimpleMatch '--link-symbols' -Quiet)) {
+            throw 'UnityLinker command did not contain --link-symbols.'
+          }
+
+      - name: Upload diagnostic artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: linux-il2cpp-diagnostics-${{ inputs.backend }}
+          if-no-files-found: warn
+          path: |
+            unity.log
+            samples/IntegrationTest/Build/**/LineNumberMappings.json
+            samples/IntegrationTest/Build/**/GameAssembly.debug
+            samples/IntegrationTest/Library/Bee/artifacts/**/il2cppOutput/**
+          retention-days: 14
