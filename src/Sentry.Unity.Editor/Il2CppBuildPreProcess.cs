@@ -3,6 +3,7 @@ using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
+using UnityEditor.UnityLinker;
 
 namespace Sentry.Unity.Editor;
 
@@ -42,11 +43,6 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport, IPostprocessB
         {
             return;
         }
-
-        UnityLinkerArgumentsBeforeBuild = Environment.GetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable);
-        UnityLinkerArgumentsChanged = AddUnityLinkerArgument(
-            () => UnityLinkerArgumentsBeforeBuild,
-            arguments => Environment.SetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable, arguments));
     }
 
     public void OnPostprocessBuild(BuildReport report)
@@ -103,5 +99,42 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport, IPostprocessB
             ? LinkSymbolsArgument
             : $"{arguments} {LinkSymbolsArgument}");
         return true;
+    }
+
+    internal static void AddUnityLinkerArgument(BuildReport report)
+    {
+        var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(report.summary.platformGroup);
+        if (PlayerSettings.GetScriptingBackend(namedBuildTarget) != ScriptingImplementation.IL2CPP)
+        {
+            return;
+        }
+
+        var options = SentryScriptableObject.LoadOptions(isBuilding: true);
+        if (options is null || !options.Il2CppLineNumberSupportEnabled)
+        {
+            return;
+        }
+
+        if (UnityLinkerArgumentsChanged)
+        {
+            return;
+        }
+
+        Logger = options.DiagnosticLogger;
+        UnityLinkerArgumentsBeforeBuild = Environment.GetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable);
+        UnityLinkerArgumentsChanged = AddUnityLinkerArgument(
+            () => UnityLinkerArgumentsBeforeBuild,
+            arguments => Environment.SetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable, arguments));
+    }
+}
+
+public sealed class SentryUnityLinkerProcessor : IUnityLinkerProcessor
+{
+    public int callbackOrder => 0;
+
+    public string GenerateAdditionalLinkXmlFile(BuildReport report, UnityLinkerBuildPipelineData data)
+    {
+        Il2CppBuildPreProcess.AddUnityLinkerArgument(report);
+        return string.Empty;
     }
 }

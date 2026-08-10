@@ -18,7 +18,7 @@ jobs:
     uses: ./.github/workflows/linux-il2cpp-line-number-diagnostics.yml
     with:
       backend: native
-      unitylinker-additional-args: --link-symbols
+      unitylinker-additional-args: ""
     secrets:
       UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
