@@ -84,41 +84,41 @@ public class Il2CppBuildPreProcessTests
     }
 
     [Test]
-    public void AddUnityLinkerArgument_AddsLinkSymbolsArgument()
+    public void AddLinkSymbolsArgument_AddsArgument()
     {
         string? unityLinkerArguments = null;
 
-        var changed = Il2CppBuildPreProcess.AddUnityLinkerArgument(
+        var changed = SentryUnityLinkerProcessor.AddLinkSymbolsArgument(
             () => unityLinkerArguments,
             arguments => unityLinkerArguments = arguments);
 
         Assert.That(changed, Is.True);
-        Assert.That(unityLinkerArguments, Is.EqualTo(Il2CppBuildPreProcess.LinkSymbolsArgument));
+        Assert.That(unityLinkerArguments, Is.EqualTo(SentryUnityLinkerProcessor.LinkSymbolsArgument));
     }
 
     [Test]
-    public void AddUnityLinkerArgument_PreservesExistingArguments()
+    public void AddLinkSymbolsArgument_PreservesExistingArguments()
     {
         string? unityLinkerArguments = "--existing-argument";
 
-        var changed = Il2CppBuildPreProcess.AddUnityLinkerArgument(
+        var changed = SentryUnityLinkerProcessor.AddLinkSymbolsArgument(
             () => unityLinkerArguments,
             arguments => unityLinkerArguments = arguments);
 
         Assert.That(changed, Is.True);
-        Assert.That(unityLinkerArguments, Is.EqualTo($"--existing-argument {Il2CppBuildPreProcess.LinkSymbolsArgument}"));
+        Assert.That(unityLinkerArguments, Is.EqualTo($"--existing-argument {SentryUnityLinkerProcessor.LinkSymbolsArgument}"));
     }
 
     [Test]
-    public void AddUnityLinkerArgument_DoesNotDuplicateLinkSymbolsArgument()
+    public void AddLinkSymbolsArgument_DoesNotDuplicateArgument()
     {
-        string? unityLinkerArguments = $"--existing-argument {Il2CppBuildPreProcess.LinkSymbolsArgument}";
+        string? unityLinkerArguments = $"--existing-argument {SentryUnityLinkerProcessor.LinkSymbolsArgument}";
 
-        var changed = Il2CppBuildPreProcess.AddUnityLinkerArgument(
+        var changed = SentryUnityLinkerProcessor.AddLinkSymbolsArgument(
             () => unityLinkerArguments,
             arguments => unityLinkerArguments = arguments);
 
         Assert.That(changed, Is.False);
-        Assert.That(unityLinkerArguments, Is.EqualTo($"--existing-argument {Il2CppBuildPreProcess.LinkSymbolsArgument}"));
+        Assert.That(unityLinkerArguments, Is.EqualTo($"--existing-argument {SentryUnityLinkerProcessor.LinkSymbolsArgument}"));
     }
 }
