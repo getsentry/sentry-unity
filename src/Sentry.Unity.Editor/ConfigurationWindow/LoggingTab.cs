@@ -102,11 +102,15 @@ internal static class LoggingTab
                 options.CaptureLogErrorEvents);
 
             options.AttachStacktrace = EditorGUILayout.Toggle(
-                new GUIContent("Attach Stack Trace", "Whether the SDK should include a stack trace for CaptureMessage " +
-                                                     "events. Refer to AttachStacktrace on sentry docs."),
+                new GUIContent("Attach Stack Trace", "Whether the SDK should include a stack trace for message events, " +
+                                                     "including Debug.LogError. IL2CPP line number mapping applies only to " +
+                                                     "thrown exceptions."),
                 options.AttachStacktrace);
 
-            EditorGUILayout.LabelField("Note: The stack trace quality will depend on the IL2CPP line number setting and might not contain line numbers.", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox(
+                "Message events do not use IL2CPP line number mapping. CaptureMessage stack traces have no source lines. " +
+                "Debug.LogError can include lines when Unity 6 source line numbers are enabled in Player Settings.",
+                MessageType.Info);
 
             // Enhanced not supported on IL2CPP so not displaying this for the time being:
             // Options.StackTraceMode = (StackTraceMode) EditorGUILayout.EnumPopup(

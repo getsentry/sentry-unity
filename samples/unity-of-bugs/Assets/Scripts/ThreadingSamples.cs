@@ -64,8 +64,8 @@ public class ThreadingSamples : MonoBehaviour
         {
             if (CheckSomeFakeWork())
             {
-                // Messages do not have a stacktrace attached by default. This is an opt-in feature.
-                // Note: That stack traces generated for message events are provided without line numbers. See known limitations
+                // Messages do not have a stack trace by default. AttachStacktrace adds one, but IL2CPP cannot add
+                // source lines to it. See known limitations:
                 // https://docs.sentry.io/platforms/unity/troubleshooting/known-limitations/#line-numbers-missing-in-events-captured-through-debuglogerror-or-sentrysdkcapturemessage
                 SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
             }
@@ -78,8 +78,8 @@ public class ThreadingSamples : MonoBehaviour
         {
             if (CheckSomeFakeWork())
             {
-                // Error logs get captured as messages and do not have a stacktrace attached by default. This is an opt-in feature.
-                // Note: That stack traces generated for message events are provided without line numbers. See known limitations
+                // Error logs are captured as messages and do not have a stack trace by default. AttachStacktrace parses
+                // Unity's stack trace. Unity 6 can include source lines when configured in Player Settings. See:
                 // https://docs.sentry.io/platforms/unity/troubleshooting/known-limitations/#line-numbers-missing-in-events-captured-through-debuglogerror-or-sentrysdkcapturemessage
                 Debug.LogError("This is a 'Debug.LogError()' message.");
             }
@@ -92,7 +92,8 @@ public class ThreadingSamples : MonoBehaviour
         {
             if (CheckSomeFakeWork())
             {
-                // Error logs get captured as messages and do not have a stacktrace attached by default. This is an opt-in feature.
+                // A newly constructed exception has no stack trace. LogException preserves an existing exception stack,
+                // but cannot create one or add line numbers here.
                 Debug.LogException(new NullReferenceException("Some bugs are harder to catch than others. 🦋"));
             }
         });
