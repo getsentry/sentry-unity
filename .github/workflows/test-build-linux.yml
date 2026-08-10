@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_ACTOR: ${{ github.actor }}
-      UNITY_PATH: docker exec unity unity-editor
+      UNITY_PATH: docker exec -e UNITYLINKER_ADDITIONAL_ARGS=--link-symbols unity unity-editor
       UNITY_VERSION: ${{ inputs.unity-version }}
       BUILD_PLATFORM: Linux
 
