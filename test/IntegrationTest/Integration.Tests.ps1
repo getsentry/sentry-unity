@@ -349,7 +349,7 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
         }
 
         It "Resolves the throw frame to its source line" {
-            if ($script:Platform -in "WebGL", "Linux") {
+            if ($script:Platform -in "WebGL") {
                 Set-ItResult -Skipped -Because "Source-line assertions are unsupported on $script:Platform"
                 return
             }
