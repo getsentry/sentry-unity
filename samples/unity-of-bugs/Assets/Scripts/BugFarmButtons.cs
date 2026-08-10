@@ -88,8 +88,16 @@ public class BugFarmButtons : MonoBehaviour
     {
         if (CheckSomeFakeWork())
         {
-            // Error logs get captured as messages and do not have a stacktrace attached by default. This is an opt-in feature.
-            Debug.LogException(new NullReferenceException("Some bugs are harder to catch than others. 🦋"));
+            try
+            {
+                throw new NullReferenceException("Some bugs are harder to catch than others. 🦋");
+            }
+            catch(Exception e)
+            {
+                // Logged exceptions are automatically captured but marked as `unhandled` and like an unhandled exception. 
+                // Capturing it via `SentrySdk.CaptureException(e);` is preferred.
+                Debug.LogException(e);
+            }
         }
     }
 

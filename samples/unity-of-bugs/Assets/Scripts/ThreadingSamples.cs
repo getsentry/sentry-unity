@@ -92,9 +92,16 @@ public class ThreadingSamples : MonoBehaviour
         {
             if (CheckSomeFakeWork())
             {
-                // A newly constructed exception has no stack trace. LogException preserves an existing exception stack,
-                // but cannot create one or add line numbers here.
-                Debug.LogException(new NullReferenceException("Some bugs are harder to catch than others. 🦋"));
+                try
+                {
+                    throw new NullReferenceException("Some bugs are harder to catch than others. 🦋");
+                }
+                catch(Exception e)
+                {
+                    // Logged exceptions are automatically captured but marked as `unhandled` and like an unhandled exception. 
+                    // Capturing it via `SentrySdk.CaptureException(e);` is preferred.
+                    Debug.LogException(e);
+                }
             }
         });
     }
