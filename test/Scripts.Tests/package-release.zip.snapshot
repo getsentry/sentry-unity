@@ -78,8 +78,6 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framew
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCAttributeContent.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCBreadcrumb.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCClient.h
-Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCDataCollectionDatabaseCollectionOptions.h
-Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCDataCollectionGraphQLCollectionOptions.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCDataCollectionHttpBodyType.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCDataCollectionHttpHeaderCollectionOptions.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCDataCollectionKeyValueCollectionBehavior.h
@@ -175,8 +173,6 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/Sentr
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCAttributeContent.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCBreadcrumb.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCClient.h
-Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCDataCollectionDatabaseCollectionOptions.h
-Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCDataCollectionGraphQLCollectionOptions.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCDataCollectionHttpBodyType.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCDataCollectionHttpHeaderCollectionOptions.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCDataCollectionKeyValueCollectionBehavior.h
