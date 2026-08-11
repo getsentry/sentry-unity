@@ -4,7 +4,7 @@
 
 ### Features
 
-- The SDK now provides line number support for managed exceptions and native crashes for Unity 6.5 and newer ([#2805](https://github.com/getsentry/sentry-unity/pull/2805))
+- The SDK now provides line number support for managed exceptions for Unity 6.5 and newer ([#2805](https://github.com/getsentry/sentry-unity/pull/2805))
 - Added experimental auto game-metrics. When enabled, the SDK periodically collects common performance metrics and sends them to Sentry via the metrics API. ([#2777](https://github.com/getsentry/sentry-unity/pull/2777))
 
 ### Dependencies

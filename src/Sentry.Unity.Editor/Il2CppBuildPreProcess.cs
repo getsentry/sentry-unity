@@ -3,7 +3,6 @@ using Sentry.Extensibility;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
-using UnityEditor.UnityLinker;
 
 namespace Sentry.Unity.Editor;
 
@@ -62,79 +61,5 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
                 setArguments.Invoke(arguments);
             }
         }
-    }
-
-}
-
-public sealed class SentryUnityLinkerProcessor : IUnityLinkerProcessor, IPostprocessBuildWithReport
-{
-    internal const string LinkSymbolsArgument = "--link-symbols";
-    internal const string UnityLinkerAdditionalArgumentsEnvironmentVariable = "UNITYLINKER_ADDITIONAL_ARGS";
-    private static string? UnityLinkerArgumentsBeforeBuild;
-    private static bool UnityLinkerArgumentsChanged;
-
-    public int callbackOrder => 0;
-
-    public string GenerateAdditionalLinkXmlFile(BuildReport report, UnityLinkerBuildPipelineData data)
-    {
-        if (UnityLinkerArgumentsChanged)
-        {
-            return string.Empty;
-        }
-
-        var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(report.summary.platformGroup);
-        if (PlayerSettings.GetScriptingBackend(namedBuildTarget) != ScriptingImplementation.IL2CPP)
-        {
-            return string.Empty;
-        }
-
-        var options = SentryScriptableObject.LoadOptions(isBuilding: true);
-        if (options is null || !options.Il2CppLineNumberSupportEnabled)
-        {
-            return string.Empty;
-        }
-
-        var argumentsBeforeBuild = Environment.GetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable);
-        if (AddLinkSymbolsArgument(
-                () => argumentsBeforeBuild,
-                arguments => Environment.SetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable, arguments),
-                options.DiagnosticLogger))
-        {
-            UnityLinkerArgumentsBeforeBuild = argumentsBeforeBuild;
-            UnityLinkerArgumentsChanged = true;
-        }
-
-        return string.Empty;
-    }
-
-    public void OnPostprocessBuild(BuildReport report)
-    {
-        if (!UnityLinkerArgumentsChanged)
-        {
-            return;
-        }
-
-        Environment.SetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable, UnityLinkerArgumentsBeforeBuild);
-        UnityLinkerArgumentsBeforeBuild = null;
-        UnityLinkerArgumentsChanged = false;
-    }
-
-    internal static bool AddLinkSymbolsArgument(
-        Func<string?> getArguments,
-        Action<string> setArguments,
-        IDiagnosticLogger? logger = null)
-    {
-        var arguments = getArguments.Invoke();
-        if (arguments?.IndexOf(LinkSymbolsArgument, StringComparison.Ordinal) >= 0)
-        {
-            logger?.LogDebug("Additional UnityLinker argument '{0}' already present.", LinkSymbolsArgument);
-            return false;
-        }
-
-        logger?.LogDebug("IL2CPP line number support enabled - Adding additional UnityLinker argument.");
-        setArguments.Invoke(string.IsNullOrWhiteSpace(arguments)
-            ? LinkSymbolsArgument
-            : $"{arguments} {LinkSymbolsArgument}");
-        return true;
     }
 }

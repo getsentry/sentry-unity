@@ -82,43 +82,4 @@ public class Il2CppBuildPreProcessTests
         Assert.That(resultingArguments, Does.Contain(expectedArgument));
         Assert.That(resultingArguments, Does.Not.Contain(Il2CppBuildPreProcess.SourceMappingArgument));
     }
-
-    [Test]
-    public void AddLinkSymbolsArgument_AddsArgument()
-    {
-        string? unityLinkerArguments = null;
-
-        var changed = SentryUnityLinkerProcessor.AddLinkSymbolsArgument(
-            () => unityLinkerArguments,
-            arguments => unityLinkerArguments = arguments);
-
-        Assert.That(changed, Is.True);
-        Assert.That(unityLinkerArguments, Is.EqualTo(SentryUnityLinkerProcessor.LinkSymbolsArgument));
-    }
-
-    [Test]
-    public void AddLinkSymbolsArgument_PreservesExistingArguments()
-    {
-        string? unityLinkerArguments = "--existing-argument";
-
-        var changed = SentryUnityLinkerProcessor.AddLinkSymbolsArgument(
-            () => unityLinkerArguments,
-            arguments => unityLinkerArguments = arguments);
-
-        Assert.That(changed, Is.True);
-        Assert.That(unityLinkerArguments, Is.EqualTo($"--existing-argument {SentryUnityLinkerProcessor.LinkSymbolsArgument}"));
-    }
-
-    [Test]
-    public void AddLinkSymbolsArgument_DoesNotDuplicateArgument()
-    {
-        string? unityLinkerArguments = $"--existing-argument {SentryUnityLinkerProcessor.LinkSymbolsArgument}";
-
-        var changed = SentryUnityLinkerProcessor.AddLinkSymbolsArgument(
-            () => unityLinkerArguments,
-            arguments => unityLinkerArguments = arguments);
-
-        Assert.That(changed, Is.False);
-        Assert.That(unityLinkerArguments, Is.EqualTo($"--existing-argument {SentryUnityLinkerProcessor.LinkSymbolsArgument}"));
-    }
 }

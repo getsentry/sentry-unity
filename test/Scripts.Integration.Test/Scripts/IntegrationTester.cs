@@ -215,6 +215,7 @@ public class IntegrationTester : MonoBehaviour
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowException()
     {
+        // Integration.Tests.ps1 asserts this throw's line number. Update it when moving this.
         throw new InvalidOperationException("Integration test exception");
     }
 
