@@ -195,8 +195,11 @@ internal class AnrWatchDogSingleThreaded : AnrWatchDog
             logger?.LogDebug("Stopping ANR detection coroutine.");
             _watch.Stop();
 
-            MonoBehaviour.StopCoroutine(_updateUiStatusCoroutine);
-            _updateUiStatusCoroutine = null;
+            if (_updateUiStatusCoroutine is not null)
+            {
+                MonoBehaviour.StopCoroutine(_updateUiStatusCoroutine);
+                _updateUiStatusCoroutine = null;
+            }
         };
         MonoBehaviour.ApplicationResuming += () =>
         {
