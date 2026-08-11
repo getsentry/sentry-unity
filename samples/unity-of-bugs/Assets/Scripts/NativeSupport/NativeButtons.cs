@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.Diagnostics;
@@ -8,6 +10,8 @@ using UnityEngine.UI;
 
 public class NativeButtons : MonoBehaviour
 {
+    private static int _afterNativeCall;
+
     [SerializeField] private Text _label;
     [SerializeField] private List<GameObject> _il2cppButtons;
 
@@ -22,13 +26,60 @@ public class NativeButtons : MonoBehaviour
 #endif
     }
 
-    public void ForceCrash() => Utils.ForceCrash(ForcedCrashCategory.AccessViolation);
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void ForceCrash()
+    {
+        DoSomeWorkHere(() => Utils.ForceCrash(ForcedCrashCategory.AccessViolation));
+        Interlocked.Increment(ref _afterNativeCall);
+    }
 
-    public void ThrowCpp() => throw_cpp();
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void ThrowCpp()
+    {
+        DoSomeWorkHere(throw_cpp);
+        Interlocked.Increment(ref _afterNativeCall);
+    }
 
-    public void CrashInCpp() => crash_in_cpp();
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void CrashInCpp()
+    {
+        DoSomeWorkHere(crash_in_cpp);
+        Interlocked.Increment(ref _afterNativeCall);
+    }
 
-    public void CrashInC() => crash_in_c();
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void CrashInC()
+    {
+        DoSomeWorkHere(crash_in_c);
+        Interlocked.Increment(ref _afterNativeCall);
+    }
+
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void DoSomeWorkHere(Action action)
+    {
+        if (CheckSomeFakeWork())
+        {
+            DoSomeWorkThere(action);
+            Interlocked.Increment(ref _afterNativeCall);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void DoSomeWorkThere(Action action)
+    {
+        if (CheckSomeFakeWork())
+        {
+            action.Invoke();
+            Interlocked.Increment(ref _afterNativeCall);
+        }
+    }
+
+    // NoInlining ends up being inlined through L2CPP anyway. :(
+    // We're checking some fake work here to prevent too aggressive optimization. That way, we can show off some proper
+    // stack traces that are closer to real-world bugs and events.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool CheckSomeFakeWork() => DateTime.Now.Ticks > 0; // Always true but not optimizable
 
     // CppPlugin.cpp
     [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
