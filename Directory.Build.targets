@@ -126,8 +126,7 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
     <Exec Command="pwsh &quot;$(RepoRoot)scripts/report-test-results.ps1&quot; &quot;$(UnityTestEditModeResultFilePath)&quot;" />
   </Target>
 
-  <!-- Locate the TestRunner.dlls by filling the wildcard with the template version number. 3d is the default template -->
-  <!-- Unity 6 introduced an additional 3d template: template.3d-high-end & template.3d-cross-platform -->
+  <!-- Locate the TestRunner.dlls in any of the shipped project templates. Which templates ship varies by Unity version. -->
   <UsingTask TaskName="LocateTestRunner" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <UnityLibcache ParameterType="System.String" Required="true" />
@@ -139,7 +138,10 @@ Related: https://forum.unity.com/threads/6572-debugger-agent-unable-to-listen-on
       <Using Namespace="System.Linq" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-var directories = Directory.GetDirectories(UnityLibcache, "com.unity.template.3d-*");
+var directories = Directory.GetDirectories(UnityLibcache, "com.unity.template.*")
+    .Where(d => File.Exists(Path.Combine(d, "ScriptAssemblies", "UnityEngine.TestRunner.dll")))
+    .OrderBy(d => d)
+    .ToArray();
 if (directories.Length >= 1)
 {
     TestRunnerPath = Path.Combine(directories[0], "ScriptAssemblies");
@@ -147,7 +149,7 @@ if (directories.Length >= 1)
     return true;
 }
 
-Log.LogError("Failed to resolve 'com.unity.template.3d-*' for TestRunner at: " + UnityLibcache);
+Log.LogError("Failed to resolve a project template containing UnityEngine.TestRunner.dll at: " + UnityLibcache);
 ]]>
       </Code>
     </Task>
