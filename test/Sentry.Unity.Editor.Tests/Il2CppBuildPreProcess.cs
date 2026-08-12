@@ -82,4 +82,46 @@ public class Il2CppBuildPreProcessTests
         Assert.That(resultingArguments, Does.Contain(expectedArgument));
         Assert.That(resultingArguments, Does.Not.Contain(Il2CppBuildPreProcess.SourceMappingArgument));
     }
+
+    [Test]
+    public void SetAdditionalUnityLinkerArguments_Il2CppEnabled_AddsArgument()
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = true };
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => null, s => resultingArguments = s);
+
+        Assert.That(resultingArguments, Is.EqualTo(Il2CppBuildPreProcess.LinkSymbolsArgument));
+    }
+
+    [Test]
+    public void SetAdditionalUnityLinkerArguments_Il2CppDisabled_DoesNotAddArgument()
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = false };
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => null, s => resultingArguments = s);
+
+        Assert.That(resultingArguments, Does.Not.Contain(Il2CppBuildPreProcess.LinkSymbolsArgument));
+    }
+
+    [Test]
+    public void SetAdditionalUnityLinkerArguments_Il2CppEnabled_ExistingArgumentsDoNotGetOverwritten()
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = true };
+        var expectedArgument = "--MyArgument";
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => expectedArgument, s => resultingArguments = s);
+
+        Assert.That(resultingArguments, Is.EqualTo($"{expectedArgument} {Il2CppBuildPreProcess.LinkSymbolsArgument}"));
+    }
+
+    [Test]
+    public void SetAdditionalUnityLinkerArguments_ArgumentAlreadyAdded_AddsArgumentOnlyOnce()
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = true };
+        arguments = $"--MyArgument {Il2CppBuildPreProcess.LinkSymbolsArgument}";
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => arguments, s => resultingArguments = s);
+
+        Assert.That(resultingArguments, Is.Empty);
+    }
 }
