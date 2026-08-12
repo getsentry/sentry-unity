@@ -115,6 +115,18 @@ public class Il2CppBuildPreProcessTests
     }
 
     [Test]
+    public void SetAdditionalUnityLinkerArguments_Il2CppDisabledAndArgumentAlreadyAdded_RemovesArgument()
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = false };
+        var expectedArgument = "--MyArgument";
+        arguments = $"{expectedArgument} {Il2CppBuildPreProcess.LinkSymbolsArgument}";
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => arguments, s => resultingArguments = s);
+
+        Assert.That(resultingArguments, Is.EqualTo(expectedArgument));
+    }
+
+    [Test]
     public void SetAdditionalUnityLinkerArguments_ArgumentAlreadyAdded_AddsArgumentOnlyOnce()
     {
         var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = true };

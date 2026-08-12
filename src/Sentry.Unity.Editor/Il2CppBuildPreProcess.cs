@@ -42,22 +42,26 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
 
     internal static void SetAdditionalUnityLinkerArguments(SentryUnityOptions options, Func<string?> getArguments, Action<string> setArguments)
     {
-        if (!options.Il2CppLineNumberSupportEnabled)
-        {
-            return;
-        }
-
         var arguments = getArguments.Invoke();
-        if (arguments?.Contains(LinkSymbolsArgument) == true)
-        {
-            Logger?.LogDebug("Additional UnityLinker argument '{0}' already present.", LinkSymbolsArgument);
-            return;
-        }
 
-        Logger?.LogDebug("IL2CPP line number support enabled - Adding additional UnityLinker argument.");
-        setArguments.Invoke(string.IsNullOrWhiteSpace(arguments)
-            ? LinkSymbolsArgument
-            : $"{arguments} {LinkSymbolsArgument}");
+        if (options.Il2CppLineNumberSupportEnabled)
+        {
+            if (arguments?.Contains(LinkSymbolsArgument) == true)
+            {
+                Logger?.LogDebug("Additional UnityLinker argument '{0}' already present.", LinkSymbolsArgument);
+                return;
+            }
+
+            Logger?.LogDebug("IL2CPP line number support enabled - Adding additional UnityLinker argument.");
+            setArguments.Invoke(string.IsNullOrWhiteSpace(arguments)
+                ? LinkSymbolsArgument
+                : $"{arguments} {LinkSymbolsArgument}");
+        }
+        else if (arguments?.Contains(LinkSymbolsArgument) == true)
+        {
+            Logger?.LogDebug("IL2CPP line number support disabled - Removing additional UnityLinker argument.");
+            setArguments.Invoke(arguments.Replace(LinkSymbolsArgument, "").Trim());
+        }
     }
 
     internal static void SetAdditionalIl2CppArguments(SentryUnityOptions options, Func<string> getArguments, Action<string> setArguments)
