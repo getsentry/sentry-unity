@@ -7,7 +7,7 @@ using UnityEditor.UnityLinker;
 
 namespace Sentry.Unity.Editor;
 
-internal sealed class SentryUnityLinkerProcessor : IUnityLinkerProcessor, IPostprocessBuildWithReport
+internal sealed class SentryUnityLinkerProcessor : IUnityLinkerProcessor
 {
     internal const string LinkSymbolsArgument = "--link-symbols";
     internal const string UnityLinkerAdditionalArgumentsEnvironmentVariable = "UNITYLINKER_ADDITIONAL_ARGS";
@@ -36,13 +36,6 @@ internal sealed class SentryUnityLinkerProcessor : IUnityLinkerProcessor, IPostp
         return string.Empty;
     }
 
-    public void OnPostprocessBuild(BuildReport report)
-    {
-        RemoveLinkSymbolsArgument(
-            () => Environment.GetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable),
-            arguments => Environment.SetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable, arguments));
-    }
-
     internal static void AddLinkSymbolsArgument(
         Func<string?> getArguments,
         Action<string> setArguments,
@@ -59,20 +52,5 @@ internal sealed class SentryUnityLinkerProcessor : IUnityLinkerProcessor, IPostp
         setArguments.Invoke(string.IsNullOrWhiteSpace(arguments)
             ? LinkSymbolsArgument
             : $"{arguments} {LinkSymbolsArgument}");
-    }
-
-    internal static void RemoveLinkSymbolsArgument(
-        Func<string?> getArguments,
-        Action<string> setArguments,
-        IDiagnosticLogger? logger = null)
-    {
-        var arguments = getArguments.Invoke();
-        if (arguments?.Contains(LinkSymbolsArgument) != true)
-        {
-            return;
-        }
-
-        logger?.LogDebug("Removing additional UnityLinker argument '{0}'.", LinkSymbolsArgument);
-        setArguments.Invoke(arguments.Replace(LinkSymbolsArgument, "").Trim());
     }
 }
