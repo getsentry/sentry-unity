@@ -10,7 +10,6 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
 {
     internal const string SourceMappingArgument = "--emit-source-mapping";
     internal const string LinkSymbolsArgument = "--link-symbols";
-    internal const string UnityLinkerAdditionalArgumentsEnvironmentVariable = "UNITYLINKER_ADDITIONAL_ARGS";
     private static IDiagnosticLogger? Logger;
 
     public int callbackOrder => 0;
@@ -36,15 +35,9 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
             PlayerSettings.GetAdditionalIl2CppArgs,
             PlayerSettings.SetAdditionalIl2CppArgs);
 
-        // The UnityLinker picks its additional arguments up from the environment. The Bee build program bakes the
-        // resulting command line into its build graph, so this has to happen before that graph gets generated.
         SetAdditionalUnityLinkerArguments(options,
-            () => Environment.GetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable),
-            arguments => Environment.SetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable, arguments));
-
-        Logger?.LogDebug("'{0}' is now '{1}'.",
-            UnityLinkerAdditionalArgumentsEnvironmentVariable,
-            Environment.GetEnvironmentVariable(UnityLinkerAdditionalArgumentsEnvironmentVariable));
+            () => UnityLinkerDiagnosticSwitch.GetValue(Logger),
+            arguments => UnityLinkerDiagnosticSwitch.SetValue(arguments, Logger));
     }
 
     internal static void SetAdditionalUnityLinkerArguments(SentryUnityOptions options, Func<string?> getArguments, Action<string> setArguments)
