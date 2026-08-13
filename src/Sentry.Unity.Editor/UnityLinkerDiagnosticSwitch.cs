@@ -53,6 +53,11 @@ internal static class UnityLinkerDiagnosticSwitch
             }
 
             property.SetValue(diagnosticSwitch, value);
+
+            // Reading the value straight back so we can tell a failed write apart from one that Unity does not pick up.
+            logger?.LogDebug("Set '{0}' to '{1}'. It now reads back as '{2}'.",
+                SwitchName, value, property.GetValue(diagnosticSwitch));
+
             return true;
         }
         catch (Exception e)
