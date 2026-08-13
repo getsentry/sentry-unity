@@ -238,7 +238,7 @@ jobs:
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM"
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
-          SENTRY_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+          SENTRY_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
 
       - name: Build Project
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION"
@@ -294,7 +294,7 @@ jobs:
     secrets:
       UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
@@ -308,7 +308,7 @@ jobs:
     needs: [test-build-android, create-unity-matrix]
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     uses: ./.github/workflows/test-run-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -329,7 +329,7 @@ jobs:
     secrets:
       UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix) }}
@@ -362,7 +362,7 @@ jobs:
       init-type: ${{ matrix.init-type }}
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     strategy:
       fail-fast: false
       matrix:
@@ -386,7 +386,7 @@ jobs:
     needs: [test-build-webgl, create-unity-matrix]
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     strategy:
       fail-fast: false
       matrix:
@@ -402,7 +402,7 @@ jobs:
     secrets:
       UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     strategy:
       fail-fast: false
       matrix:
@@ -418,7 +418,7 @@ jobs:
     secrets:
       UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     strategy:
       fail-fast: false
       matrix:
@@ -434,7 +434,7 @@ jobs:
     secrets:
       UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     strategy:
       fail-fast: false
       matrix:
@@ -449,7 +449,7 @@ jobs:
     needs: [test-build-linux, create-unity-matrix]
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     strategy:
       fail-fast: false
       matrix:
@@ -467,7 +467,7 @@ jobs:
     needs: [test-build-windows, create-unity-matrix]
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     strategy:
       fail-fast: false
       matrix:
@@ -485,7 +485,7 @@ jobs:
     needs: [test-build-macos, create-unity-matrix]
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      SENTRY_TEST_DSN: http://capture@127.0.0.1:8000/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
+      SENTRY_TEST_DSN: http://capture@127.0.0.1:8787/1 # TEMPORARY: envelope capture, see docs/envelope-capture.md
     strategy:
       fail-fast: false
       matrix:

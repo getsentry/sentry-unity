@@ -59,7 +59,7 @@ jobs:
         shell: bash
 
       # Envelope capture: only active when ci.yml was dispatched with `capture-envelopes`, which
-      # points the DSN baked into the test build at 127.0.0.1:8000. See docs/envelope-capture.md.
+      # points the DSN baked into the test build at 127.0.0.1:8787. See docs/envelope-capture.md.
       - name: Start envelope capture server
         if: contains(env.SENTRY_DSN, '127.0.0.1')
         run: ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}"
@@ -94,7 +94,9 @@ jobs:
 
       - name: Stop envelope capture server
         if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}
-        run: Invoke-WebRequest -Uri "http://127.0.0.1:8000/STOP" -TimeoutSec 5 -UseBasicParsing -ErrorAction SilentlyContinue | Out-Null
+        run: |
+          try { Invoke-WebRequest -Uri "http://127.0.0.1:8787/STOP" -TimeoutSec 5 -UseBasicParsing | Out-Null }
+          catch { Write-Host "Capture server already gone" }
 
       - name: Upload captured envelopes
         if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}

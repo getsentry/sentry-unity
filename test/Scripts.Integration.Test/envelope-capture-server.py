@@ -8,7 +8,7 @@ including native crash envelopes and crashpad minidump uploads - that can be rep
 against a local Sentry via scripts/replay-envelopes.py.
 
 Usage:
-    envelope-capture-server.py --output DIR [--host 0.0.0.0] [--port 8000] [--platform NAME]
+    envelope-capture-server.py --output DIR [--host 0.0.0.0] [--port 8787] [--platform NAME]
 
 Control endpoints:
     GET /HEALTH          200 once the server is serving
@@ -98,6 +98,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(payload)))
+        # One request per connection. Keep-alive sockets that the server later drops surface as
+        # "the network connection was lost" in NSURLSession and cost us envelopes.
+        self.send_header("Connection", "close")
+        self.close_connection = True
         self.cors()
         self.end_headers()
         if payload:
@@ -203,7 +207,7 @@ def main():
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--port", type=int, default=8787)
     parser.add_argument("--output", required=True)
     parser.add_argument("--platform", default="unknown")
     args = parser.parse_args()

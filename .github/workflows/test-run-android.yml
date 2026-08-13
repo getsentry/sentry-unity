@@ -85,7 +85,7 @@ jobs:
           touch $HOME/.android/repositories.cfg
 
       # Envelope capture: only active when ci.yml was dispatched with `capture-envelopes`, which
-      # points the DSN baked into the test build at 127.0.0.1:8000. `adb reverse` below tunnels that
+      # points the DSN baked into the test build at 127.0.0.1:8787. `adb reverse` below tunnels that
       # port from the device to the runner. See docs/envelope-capture.md.
       - name: Start envelope capture server
         if: contains(env.SENTRY_DSN, '127.0.0.1')
@@ -118,7 +118,7 @@ jobs:
             adb wait-for-device
             adb shell input keyevent 82
             adb devices -l
-            adb reverse tcp:8000 tcp:8000
+            adb reverse tcp:8787 tcp:8787
             pwsh -Command '$env:SENTRY_TEST_PLATFORM = "Android"; $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.apk"; Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI'
 
       # --- arm64 path: Redroid container on the arm64 runner (no hypervisor needed) ---
@@ -176,14 +176,16 @@ jobs:
             Start-Sleep -Seconds 5
           }
           adb devices -l
-          adb reverse tcp:8000 tcp:8000
+          adb reverse tcp:8787 tcp:8787
           $env:SENTRY_TEST_PLATFORM = "Android"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.apk"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
 
       - name: Stop envelope capture server
         if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}
-        run: Invoke-WebRequest -Uri "http://127.0.0.1:8000/STOP" -TimeoutSec 5 -UseBasicParsing -ErrorAction SilentlyContinue | Out-Null
+        run: |
+          try { Invoke-WebRequest -Uri "http://127.0.0.1:8787/STOP" -TimeoutSec 5 -UseBasicParsing | Out-Null }
+          catch { Write-Host "Capture server already gone" }
 
       - name: Upload captured envelopes
         if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}

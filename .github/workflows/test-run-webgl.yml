@@ -44,8 +44,9 @@ jobs:
         shell: bash
 
       # Envelope capture: only active when ci.yml was dispatched with `capture-envelopes`, which
-      # points the DSN baked into the test build at 127.0.0.1:8000. The capture server answers CORS
-      # preflights so the browser can post to it cross-origin. See docs/envelope-capture.md.
+      # points the DSN baked into the test build at 127.0.0.1:8787. The capture server answers CORS
+      # preflights so the browser can post to it cross-origin, and stays off port 8000 because
+      # webgl-server.py serves the build there. See docs/envelope-capture.md.
       - name: Start envelope capture server
         if: contains(env.SENTRY_DSN, '127.0.0.1')
         run: ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "webgl-${{ inputs.unity-version }}"
@@ -60,7 +61,9 @@ jobs:
 
       - name: Stop envelope capture server
         if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}
-        run: Invoke-WebRequest -Uri "http://127.0.0.1:8000/STOP" -TimeoutSec 5 -UseBasicParsing -ErrorAction SilentlyContinue | Out-Null
+        run: |
+          try { Invoke-WebRequest -Uri "http://127.0.0.1:8787/STOP" -TimeoutSec 5 -UseBasicParsing | Out-Null }
+          catch { Write-Host "Capture server already gone" }
 
       - name: Upload captured envelopes
         if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}

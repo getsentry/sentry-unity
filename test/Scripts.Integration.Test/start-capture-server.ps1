@@ -5,7 +5,7 @@
 
 param(
     [string] $Platform = "unknown",
-    [int] $Port = 8000,
+    [int] $Port = 8787,
     [string] $Output = ""
 )
 

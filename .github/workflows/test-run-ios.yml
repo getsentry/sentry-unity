@@ -66,7 +66,7 @@ jobs:
           xcode-version: '15.0' # to run iOS 17.0 we need Xcode 15.0
 
       # Envelope capture: only active when ci.yml was dispatched with `capture-envelopes`, which
-      # points the DSN baked into the test build at 127.0.0.1:8000. The simulator shares the host
+      # points the DSN baked into the test build at 127.0.0.1:8787. The simulator shares the host
       # loopback, so no port forwarding is needed. See docs/envelope-capture.md.
       - name: Start envelope capture server
         if: contains(env.SENTRY_DSN, '127.0.0.1')
@@ -85,7 +85,9 @@ jobs:
 
       - name: Stop envelope capture server
         if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}
-        run: Invoke-WebRequest -Uri "http://127.0.0.1:8000/STOP" -TimeoutSec 5 -UseBasicParsing -ErrorAction SilentlyContinue | Out-Null
+        run: |
+          try { Invoke-WebRequest -Uri "http://127.0.0.1:8787/STOP" -TimeoutSec 5 -UseBasicParsing | Out-Null }
+          catch { Write-Host "Capture server already gone" }
 
       - name: Upload captured envelopes
         if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}

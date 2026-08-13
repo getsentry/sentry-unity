@@ -145,7 +145,7 @@ BeforeAll {
         }
 
         try {
-            Invoke-WebRequest -Uri "http://127.0.0.1:8000/MARK?label=$Label" -TimeoutSec 5 -UseBasicParsing | Out-Null
+            Invoke-WebRequest -Uri "http://127.0.0.1:8787/MARK?label=$Label" -TimeoutSec 5 -UseBasicParsing | Out-Null
         }
         catch {
             Write-Host "Failed to mark capture label '$Label': $_"
