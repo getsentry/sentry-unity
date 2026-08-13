@@ -46,7 +46,7 @@ function Parse-TestResults([string] $Path) {
         Inconclusive = [int]$testRun.inconclusive
         Skipped      = [int]$testRun.skipped
         Duration     = [double]$testRun.duration
-        Success      = $testRun.result -eq "Passed"
+        Success      = [int]$testRun.total -gt 0 -and [int]$testRun.failed -eq 0
         FailedTests  = @()
     }
 

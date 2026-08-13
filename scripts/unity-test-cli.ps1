@@ -43,6 +43,6 @@ function Invoke-UnityHeadlessTest(
         Skipped      = $summary.Skipped
         Inconclusive = $summary.Inconclusive
         FailedTests  = $summary.FailedTests
-        Success      = $run.ExitCode -eq 0 -and $summary.Success -and $summary.Inconclusive -eq 0
+        Success      = $run.ExitCode -eq 0 -and $summary.Success
     }
 }

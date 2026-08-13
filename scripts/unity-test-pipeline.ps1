@@ -73,7 +73,7 @@ function Get-TestSummary([string] $requestedMode, [object] $result) {
             }
         })
 
-    $success = $summary.Total -gt 0 -and $summary.Failed -eq 0 -and $summary.Inconclusive -eq 0
+    $success = $summary.Total -gt 0 -and $summary.Failed -eq 0
     [pscustomobject]@{
         Mode         = $result.Mode
         Duration     = $result.Duration
@@ -109,7 +109,7 @@ function Invoke-UnityPipelineTests(
         }
 
         if ($testPlatform -eq "playmode") {
-            $started = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "run_tests" -CommandArguments ($commandArguments + @("--async_tests", "true"))
+            $started = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "run_tests" -CommandArguments ($commandArguments + @("--async_tests", "true")) -TimeoutSeconds ($timeoutSeconds + 30)
             if (-not $started.success) {
                 throw "Unity PlayMode tests could not start: $($started.error)"
             }

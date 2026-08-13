@@ -189,12 +189,17 @@ internal static class AdvancedTab
 
         {
             options.Il2CppLineNumberSupportEnabled = EditorGUILayout.Toggle(
-                new GUIContent("IL2CPP line numbers", "Whether the SDK should try to to provide line " +
-                                                      "numbers for exceptions in IL2CPP builds."),
+                new GUIContent("IL2CPP line numbers", "Whether the SDK should provide line numbers for thrown " +
+                                                       "exceptions in IL2CPP builds. Requires debug symbol upload."),
                 options.Il2CppLineNumberSupportEnabled);
 
             if (options.Il2CppLineNumberSupportEnabled)
             {
+                EditorGUILayout.HelpBox(
+                    "This cannot add source lines to message events or to Debug.LogException called with a newly " +
+                    "constructed exception. Capture a thrown exception to include its stack trace.",
+                    MessageType.Info);
+
                 if (!SentryUnityVersion.IsNewerOrEqualThan("2020.3"))
                 {
                     EditorGUILayout.HelpBox("The IL2CPP line number feature is supported from Unity version 2020.3 or newer and 2021.3  or newer onwards", MessageType.Warning);
