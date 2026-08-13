@@ -58,6 +58,12 @@ jobs:
         run: chmod +x samples/IntegrationTest/Build/test.app/Contents/MacOS/IntegrationTest
         shell: bash
 
+      # Envelope capture: only active when ci.yml was dispatched with `capture-envelopes`, which
+      # points the DSN baked into the test build at 127.0.0.1:8000. See docs/envelope-capture.md.
+      - name: Start envelope capture server
+        if: contains(env.SENTRY_DSN, '127.0.0.1')
+        run: ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}"
+
       - name: Run Integration Tests (Linux)
         if: inputs.platform == 'linux'
         timeout-minutes: 20
@@ -85,6 +91,19 @@ jobs:
           $env:SENTRY_TEST_PLATFORM = "Desktop"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.exe"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
+
+      - name: Stop envelope capture server
+        if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}
+        run: Invoke-WebRequest -Uri "http://127.0.0.1:8000/STOP" -TimeoutSec 5 -UseBasicParsing -ErrorAction SilentlyContinue | Out-Null
+
+      - name: Upload captured envelopes
+        if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: envelopes-${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}
+          path: test/IntegrationTest/envelopes/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Upload test results on failure
         if: ${{ failure() }}

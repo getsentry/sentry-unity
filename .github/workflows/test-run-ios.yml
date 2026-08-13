@@ -65,6 +65,13 @@ jobs:
         with:
           xcode-version: '15.0' # to run iOS 17.0 we need Xcode 15.0
 
+      # Envelope capture: only active when ci.yml was dispatched with `capture-envelopes`, which
+      # points the DSN baked into the test build at 127.0.0.1:8000. The simulator shares the host
+      # loopback, so no port forwarding is needed. See docs/envelope-capture.md.
+      - name: Start envelope capture server
+        if: contains(env.SENTRY_DSN, '127.0.0.1')
+        run: ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "ios-${{ env.IOS_VERSION }}-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}"
+
       - name: Run iOS Integration Tests
         id: integration-test
         timeout-minutes: 20
@@ -75,6 +82,19 @@ jobs:
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/IntegrationTest.app"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
           echo "status=success" >> $env:GITHUB_OUTPUT
+
+      - name: Stop envelope capture server
+        if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}
+        run: Invoke-WebRequest -Uri "http://127.0.0.1:8000/STOP" -TimeoutSec 5 -UseBasicParsing -ErrorAction SilentlyContinue | Out-Null
+
+      - name: Upload captured envelopes
+        if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: envelopes-ios-${{ env.IOS_VERSION }}-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
+          path: test/IntegrationTest/envelopes/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Upload test results on failure
         if: ${{ failure() }}
