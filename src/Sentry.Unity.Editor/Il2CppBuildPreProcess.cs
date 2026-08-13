@@ -1,5 +1,6 @@
 using System;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -40,8 +41,15 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
             arguments => UnityLinkerDiagnosticSwitch.SetValue(arguments, Logger));
     }
 
-    internal static void SetAdditionalUnityLinkerArguments(SentryUnityOptions options, Func<string?> getArguments, Action<string> setArguments)
+    // The 'VMUnityLinkerAdditionalArgs' diagnostic switch only exists starting with Unity 6.5.
+    internal static void SetAdditionalUnityLinkerArguments(SentryUnityOptions options, Func<string?> getArguments, Action<string> setArguments, IApplication? application = null)
     {
+        if (!SentryUnityVersion.IsNewerOrEqualThan("6000.5", application))
+        {
+            Logger?.LogDebug("Unity 6.5 or newer required to set additional UnityLinker arguments. Skipping.");
+            return;
+        }
+
         var arguments = getArguments.Invoke();
 
         if (options.Il2CppLineNumberSupportEnabled)
