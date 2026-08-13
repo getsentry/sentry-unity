@@ -34,7 +34,7 @@ uniqueHostname=$(echo "$uniqueHostname" | tr '[:upper:]_ ' '[:lower:]--' | tr -s
 # We use the host dotnet installation - it's much faster than installing inside the docker container.
 set -x
 docker run -td --name $container \
-    --hostname $uniqueHostname \
+    --network host \
     --user $uid:$gid \
     -v "$cwd":/sentry-unity \
     -v $ANDROID_HOME:$ANDROID_HOME \

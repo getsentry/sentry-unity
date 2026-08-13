@@ -20,7 +20,9 @@ import argparse
 import gzip
 import json
 import re
+import shutil
 import sys
+import tempfile
 import threading
 import uuid
 import zlib
@@ -33,6 +35,8 @@ state_lock = threading.Lock()
 sequence = 0
 label = "startup"
 output_dir = Path(".")
+chunk_dir = Path(".")
+symbol_dir = Path(".")
 platform_name = "unknown"
 
 
@@ -62,6 +66,23 @@ def parse_envelope(data):
         items.append((item_header, data[pos:end]))
         pos = end
     return header, items
+
+
+def parse_multipart(body, boundary):
+    """Yields (headers, payload) for each part of a multipart/form-data body."""
+    for segment in body.split(b"--" + boundary):
+        if segment in (b"", b"--", b"--\r\n", b"\r\n"):
+            continue
+        segment = segment[2:] if segment.startswith(b"\r\n") else segment
+        head, _, payload = segment.partition(b"\r\n\r\n")
+        if payload.endswith(b"\r\n"):
+            payload = payload[:-2]
+        headers = {}
+        for line in head.decode("utf-8", "replace").splitlines():
+            key, sep, value = line.partition(":")
+            if sep:
+                headers[key.strip().lower()] = value.strip()
+        yield headers, payload
 
 
 def decode_body(body, encoding):
@@ -121,6 +142,22 @@ class Handler(BaseHTTPRequestHandler):
                 label = safe(new_label)
             print(f"--- mark: {label} ---", file=sys.stderr)
             self.respond(200, b'{"ok":true}')
+        elif url.path.endswith("/chunk-upload/"):
+            # sentry-cli asks what the server accepts before uploading debug files. Advertising
+            # uncompressed chunks keeps the upload handler trivial.
+            options = {
+                "url": f"http://{self.headers.get('Host', '127.0.0.1')}{url.path}",
+                "chunkSize": 8 * 1024 * 1024,
+                "chunksPerRequest": 64,
+                "maxFileSize": 2 * 1024 * 1024 * 1024,
+                "maxRequestSize": 32 * 1024 * 1024,
+                "concurrency": 1,
+                "hashAlgorithm": "sha1",
+                "compression": [],
+                "accept": ["debug_files", "sources", "pdbs", "portablepdbs", "il2cpp",
+                           "bcsymbolmaps", "proguard"],
+            }
+            self.respond(200, json.dumps(options).encode())
         elif url.path == "/STOP":
             self.respond(200, b'{"ok":true}')
             threading.Thread(target=self.server.shutdown).start()
@@ -140,11 +177,79 @@ class Handler(BaseHTTPRequestHandler):
             return b"".join(chunks)
         return self.rfile.read(int(self.headers.get("Content-Length", 0)))
 
+    def handle_chunk_upload(self, body):
+        """Stores each uploaded chunk under its sha1 so assemble can stitch the file back."""
+        boundary = re.search(r"boundary=([^;]+)", self.headers.get("Content-Type", ""))
+        if not boundary:
+            self.respond(400, b'{"detail":"missing boundary"}')
+            return
+
+        count = 0
+        for headers, payload in parse_multipart(body, boundary.group(1).strip('"').encode()):
+            name = re.search(r'filename="([^"]*)"', headers.get("content-disposition", ""))
+            if not name:
+                continue
+            (chunk_dir / name.group(1)).write_bytes(payload)
+            count += 1
+
+        print(f"stored {count} chunks", file=sys.stderr)
+        self.respond(200, b"{}")
+
+    def handle_assemble(self, body):
+        """Reassembles uploaded chunks into the debug files sentry-cli meant to upload."""
+        try:
+            request = json.loads(body)
+        except ValueError as error:
+            self.respond(400, json.dumps({"detail": str(error)}).encode())
+            return
+
+        response = {}
+        for checksum, entry in request.items():
+            name = Path(entry.get("name") or checksum).name
+            missing = [c for c in entry.get("chunks", []) if not (chunk_dir / c).exists()]
+            if missing:
+                response[checksum] = {"state": "not_found", "missingChunks": missing, "detail": None}
+                continue
+
+            # A dif and its source bundle share both debug id and name, so the checksum keeps
+            # them from overwriting each other.
+            target = symbol_dir / f"{entry.get('debug_id', 'unknown')}-{checksum[:8]}-{safe(name)}"
+            with target.open("wb") as out:
+                for chunk in entry["chunks"]:
+                    out.write((chunk_dir / chunk).read_bytes())
+            # Source bundles carry Sentry's "SYSB" magic; mark them so the corpus is self-describing.
+            with target.open("rb") as probe:
+                if probe.read(4) == b"SYSB":
+                    target = target.rename(target.with_name(target.name + ".src"))
+
+            # IL2CPP debug files run to gigabytes; dropping the chunks once assembled keeps peak
+            # disk at one copy. sentry-cli re-uploads any chunk a later probe reports missing.
+            for chunk in entry["chunks"]:
+                (chunk_dir / chunk).unlink(missing_ok=True)
+            print(f"assembled {target.name} ({target.stat().st_size} bytes)", file=sys.stderr)
+
+            with state_lock:
+                with (symbol_dir / "index.jsonl").open("a") as index:
+                    index.write(json.dumps({"file": target.name, "platform": platform_name,
+                                            "checksum": checksum, "size": target.stat().st_size,
+                                            "request": entry}) + "\n")
+
+            response[checksum] = {"state": "ok", "missingChunks": [], "detail": None}
+
+        self.respond(200, json.dumps(response).encode())
+
     def do_POST(self):
         global sequence
         url = urlparse(self.path)
         raw = self.read_body()
         body = decode_body(raw, self.headers.get("Content-Encoding"))
+
+        if url.path.endswith("/chunk-upload/"):
+            self.handle_chunk_upload(body)
+            return
+        if url.path.endswith("/assemble/"):
+            self.handle_assemble(body)
+            return
 
         with state_lock:
             sequence += 1
@@ -203,7 +308,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    global output_dir, platform_name
+    global output_dir, chunk_dir, symbol_dir, platform_name
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default="0.0.0.0")
@@ -216,9 +321,16 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
     platform_name = args.platform
 
+    # Debug files sentry-cli uploads land next to the envelopes; the chunks they are stitched
+    # from are scratch and get cleaned up on shutdown.
+    symbol_dir = output_dir / "debug-files"
+    symbol_dir.mkdir(exist_ok=True)
+    chunk_dir = Path(tempfile.mkdtemp(prefix="sentry-chunks-"))
+
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"envelope capture listening on {args.host}:{args.port} -> {output_dir}", file=sys.stderr)
     server.serve_forever()
+    shutil.rmtree(chunk_dir, ignore_errors=True)
     print(f"envelope capture stopped after {sequence} requests", file=sys.stderr)
 
 

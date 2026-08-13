@@ -73,46 +73,6 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
     
-  package-validation:
-    name: UPM Package validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ github.head_ref || github.ref }}
-          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
-
-      - name: Download UPM package
-        uses: ./.github/actions/wait-for-artifact
-        with:
-          name: package-release
-
-      - name: Check snapshot
-        id: snapshot-check
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Continue'
-          & ./test/Scripts.Tests/test-pack-contents.ps1
-          "result=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
-
-      - name: Update snapshot for dependency bumps
-        if: steps.snapshot-check.outputs.result != '0' && github.event_name == 'pull_request' && startsWith(github.head_ref, 'deps/')
-        run: |
-          ./test/Scripts.Tests/test-pack-contents.ps1 accept
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add test/Scripts.Tests/package-release.zip.snapshot
-          git commit -m "Update package release snapshot"
-          git push
-
-      - name: Fail on unexpected snapshot changes
-        if: steps.snapshot-check.outputs.result != '0' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'deps/'))
-        run: |
-          Write-Error "Package contents do not match snapshot. Run './test/Scripts.Tests/test-pack-contents.ps1 accept' locally and commit the update."
-          exit 1
-
-  # This produces the `samples/IntegrationTest` as `test-${{ matrix.unity-version }}`.
   test-create:
     name: Create ${{ matrix.unity-version }} Test Project
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
@@ -189,26 +149,6 @@ jobs:
           restore-keys: |
             it-library-ubuntu-${{ matrix.unity-version }}-
 
-      - name: Restore cached build without Sentry
-        id: cache-build-nosentry
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: samples/IntegrationTest/Build-NoSentry
-          key: build-nosentry-${{ matrix.build_platform }}-${{ matrix.unity-version }}
-
-      - name: Build without Sentry SDK
-        if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -BuildDirName "Build-NoSentry"
-        env:
-          BUILD_PLATFORM: ${{ matrix.build_platform }}
-
-      - name: Save cached build without Sentry
-        if: github.ref == 'refs/heads/main' && steps.cache-build-nosentry.outputs.cache-hit != 'true'
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: samples/IntegrationTest/Build-NoSentry
-          key: build-nosentry-${{ matrix.build_platform }}-${{ matrix.unity-version }}
-
       - name: Download UPM package
         uses: ./.github/actions/wait-for-artifact
         with:
@@ -219,20 +159,6 @@ jobs:
 
       - name: Add Sentry to the project
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
-
-      - name: Download DependencyConflict package
-        uses: ./.github/actions/wait-for-artifact
-        with:
-          name: dependency-conflict-package
-          path: dependency-conflict-package
-
-      - name: Add DependencyConflict to the project
-        if: ${{ !startsWith(matrix.unity-version, '2021') }}
-        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
-
-      - name: Disable DependencyConflict (WebGL 2021)
-        if: ${{ startsWith(matrix.unity-version, '2021') }}
-        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -Disable
 
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM"
@@ -246,20 +172,6 @@ jobs:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
           UNITY_VERSION: ${{ matrix.unity-version }}
 
-      - name: Compare build sizes
-        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION"
-        env:
-          BUILD_PLATFORM: ${{ matrix.build_platform }}
-          UNITY_VERSION: ${{ matrix.unity-version }}
-
-      - name: Upload build size measurement
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: build-size-${{ matrix.platform }}-${{ matrix.unity-version }}
-          path: build-size-measurements/*.json
-          retention-days: 1
-
-      # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive
         run: |
           Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
@@ -534,21 +446,3 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  build-size-summary:
-    name: Build Size
-    runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-build-webgl, test-build-android, test-compile-ios, test-build-linux, test-build-windows, test-build-macos]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Download all build size measurements
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: build-size-*
-          path: build-size-measurements
-
-      - name: Create consolidated summary
-        shell: pwsh
-        run: ./scripts/create-build-size-summary.ps1

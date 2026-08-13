@@ -16,10 +16,8 @@ public class CliConfiguration : SentryCliOptionsConfiguration
         cliOptions.Organization = "sentry-sdks";
         cliOptions.Project = "sentry-unity-integration-tests";
 
-        // sentry-cli derives its upload URL from the DSN whenever that DSN is not sentry.io. During
-        // envelope capture the DSN points at the local capture server, which would send symbol
-        // uploads there too. Pin the CLI to sentry.io so symbol upload keeps working either way.
-        cliOptions.UrlOverride = "https://sentry.io";
+        // No UrlOverride on purpose: sentry-cli derives its upload URL from the DSN, so during
+        // envelope capture the debug files go to the capture server and end up in the artifact.
 
         Debug.Log("Sentry: CliConfiguration::Configure() finished");
     }
