@@ -1,10 +1,13 @@
 using System;
 using NUnit.Framework;
+using Sentry.Unity.Tests.Stubs;
 
 namespace Sentry.Unity.Editor.Tests;
 
 public class Il2CppBuildPreProcessTests
 {
+    private static readonly TestApplication SupportedUnity = new(unityVersion: "6000.5.0f1");
+
     private string arguments = null!;
     private string resultingArguments = null!;
 
@@ -81,5 +84,73 @@ public class Il2CppBuildPreProcessTests
 
         Assert.That(resultingArguments, Does.Contain(expectedArgument));
         Assert.That(resultingArguments, Does.Not.Contain(Il2CppBuildPreProcess.SourceMappingArgument));
+    }
+
+    [Test]
+    public void SetAdditionalUnityLinkerArguments_Il2CppEnabled_AddsArgument()
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = true };
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => null, s => resultingArguments = s, SupportedUnity);
+
+        Assert.That(resultingArguments, Is.EqualTo(Il2CppBuildPreProcess.LinkSymbolsArgument));
+    }
+
+    [Test]
+    public void SetAdditionalUnityLinkerArguments_Il2CppDisabled_DoesNotAddArgument()
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = false };
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => null, s => resultingArguments = s, SupportedUnity);
+
+        Assert.That(resultingArguments, Does.Not.Contain(Il2CppBuildPreProcess.LinkSymbolsArgument));
+    }
+
+    [Test]
+    public void SetAdditionalUnityLinkerArguments_Il2CppEnabled_ExistingArgumentsDoNotGetOverwritten()
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = true };
+        var expectedArgument = "--MyArgument";
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => expectedArgument, s => resultingArguments = s, SupportedUnity);
+
+        Assert.That(resultingArguments, Is.EqualTo($"{expectedArgument} {Il2CppBuildPreProcess.LinkSymbolsArgument}"));
+    }
+
+    [Test]
+    public void SetAdditionalUnityLinkerArguments_Il2CppDisabledAndArgumentAlreadyAdded_RemovesArgument()
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = false };
+        var expectedArgument = "--MyArgument";
+        arguments = $"{expectedArgument} {Il2CppBuildPreProcess.LinkSymbolsArgument}";
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => arguments, s => resultingArguments = s, SupportedUnity);
+
+        Assert.That(resultingArguments, Is.EqualTo(expectedArgument));
+    }
+
+    [Test]
+    public void SetAdditionalUnityLinkerArguments_ArgumentAlreadyAdded_AddsArgumentOnlyOnce()
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = true };
+        arguments = $"--MyArgument {Il2CppBuildPreProcess.LinkSymbolsArgument}";
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => arguments, s => resultingArguments = s, SupportedUnity);
+
+        Assert.That(resultingArguments, Is.Empty);
+    }
+
+    [Test]
+    [TestCase("2021.3.0f1")]
+    [TestCase("6000.0.0f1")]
+    [TestCase("6000.4.9f1")]
+    public void SetAdditionalUnityLinkerArguments_UnsupportedUnityVersion_DoesNotSetArguments(string unityVersion)
+    {
+        var options = new SentryUnityOptions { Il2CppLineNumberSupportEnabled = true };
+        var application = new TestApplication(unityVersion: unityVersion);
+
+        Il2CppBuildPreProcess.SetAdditionalUnityLinkerArguments(options, () => null, s => resultingArguments = s, application);
+
+        Assert.That(resultingArguments, Is.Empty);
     }
 }

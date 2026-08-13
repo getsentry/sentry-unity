@@ -1,5 +1,6 @@
 using System;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -9,6 +10,7 @@ namespace Sentry.Unity.Editor;
 internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
 {
     internal const string SourceMappingArgument = "--emit-source-mapping";
+    internal const string LinkSymbolsArgument = "--link-symbols";
     private static IDiagnosticLogger? Logger;
 
     public int callbackOrder => 0;
@@ -33,6 +35,41 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
         SetAdditionalIl2CppArguments(options,
             PlayerSettings.GetAdditionalIl2CppArgs,
             PlayerSettings.SetAdditionalIl2CppArgs);
+
+        SetAdditionalUnityLinkerArguments(options,
+            () => UnityLinkerDiagnosticSwitch.GetValue(Logger),
+            arguments => UnityLinkerDiagnosticSwitch.SetValue(arguments, Logger));
+    }
+
+    // The 'VMUnityLinkerAdditionalArgs' diagnostic switch only exists starting with Unity 6.5.
+    internal static void SetAdditionalUnityLinkerArguments(SentryUnityOptions options, Func<string?> getArguments, Action<string> setArguments, IApplication? application = null)
+    {
+        if (!SentryUnityVersion.IsNewerOrEqualThan("6000.5", application))
+        {
+            Logger?.LogDebug("Unity 6.5 or newer required to set additional UnityLinker arguments. Skipping.");
+            return;
+        }
+
+        var arguments = getArguments.Invoke();
+
+        if (options.Il2CppLineNumberSupportEnabled)
+        {
+            if (arguments?.Contains(LinkSymbolsArgument) == true)
+            {
+                Logger?.LogDebug("Additional UnityLinker argument '{0}' already present.", LinkSymbolsArgument);
+                return;
+            }
+
+            Logger?.LogDebug("IL2CPP line number support enabled - Adding additional UnityLinker argument.");
+            setArguments.Invoke(string.IsNullOrWhiteSpace(arguments)
+                ? LinkSymbolsArgument
+                : $"{arguments} {LinkSymbolsArgument}");
+        }
+        else if (arguments?.Contains(LinkSymbolsArgument) == true)
+        {
+            Logger?.LogDebug("IL2CPP line number support disabled - Removing additional UnityLinker argument.");
+            setArguments.Invoke(arguments.Replace(LinkSymbolsArgument, "").Trim());
+        }
     }
 
     internal static void SetAdditionalIl2CppArguments(SentryUnityOptions options, Func<string> getArguments, Action<string> setArguments)
