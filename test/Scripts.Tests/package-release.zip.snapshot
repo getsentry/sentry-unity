@@ -108,9 +108,11 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framew
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalPerformanceApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalProfilingApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalReplayApi.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalScopeApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalScreenApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalScreenshotApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalSdkApi.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalSerializerApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalSwizzleApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalUserApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCInternalViewHierarchyApi.h
@@ -146,6 +148,7 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framew
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCThread.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCTraceContext.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCTraceHeader.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCTransaction.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCTransactionContext.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCTransactionNameSource.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCUnit.h
@@ -203,9 +206,11 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/Sentr
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalPerformanceApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalProfilingApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalReplayApi.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalScopeApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalScreenApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalScreenshotApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalSdkApi.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalSerializerApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalSwizzleApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalUserApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCInternalViewHierarchyApi.h
@@ -241,6 +246,7 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/Sentr
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCThread.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCTraceContext.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCTraceHeader.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCTransaction.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCTransactionContext.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCTransactionNameSource.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCUnit.h
