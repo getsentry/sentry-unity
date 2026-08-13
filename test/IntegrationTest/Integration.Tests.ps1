@@ -360,7 +360,8 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
 
             $frame | Should -Not -BeNullOrEmpty
             $frame.absPath | Should -Match "[\\/]Assets[\\/]Scripts[\\/]IntegrationTester\.cs$"
-            $frame.lineNo | Should -Be 219
+            # Which line exactly gets reported differs between Unity versions, so we only assert that we resolved one.
+            $frame.lineNo | Should -BeGreaterThan 0
             $frame.symbolicatorStatus | Should -Be "symbolicated"
         }
 
