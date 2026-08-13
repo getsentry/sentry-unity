@@ -64,8 +64,8 @@ public class ThreadingSamples : MonoBehaviour
         {
             if (CheckSomeFakeWork())
             {
-                // Messages do not have a stacktrace attached by default. This is an opt-in feature.
-                // Note: That stack traces generated for message events are provided without line numbers. See known limitations
+                // Messages do not have a stack trace by default. AttachStacktrace adds one, but IL2CPP cannot add
+                // source lines to it. See known limitations:
                 // https://docs.sentry.io/platforms/unity/troubleshooting/known-limitations/#line-numbers-missing-in-events-captured-through-debuglogerror-or-sentrysdkcapturemessage
                 SentrySdk.CaptureMessage("🕷️🕷️🕷️ Spider message 🕷️🕷️🕷️🕷️");
             }
@@ -78,8 +78,8 @@ public class ThreadingSamples : MonoBehaviour
         {
             if (CheckSomeFakeWork())
             {
-                // Error logs get captured as messages and do not have a stacktrace attached by default. This is an opt-in feature.
-                // Note: That stack traces generated for message events are provided without line numbers. See known limitations
+                // Error logs are captured as messages and do not have a stack trace by default. AttachStacktrace parses
+                // Unity's stack trace. Unity 6 can include source lines when configured in Player Settings. See:
                 // https://docs.sentry.io/platforms/unity/troubleshooting/known-limitations/#line-numbers-missing-in-events-captured-through-debuglogerror-or-sentrysdkcapturemessage
                 Debug.LogError("This is a 'Debug.LogError()' message.");
             }
@@ -92,8 +92,16 @@ public class ThreadingSamples : MonoBehaviour
         {
             if (CheckSomeFakeWork())
             {
-                // Error logs get captured as messages and do not have a stacktrace attached by default. This is an opt-in feature.
-                Debug.LogException(new NullReferenceException("Some bugs are harder to catch than others. 🦋"));
+                try
+                {
+                    throw new NullReferenceException("Some bugs are harder to catch than others. 🦋");
+                }
+                catch(Exception e)
+                {
+                    // Logged exceptions are automatically captured but marked as `unhandled` and like an unhandled exception. 
+                    // Capturing it via `SentrySdk.CaptureException(e);` is preferred.
+                    Debug.LogException(e);
+                }
             }
         });
     }
