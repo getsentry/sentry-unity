@@ -36,13 +36,10 @@ jobs:
       - name: Extract app project
         run: tar -xvzf "test-app-$env:INIT_TYPE.tar.gz"
 
-      # Envelope capture: sentry-cli takes its upload URL from the DSN, so every debug file it
-      # uploads during the build lands in the capture output. See docs/envelope-capture.md.
-      - name: Start envelope capture server
-        run: ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}" -Output "test/IntegrationTest/symbols/ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}"
-
       - name: iOS test
-        run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
+        run: |
+          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}" -Output "test/IntegrationTest/symbols/ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}"
+          ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
         timeout-minutes: 20
 
       - name: Assert symbols and sources were uploaded

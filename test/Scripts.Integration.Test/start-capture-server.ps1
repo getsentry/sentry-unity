@@ -17,6 +17,17 @@ if ([string]::IsNullOrEmpty($Output)) {
     $Output = "test/IntegrationTest/envelopes/$Platform"
 }
 
+# Build jobs call this from every build step, because a detached server does not reliably survive
+# the gap between steps. Reuse the running one instead of fighting over the port and the log file.
+try {
+    Invoke-WebRequest -Uri "http://127.0.0.1:$Port/HEALTH" -TimeoutSec 2 -UseBasicParsing | Out-Null
+    Write-Host "Envelope capture server already running on port $Port"
+    exit 0
+}
+catch {
+    # nothing listening yet - start one below
+}
+
 $python = if (Get-Command python3 -ErrorAction SilentlyContinue) { "python3" } else { "python" }
 $server = Join-Path $PSScriptRoot "envelope-capture-server.py"
 

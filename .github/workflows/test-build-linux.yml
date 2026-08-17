@@ -85,11 +85,6 @@ jobs:
       - name: Add Sentry to the project
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
-      # Envelope capture: sentry-cli takes its upload URL from the DSN, so every debug file it
-      # uploads during the build lands in the capture output. See docs/envelope-capture.md.
-      - name: Start envelope capture server
-        run: ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "linux-${{ env.UNITY_VERSION }}" -Output "test/IntegrationTest/symbols/linux-${{ env.UNITY_VERSION }}"
-
       # IntegrationTester.cs calls into the DependencyConflict package unless this define is set;
       # capture runs don't need that regression check, so compile it out instead of installing it.
       - name: Disable DependencyConflict
@@ -101,7 +96,9 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Build with Sentry SDK (Breakpad backend)
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
+        run: |
+          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "linux-${{ env.UNITY_VERSION }}" -Output "test/IntegrationTest/symbols/linux-${{ env.UNITY_VERSION }}"
+          ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
 
       - name: Assert symbols and sources were uploaded (Breakpad backend)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log
@@ -128,7 +125,9 @@ jobs:
           Set-Content $optionsPath $content
 
       - name: Build with Sentry SDK (Native backend)
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
+        run: |
+          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "linux-${{ env.UNITY_VERSION }}" -Output "test/IntegrationTest/symbols/linux-${{ env.UNITY_VERSION }}"
+          ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
 
       - name: Assert symbols and sources were uploaded (Native backend)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log

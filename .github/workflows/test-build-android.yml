@@ -74,11 +74,6 @@ jobs:
       - name: Add Sentry to the project
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
-      # Envelope capture: sentry-cli takes its upload URL from the DSN, so every debug file it
-      # uploads during the build lands in the capture output. See docs/envelope-capture.md.
-      - name: Start envelope capture server
-        run: ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "android-${{ env.UNITY_VERSION }}" -Output "test/IntegrationTest/symbols/android-${{ env.UNITY_VERSION }}"
-
       # IntegrationTester.cs calls into the DependencyConflict package unless this define is set;
       # capture runs don't need that regression check, so compile it out instead of installing it.
       - name: Disable DependencyConflict
@@ -90,7 +85,9 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Export APK - Runtime Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
+        run: |
+          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "android-${{ env.UNITY_VERSION }}" -Output "test/IntegrationTest/symbols/android-${{ env.UNITY_VERSION }}"
+          ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
 
       - name: Assert symbols and sources were uploaded (Runtime)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath samples/IntegrationTest/Logs/sentry-symbols-upload.log
@@ -119,7 +116,9 @@ jobs:
           Set-Content $optionsPath $content
 
       - name: Export APK - Build-Time Initialization
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
+        run: |
+          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "android-${{ env.UNITY_VERSION }}" -Output "test/IntegrationTest/symbols/android-${{ env.UNITY_VERSION }}"
+          ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
 
       - name: Assert symbols and sources were uploaded (Build-Time)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath samples/IntegrationTest/Logs/sentry-symbols-upload.log
