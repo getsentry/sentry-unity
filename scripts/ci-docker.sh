@@ -44,6 +44,7 @@ docker run -td --name $container \
     -e UNITY_VERSION=$unityVersion \
     -e GITHUB_ACTIONS="${GITHUB_ACTIONS}" \
     -e SENTRY_AUTH_TOKEN="${SENTRY_AUTH_TOKEN:-}" \
+    -e SENTRY_URL="${SENTRY_URL:-}" \
     --workdir /sentry-unity $image
 
 # Generate unique machine-id to avoid any hardcoded values and license-fetch congestion

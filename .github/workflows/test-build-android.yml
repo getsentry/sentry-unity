@@ -25,6 +25,9 @@ jobs:
       GITHUB_ACTOR: ${{ github.actor }}
       UNITY_PATH: docker exec unity unity-editor
       UNITY_VERSION: ${{ inputs.unity-version }}
+      # sentry-cli 3.x ignores `defaults.url` from sentry.properties, so the DSN alone does not
+      # redirect symbol upload. SENTRY_URL is what it honours. See docs/envelope-capture.md.
+      SENTRY_URL: http://127.0.0.1:8787
     
     steps:
       - name: Checkout
@@ -148,6 +151,17 @@ jobs:
             samples/IntegrationTest
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
           retention-days: 14 # Lower retention period - we only need this to retry CI.
+
+      # sentry-cli reporting success is not proof it reached us - it silently falls back to
+      # sentry.io. Fail loudly when nothing was captured.
+      - name: Assert debug files were captured
+        run: |
+          $dir = "test/IntegrationTest/symbols/android-${{ env.UNITY_VERSION }}/debug-files"
+          $files = @(Get-ChildItem $dir -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne "index.jsonl" })
+          if ($files.Count -eq 0) {
+            throw "No debug files captured in '$dir' - sentry-cli did not upload to the capture server."
+          }
+          Write-Host "Captured $($files.Count) debug files ($([math]::Round(($files | Measure-Object Length -Sum).Sum / 1MB, 1)) MB)"
 
       - name: Stop envelope capture server
         if: ${{ always() }}
