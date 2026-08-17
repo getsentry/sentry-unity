@@ -38,6 +38,7 @@ output_dir = Path(".")
 chunk_dir = Path(".")
 symbol_dir = Path(".")
 platform_name = "unknown"
+assembled = set()
 
 
 def parse_envelope(data):
@@ -206,6 +207,15 @@ class Handler(BaseHTTPRequestHandler):
         response = {}
         for checksum, entry in request.items():
             name = Path(entry.get("name") or checksum).name
+
+            # sentry-cli polls assemble until every file reports `ok`. Once assembled we drop the
+            # chunks, so answer from this set rather than re-checking them - otherwise the next
+            # poll reports the file as missing and sentry-cli fails the upload.
+            with state_lock:
+                if checksum in assembled:
+                    response[checksum] = {"state": "ok", "missingChunks": [], "detail": None}
+                    continue
+
             missing = [c for c in entry.get("chunks", []) if not (chunk_dir / c).exists()]
             if missing:
                 response[checksum] = {"state": "not_found", "missingChunks": missing, "detail": None}
@@ -229,6 +239,7 @@ class Handler(BaseHTTPRequestHandler):
             print(f"assembled {target.name} ({target.stat().st_size} bytes)", file=sys.stderr)
 
             with state_lock:
+                assembled.add(checksum)
                 with (symbol_dir / "index.jsonl").open("a") as index:
                     index.write(json.dumps({"file": target.name, "platform": platform_name,
                                             "checksum": checksum, "size": target.stat().st_size,

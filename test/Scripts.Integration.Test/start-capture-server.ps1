@@ -25,7 +25,20 @@ try {
     exit 0
 }
 catch {
-    # nothing listening yet - start one below
+    # Nothing answered. A server from a previous step may still be holding the port without
+    # serving (the runner suspends leftovers between steps), which would make the new one fail
+    # with "Address already in use" - so clear the port before starting.
+    if ($IsWindows) {
+        Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
+            ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
+    }
+    else {
+        $stale = & lsof -ti "tcp:$Port" 2>$null
+        foreach ($processId in $stale) {
+            Write-Host "Killing stale listener on port $Port (pid $processId)"
+            & kill -9 $processId 2>$null
+        }
+    }
 }
 
 $python = if (Get-Command python3 -ErrorAction SilentlyContinue) { "python3" } else { "python" }
