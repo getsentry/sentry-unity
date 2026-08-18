@@ -24,6 +24,7 @@ import shutil
 import sys
 import tempfile
 import threading
+import traceback
 import uuid
 import zlib
 from datetime import datetime, timezone
@@ -232,7 +233,9 @@ class Handler(BaseHTTPRequestHandler):
             with target.open("rb") as probe:
                 is_source_bundle = probe.read(4) == b"SYSB"
             if is_source_bundle:
-                target = target.rename(target.with_name(target.name + ".src"))
+                # replace(), not rename(): a second build re-uploads the same bundles and Windows
+                # refuses to rename onto an existing file.
+                target = target.replace(target.with_name(target.name + ".src"))
 
             # Chunks deliberately stay until shutdown: they are deduplicated by hash, so deleting
             # them here breaks any other file that shares one and makes sentry-cli fail the upload
@@ -249,6 +252,18 @@ class Handler(BaseHTTPRequestHandler):
             response[checksum] = {"state": "ok", "missingChunks": [], "detail": None}
 
         self.respond(200, json.dumps(response).encode())
+
+    def handle_one_request(self):
+        # An exception escaping a handler closes the connection with no response, which surfaces to
+        # sentry-cli as "Empty reply from server" and hides the real cause. Answer 500 instead.
+        try:
+            super().handle_one_request()
+        except Exception:
+            traceback.print_exc()
+            try:
+                self.respond(500, json.dumps({"detail": traceback.format_exc()}).encode())
+            except Exception:
+                pass
 
     def do_POST(self):
         global sequence
