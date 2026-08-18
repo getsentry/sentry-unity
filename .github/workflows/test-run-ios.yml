@@ -65,19 +65,13 @@ jobs:
         with:
           xcode-version: '15.0' # to run iOS 17.0 we need Xcode 15.0
 
-      # Envelope capture: only active when ci.yml was dispatched with `capture-envelopes`, which
-      # points the DSN baked into the test build at 127.0.0.1:8787. The simulator shares the host
-      # loopback, so no port forwarding is needed. See docs/envelope-capture.md.
-      - name: Start envelope capture server
-        if: contains(env.SENTRY_DSN, '127.0.0.1')
-        run: ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "ios-${{ env.IOS_VERSION }}-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}"
-
       - name: Run iOS Integration Tests
         id: integration-test
         timeout-minutes: 20
         env:
           SENTRY_IOS_VERSION: ${{ inputs.ios-version }}
         run: |
+          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "ios-${{ env.IOS_VERSION }}-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}"
           $env:SENTRY_TEST_PLATFORM = "iOS"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/IntegrationTest.app"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI

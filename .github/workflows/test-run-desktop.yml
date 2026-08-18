@@ -58,16 +58,11 @@ jobs:
         run: chmod +x samples/IntegrationTest/Build/test.app/Contents/MacOS/IntegrationTest
         shell: bash
 
-      # Envelope capture: only active when ci.yml was dispatched with `capture-envelopes`, which
-      # points the DSN baked into the test build at 127.0.0.1:8787. See docs/envelope-capture.md.
-      - name: Start envelope capture server
-        if: contains(env.SENTRY_DSN, '127.0.0.1')
-        run: ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}"
-
       - name: Run Integration Tests (Linux)
         if: inputs.platform == 'linux'
         timeout-minutes: 20
         run: |
+          pwsh -File ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}"
           xvfb-run pwsh -Command '
             $env:SENTRY_TEST_PLATFORM = "Desktop";
             $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test";
@@ -80,6 +75,7 @@ jobs:
         env:
           SENTRY_TEST_BACKEND: ${{ inputs.backend }}
         run: |
+          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}"
           $env:SENTRY_TEST_PLATFORM = "Desktop"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.app/Contents/MacOS/IntegrationTest"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
@@ -88,6 +84,7 @@ jobs:
         if: inputs.platform == 'windows'
         timeout-minutes: 20
         run: |
+          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}"
           $env:SENTRY_TEST_PLATFORM = "Desktop"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.exe"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI

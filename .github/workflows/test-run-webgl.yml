@@ -43,17 +43,10 @@ jobs:
         run: pip3 install --upgrade selenium
         shell: bash
 
-      # Envelope capture: only active when ci.yml was dispatched with `capture-envelopes`, which
-      # points the DSN baked into the test build at 127.0.0.1:8787. The capture server answers CORS
-      # preflights so the browser can post to it cross-origin, and stays off port 8000 because
-      # webgl-server.py serves the build there. See docs/envelope-capture.md.
-      - name: Start envelope capture server
-        if: contains(env.SENTRY_DSN, '127.0.0.1')
-        run: ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "webgl-${{ inputs.unity-version }}"
-
       - name: Run Integration Tests
         timeout-minutes: 20
         run: |
+          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "webgl-${{ inputs.unity-version }}"
           $env:SENTRY_TEST_PLATFORM = "WebGL"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build"
           $env:SENTRY_TEST_UNITY_VERSION = "${{ inputs.unity-version }}"
