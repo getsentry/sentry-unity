@@ -129,5 +129,9 @@ function Clear-CapturePort
             Write-Host "Killing stale listener on port $Global:CapturePort (pid $processId)"
             & kill -9 $processId 2>$null
         }
+
+        # `lsof` exits 1 when nothing matches, which is the normal case here. Left alone that
+        # becomes the exit code of the whole calling step, failing a build that actually succeeded.
+        $global:LASTEXITCODE = 0
     }
 }
