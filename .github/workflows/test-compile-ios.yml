@@ -23,6 +23,10 @@ jobs:
       # sentry-cli 3.x ignores `defaults.url` from sentry.properties, so the DSN alone does not
       # redirect symbol upload. SENTRY_URL is what it honours. See docs/envelope-capture.md.
       SENTRY_URL: http://127.0.0.1:8787
+      # sentry-cli refuses to combine a URL from the environment with the auth token baked into
+      # sentry.properties ("different configuration source"), so the token has to come from here
+      # too. The capture server does not check it.
+      SENTRY_AUTH_TOKEN: envelope-capture-mode
             
     steps:
       - name: Checkout

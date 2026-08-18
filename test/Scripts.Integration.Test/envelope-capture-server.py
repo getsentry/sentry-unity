@@ -228,14 +228,15 @@ class Handler(BaseHTTPRequestHandler):
                 for chunk in entry["chunks"]:
                     out.write((chunk_dir / chunk).read_bytes())
             # Source bundles carry Sentry's "SYSB" magic; mark them so the corpus is self-describing.
+            # The handle has to be closed before renaming - Windows refuses to rename an open file.
             with target.open("rb") as probe:
-                if probe.read(4) == b"SYSB":
-                    target = target.rename(target.with_name(target.name + ".src"))
+                is_source_bundle = probe.read(4) == b"SYSB"
+            if is_source_bundle:
+                target = target.rename(target.with_name(target.name + ".src"))
 
-            # IL2CPP debug files run to gigabytes; dropping the chunks once assembled keeps peak
-            # disk at one copy. sentry-cli re-uploads any chunk a later probe reports missing.
-            for chunk in entry["chunks"]:
-                (chunk_dir / chunk).unlink(missing_ok=True)
+            # Chunks deliberately stay until shutdown: they are deduplicated by hash, so deleting
+            # them here breaks any other file that shares one and makes sentry-cli fail the upload
+            # with "Some uploaded files are now missing on the server".
             print(f"assembled {target.name} ({target.stat().st_size} bytes)", file=sys.stderr)
 
             with state_lock:
