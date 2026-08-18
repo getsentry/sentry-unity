@@ -23,10 +23,12 @@ $ErrorActionPreference = "Stop"
 # Import shared test cases and utility functions
 . $PSScriptRoot/CommonTestCases.ps1
 
-# Opt-in envelope capture (no-op unless SENTRY_CAPTURE_PATH is set)
-. $PSScriptRoot/../Scripts.Integration.Test/capture-corpus.ps1
-
 BeforeAll {
+    # Opt-in capture (no-op unless SENTRY_CAPTURE_PATH is set). Dot-sourced here rather than at
+    # script level because Pester runs this block in a scope that does not see script-level
+    # functions.
+    . $PSScriptRoot/../Scripts.Integration.Test/capture-corpus.ps1
+
     # Build app arguments for a given test action
     function Get-AppArguments {
         param([string]$Action)
@@ -302,6 +304,7 @@ BeforeAll {
 
 
 AfterAll {
+    . $PSScriptRoot/../Scripts.Integration.Test/capture-corpus.ps1
     Stop-CaptureServer
 
     if (-not (Test-CaptureEnabled)) {
