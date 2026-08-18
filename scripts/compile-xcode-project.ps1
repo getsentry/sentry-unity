@@ -3,6 +3,16 @@ param (
 )
 
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
+. $PSScriptRoot/../test/Scripts.Integration.Test/capture-corpus.ps1
+
+# Capture mode: sentry-cli refuses to combine a URL from the environment with the auth token
+# baked into sentry.properties, so both come from here. The capture server ignores the token.
+if (Test-CaptureEnabled)
+{
+    Start-CaptureServer
+    $env:SENTRY_URL = $Global:CaptureUrl
+    $env:SENTRY_AUTH_TOKEN = "capture-mode"
+}
 
 $ProjectName = "Unity-iPhone"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path

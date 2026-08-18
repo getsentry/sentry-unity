@@ -8,6 +8,11 @@ on:
       init-type:
         required: true
         type: string
+      capture:
+        required: false
+        type: boolean
+        default: false
+        description: "Capture the envelopes and debug files this job produces - see docs/envelope-capture.md"
 
 defaults:
   run:
@@ -20,17 +25,51 @@ jobs:
     env:
       UNITY_VERSION: ${{ inputs.unity-version }}
       INIT_TYPE: ${{ inputs.init-type }}
-      # sentry-cli 3.x ignores `defaults.url` from sentry.properties, so the DSN alone does not
-      # redirect symbol upload. SENTRY_URL is what it honours. See docs/envelope-capture.md.
-      SENTRY_URL: http://127.0.0.1:8787
-      # sentry-cli refuses to combine a URL from the environment with the auth token baked into
-      # sentry.properties ("different configuration source"), so the token has to come from here
-      # too. The capture server does not check it.
-      SENTRY_AUTH_TOKEN: envelope-capture-mode
+      # Empty unless a capture run was dispatched; see docs/envelope-capture.md.
+      SENTRY_CAPTURE_PATH: ${{ inputs.capture && format('test/IntegrationTest/capture/ios-{0}-{1}', inputs.unity-version, inputs.init-type) || '' }}
             
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Restore cached compiled iOS build without Sentry
+        if: ${{ inputs.init-type == 'runtime' }}
+        id: cache-compiled-nosentry
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: IntegrationTest-NoSentry.app
+          key: build-nosentry-iOS-compiled-${{ inputs.unity-version }}
+
+      - name: Download build without Sentry (for size comparison)
+        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: testapp-ios-no-sentry-${{ env.UNITY_VERSION }}
+
+      - name: Extract and compile build without Sentry
+        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
+        run: |
+          tar -xvzf test-app-no-sentry.tar.gz
+          Move-Item -Path "samples/IntegrationTest/Build-NoSentry" -Destination "samples/IntegrationTest/Build"
+
+      - name: Compile Xcode project without Sentry
+        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
+        run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
+        timeout-minutes: 20
+
+      - name: Save compiled app without Sentry
+        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
+        run: |
+          Copy-Item -Path "samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/IntegrationTest.app" `
+                    -Destination "IntegrationTest-NoSentry.app" -Recurse
+          Remove-Item -Path "samples/IntegrationTest/Build" -Recurse -Force
+
+      - name: Save cached compiled iOS build without Sentry
+        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' && github.ref == 'refs/heads/main' }}
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: IntegrationTest-NoSentry.app
+          key: build-nosentry-iOS-compiled-${{ inputs.unity-version }}
 
       - name: Download app project
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -41,9 +80,7 @@ jobs:
         run: tar -xvzf "test-app-$env:INIT_TYPE.tar.gz"
 
       - name: iOS test
-        run: |
-          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}" -Output "test/IntegrationTest/symbols/ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}"
-          ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
+        run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
         timeout-minutes: 20
 
       - name: Assert symbols and sources were uploaded
@@ -76,28 +113,28 @@ jobs:
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
-      # sentry-cli reporting success is not proof it reached us - it silently falls back to
-      # sentry.io. Fail loudly when nothing was captured.
-      - name: Assert debug files were captured
+      - name: Compare build sizes
+        if: ${{ inputs.init-type == 'runtime' }}
         run: |
-          $dir = "test/IntegrationTest/symbols/ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}/debug-files"
-          $files = @(Get-ChildItem $dir -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne "index.jsonl" })
-          if ($files.Count -eq 0) {
-            throw "No debug files captured in '$dir' - sentry-cli did not upload to the capture server."
-          }
-          Write-Host "Captured $($files.Count) debug files ($([math]::Round(($files | Measure-Object Length -Sum).Sum / 1MB, 1)) MB)"
+          ./test/Scripts.Integration.Test/measure-build-size.ps1 `
+            -Path1 "IntegrationTest-NoSentry.app" `
+            -Path2 "samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/IntegrationTest.app" `
+            -Platform "iOS" `
+            -UnityVersion "$env:UNITY_VERSION"
 
-      - name: Stop envelope capture server
-        if: ${{ always() }}
-        run: |
-          try { Invoke-WebRequest -Uri "http://127.0.0.1:8787/STOP" -TimeoutSec 5 -UseBasicParsing | Out-Null }
-          catch { Write-Host "Capture server already gone" }
-
-      - name: Upload captured debug files
-        if: ${{ always() }}
+      - name: Upload build size measurement
+        if: ${{ inputs.init-type == 'runtime' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: symbols-ios-${{ env.UNITY_VERSION }}-${{ env.INIT_TYPE }}
-          path: test/IntegrationTest/symbols/
+          name: build-size-iOS-${{ env.UNITY_VERSION }}
+          path: build-size-measurements/*.json
+          retention-days: 1
+
+      - name: Upload captured corpus
+        if: ${{ always() && inputs.capture }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: corpus-ios-${{ inputs.unity-version }}-${{ inputs.init-type }}
+          path: test/IntegrationTest/capture/
           if-no-files-found: warn
           retention-days: 14

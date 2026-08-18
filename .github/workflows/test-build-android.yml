@@ -5,6 +5,11 @@ on:
       unity-version:
         required: true
         type: string
+      capture:
+        required: false
+        type: boolean
+        default: false
+        description: "Capture the envelopes and debug files this job produces - see docs/envelope-capture.md"
     secrets:
       UNITY_LICENSE_SERVER_CONFIG:
         required: true
@@ -25,9 +30,8 @@ jobs:
       GITHUB_ACTOR: ${{ github.actor }}
       UNITY_PATH: docker exec unity unity-editor
       UNITY_VERSION: ${{ inputs.unity-version }}
-      # sentry-cli 3.x ignores `defaults.url` from sentry.properties, so the DSN alone does not
-      # redirect symbol upload. SENTRY_URL is what it honours. See docs/envelope-capture.md.
-      SENTRY_URL: http://127.0.0.1:8787
+      # Empty unless a capture run was dispatched; see docs/envelope-capture.md.
+      SENTRY_CAPTURE_PATH: ${{ inputs.capture && format('test/IntegrationTest/capture/android-{0}', inputs.unity-version) || '' }}
     
     steps:
       - name: Checkout
@@ -63,6 +67,24 @@ jobs:
           restore-keys: |
             it-library-ubuntu-${{ env.UNITY_VERSION }}-
 
+      - name: Restore cached build without Sentry
+        id: cache-build-nosentry
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/IntegrationTest/Build-NoSentry
+          key: build-nosentry-Android-${{ inputs.unity-version }}
+
+      - name: Build without Sentry SDK
+        if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -BuildDirName "Build-NoSentry"
+
+      - name: Save cached build without Sentry
+        if: github.ref == 'refs/heads/main' && steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/IntegrationTest/Build-NoSentry
+          key: build-nosentry-Android-${{ inputs.unity-version }}
+
       - name: Download UPM package
         uses: ./.github/actions/wait-for-artifact
         with:
@@ -74,10 +96,14 @@ jobs:
       - name: Add Sentry to the project
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
-      # IntegrationTester.cs calls into the DependencyConflict package unless this define is set;
-      # capture runs don't need that regression check, so compile it out instead of installing it.
-      - name: Disable DependencyConflict
-        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -Disable
+      - name: Download DependencyConflict package
+        uses: ./.github/actions/wait-for-artifact
+        with:
+          name: dependency-conflict-package
+          path: dependency-conflict-package
+
+      - name: Add DependencyConflict to the project
+        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
 
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android"
@@ -85,12 +111,20 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Export APK - Runtime Initialization
-        run: |
-          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "android-${{ env.UNITY_VERSION }}" -Output "test/IntegrationTest/symbols/android-${{ env.UNITY_VERSION }}"
-          ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
 
       - name: Assert symbols and sources were uploaded (Runtime)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath samples/IntegrationTest/Logs/sentry-symbols-upload.log
+
+      - name: Compare build sizes (Runtime)
+        run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
+
+      - name: Upload build size measurement
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: build-size-Android-${{ env.UNITY_VERSION }}
+          path: build-size-measurements/*.json
+          retention-days: 1
 
       - name: Bundle build & symbol-upload logs with the APK (Runtime)
         run: |
@@ -116,9 +150,7 @@ jobs:
           Set-Content $optionsPath $content
 
       - name: Export APK - Build-Time Initialization
-        run: |
-          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "android-${{ env.UNITY_VERSION }}" -Output "test/IntegrationTest/symbols/android-${{ env.UNITY_VERSION }}"
-          ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "Android" -UnityVersion "$env:UNITY_VERSION"
 
       - name: Assert symbols and sources were uploaded (Build-Time)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath samples/IntegrationTest/Logs/sentry-symbols-upload.log
@@ -151,29 +183,11 @@ jobs:
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
           retention-days: 14 # Lower retention period - we only need this to retry CI.
 
-      # sentry-cli reporting success is not proof it reached us - it silently falls back to
-      # sentry.io. Fail loudly when nothing was captured.
-      - name: Assert debug files were captured
-        run: |
-          $dir = "test/IntegrationTest/symbols/android-${{ env.UNITY_VERSION }}/debug-files"
-          $files = @(Get-ChildItem $dir -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne "index.jsonl" })
-          if ($files.Count -eq 0) {
-            throw "No debug files captured in '$dir' - sentry-cli did not upload to the capture server."
-          }
-          Write-Host "Captured $($files.Count) debug files ($([math]::Round(($files | Measure-Object Length -Sum).Sum / 1MB, 1)) MB)"
-
-      - name: Stop envelope capture server
-        if: ${{ always() }}
-        run: |
-          try { Invoke-WebRequest -Uri "http://127.0.0.1:8787/STOP" -TimeoutSec 5 -UseBasicParsing | Out-Null }
-          catch { Write-Host "Capture server already gone" }
-
-      - name: Upload captured debug files
-        if: ${{ always() }}
+      - name: Upload captured corpus
+        if: ${{ always() && inputs.capture }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: symbols-android-${{ env.UNITY_VERSION }}
-          path: test/IntegrationTest/symbols/
+          name: corpus-android-${{ inputs.unity-version }}
+          path: test/IntegrationTest/capture/
           if-no-files-found: warn
           retention-days: 14
-

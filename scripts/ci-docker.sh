@@ -31,10 +31,19 @@ uniqueHostname="${GITHUB_JOB:-local}-${imageVariant}-${GITHUB_RUN_ID:-0}"
 # Sanitize hostname: replace underscores and spaces with hyphens, ensure lowercase
 uniqueHostname=$(echo "$uniqueHostname" | tr '[:upper:]_ ' '[:lower:]--' | tr -s '-')
 
+# Capture mode (see docs/envelope-capture.md): sentry-cli runs inside this container but the capture
+# server runs on the host, so the container shares the host network to reach it. `--hostname` and
+# `--network host` are mutually exclusive, hence the either/or. Port matches capture-corpus.ps1.
+if [ -n "${SENTRY_CAPTURE_PATH:-}" ]; then
+    networkArgs=(--network host -e SENTRY_URL="http://127.0.0.1:8787" -e SENTRY_CAPTURE_PATH="${SENTRY_CAPTURE_PATH}")
+else
+    networkArgs=(--hostname "$uniqueHostname")
+fi
+
 # We use the host dotnet installation - it's much faster than installing inside the docker container.
 set -x
 docker run -td --name $container \
-    --network host \
+    "${networkArgs[@]}" \
     --user $uid:$gid \
     -v "$cwd":/sentry-unity \
     -v $ANDROID_HOME:$ANDROID_HOME \
@@ -44,7 +53,6 @@ docker run -td --name $container \
     -e UNITY_VERSION=$unityVersion \
     -e GITHUB_ACTIONS="${GITHUB_ACTIONS}" \
     -e SENTRY_AUTH_TOKEN="${SENTRY_AUTH_TOKEN:-}" \
-    -e SENTRY_URL="${SENTRY_URL:-}" \
     --workdir /sentry-unity $image
 
 # Generate unique machine-id to avoid any hardcoded values and license-fetch congestion

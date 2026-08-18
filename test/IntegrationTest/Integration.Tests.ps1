@@ -23,6 +23,9 @@ $ErrorActionPreference = "Stop"
 # Import shared test cases and utility functions
 . $PSScriptRoot/CommonTestCases.ps1
 
+# Opt-in envelope capture (no-op unless SENTRY_CAPTURE_PATH is set)
+. $PSScriptRoot/../Scripts.Integration.Test/capture-corpus.ps1
+
 BeforeAll {
     # Build app arguments for a given test action
     function Get-AppArguments {
@@ -132,26 +135,6 @@ BeforeAll {
         return $runResult
     }
 
-    # Tags the envelopes that envelope-capture-server.py records next with the test action
-    # they belong to. No-op unless the DSN points at the local capture server.
-    function Set-CaptureLabel {
-        param (
-            [Parameter(Mandatory=$true)]
-            [string]$Label
-        )
-
-        if (-not $script:CaptureMode) {
-            return
-        }
-
-        try {
-            Invoke-WebRequest -Uri "http://127.0.0.1:8787/MARK?label=$Label" -TimeoutSec 5 -UseBasicParsing | Out-Null
-        }
-        catch {
-            Write-Host "Failed to mark capture label '$Label': $_"
-        }
-    }
-
     # Run integration test action
     function Invoke-TestAction {
         param (
@@ -220,15 +203,17 @@ BeforeAll {
         throw "SENTRY_DSN environment variable is not set."
     }
 
-    # Envelope capture mode: the DSN points at envelope-capture-server.py instead of Sentry, so the
-    # test actions still run (and their raw envelopes get recorded) but there is no backend to verify
-    # against. The event assertions below fail by design in this mode - the artifact is the corpus.
-    $script:CaptureMode = $env:SENTRY_DSN -match '://[^@]*@(127\.0\.0\.1|localhost|10\.0\.2\.2)'
-    if ($script:CaptureMode) {
-        Write-Host "Envelope capture mode: DSN points at the local capture server, skipping Sentry API verification." -ForegroundColor Yellow
+    # Capture mode: the app sends its envelopes to the local capture server instead of Sentry, so the
+    # test actions still run (and their payloads get recorded) but there is no backend to verify
+    # against. The event assertions below fail by design in this mode - the corpus is the artifact.
+    # The server is started here rather than in a workflow step: one started earlier does not
+    # reliably survive the gap between steps.
+    if (Test-CaptureEnabled) {
+        Write-Host "Capture mode: recording the corpus, skipping Sentry API verification." -ForegroundColor Yellow
+        Start-CaptureServer
     }
 
-    if (-not $script:CaptureMode -and [string]::IsNullOrEmpty($env:SENTRY_AUTH_TOKEN)) {
+    if (-not (Test-CaptureEnabled) -and [string]::IsNullOrEmpty($env:SENTRY_AUTH_TOKEN)) {
         throw "SENTRY_AUTH_TOKEN environment variable is not set."
     }
     if ([string]::IsNullOrEmpty($env:SENTRY_TEST_APP)) {
@@ -308,7 +293,7 @@ BeforeAll {
         AuthToken = $env:SENTRY_AUTH_TOKEN
     }
 
-    if (-not $script:CaptureMode) {
+    if (-not (Test-CaptureEnabled)) {
         Connect-SentryApi `
             -ApiToken $script:TestSetup.AuthToken `
             -DSN $script:TestSetup.Dsn
@@ -317,7 +302,9 @@ BeforeAll {
 
 
 AfterAll {
-    if (-not $script:CaptureMode) {
+    Stop-CaptureServer
+
+    if (-not (Test-CaptureEnabled)) {
         Disconnect-SentryApi
     }
     if ($script:Platform -ne "WebGL") {
@@ -334,7 +321,7 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
             $script:runResult = Invoke-TestAction -Action "message-capture"
 
             $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
-            if ($eventId -and -not $script:CaptureMode) {
+            if ($eventId -and -not (Test-CaptureEnabled)) {
                 Write-Host "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-Host "::endgroup::"
@@ -360,7 +347,7 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
             $script:runResult = Invoke-TestAction -Action "exception-capture"
 
             $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
-            if ($eventId -and -not $script:CaptureMode) {
+            if ($eventId -and -not (Test-CaptureEnabled)) {
                 Write-Host "::group::Getting event content"
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-Host "::endgroup::"
@@ -422,7 +409,7 @@ if ($env:SENTRY_TEST_PLATFORM -ne "WebGL") {
                 }
 
                 $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
-                if ($eventId -and -not $script:CaptureMode) {
+                if ($eventId -and -not (Test-CaptureEnabled)) {
                     Write-Host "::group::Getting event content"
                     $script:runEvent = Get-SentryTestEvent -TagName "test.crash_id" -TagValue "$eventId" -TimeoutSeconds 300
                     Write-Host "::endgroup::"
@@ -478,7 +465,7 @@ if ($env:SENTRY_TEST_PLATFORM -in "Desktop", "Android" -and -not $isCocoaBackend
                 # The native app-hang event is captured in-proc (same run, no relaunch). Its event ID
                 # is generated natively, so look it up by the unique scope tag the app sets instead.
                 $hangId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
-                if ($hangId -and -not $script:CaptureMode) {
+                if ($hangId -and -not (Test-CaptureEnabled)) {
                     Write-Host "::group::Getting event content"
                     $script:runEvent = Get-SentryTestEvent -TagName "test.app_hang_id" -TagValue "$hangId" -TimeoutSeconds 300
                     Write-Host "::endgroup::"

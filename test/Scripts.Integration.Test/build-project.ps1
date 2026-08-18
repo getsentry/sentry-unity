@@ -11,6 +11,16 @@ if (-not $Global:NewProjectPathCache)
 }
 
 . $PSScriptRoot/common.ps1
+. $PSScriptRoot/capture-corpus.ps1
+
+# Capture mode: sentry-cli uploads the debug files during the build, so the server has to be up
+# for its duration. SENTRY_URL is what redirects it - sentry-cli 3.x ignores the `defaults.url`
+# the SDK writes into sentry.properties.
+if (Test-CaptureEnabled)
+{
+    Start-CaptureServer
+    $env:SENTRY_URL = $Global:CaptureUrl
+}
 
 $unityPath = FormatUnityPath $UnityPath
 $buildMethod = BuildMethodFor $Platform

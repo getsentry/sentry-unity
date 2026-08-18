@@ -5,6 +5,11 @@ on:
       unity-version:
         required: true
         type: string
+      capture:
+        required: false
+        type: boolean
+        default: false
+        description: "Capture the envelopes and debug files this job produces - see docs/envelope-capture.md"
     secrets:
       SENTRY_AUTH_TOKEN:
         required: true
@@ -22,6 +27,8 @@ jobs:
     env:
       SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      # Empty unless a capture run was dispatched; see docs/envelope-capture.md.
+      SENTRY_CAPTURE_PATH: ${{ inputs.capture && format('test/IntegrationTest/capture/run-webgl-{0}', inputs.unity-version) || '' }}
 
     steps:
       - name: Checkout
@@ -46,26 +53,10 @@ jobs:
       - name: Run Integration Tests
         timeout-minutes: 20
         run: |
-          ./test/Scripts.Integration.Test/start-capture-server.ps1 -Platform "webgl-${{ inputs.unity-version }}"
           $env:SENTRY_TEST_PLATFORM = "WebGL"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build"
           $env:SENTRY_TEST_UNITY_VERSION = "${{ inputs.unity-version }}"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
-
-      - name: Stop envelope capture server
-        if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}
-        run: |
-          try { Invoke-WebRequest -Uri "http://127.0.0.1:8787/STOP" -TimeoutSec 5 -UseBasicParsing | Out-Null }
-          catch { Write-Host "Capture server already gone" }
-
-      - name: Upload captured envelopes
-        if: ${{ always() && contains(env.SENTRY_DSN, '127.0.0.1') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: envelopes-webgl-${{ inputs.unity-version }}
-          path: test/IntegrationTest/envelopes/
-          if-no-files-found: warn
-          retention-days: 14
 
       - name: Upload test results on failure
         if: ${{ failure() }}
@@ -74,4 +65,13 @@ jobs:
           name: testapp-webgl-logs-${{ inputs.unity-version }}
           path: |
             test/IntegrationTest/results/
+          retention-days: 14
+
+      - name: Upload captured corpus
+        if: ${{ always() && inputs.capture }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: corpus-run-webgl-${{ inputs.unity-version }}
+          path: test/IntegrationTest/capture/
+          if-no-files-found: warn
           retention-days: 14

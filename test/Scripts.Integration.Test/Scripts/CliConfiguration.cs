@@ -16,9 +16,6 @@ public class CliConfiguration : SentryCliOptionsConfiguration
         cliOptions.Organization = "sentry-sdks";
         cliOptions.Project = "sentry-unity-integration-tests";
 
-        // No UrlOverride on purpose: sentry-cli derives its upload URL from the DSN, so during
-        // envelope capture the debug files go to the capture server and end up in the artifact.
-
         Debug.Log("Sentry: CliConfiguration::Configure() finished");
     }
 }
