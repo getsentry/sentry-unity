@@ -10,13 +10,18 @@ can be replayed against a local Sentry instead of going to sentry.io.
 | [`test/Scripts.Integration.Test/envelope-capture-server.py`](../test/Scripts.Integration.Test/envelope-capture-server.py) | Stands in for both Sentry endpoints: envelope ingest, and the chunk-upload API sentry-cli uses for debug files. Writes everything to disk. |
 | [`scripts/replay-envelopes.py`](../scripts/replay-envelopes.py) | Posts a captured envelope corpus to a DSN of your choice. |
 
-**This is a temporary branch change, not a feature.** `ci.yml` hardcodes the DSN to
-`http://capture@127.0.0.1:8787/1` in place of `SENTRY_TEST_DSN`. That one switch redirects both
-halves of the capture, because the DSN is what decides where each goes:
+**This is a temporary branch change, not a feature.** Two settings redirect the two halves:
 
-- the SDK sends envelopes there at **run** time,
-- sentry-cli derives its upload URL from that same DSN ([`SentryCli.UrlOverride`](../src/Sentry.Unity.Editor/SentryCli.cs)),
-  so debug files land there at **build** time.
+- `ci.yml` hardcodes the DSN to `http://capture@127.0.0.1:8787/1` in place of `SENTRY_TEST_DSN`, so
+  the SDK sends **envelopes** there at run time.
+- the build jobs set `SENTRY_URL` to the same address, so sentry-cli uploads **debug files** there
+  at build time.
+
+`SENTRY_URL` is needed because sentry-cli 3.x **ignores `defaults.url` in `sentry.properties`**,
+which is the only way the SDK knows how to redirect it
+([`SentryCli.UrlOverride`](../src/Sentry.Unity.Editor/SentryCli.cs)). Without it the DSN alone
+leaves symbol upload pointed at sentry.io, and the build still reports success - worth fixing
+upstream, since it means self-hosted users silently upload their symbols to sentry.io.
 
 There is nothing to toggle: push the branch, open the PR, wait for CI, fetch the artifacts. Revert
 the commit once you have the corpus.
@@ -46,10 +51,18 @@ Coverage per matrix entry: `message-capture`, `exception-capture`, `crash-captur
 emits logs, metrics, sessions and a transaction. Windows/macOS/Linux run twice, once per crash
 backend (`crashpad`/`breakpad`/`native`/`cocoa`), so the corpus covers each native payload shape.
 
-Two details the capture DSN would otherwise break, both handled: `webgl-server.py` serves the WebGL
-build on port 8000, so capture listens on **8787**; and the Linux/Android/WebGL builds run Unity
-inside a container, so [`ci-docker.sh`](../scripts/ci-docker.sh) uses `--network host` to let the
-in-container sentry-cli reach the capture server.
+Details that took a few CI rounds to get right, in case any of them regress:
+
+- `webgl-server.py` serves the WebGL build on port 8000, so capture listens on **8787**.
+- Linux/Android/iOS builds run Unity inside a container, so [`ci-docker.sh`](../scripts/ci-docker.sh)
+  uses `--network host` and forwards `SENTRY_URL` to let the in-container sentry-cli reach the host.
+- The capture server is started **inside** the build/test step that needs it. A detached server does
+  not survive the gap between steps - the runner leaves it suspended, holding the port without
+  answering, which shows up as "Empty reply from server". The launcher clears such a leftover first.
+- The iOS compile job sets a dummy `SENTRY_AUTH_TOKEN`, because sentry-cli refuses to combine a URL
+  from the environment with the auth token baked into `sentry.properties`.
+- Each build job asserts that debug files actually landed. sentry-cli reporting success is not proof
+  it reached the capture server - it happily falls back to sentry.io.
 
 ### What CI no longer does on this branch
 
