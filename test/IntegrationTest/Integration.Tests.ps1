@@ -232,6 +232,7 @@ BeforeAll {
 
             Connect-Device -Platform "Adb"
             Install-DeviceApp -Path $env:SENTRY_TEST_APP
+            Connect-CaptureToDevice
 
             # Detect the launcher activity from the installed package
             $dumpOutput = & adb shell dumpsys package $script:PackageName 2>&1 | Out-String

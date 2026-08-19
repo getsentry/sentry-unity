@@ -63,6 +63,20 @@ function Start-CaptureServer
     throw "Capture server did not come up on port $Global:CapturePort"
 }
 
+# Android runs the app on a device or emulator, where 127.0.0.1 is the device itself. Tunnel the
+# capture port back to this host so the SDK's envelopes reach the server. Safe to call repeatedly.
+function Connect-CaptureToDevice
+{
+    if (-not (Test-CaptureEnabled))
+    {
+        return
+    }
+
+    & adb reverse "tcp:$Global:CapturePort" "tcp:$Global:CapturePort" 2>&1 | Write-Host
+    # `adb` is a native command; don't let its exit code become the calling step's.
+    $global:LASTEXITCODE = 0
+}
+
 # Tags the files captured next with the test action they belong to, so the corpus is browsable.
 function Set-CaptureLabel
 {
