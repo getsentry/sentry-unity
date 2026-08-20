@@ -19,7 +19,8 @@ on:
 
 env:
   # Unity versions used in PRs
-  PR_UNITY_VERSIONS: '["2021.3", "6000.5"]'
+  # TODO revert before merging - temporarily pinned to 2022.3 to validate the Android x86_64 IL2CPP UUID fallback
+  PR_UNITY_VERSIONS: '["2022.3"]'
   # Unity versions used on main branch
   FULL_UNITY_VERSIONS: '["2021.3", "2022.3", "6000.0", "6000.3", "6000.5"]'
 

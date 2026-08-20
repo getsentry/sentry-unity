@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- IL2CPP line numbers now work on Android x86/x86_64 builds. il2cpp fails to report the image UUID there, so the SDK falls back to looking the debug image up by name ([#2817](https://github.com/getsentry/sentry-unity/pull/2817))
+
 ### Features
 
 - The SDK now provides line number support for managed exceptions for Unity 6.5 and newer ([#2805](https://github.com/getsentry/sentry-unity/pull/2805))
