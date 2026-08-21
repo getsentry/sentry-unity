@@ -5,6 +5,11 @@ on:
       unity-version:
         required: true
         type: string
+      capture:
+        required: false
+        type: boolean
+        default: false
+        description: "Capture the envelopes and debug files this job produces - see docs/envelope-capture.md"
     secrets:
       UNITY_LICENSE_SERVER_CONFIG:
         required: true
@@ -24,6 +29,8 @@ jobs:
     env:
       UNITY_VERSION: ${{ inputs.unity-version }}
       BUILD_PLATFORM: Windows
+      # Empty unless a capture run was dispatched; see docs/envelope-capture.md.
+      SENTRY_CAPTURE_PATH: ${{ inputs.capture && format('test/IntegrationTest/capture/windows-{0}', inputs.unity-version) || '' }}
 
     steps:
       - name: Checkout
@@ -188,4 +195,13 @@ jobs:
             samples/IntegrationTest
             unity.log
             !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          retention-days: 14
+
+      - name: Upload captured corpus
+        if: ${{ always() && inputs.capture }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: corpus-windows-${{ inputs.unity-version }}
+          path: test/IntegrationTest/capture/
+          if-no-files-found: warn
           retention-days: 14

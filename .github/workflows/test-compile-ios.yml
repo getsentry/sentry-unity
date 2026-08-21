@@ -8,6 +8,11 @@ on:
       init-type:
         required: true
         type: string
+      capture:
+        required: false
+        type: boolean
+        default: false
+        description: "Capture the envelopes and debug files this job produces - see docs/envelope-capture.md"
 
 defaults:
   run:
@@ -20,6 +25,8 @@ jobs:
     env:
       UNITY_VERSION: ${{ inputs.unity-version }}
       INIT_TYPE: ${{ inputs.init-type }}
+      # Empty unless a capture run was dispatched; see docs/envelope-capture.md.
+      SENTRY_CAPTURE_PATH: ${{ inputs.capture && format('test/IntegrationTest/capture/ios-{0}-{1}', inputs.unity-version, inputs.init-type) || '' }}
             
     steps:
       - name: Checkout
@@ -122,3 +129,12 @@ jobs:
           name: build-size-iOS-${{ env.UNITY_VERSION }}
           path: build-size-measurements/*.json
           retention-days: 1
+
+      - name: Upload captured corpus
+        if: ${{ always() && inputs.capture }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: corpus-ios-${{ inputs.unity-version }}-${{ inputs.init-type }}
+          path: test/IntegrationTest/capture/
+          if-no-files-found: warn
+          retention-days: 14

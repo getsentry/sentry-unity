@@ -9,6 +9,11 @@ on:
       - "**.md"
       - "**.txt"
   workflow_dispatch: # e.g. to manually trigger on foreign PRs
+    inputs:
+      capture-corpus:
+        description: "Capture the raw envelopes and debug files the integration tests produce, as artifacts (see docs/envelope-capture.md). Slower, and the event assertions fail by design."
+        type: boolean
+        default: false
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -142,6 +147,8 @@ jobs:
             build_platform: WebGL
     env:
       UNITY_PATH: docker exec unity unity-editor
+      # Empty unless a capture run was dispatched; see docs/envelope-capture.md.
+      SENTRY_CAPTURE_PATH: ${{ inputs.capture-corpus && format('test/IntegrationTest/capture/webgl-{0}', matrix.unity-version) || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -301,6 +308,7 @@ jobs:
     uses: ./.github/workflows/test-build-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
+      capture: ${{ inputs.capture-corpus || false }}
 
   test-run-android:
     name: Run Android ${{ matrix.unity-version }} Integration Test
@@ -314,6 +322,7 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       api-level: ${{ matrix.api-level }}
       init-type: ${{ matrix.init-type }}
+      capture: ${{ inputs.capture-corpus || false }}
     strategy:
       fail-fast: false
       matrix:
@@ -336,6 +345,7 @@ jobs:
     uses: ./.github/workflows/test-build-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
+      capture: ${{ inputs.capture-corpus || false }}
 
   test-compile-ios:
     name: Compile iOS ${{ matrix.unity-version }} Test
@@ -350,6 +360,7 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
       init-type: ${{ matrix.init-type }}
+      capture: ${{ inputs.capture-corpus || false }}
 
   test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Integration Test
@@ -360,6 +371,7 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       ios-version: ${{ matrix.ios-version }}
       init-type: ${{ matrix.init-type }}
+      capture: ${{ inputs.capture-corpus || false }}
     secrets:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
@@ -394,6 +406,7 @@ jobs:
     uses: ./.github/workflows/test-run-webgl.yml
     with:
       unity-version: ${{ matrix.unity-version }}
+      capture: ${{ inputs.capture-corpus || false }}
 
   test-build-linux:
     name: Build Linux ${{ matrix.unity-version }} Integration Test
@@ -410,6 +423,7 @@ jobs:
     uses: ./.github/workflows/test-build-linux.yml
     with:
       unity-version: ${{ matrix.unity-version }}
+      capture: ${{ inputs.capture-corpus || false }}
 
   test-build-windows:
     name: Build Windows ${{ matrix.unity-version }} Integration Test
@@ -426,6 +440,7 @@ jobs:
     uses: ./.github/workflows/test-build-windows.yml
     with:
       unity-version: ${{ matrix.unity-version }}
+      capture: ${{ inputs.capture-corpus || false }}
 
   test-build-macos:
     name: Build macOS ${{ matrix.unity-version }} Integration Test
@@ -442,6 +457,7 @@ jobs:
     uses: ./.github/workflows/test-build-macos.yml
     with:
       unity-version: ${{ matrix.unity-version }}
+      capture: ${{ inputs.capture-corpus || false }}
 
   test-run-linux:
     name: Run Linux ${{ matrix.backend }} ${{ matrix.unity-version }} Integration Test
@@ -460,6 +476,7 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       platform: linux
       backend: ${{ matrix.backend }}
+      capture: ${{ inputs.capture-corpus || false }}
 
   test-run-windows:
     name: Run Windows ${{ matrix.backend }} ${{ matrix.unity-version }} Integration Test
@@ -478,6 +495,7 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       platform: windows
       backend: ${{ matrix.backend }}
+      capture: ${{ inputs.capture-corpus || false }}
 
   test-run-macos:
     name: Run macOS ${{ matrix.backend }} ${{ matrix.unity-version }} Integration Test
@@ -496,6 +514,7 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       platform: macos
       backend: ${{ matrix.backend }}
+      capture: ${{ inputs.capture-corpus || false }}
 
   build-size-summary:
     name: Build Size
