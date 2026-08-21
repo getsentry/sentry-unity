@@ -40,6 +40,7 @@ chunk_dir = Path(".")
 symbol_dir = Path(".")
 platform_name = "unknown"
 assembled = set()
+kinds = {}
 
 
 def parse_envelope(data):
@@ -103,6 +104,26 @@ def decode_body(body, encoding):
 
 def safe(value):
     return re.sub(r"[^A-Za-z0-9_.-]", "_", value)[:60] or "unknown"
+
+
+def classify(name, magic):
+    """Names the kind of file being assembled, and the suffix that marks it in the corpus.
+
+    Assemble tells us only name, debug id and chunks. `upload-proguard` announces itself in the
+    name, but a source bundle and an IL2CPP line mapping inherit both name and debug id from the
+    object they were computed from, so their kind has to come from the content.
+    """
+    # sentry-cli assembles proguard mappings as `/proguard/<uuid>.txt`, with no debug id.
+    if name.startswith("/proguard/"):
+        return "proguard-mapping", ".proguard"
+    if magic.startswith(b"SYSB"):
+        return "source-bundle", ".src"
+    # `--il2cpp-mapping` uploads the line mapping as a plain JSON object:
+    # {"<cpp file>": {"<cs file>": {"<cpp line>": <cs line>}}, "__debug-id__": {...}}.
+    # No debug file format starts with a brace, so that alone tells them apart.
+    if magic.startswith(b"{"):
+        return "il2cpp-line-mapping", ".il2cpp.json"
+    return "debug-file", ""
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -207,7 +228,8 @@ class Handler(BaseHTTPRequestHandler):
 
         response = {}
         for checksum, entry in request.items():
-            name = Path(entry.get("name") or checksum).name
+            requested_name = entry.get("name") or checksum
+            name = Path(requested_name).name
 
             # sentry-cli polls assemble until every file reports `ok`. Once assembled we drop the
             # chunks, so answer from this set rather than re-checking them - otherwise the next
@@ -222,32 +244,32 @@ class Handler(BaseHTTPRequestHandler):
                 response[checksum] = {"state": "not_found", "missingChunks": missing, "detail": None}
                 continue
 
-            # A dif and its source bundle share both debug id and name, so the checksum keeps
-            # them from overwriting each other.
+            # A dif, its source bundle and its IL2CPP line mapping all share debug id and name,
+            # so the checksum keeps them from overwriting each other.
             target = symbol_dir / f"{entry.get('debug_id', 'unknown')}-{checksum[:8]}-{safe(name)}"
             with target.open("wb") as out:
                 for chunk in entry["chunks"]:
                     out.write((chunk_dir / chunk).read_bytes())
-            # Source bundles carry Sentry's "SYSB" magic; mark them so the corpus is self-describing.
             # The handle has to be closed before renaming - Windows refuses to rename an open file.
             with target.open("rb") as probe:
-                is_source_bundle = probe.read(4) == b"SYSB"
-            if is_source_bundle:
-                # replace(), not rename(): a second build re-uploads the same bundles and Windows
+                kind, suffix = classify(requested_name, probe.read(4))
+            if suffix:
+                # replace(), not rename(): a second build re-uploads the same files and Windows
                 # refuses to rename onto an existing file.
-                target = target.replace(target.with_name(target.name + ".src"))
+                target = target.replace(target.with_name(target.name + suffix))
 
             # Chunks deliberately stay until shutdown: they are deduplicated by hash, so deleting
             # them here breaks any other file that shares one and makes sentry-cli fail the upload
             # with "Some uploaded files are now missing on the server".
-            print(f"assembled {target.name} ({target.stat().st_size} bytes)", file=sys.stderr)
+            print(f"assembled {kind} {target.name} ({target.stat().st_size} bytes)", file=sys.stderr)
 
             with state_lock:
                 assembled.add(checksum)
+                kinds[kind] = kinds.get(kind, 0) + 1
                 with (symbol_dir / "index.jsonl").open("a") as index:
-                    index.write(json.dumps({"file": target.name, "platform": platform_name,
-                                            "checksum": checksum, "size": target.stat().st_size,
-                                            "request": entry}) + "\n")
+                    index.write(json.dumps({"file": target.name, "kind": kind,
+                                            "platform": platform_name, "checksum": checksum,
+                                            "size": target.stat().st_size, "request": entry}) + "\n")
 
             response[checksum] = {"state": "ok", "missingChunks": [], "detail": None}
 
@@ -359,6 +381,12 @@ def main():
     server.serve_forever()
     shutil.rmtree(chunk_dir, ignore_errors=True)
     print(f"envelope capture stopped after {sequence} requests", file=sys.stderr)
+    for kind, count in sorted(kinds.items()):
+        print(f"  {kind}: {count}", file=sys.stderr)
+    # A build that uploaded difs but no mapping means the IL2CPP line numbers regressed: either
+    # `--emit-source-mapping` never reached il2cpp, or the generated C++ was gone by upload time.
+    if kinds and "il2cpp-line-mapping" not in kinds:
+        print("  WARNING: no IL2CPP line mappings were uploaded", file=sys.stderr)
 
 
 if __name__ == "__main__":

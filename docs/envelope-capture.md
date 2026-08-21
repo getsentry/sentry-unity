@@ -2,8 +2,9 @@
 
 The integration tests exercise every managed error, native crash and app hang path the SDK has, on
 every platform we ship. Capture mode records what those runs actually put on the wire - raw
-envelopes, minidump uploads, and the debug files sentry-cli uploads - so the whole lot can be
-replayed against a local Sentry to work on event processing or symbolication.
+envelopes, minidump uploads, and the debug files, source bundles and IL2CPP line mappings
+sentry-cli uploads - so the whole lot can be replayed against a local Sentry to work on event
+processing or symbolication.
 
 It is **off by default** and changes nothing about a normal CI run.
 
@@ -19,11 +20,24 @@ gh run download <run-id> -p 'corpus-*' -D ./corpus
 
 | Artifact | Contains |
 |---|---|
-| `corpus-<platform>-<unity-version>` | debug files and source bundles sentry-cli uploaded for that build |
+| `corpus-<platform>-<unity-version>` | debug files, source bundles and IL2CPP line mappings sentry-cli uploaded for that build |
 | `corpus-run-<platform>-<backend>-<unity-version>` | the envelopes and minidump uploads that run produced |
 
 Debug files are large (IL2CPP `GameAssembly.pdb` and friends run to hundreds of MB per platform), so
 they stay per-job rather than being merged into one download.
+
+Everything sentry-cli uploaded lands in `debug-files/`, named
+`<debug-id>-<checksum>-<name>` and suffixed by kind:
+
+| Suffix | Kind | |
+|---|---|---|
+| *(none)* | `debug-file` | the dSYM / PDB / ELF itself |
+| `.src` | `source-bundle` | the sources, from `--include-sources` |
+| `.il2cpp.json` | `il2cpp-line-mapping` | C++ → C# line mapping, from `--il2cpp-mapping` |
+| `.proguard` | `proguard-mapping` | Android `mapping.txt`, from `upload-proguard` |
+
+`debug-files/index.jsonl` records the `kind` alongside the assemble request, and the server prints
+a per-kind tally when it shuts down.
 
 **The event assertions fail by design in a capture run.** There is no backend to verify against, so
 `Integration.Tests.ps1` skips the Sentry API lookups and every event assertion fails. The artifacts
@@ -54,6 +68,12 @@ Pass `--keep-ids` / `--keep-timestamps` to replay the bytes as they were capture
 Minidump uploads are replayed verbatim to `/api/<project>/minidump/` with only the ingest key
 swapped - the event ids inside the multipart body are left alone.
 
+`debug-files upload` re-uploads the difs and source bundles, but **not** the `.il2cpp.json`
+mappings: sentry-cli only picks up files it recognises as difs, and it recomputes mappings from the
+generated C++ next to the object rather than from a mapping file. The C++ is not in the corpus, so
+the captured `.il2cpp.json` is the only copy - read it directly, or POST it to the chunk-upload and
+`files/difs/assemble/` endpoints the way sentry-cli does.
+
 ## How it works
 
 Everything keys off one environment variable, **`SENTRY_CAPTURE_PATH`**. The workflows set it from
@@ -82,6 +102,29 @@ Details worth knowing if any of this regresses:
   currently upload their symbols to sentry.io; worth fixing upstream.
 - The iOS Xcode phase additionally needs `SENTRY_AUTH_TOKEN` from the environment, because sentry-cli
   refuses to combine a URL from the environment with a token from `sentry.properties`.
+- IL2CPP line mappings need no wiring of their own: `--il2cpp-mapping` is part of the same
+  `debug-files upload` the difs go through ([`BuildPostProcess`](../src/Sentry.Unity.Editor/Native/BuildPostProcess.cs),
+  [`DebugSymbolUpload`](../src/Sentry.Unity.Editor/Android/DebugSymbolUpload.cs),
+  [`SentryXcodeProject`](../src/Sentry.Unity.Editor.iOS/SentryXcodeProject.cs)), and they are chunked
+  and assembled like everything else. They are told apart **by content**: assemble carries only a
+  name, a debug id and the chunks, and a mapping inherits name and debug id from the object it was
+  computed from, so only the payload distinguishes them (`SYSB` magic, or a leading `{` for the
+  mapping JSON).
+- Android proguard mappings ride the same path despite being a separate `upload-proguard`
+  invocation: sentry-cli chunk-uploads them and assembles them through `files/difs/assemble/` like
+  everything else. They are the one kind identifiable by metadata - sentry-cli names them
+  `/proguard/<uuid>.txt` and sends no debug id, hence the `unknown-` prefix in the corpus.
+- A proguard mapping only exists when minification is on: `sentryUploadProguardMapping` is
+  registered from [`AndroidUtils.ShouldUploadMapping`](../src/Sentry.Unity.Editor/Android/AndroidUtils.cs),
+  which reads `PlayerSettings.Android.minifyRelease` (release, because the test builds set
+  `EditorUserBuildSettings.development = false`). The integration test turns both minify flags on
+  in [`Builder.cs`](../test/Scripts.Integration.Test/Editor/Builder.cs), so an Android capture run
+  is expected to show a `proguard-mapping` in the tally. If it does not, check that flag first.
+- A capture run where the tally shows difs but no `il2cpp-line-mapping` means IL2CPP line numbers
+  regressed upstream of the upload - either `--emit-source-mapping` never reached il2cpp
+  ([`Il2CppBuildPreProcess`](../src/Sentry.Unity.Editor/Il2CppBuildPreProcess.cs), gated on
+  `Il2CppLineNumberSupportEnabled`), or the generated C++ was gone by the time sentry-cli ran, since
+  it reads the `source_info` comments back out of those files.
 - Capture listens on **8787**; `webgl-server.py` already serves the WebGL build on 8000.
 - macOS ATS blocks plain HTTP to an IP literal, so the test app's `Info.plist` gets
   `NSAllowsArbitraryLoads` ([`AllowInsecureHttp.cs`](../test/Scripts.Integration.Test/Editor/AllowInsecureHttp.cs)).
