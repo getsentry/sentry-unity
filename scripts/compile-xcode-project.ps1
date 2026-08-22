@@ -45,3 +45,5 @@ finally
 {
     Write-Host "::endgroup::"
 }
+
+Show-CaptureSummary

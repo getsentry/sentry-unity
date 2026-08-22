@@ -13,6 +13,7 @@ Usage:
 Control endpoints:
     GET /HEALTH          200 once the server is serving
     GET /MARK?label=foo  tags subsequently captured files with `foo` (the test action)
+    GET /SUMMARY         the per-kind tally of what sentry-cli has uploaded so far
     GET /STOP            shuts the server down
 """
 
@@ -126,6 +127,44 @@ def classify(name, magic):
     return "debug-file", ""
 
 
+def resume_state():
+    """Picks the tally and the set of assembled files back up from a previous server.
+
+    A job goes through more than one server: `Start-CaptureServer` clears a suspended leftover and
+    binds a fresh one, and the build and test steps each call it. Without this, every restart
+    resets the tally and re-indexes files the previous server already wrote.
+    """
+    index = symbol_dir / "index.jsonl"
+    if not index.exists():
+        return
+
+    for line in index.read_text().splitlines():
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
+        checksum = entry.get("checksum")
+        if not checksum or checksum in assembled:
+            continue
+        assembled.add(checksum)
+        kind = entry.get("kind", "debug-file")
+        kinds[kind] = kinds.get(kind, 0) + 1
+
+    if assembled:
+        print(f"resumed {len(assembled)} files assembled by an earlier server", file=sys.stderr)
+
+
+def write_summary():
+    """Rewrites the per-kind tally. Call under `state_lock`.
+
+    The server that receives the uploads is the one started for the *build*, and nothing stops it -
+    the job ends and the process dies with the runner - so anything printed after `serve_forever()`
+    is never seen. The tally has to be on disk to reach the artifact.
+    """
+    (symbol_dir / "summary.json").write_text(
+        json.dumps({"platform": platform_name, "kinds": kinds}, indent=2))
+
+
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -181,6 +220,9 @@ class Handler(BaseHTTPRequestHandler):
                            "bcsymbolmaps", "proguard"],
             }
             self.respond(200, json.dumps(options).encode())
+        elif url.path == "/SUMMARY":
+            with state_lock:
+                self.respond(200, json.dumps({"platform": platform_name, "kinds": kinds}).encode())
         elif url.path == "/STOP":
             self.respond(200, b'{"ok":true}')
             threading.Thread(target=self.server.shutdown).start()
@@ -266,6 +308,7 @@ class Handler(BaseHTTPRequestHandler):
             with state_lock:
                 assembled.add(checksum)
                 kinds[kind] = kinds.get(kind, 0) + 1
+                write_summary()
                 with (symbol_dir / "index.jsonl").open("a") as index:
                     index.write(json.dumps({"file": target.name, "kind": kind,
                                             "platform": platform_name, "checksum": checksum,
@@ -375,6 +418,7 @@ def main():
     symbol_dir = output_dir / "debug-files"
     symbol_dir.mkdir(exist_ok=True)
     chunk_dir = Path(tempfile.mkdtemp(prefix="sentry-chunks-"))
+    resume_state()
 
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"envelope capture listening on {args.host}:{args.port} -> {output_dir}", file=sys.stderr)
@@ -383,10 +427,6 @@ def main():
     print(f"envelope capture stopped after {sequence} requests", file=sys.stderr)
     for kind, count in sorted(kinds.items()):
         print(f"  {kind}: {count}", file=sys.stderr)
-    # A build that uploaded difs but no mapping means the IL2CPP line numbers regressed: either
-    # `--emit-source-mapping` never reached il2cpp, or the generated C++ was gone by upload time.
-    if kinds and "il2cpp-line-mapping" not in kinds:
-        print("  WARNING: no IL2CPP line mappings were uploaded", file=sys.stderr)
 
 
 if __name__ == "__main__":

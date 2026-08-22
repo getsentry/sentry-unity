@@ -94,7 +94,10 @@ Details worth knowing if any of this regresses:
 - The server is started **inside** the build or test step that needs it, never in a step of its own:
   a server started earlier does not survive the gap - the runner leaves it suspended, holding the
   port without answering, which surfaces as "Empty reply from server". `Start-CaptureServer` clears
-  such a leftover before binding, and is safe to call repeatedly within a job.
+  such a leftover before binding, and is safe to call repeatedly within a job. A job therefore goes
+  through several servers, so each one resumes the tally and the set of already assembled files from
+  `debug-files/index.jsonl` - otherwise restarts re-index the same files and `summary.json` ends up
+  describing only the last server.
 - `SENTRY_URL` is what redirects sentry-cli. **sentry-cli 3.x ignores `defaults.url` in
   `sentry.properties`**, which is the only knob the SDK offers
   ([`SentryCli.UrlOverride`](../src/Sentry.Unity.Editor/SentryCli.cs)) - so without it, symbol upload

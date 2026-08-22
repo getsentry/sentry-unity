@@ -97,6 +97,50 @@ function Set-CaptureLabel
     }
 }
 
+# Reports what sentry-cli uploaded during the build. The build job never stops the capture server,
+# so the server's own shutdown tally is never printed there - this is what surfaces it in the log.
+function Show-CaptureSummary
+{
+    if (-not (Test-CaptureEnabled))
+    {
+        return
+    }
+
+    try
+    {
+        $summary = (Invoke-WebRequest -Uri "$Global:CaptureUrl/SUMMARY" -TimeoutSec 5 -UseBasicParsing).Content | ConvertFrom-Json
+    }
+    catch
+    {
+        Write-Host "Failed to read the capture summary: $_"
+        return
+    }
+
+    $kinds = $summary.kinds
+    # Enumerate the properties, not `.Name` on them: member enumeration over an empty object
+    # yields a single $null, which would make an empty tally look like one nameless kind.
+    $names = @($kinds.PSObject.Properties | ForEach-Object { $_.Name })
+    if ($names.Count -eq 0)
+    {
+        Write-Host "::warning::Capture: sentry-cli uploaded nothing. Check that symbol upload is enabled and SENTRY_URL points at the capture server."
+        return
+    }
+
+    Write-Host "Captured from sentry-cli:"
+    foreach ($name in ($names | Sort-Object))
+    {
+        Write-Host "  $name : $($kinds.$name)"
+    }
+
+    # Every platform we build is IL2CPP, so a build that uploaded difs but no mapping means the
+    # line numbers regressed: either `--emit-source-mapping` never reached il2cpp, or the
+    # generated C++ was gone by the time sentry-cli read the source_info comments back out of it.
+    if ($names -notcontains "il2cpp-line-mapping")
+    {
+        Write-Host "::warning::Capture: no IL2CPP line mappings were uploaded."
+    }
+}
+
 function Stop-CaptureServer
 {
     if (-not (Test-CaptureEnabled))

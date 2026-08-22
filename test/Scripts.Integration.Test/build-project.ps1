@@ -41,5 +41,7 @@ if ($Platform -eq "Android-Export")
 }
 
 
+Show-CaptureSummary
+
 Write-Log "Build output:"
 Get-ChildItem $buildDirectory | ForEach-Object { Write-Detail $_.Name }
