@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Native crash capture no longer fails on Windows with the Mono scripting backend. Mono probes the calling assembly's own directory first, so `DllImport("sentry")` from `Sentry.Unity.Native.dll` resolved to the managed `Sentry.dll` sitting beside it in `Managed/` and native init failed with `EntryPointNotFoundException: sentry_options_new`. The native library is now copied into the build as `sentry-native` on desktop, which nothing else answers to ([#2818](https://github.com/getsentry/sentry-unity/issues/2818))
+
 ## 4.9.0
 
 ### Features

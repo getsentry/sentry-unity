@@ -10,8 +10,12 @@ internal static class C
 {
 #if SENTRY_NATIVE_SWITCH
     private const string SentryLib = "__Internal";
-#else
+#elif SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_XBOX
     private const string SentryLib = "sentry";
+#else
+    // "sentry" would bind to the managed Sentry.dll on Windows, so BuildPostProcess copies the
+    // native library in under this name
+    private const string SentryLib = "sentry-native";
 #endif
 
     internal static void SetValueIfNotNull(sentry_value_t obj, string key, string? value)

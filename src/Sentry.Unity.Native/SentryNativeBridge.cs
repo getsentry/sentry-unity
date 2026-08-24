@@ -16,8 +16,12 @@ internal static class SentryNativeBridge
 {
 #if SENTRY_NATIVE_SWITCH
     private const string SentryLib = "__Internal";
-#else
+#elif SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_XBOX
     private const string SentryLib = "sentry";
+#else
+    // "sentry" would bind to the managed Sentry.dll on Windows, so BuildPostProcess copies the
+    // native library in under this name
+    private const string SentryLib = "sentry-native";
 #endif
 
     private static IDiagnosticLogger? Logger; // This is also the logger we're forwarding native messages to.
