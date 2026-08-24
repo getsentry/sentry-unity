@@ -10,11 +10,11 @@ internal static class C
 {
 #if SENTRY_NATIVE_SWITCH
     private const string SentryLib = "__Internal";
-#elif SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_XBOX
+#elif SENTRY_NATIVE_ANDROID || SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_XBOX
     private const string SentryLib = "sentry";
 #else
     // "sentry" would bind to the managed Sentry.dll on Windows, so BuildPostProcess copies the
-    // native library in under this name
+    // native library in under this name. Android and the consoles ship theirs from elsewhere
     private const string SentryLib = "sentry-native";
 #endif
 

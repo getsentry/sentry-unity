@@ -321,6 +321,10 @@ Runtime/Sentry.Unity.MacOS.dll
 Runtime/Sentry.Unity.MacOS.dll.meta
 Runtime/Sentry.Unity.MacOS.pdb
 Runtime/Sentry.Unity.MacOS.pdb.meta
+Runtime/Sentry.Unity.Native.Android.dll
+Runtime/Sentry.Unity.Native.Android.dll.meta
+Runtime/Sentry.Unity.Native.Android.pdb
+Runtime/Sentry.Unity.Native.Android.pdb.meta
 Runtime/Sentry.Unity.Native.dll
 Runtime/Sentry.Unity.Native.dll.meta
 Runtime/Sentry.Unity.Native.pdb

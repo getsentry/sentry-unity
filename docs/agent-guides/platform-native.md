@@ -8,6 +8,7 @@
 - Native backend reinstalls before first scene after Unity takes crash/signal handlers.
 - Native logger forwarding to C# exists only under IL2CPP.
 - The native library is copied into the player as `sentry-native`, not `sentry`, because `sentry` resolves to the managed `Sentry.dll` on Windows.
+- Android is the exception: its `libsentry.so` comes from the sentry-android-ndk AAR, so it keeps `sentry` and gets its own `Sentry.Unity.Native.Android.dll` built from the same sources.
 
 ## Backend Choices
 
