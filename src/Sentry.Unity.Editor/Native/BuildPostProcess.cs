@@ -166,7 +166,7 @@ public static class BuildPostProcess
                         $"Sentry Windows plugin directory not found: {windowsBackendSourcePath}\n" +
                         $"Run 'dotnet msbuild /t:{buildTarget} src/Sentry.Unity' (or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it.");
                 }
-                // Flat copy of every non-PDB file next to the player .exe — the native library and the
+                // Flat copy of every non-PDB file next to the player .exe. The native library and the
                 // crash handler (crashpad_handler.exe / sentry-crash.exe) all sit at the build root.
                 // PDBs stay in the package and are consumed at symbol-upload time only.
                 foreach (var file in Directory.GetFiles(windowsBackendSourcePath))
@@ -197,8 +197,8 @@ public static class BuildPostProcess
                     var isDylib = name.EndsWith(".dylib", StringComparison.OrdinalIgnoreCase);
                     // The .dylibs need to go into the `*.app/Contents/Plugins` dirctory and will be picked
                     // up by unity. The crash handler (sentry-native) needs to be next to the game's executable
-                    // Only sentry-native answers to the P/Invoke. The Cocoa backend ships Sentry.dylib
-                    // and SentryNativeBridge.m dlopens it by that name, so leave it alone.
+                    // Only libsentry.dylib is the P/Invoke target. The Cocoa backend's Sentry.dylib is
+                    // dlopened by SentryNativeBridge.m under that exact name, so leave it alone.
                     var dylibName = name.Equals("libsentry.dylib", StringComparison.OrdinalIgnoreCase) ? MacosLibName : name;
                     var desination = Path.Combine(contents, isDylib ? "PlugIns" : "MacOS", dylibName);
                     yield return new NativePluginArtifact(
@@ -233,10 +233,11 @@ public static class BuildPostProcess
                         continue;
                     }
                     var isSharedObject = name.EndsWith(".so", StringComparison.OrdinalIgnoreCase);
+                    var soName = name.Equals("libsentry.so", StringComparison.OrdinalIgnoreCase) ? LinuxLibName : name;
                     yield return new NativePluginArtifact(
                         file,
                         isSharedObject
-                            ? Path.Combine(linuxPluginDir, LinuxLibName)
+                            ? Path.Combine(linuxPluginDir, soName)
                             : Path.Combine(buildOutputDir, name),
                         isExecutable: !isSharedObject);
                 }
@@ -256,8 +257,8 @@ public static class BuildPostProcess
         }
     }
 
-    // Wipe the other backend's dylib before copying the current backend's files in, so an
-    // iterative build does not leave both libraries sitting in PlugIns.
+    // Wipe both backends' leftovers before copying the current one in, so an iterative
+    // build does not leave two libraries sitting in PlugIns.
     private static void CleanupStaleMacOSArtifacts(IDiagnosticLogger logger, string executablePath)
     {
         var contents = Path.Combine(executablePath, "Contents");
