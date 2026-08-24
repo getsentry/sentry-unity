@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fixed native crash capture on Windows with the Mono scripting backend. The native library is now copied into the player as `sentry-native`, so `DllImport` can no longer resolve to the managed `Sentry.dll` sitting beside it in `Managed/` ([#2818](https://github.com/getsentry/sentry-unity/issues/2818))
+
 ## 4.9.0
 
 ### Features

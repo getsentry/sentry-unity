@@ -16,8 +16,12 @@ internal static class SentryNativeBridge
 {
 #if SENTRY_NATIVE_SWITCH
     private const string SentryLib = "__Internal";
-#else
+#elif SENTRY_NATIVE_ANDROID || SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_XBOX
     private const string SentryLib = "sentry";
+#else
+    // "sentry" would bind to the managed Sentry.dll on Windows, so BuildPostProcess copies the
+    // native library in under this name. Android and the consoles ship theirs from elsewhere
+    private const string SentryLib = "sentry-native";
 #endif
 
     private static IDiagnosticLogger? Logger; // This is also the logger we're forwarding native messages to.
@@ -165,7 +169,6 @@ internal static class SentryNativeBridge
 
     internal static void AppHangPause() => sentry_app_hang_pause();
 
-    // libsentry.so
     [DllImport(SentryLib)]
     private static extern IntPtr sentry_options_new();
 

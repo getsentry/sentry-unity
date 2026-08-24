@@ -140,7 +140,7 @@ public static class SentryNative
         }
         catch (EntryPointNotFoundException e)
         {
-            Logger?.LogError(e, "Native dependency not found. Did you delete sentry.dll or move files around?");
+            Logger?.LogError(e, "Native dependency not found. Did you delete the native Sentry library or move files around?");
         }
     }
 }

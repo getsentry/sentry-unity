@@ -6,7 +6,9 @@
   <ItemGroup>
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
-    <ProjectReference Include="../Sentry.Unity.Native/Sentry.Unity.Native.csproj" Private="false" PrivateAssets="all" />
+    <!-- Build order only. The types come from the Android variant, which keeps DllImport("sentry") -->
+    <ProjectReference Include="../Sentry.Unity.Native/Sentry.Unity.Native.csproj" Private="false" PrivateAssets="all" ReferenceOutputAssembly="false" />
+    <Reference Include="$(PackageRuntimePath)/Sentry.Unity.Native.Android.dll" Private="false" />
   </ItemGroup>
 
 </Project>
