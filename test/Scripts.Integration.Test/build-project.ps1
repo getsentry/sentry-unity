@@ -41,7 +41,11 @@ if ($Platform -eq "Android-Export")
 }
 
 
-Show-CaptureSummary
+# Not for the size-comparison build: it has no SDK, so it uploads nothing and would warn spuriously.
+if ($BuildDirName -eq "Build")
+{
+    Show-CaptureSummary
+}
 
 Write-Log "Build output:"
 Get-ChildItem $buildDirectory | ForEach-Object { Write-Detail $_.Name }

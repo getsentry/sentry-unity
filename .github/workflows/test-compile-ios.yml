@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Restore cached compiled iOS build without Sentry
-        if: ${{ inputs.init-type == 'runtime' }}
+        if: ${{ !inputs.capture && inputs.init-type == 'runtime' }}
         id: cache-compiled-nosentry
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -41,31 +41,31 @@ jobs:
           key: build-nosentry-iOS-compiled-${{ inputs.unity-version }}
 
       - name: Download build without Sentry (for size comparison)
-        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
+        if: ${{ !inputs.capture && inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: testapp-ios-no-sentry-${{ env.UNITY_VERSION }}
 
       - name: Extract and compile build without Sentry
-        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
+        if: ${{ !inputs.capture && inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
         run: |
           tar -xvzf test-app-no-sentry.tar.gz
           Move-Item -Path "samples/IntegrationTest/Build-NoSentry" -Destination "samples/IntegrationTest/Build"
 
       - name: Compile Xcode project without Sentry
-        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
+        if: ${{ !inputs.capture && inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
         run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
         timeout-minutes: 20
 
       - name: Save compiled app without Sentry
-        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
+        if: ${{ !inputs.capture && inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
         run: |
           Copy-Item -Path "samples/IntegrationTest/Build/archive/Unity-iPhone/Build/Products/Release-iphonesimulator/IntegrationTest.app" `
                     -Destination "IntegrationTest-NoSentry.app" -Recurse
           Remove-Item -Path "samples/IntegrationTest/Build" -Recurse -Force
 
       - name: Save cached compiled iOS build without Sentry
-        if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' && github.ref == 'refs/heads/main' }}
+        if: ${{ !inputs.capture && inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' && github.ref == 'refs/heads/main' }}
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: IntegrationTest-NoSentry.app
@@ -114,7 +114,7 @@ jobs:
           retention-days: 14
 
       - name: Compare build sizes
-        if: ${{ inputs.init-type == 'runtime' }}
+        if: ${{ !inputs.capture && inputs.init-type == 'runtime' }}
         run: |
           ./test/Scripts.Integration.Test/measure-build-size.ps1 `
             -Path1 "IntegrationTest-NoSentry.app" `
@@ -123,7 +123,7 @@ jobs:
             -UnityVersion "$env:UNITY_VERSION"
 
       - name: Upload build size measurement
-        if: ${{ inputs.init-type == 'runtime' }}
+        if: ${{ !inputs.capture && inputs.init-type == 'runtime' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: build-size-iOS-${{ env.UNITY_VERSION }}

@@ -65,7 +65,10 @@ jobs:
       - name: Extract project archive
         run: tar -xvzf test-project.tar.gz
 
+      # Restored from an earlier run via restore-keys, so it can carry stale build output
+      # into the symbol-upload paths. Capture runs need debug ids that match the app.
       - name: Restore Unity Library cache
+        if: ${{ !inputs.capture }}
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
@@ -74,6 +77,7 @@ jobs:
             it-library-macos-${{ env.UNITY_VERSION }}-
 
       - name: Restore cached build without Sentry
+        if: ${{ !inputs.capture }}
         id: cache-build-nosentry
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -81,11 +85,11 @@ jobs:
           key: build-nosentry-MacOS-${{ inputs.unity-version }}
 
       - name: Build without Sentry SDK
-        if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        if: ${{ !inputs.capture && steps.cache-build-nosentry.outputs.cache-hit != 'true' }}
         run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform MacOS -BuildDirName "Build-NoSentry"
 
       - name: Save cached build without Sentry
-        if: github.ref == 'refs/heads/main' && steps.cache-build-nosentry.outputs.cache-hit != 'true'
+        if: ${{ !inputs.capture && github.ref == 'refs/heads/main' && steps.cache-build-nosentry.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Build-NoSentry
@@ -125,9 +129,11 @@ jobs:
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log
 
       - name: Compare build sizes
+        if: ${{ !inputs.capture }}
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform MacOS -UnityVersion "$env:UNITY_VERSION"
 
       - name: Upload build size measurement
+        if: ${{ !inputs.capture }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: build-size-MacOS-${{ env.UNITY_VERSION }}
