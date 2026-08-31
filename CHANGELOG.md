@@ -6,6 +6,23 @@
 
 - IL2CPP line numbers now work on Android x86/x86_64 builds. il2cpp fails to report the image UUID there, so the SDK falls back to looking the debug image up by name ([#2817](https://github.com/getsentry/sentry-unity/pull/2817))
 
+### Dependencies
+
+- Bump .NET SDK from v6.8.0 to v6.9.0 ([#2815](https://github.com/getsentry/sentry-unity/pull/2815))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#690)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.8.0...6.9.0)
+- Bump Java SDK from v8.53.0 to v8.54.0 ([#2822](https://github.com/getsentry/sentry-unity/pull/2822))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8540)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.53.0...8.54.0)
+- Bump Cocoa SDK from v9.26.0 to v9.26.1 ([#2823](https://github.com/getsentry/sentry-unity/pull/2823))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9261)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.26.0...9.26.1)
+- Bump CLI from v3.6.2 to v3.7.0 ([#2824](https://github.com/getsentry/sentry-unity/pull/2824))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#370)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.6.2...3.7.0)
+
+## 4.9.0
+
 ### Features
 
 - The SDK now provides line number support for managed exceptions for Unity 6.5 and newer ([#2805](https://github.com/getsentry/sentry-unity/pull/2805))
