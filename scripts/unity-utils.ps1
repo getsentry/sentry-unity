@@ -1,5 +1,6 @@
 $RunUnityLicenseRetryTimeoutSeconds = 3600
 $RunUnityLicenseRetryIntervalSeconds = 60
+$ClearUnityLogTimeoutSeconds = 30
 
 function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
 {
@@ -103,10 +104,33 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
 function ClearUnityLog([string] $logFilePath)
 {
     Write-Host "Removing Unity log $logFilePath"
-    If (Test-Path -Path $logFilePath)
+
+    # A Unity process that has just exited can still hold a handle to its log file for a
+    # short while. I.e. child processes it spawned like the licensing client inherit the
+    # handle and outlive it.
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($true)
     {
-        #Force is required if it's opened by another process.
-        Remove-Item -Path $logFilePath -Force
+        If (-not (Test-Path -Path $logFilePath))
+        {
+            return
+        }
+
+        try
+        {
+            Remove-Item -Path $logFilePath -Force -ErrorAction Stop
+            return
+        }
+        catch
+        {
+            if ($stopwatch.Elapsed.TotalSeconds -ge $ClearUnityLogTimeoutSeconds)
+            {
+                Throw "Failed to remove '$logFilePath' after $ClearUnityLogTimeoutSeconds seconds - it is still in use by another process. $($_.Exception.Message)"
+            }
+
+            Write-Host "  '$logFilePath' is still in use by another process, retrying..."
+            Start-Sleep -Milliseconds 500
+        }
     }
 }
 
