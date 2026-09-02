@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- IL2CPP line numbers now work on Android x86/x86_64 builds. il2cpp fails to report the image UUID there, so the SDK falls back to looking the debug image up by name ([#2817](https://github.com/getsentry/sentry-unity/pull/2817))
+
 ### Dependencies
 
 - Bump .NET SDK from v6.8.0 to v6.9.0 ([#2815](https://github.com/getsentry/sentry-unity/pull/2815))

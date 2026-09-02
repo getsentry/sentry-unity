@@ -78,6 +78,23 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
             var mainLibOffset = long.MaxValue;
             DebugImage? mainLibImage = null;
 
+            var mainImageUuid = NormalizeUuid(nativeStackTrace.ImageUuid);
+            if (mainImageUuid is null && !string.IsNullOrEmpty(nativeStackTrace.ImageName))
+            {
+                // il2cpp only scans the first PT_NOTE segment when reading the ELF build ID. On x86_64 with NDK r23 the
+                // notes end up in two segments and the build ID lands in the one il2cpp skips. sentry-native reports
+                // the image just fine, so we look it up by the name il2cpp gave us.
+                var imageByName = DebugImagesSorted.Value
+                    .Find(info => string.Equals(info.Image.CodeFile, nativeStackTrace.ImageName))?.Image;
+                mainImageUuid = NormalizeUuid(imageByName?.DebugId);
+                if (mainImageUuid is not null)
+                {
+                    mainLibImage = imageByName;
+                    Options.LogDebug("Unity reported no main image UUID. Resolved '{0}' from the debug images instead.",
+                        mainImageUuid);
+                }
+            }
+
             // TODO do we really want to continue if these two don't match?
             //      Wouldn't it cause invalid frame info?
             var nativeLen = nativeStackTrace.Frames.Length;
@@ -96,7 +113,6 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
                 // whereas the native stack trace is sorted from callee to caller.
                 var frame = sentryStacktrace.Frames[i];
                 var nativeFrame = nativeStackTrace.Frames[nativeLen - 1 - i];
-                var mainImageUUID = NormalizeUuid(nativeStackTrace.ImageUuid);
 
                 // TODO should we do this for all addresses or only relative ones?
                 //      If the former, we should also update `frame.InstructionAddress` down below.
@@ -131,14 +147,14 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
 
                 if (image is null)
                 {
-                    if (mainImageUUID is null)
+                    if (mainImageUuid is null)
                     {
                         Options.LogWarning("Couldn't process stack trace - main image UUID reported as NULL by Unity");
                         continue;
                     }
 
                     // First, try to find the image among the loaded ones, otherwise create a dummy one.
-                    mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUUID))?.Image;
+                    mainLibImage ??= DebugImagesSorted.Value.Find((info) => string.Equals(NormalizeUuid(info.Image.DebugId), mainImageUuid))?.Image;
                     mainLibImage ??= new DebugImage
                     {
                         Type = GetPlatformDebugImageType(),
@@ -147,7 +163,7 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
                         // Since the code file is not strictly necessary for processing, we just fall back to
                         // a sentinel value here.
                         CodeFile = string.IsNullOrEmpty(nativeStackTrace.ImageName) ? "GameAssembly.fallback" : nativeStackTrace.ImageName,
-                        DebugId = mainImageUUID,
+                        DebugId = mainImageUuid,
                         ImageAddress = mainLibOffset,
                     };
 
@@ -197,12 +213,12 @@ internal class UnityIl2CppEventExceptionProcessor : ISentryEventExceptionProcess
     // while native image UUID we get is 3028cb80-b071-2541-0000-000000000000.
     internal static string? NormalizeUuid(string? value)
     {
-        if (value is null)
+        if (string.IsNullOrEmpty(value))
         {
             return null;
         }
 
-        value = value.ToLowerInvariant();
+        value = value!.ToLowerInvariant();
         value = value.Replace("-0000-000000000000", "");
         return value.Replace("-", "");
     }

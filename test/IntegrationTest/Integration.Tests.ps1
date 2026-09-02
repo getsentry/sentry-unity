@@ -132,6 +132,91 @@ BeforeAll {
         return $runResult
     }
 
+    # Read a property that may be missing from the fetched event. StrictMode turns a missing property
+    # into a terminating error, which is the last thing we want while diagnosing a failure.
+    function Get-EventProperty {
+        param($Object, [string]$Name)
+
+        if ($null -eq $Object) {
+            return $null
+        }
+
+        $property = $Object.PSObject.Properties[$Name]
+        if ($null -eq $property) {
+            return $null
+        }
+
+        return $property.Value
+    }
+
+    # Same, for properties holding a list. Going through @() directly would turn an absent list into a
+    # single-element array holding $null, making a missing stack trace look like one blank frame.
+    function Get-EventList {
+        param($Object, [string]$Name)
+
+        $value = Get-EventProperty $Object $Name
+        if ($null -eq $value) {
+            return @()
+        }
+
+        return @($value)
+    }
+
+    # Dumps what is needed to tell a symbolication problem apart from a capture problem: the frames as
+    # Sentry stored them, and any SDK warning the app logged on the way. Written as a collapsed group so
+    # it stays out of the way until a test actually fails.
+    function Write-EventDiagnostics {
+        param($SentryEvent, $RunResult, [string]$Action)
+
+        Write-Host "::group::Event diagnostics ($Action)"
+        try {
+            if ($null -eq $SentryEvent) {
+                Write-Host "No event was fetched from Sentry."
+            }
+            else {
+                $eventId = Get-EventProperty $SentryEvent 'id'
+                Write-Host "Event $eventId - full JSON in the test results artifact under results/event-$eventId.json"
+
+                $exception = @(Get-EventList (Get-EventProperty $SentryEvent 'exception') 'values') | Select-Object -First 1
+                $frames = @(Get-EventList (Get-EventProperty $exception 'stacktrace') 'frames')
+
+                if ($frames.Count -eq 0) {
+                    Write-Host "The event carries no exception stack trace frames."
+                }
+                else {
+                    Write-Host "Stack trace frames ($($frames.Count), caller first). An empty Line/AbsPath with an empty"
+                    Write-Host "InstrAddr means the SDK never attached native addresses; with one it means symbolication failed."
+                    $frames | ForEach-Object {
+                        [PSCustomObject]@{
+                            Module       = Get-EventProperty $_ 'module'
+                            Function     = Get-EventProperty $_ 'function'
+                            Line         = Get-EventProperty $_ 'lineNo'
+                            AbsPath      = Get-EventProperty $_ 'absPath'
+                            InstrAddr    = Get-EventProperty $_ 'instructionAddr'
+                            Symbolicator = Get-EventProperty $_ 'symbolicatorStatus'
+                        }
+                    } | Format-Table -AutoSize | Out-String -Width 400 | Write-Host
+
+                    $images = @(Get-EventList (Get-EventProperty $SentryEvent 'debugmeta') 'images')
+                    Write-Host "Debug images attached to the event: $($images.Count)"
+                }
+            }
+
+            $output = if ($null -eq $RunResult) { @() } else { @($RunResult.Output) }
+            $sdkDiagnostics = @($output | Where-Object { $_ -match 'Sentry \((Warning|Error)\)' })
+            if ($sdkDiagnostics.Count -eq 0) {
+                Write-Host "The app logged no SDK warnings or errors."
+            }
+            else {
+                Write-Host "SDK warnings and errors the app logged ($($sdkDiagnostics.Count)):"
+                $sdkDiagnostics | ForEach-Object { Write-Host "  $_" }
+            }
+        }
+        finally {
+            Write-Host "::endgroup::"
+        }
+    }
+
     # Run integration test action
     function Invoke-TestAction {
         param (
@@ -304,6 +389,8 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-Host "::endgroup::"
             }
+
+            Write-EventDiagnostics -SentryEvent $script:runEvent -RunResult $script:runResult -Action "message-capture"
         }
 
         It "<Name>" -ForEach $CommonTestCases {
@@ -330,6 +417,8 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
                 $script:runEvent = Get-SentryTestEvent -EventId "$eventId"
                 Write-Host "::endgroup::"
             }
+
+            Write-EventDiagnostics -SentryEvent $script:runEvent -RunResult $script:runResult -Action "exception-capture"
         }
 
         It "<Name>" -ForEach $CommonTestCases {
@@ -358,11 +447,11 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
                 Where-Object { $_.module -eq "IntegrationTester" -and $_.function -eq "ThrowException" } |
                 Select-Object -First 1
 
-            $frame | Should -Not -BeNullOrEmpty
-            $frame.absPath | Should -Match "[\\/]Assets[\\/]Scripts[\\/]IntegrationTester\.cs$"
+            $frame | Should -Not -BeNullOrEmpty -Because "the managed stack trace must contain the throwing frame - see the 'Event diagnostics (exception-capture)' group for the frames Sentry stored"
+            $frame.absPath | Should -Match "[\\/]Assets[\\/]Scripts[\\/]IntegrationTester\.cs$" -Because "IL2CPP line number support must resolve the frame back to its source file. An empty instructionAddr in the diagnostics group means the SDK never attached native addresses (check the SDK warnings), otherwise symbol upload or symbolication is at fault"
             # Which line exactly gets reported differs between Unity versions, so we only assert that we resolved one.
-            $frame.lineNo | Should -BeGreaterThan 0
-            $frame.symbolicatorStatus | Should -Be "symbolicated"
+            $frame.lineNo | Should -BeGreaterThan 0 -Because "the frame resolved to a source file, so it must carry a line number too"
+            $frame.symbolicatorStatus | Should -Be "symbolicated" -Because "Sentry must have symbolicated the frame using the uploaded IL2CPP line mappings"
         }
 
         It "Has error level" {
@@ -392,6 +481,8 @@ if ($env:SENTRY_TEST_PLATFORM -ne "WebGL") {
                     $script:runEvent = Get-SentryTestEvent -TagName "test.crash_id" -TagValue "$eventId" -TimeoutSeconds 300
                     Write-Host "::endgroup::"
                 }
+
+                Write-EventDiagnostics -SentryEvent $script:runEvent -RunResult $script:runResult -Action "crash-capture"
             }
 
             It "<Name>" -ForEach $CommonTestCases {
@@ -448,6 +539,8 @@ if ($env:SENTRY_TEST_PLATFORM -in "Desktop", "Android" -and -not $isCocoaBackend
                     $script:runEvent = Get-SentryTestEvent -TagName "test.app_hang_id" -TagValue "$hangId" -TimeoutSeconds 300
                     Write-Host "::endgroup::"
                 }
+
+                Write-EventDiagnostics -SentryEvent $script:runEvent -RunResult $script:runResult -Action "app-hang-capture"
             }
 
             It "<Name>" -ForEach $CommonTestCases {
