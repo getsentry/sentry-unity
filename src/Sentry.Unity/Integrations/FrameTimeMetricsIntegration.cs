@@ -24,13 +24,6 @@ internal class FrameTimeMetricsIntegration : ISdkIntegration
             return;
         }
 
-        if (!options.EnableMetrics)
-        {
-            options.DiagnosticLogger?.LogWarning(
-                "Frame-time metrics are enabled but 'EnableMetrics' is disabled. No metrics will be collected.");
-            return;
-        }
-
         var monitor = new FrameTimeMonitor(options);
         var interval = options.FrameMetricsInterval < TimeSpan.FromSeconds(1)
             ? TimeSpan.FromSeconds(1)

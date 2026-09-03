@@ -153,7 +153,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool PlayStationNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool SwitchNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
-    [field: SerializeField] public bool EnableMetrics { get; set; } = true;
     [field: SerializeField] public ExperimentalSentryUnityOptions Experimental { get; set; } = new();
     [field: SerializeField] public SentryOptionsConfiguration? OptionsConfiguration { get; set; }
 
@@ -264,7 +263,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             AddBreadcrumbsWithStructuredLogs = AddBreadcrumbsWithStructuredLogs
         };
 
-        options.EnableMetrics = EnableMetrics;
         options.Experimental.MacosBackend = Experimental.MacosBackend;
         options.Experimental.WindowsBackend = Experimental.WindowsBackend;
         options.Experimental.LinuxBackend = Experimental.LinuxBackend;

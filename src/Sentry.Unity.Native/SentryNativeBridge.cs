@@ -108,9 +108,6 @@ internal static class SentryNativeBridge
         Logger?.LogDebug("Setting EnableLogs: {0}", options.EnableLogs);
         sentry_options_set_enable_logs(cOptions, options.EnableLogs ? 1 : 0);
 
-        Logger?.LogDebug("Setting EnableMetrics: {0}", options.EnableMetrics);
-        sentry_options_set_enable_metrics(cOptions, options.EnableMetrics ? 1 : 0);
-
         if (options.UnityInfo.IL2CPP)
         {
             Logger?.LogDebug("Setting the native logger");
@@ -203,9 +200,6 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_enable_logs(IntPtr options, int enable_logs);
-
-    [DllImport(SentryLib)]
-    private static extern void sentry_options_set_enable_metrics(IntPtr options, int enable_metrics);
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_enable_app_hang_tracking(IntPtr options, int enabled);

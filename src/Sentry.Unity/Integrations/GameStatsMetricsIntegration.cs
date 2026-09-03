@@ -24,13 +24,6 @@ internal class GameStatsMetricsIntegration : ISdkIntegration
             return;
         }
 
-        if (!options.EnableMetrics)
-        {
-            options.DiagnosticLogger?.LogWarning(
-                "Memory metrics are enabled but 'EnableMetrics' is disabled. No metrics will be collected.");
-            return;
-        }
-
         var monitor = new GameStatsMonitor(options);
         var interval = options.MemoryMetricsInterval < TimeSpan.FromSeconds(1)
             ? TimeSpan.FromSeconds(1)
