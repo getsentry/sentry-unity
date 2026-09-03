@@ -9,6 +9,9 @@
 ### Fixes
 
 - IL2CPP line numbers now work on Android x86/x86_64 builds. il2cpp fails to report the image UUID there, so the SDK falls back to looking the debug image up by name ([#2817](https://github.com/getsentry/sentry-unity/pull/2817))
+### Fixes
+
+- The `UnityWebRequestTransport` no longer opens a connection while the platform reports no network, and backs off exponentially (1s up to 60s) after a connection error instead of retrying on every envelope. On Nintendo Switch each send attempt made while offline raises the system's "connect to the internet" dialog, so a game with logs or metrics enabled produced a prompt every few seconds ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
 
 ### Dependencies
 

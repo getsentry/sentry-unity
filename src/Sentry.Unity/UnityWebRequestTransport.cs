@@ -6,7 +6,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Http;
+using Sentry.Internal;
+using Sentry.Internal.Extensions;
 using Sentry.Protocol.Envelopes;
+using Sentry.Unity.Integrations;
+using UnityEngine;
 using UnityEngine.Networking;
 
 namespace Sentry.Unity;
@@ -51,13 +55,36 @@ internal class UnityWebRequestTransport : HttpTransportBase
 {
     private readonly SentryUnityOptions _options;
 
-    public UnityWebRequestTransport(SentryUnityOptions options)
+    // This transport opens a connection per envelope. On platforms that raise a system dialog
+    // when the game reaches for an unavailable network - Nintendo Switch prompts to connect to
+    // the internet - every attempt made while offline puts that dialog on screen. A game with
+    // logs and metrics enabled flushes an envelope every few seconds, so a blind retry per
+    // envelope turns into a steady stream of prompts. Two guards bound that: the reachability
+    // check skips sending altogether while the platform reports no network, and the backoff
+    // spaces out attempts on platforms where reachability cannot be trusted.
+    private const double InitialBackoffSeconds = 1.0;
+    private const double MaxBackoffSeconds = 60.0;
+
+    private readonly IApplication _application;
+
+    private int _consecutiveConnectionErrors;
+    private double _retryAfterRealtime;
+
+    public UnityWebRequestTransport(SentryUnityOptions options, IApplication? application = null)
         : base(options)
-        => _options = options;
+    {
+        _options = options;
+        _application = application ?? ApplicationAdapter.Instance;
+    }
 
     // adapted HttpTransport.SendEnvelopeAsync()
     internal IEnumerator SendEnvelopeAsync(Envelope envelope)
     {
+        if (!CanAttemptSend(envelope))
+        {
+            yield break;
+        }
+
         using var processedEnvelope = ProcessEnvelope(envelope);
         if (processedEnvelope.Items.Count > 0)
         {
@@ -66,12 +93,80 @@ internal class UnityWebRequestTransport : HttpTransportBase
             var www = CreateWebRequest(httpRequest);
             yield return www.SendWebRequest();
 
+            if (www.result == UnityWebRequest.Result.ConnectionError)
+            {
+                OnConnectionError(www, processedEnvelope);
+                yield break;
+            }
+
+            OnConnectionSucceeded();
+
             var response = GetResponse(www);
             if (response is not null)
             {
                 HandleResponse(response, processedEnvelope);
             }
         }
+    }
+
+    /// <summary>
+    /// Whether it is worth opening a connection for this envelope. Envelopes dropped here are
+    /// recorded as discarded so client reports still account for them.
+    /// </summary>
+    private bool CanAttemptSend(Envelope envelope)
+    {
+        if (_application.InternetReachability == NetworkReachability.NotReachable)
+        {
+            _options.LogDebug("No network available. Dropping envelope instead of attempting to send.");
+            _options.ClientReportRecorder.RecordDiscardedEvents(DiscardReason.NetworkError, envelope);
+            return false;
+        }
+
+        if (_consecutiveConnectionErrors > 0)
+        {
+            var remaining = _retryAfterRealtime - Time.realtimeSinceStartupAsDouble;
+            if (remaining > 0.0)
+            {
+                _options.LogDebug(
+                    "Backing off after {0} failed connection attempt(s). Dropping envelope, retrying in {1:F1}s.",
+                    _consecutiveConnectionErrors, remaining);
+                _options.ClientReportRecorder.RecordDiscardedEvents(DiscardReason.NetworkError, envelope);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void OnConnectionError(UnityWebRequest www, Envelope envelope)
+    {
+        _consecutiveConnectionErrors++;
+
+        var backoff = Math.Min(
+            MaxBackoffSeconds,
+            InitialBackoffSeconds * Math.Pow(2, _consecutiveConnectionErrors - 1));
+        _retryAfterRealtime = Time.realtimeSinceStartupAsDouble + backoff;
+
+        // Reachability is logged here because a platform reporting itself reachable while the
+        // connection fails is exactly the case the backoff exists to cover.
+        var backoffDetail = $"{backoff:F1}s (consecutive failure #{_consecutiveConnectionErrors})";
+        _options.LogWarning(
+            "Failed to send request: {0}. Reachability reported as {1}. Backing off for {2}.",
+            www.error, _application.InternetReachability, backoffDetail);
+
+        _options.ClientReportRecorder.RecordDiscardedEvents(DiscardReason.NetworkError, envelope);
+    }
+
+    private void OnConnectionSucceeded()
+    {
+        if (_consecutiveConnectionErrors == 0)
+        {
+            return;
+        }
+
+        _options.LogDebug("Connection restored after {0} failed attempt(s).", _consecutiveConnectionErrors);
+        _consecutiveConnectionErrors = 0;
+        _retryAfterRealtime = 0.0;
     }
 
     private UnityWebRequest CreateWebRequest(HttpRequestMessage message)
