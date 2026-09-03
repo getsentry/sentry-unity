@@ -14,6 +14,11 @@ on:
         type: string
         default: ""
         description: "macOS: native or cocoa. Windows: native or crashpad. Linux: native or breakpad."
+      capture:
+        required: false
+        type: boolean
+        default: false
+        description: "Capture the envelopes and debug files this job produces - see docs/envelope-capture.md"
     secrets:
       SENTRY_AUTH_TOKEN:
         required: true
@@ -31,6 +36,8 @@ jobs:
     env:
       SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      # Empty unless a capture run was dispatched; see docs/envelope-capture.md.
+      SENTRY_CAPTURE_PATH: ${{ inputs.capture && format('test/IntegrationTest/capture/run-{0}{1}-{2}', inputs.platform, inputs.backend && format('-{0}', inputs.backend) || '', inputs.unity-version) || '' }}
 
     steps:
       - name: Checkout
@@ -93,4 +100,13 @@ jobs:
           name: testapp-desktop-logs-${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}
           path: |
             test/IntegrationTest/results/
+          retention-days: 14
+
+      - name: Upload captured corpus
+        if: ${{ always() && inputs.capture }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: corpus-run-${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}
+          path: test/IntegrationTest/capture/
+          if-no-files-found: warn
           retention-days: 14

@@ -9,6 +9,13 @@ if (-not $Global:NewProjectPathCache)
 }
 
 . $PSScriptRoot/common.ps1
+. $PSScriptRoot/capture-corpus.ps1
+
+# Capture mode: the app sends its envelopes to the local capture server instead of Sentry.
+if (Test-CaptureEnabled)
+{
+    $env:SENTRY_DSN = $Global:CaptureDsn
+}
 
 $UnityPath = FormatUnityPath $UnityPath
 
