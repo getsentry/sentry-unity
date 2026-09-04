@@ -110,12 +110,27 @@ internal class UnityWebRequestTransport : HttpTransportBase
     }
 
     /// <summary>
+    /// Whether the platform reports a usable network. Prefers the platform's own probe where one
+    /// is available, because Unity's reachability cannot always be trusted - on Nintendo Switch it
+    /// reports the console as reachable while it is offline.
+    /// </summary>
+    private bool IsNetworkAvailable()
+    {
+        if (_options.NetworkAvailabilityProbe is { } probe)
+        {
+            return probe();
+        }
+
+        return _application.InternetReachability != NetworkReachability.NotReachable;
+    }
+
+    /// <summary>
     /// Whether it is worth opening a connection for this envelope. Envelopes dropped here are
     /// recorded as discarded so client reports still account for them.
     /// </summary>
     private bool CanAttemptSend(Envelope envelope)
     {
-        if (_application.InternetReachability == NetworkReachability.NotReachable)
+        if (!IsNetworkAvailable())
         {
             _options.LogDebug("No network available. Dropping envelope instead of attempting to send.");
             _options.ClientReportRecorder.RecordDiscardedEvents(DiscardReason.NetworkError, envelope);
