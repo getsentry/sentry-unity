@@ -31,7 +31,8 @@ internal static class SentryNativeBridge
         UseLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
             or RuntimePlatform.PS5
-            or RuntimePlatform.Switch;
+            or RuntimePlatform.Switch
+            || Application.platform.IsSwitch2();
         if ((Application.platform
             is RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer)
             && RuntimeInformation.ProcessArchitecture == Architecture.X64)

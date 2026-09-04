@@ -638,6 +638,7 @@ public sealed class SentryUnityOptions : SentryOptions
         // Special casing Xbox:     `Application.persistentDataPath` returns an empty string on packaged builds.
         if (IsKnownPlatform(application.Platform)
             && application.Platform is not RuntimePlatform.Switch
+            && !application.Platform.IsSwitch2()
             && application.Platform is not RuntimePlatform.GameCoreXboxSeries
             && application.Platform is not RuntimePlatform.GameCoreXboxOne)
         {
@@ -664,7 +665,8 @@ public sealed class SentryUnityOptions : SentryOptions
             or RuntimePlatform.GameCoreXboxSeries
             or RuntimePlatform.GameCoreXboxOne
             or RuntimePlatform.PS5
-            or RuntimePlatform.Switch;
+            or RuntimePlatform.Switch
+            || platform.Value.IsSwitch2();
     }
 
     public override string ToString()
