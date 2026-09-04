@@ -108,12 +108,6 @@ void sentry_options_set_attach_screenshot(void* options, int attach)
     (void)attach;
 }
 
-void sentry_options_set_enable_metrics(void* options, int enable_metrics)
-{
-    (void)options;
-    (void)enable_metrics;
-}
-
 void sentry_options_set_enable_logs(void* options, int enable_logs)
 {
     (void)options;
