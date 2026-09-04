@@ -5,10 +5,11 @@
 ### Behavioural Changes and Deprecations
 
 - The `EnableMetrics` option is now marked as `[Obsolete]` and no longer has any effect, following the .NET SDK where metrics are always enabled. Disable the individual `Auto*Metrics` options instead, or filter emitted metrics with `SetBeforeSendMetric`. ([#2828](https://github.com/getsentry/sentry-unity/pull/2828))
+- The runtime assembly is now compiled for any platform except CloudRendering, EmbeddedLinux, PS4, tvOS and Xbox One, instead of an explicit allowlist. Platforms without a dedicated integration, like visionOS and the dedicated server targets now run the SDK in managed-only mode. ([#2834](https://github.com/getsentry/sentry-unity/pull/2834))
 
 ### Features
 
-- Added Nintendo Switch 2 support. The SDK now recognises the platform, links the Switch 2 build of the native library from `Assets/Plugins/Sentry/Switch2/`, and uploads its debug symbols. Switch 2 shares the existing `SwitchNativeSupportEnabled` option ([#2834](https://github.com/getsentry/sentry-unity/pull/2834))
+- Added Nintendo Switch 2 support. The SDK now correctly recognises the platform, providing native support and automatic debug symbol upload. Switch 2 shares the existing `SwitchNativeSupportEnabled` option. ([#2834](https://github.com/getsentry/sentry-unity/pull/2834))
 
 ### Fixes
 

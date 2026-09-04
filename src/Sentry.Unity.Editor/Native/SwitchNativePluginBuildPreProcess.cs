@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Linq;
 using Sentry.Extensibility;
@@ -22,24 +21,16 @@ namespace Sentry.Unity.Editor.Native;
 /// </remarks>
 internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
 {
-    private static bool IsSwitchFamily(BuildTarget target) =>
-        target == BuildTarget.Switch || IsSwitch2(target);
-
     /// <summary>
-    /// <c>BuildTarget.Switch2</c> only exists in Unity 6000.3 and newer.
+    /// Both platforms share one stub, so the required libraries are what differ between them. The build target's
+    /// name doubles as the directory name, i.e. `Switch` and `Switch2`.
     /// </summary>
-    private static bool IsSwitch2(BuildTarget target) =>
-        string.Equals(target.ToString(), "Switch2", StringComparison.Ordinal);
-
-    /// <summary>
-    /// Both platforms share one stub, so the required libraries are what differ between them.
-    /// </summary>
-    private static string[] RequiredFilesFor(string targetDirectory)
+    internal static string[] RequiredFilesFor(BuildTarget target)
     {
         return
         [
-            $"Assets/Plugins/Sentry/{targetDirectory}/libsentry.a",
-            $"Assets/Plugins/Sentry/{targetDirectory}/libzstd.a"
+            $"Assets/Plugins/Sentry/{target}/libsentry.a",
+            $"Assets/Plugins/Sentry/{target}/libzstd.a"
         ];
     }
 
@@ -47,7 +38,7 @@ internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
 
     public void OnPreprocessBuild(BuildReport report)
     {
-        if (!IsSwitchFamily(report.summary.platform))
+        if (!report.summary.platform.IsSwitchFamily())
         {
             return;
         }
@@ -60,7 +51,7 @@ internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
 
     internal static void ConfigureStub(IDiagnosticLogger logger, bool nativeSupportEnabled, BuildTarget target)
     {
-        var requiredFiles = RequiredFilesFor(nameof(target));
+        var requiredFiles = RequiredFilesFor(target);
 
         logger.LogDebug("{0} native support: checking for required files:\n{1}",
             target, string.Join("\n", requiredFiles.Select(f => $"  - {f}")));
