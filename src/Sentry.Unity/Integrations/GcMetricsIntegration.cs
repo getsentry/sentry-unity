@@ -24,13 +24,6 @@ internal class GcMetricsIntegration : ISdkIntegration
             return;
         }
 
-        if (!options.EnableMetrics)
-        {
-            options.DiagnosticLogger?.LogWarning(
-                "GC metrics are enabled but 'EnableMetrics' is disabled. No metrics will be collected.");
-            return;
-        }
-
         var monitor = new GcMonitor(options);
         var interval = options.GcMetricsInterval < TimeSpan.FromSeconds(1)
             ? TimeSpan.FromSeconds(1)

@@ -2,15 +2,19 @@
 
 ## Unreleased
 
+### Behavioural Changes and Deprecations
+
+- The `EnableMetrics` option is now marked as `[Obsolete]` and no longer has any effect, following the .NET SDK where metrics are always enabled. Disable the individual `Auto*Metrics` options instead, or filter emitted metrics with `SetBeforeSendMetric`. ([#2828](https://github.com/getsentry/sentry-unity/pull/2828))
+
 ### Fixes
 
 - IL2CPP line numbers now work on Android x86/x86_64 builds. il2cpp fails to report the image UUID there, so the SDK falls back to looking the debug image up by name ([#2817](https://github.com/getsentry/sentry-unity/pull/2817))
 
 ### Dependencies
 
-- Bump .NET SDK from v6.8.0 to v6.9.0 ([#2815](https://github.com/getsentry/sentry-unity/pull/2815))
-  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#690)
-  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.8.0...6.9.0)
+- Bump .NET SDK from v6.8.0 to v6.10.0 ([#2815](https://github.com/getsentry/sentry-unity/pull/2815), [#2828](https://github.com/getsentry/sentry-unity/pull/2828))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6100)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.8.0...6.10.0)
 - Bump Native SDK from v0.16.2 to v0.16.4 ([#2820](https://github.com/getsentry/sentry-unity/pull/2820))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0164)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.16.2...0.16.4)

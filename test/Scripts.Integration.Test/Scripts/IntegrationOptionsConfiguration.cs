@@ -27,7 +27,6 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.TracesSampleRate = 1.0d;
 
         options.EnableLogs = true;
-        options.EnableMetrics = true;
 
         // No custom HTTP handler -- events go to real sentry.io
 

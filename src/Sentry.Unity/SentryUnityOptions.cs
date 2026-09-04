@@ -137,8 +137,7 @@ public sealed class SentryUnityOptions : SentryOptions
 
     /// <summary>
     /// EXPERIMENTAL: Automatically collect per-frame performance metrics, including frame time, FPS,
-    /// and CPU thread timings, and send them to Sentry as metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain
-    /// enabled (the default).
+    /// and CPU thread timings, and send them to Sentry as metrics.
     /// </summary>
     public bool AutoFrameMetrics { get; set; } = false;
 
@@ -149,7 +148,7 @@ public sealed class SentryUnityOptions : SentryOptions
 
     /// <summary>
     /// EXPERIMENTAL: Periodically collect memory usage and send it to Sentry as
-    /// metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain enabled (the default).
+    /// metrics.
     /// </summary>
     public bool AutoMemoryMetrics { get; set; } = false;
 
@@ -160,7 +159,7 @@ public sealed class SentryUnityOptions : SentryOptions
 
     /// <summary>
     /// EXPERIMENTAL: Periodically collect garbage-collection counts (per generation) and send them
-    /// to Sentry as metrics. Requires <see cref="SentryOptions.EnableMetrics"/> to remain enabled.
+    /// to Sentry as metrics.
     /// </summary>
     public bool AutoGcMetrics { get; set; } = false;
 
@@ -172,7 +171,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// <summary>
     /// EXPERIMENTAL: Periodically collect basic multiplayer network metrics - round-trip time (on
     /// clients) and connected-client count (on the server) - and send them to Sentry as metrics.
-    /// Requires the Netcode for GameObjects package and <see cref="SentryOptions.EnableMetrics"/>.
+    /// Requires the Netcode for GameObjects package.
     /// </summary>
     public bool AutoNetworkMetrics { get; set; } = false;
 

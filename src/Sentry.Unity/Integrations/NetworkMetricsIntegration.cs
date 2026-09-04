@@ -24,13 +24,6 @@ internal class NetworkMetricsIntegration : ISdkIntegration
             return;
         }
 
-        if (!options.EnableMetrics)
-        {
-            options.DiagnosticLogger?.LogWarning(
-                "Network metrics are enabled but 'EnableMetrics' is disabled. No metrics will be collected.");
-            return;
-        }
-
         var monitor = new NetworkMetricsMonitor(options);
         if (!monitor.IsAvailable)
         {

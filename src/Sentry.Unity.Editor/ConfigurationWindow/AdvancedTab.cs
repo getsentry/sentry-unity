@@ -231,13 +231,6 @@ internal static class AdvancedTab
         {
             GUILayout.Label("Metrics", EditorStyles.boldLabel);
 
-            options.EnableMetrics = EditorGUILayout.BeginToggleGroup(
-                new GUIContent("Enable Metrics",
-                    "Whether the SDK sends metrics to Sentry. " +
-                    "Metrics are connected to traces for correlation."),
-                options.EnableMetrics);
-            EditorGUI.indentLevel++;
-
             GUILayout.Label("EXPERIMENTAL: Auto-collect common game performance metrics and send them to Sentry.",
                 EditorStyles.wordWrappedMiniLabel);
 
@@ -303,9 +296,6 @@ internal static class AdvancedTab
             {
                 options.NetworkMetricsIntervalSeconds = 1;
             }
-            EditorGUI.indentLevel--;
-            EditorGUILayout.EndToggleGroup();
-
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();
         }
