@@ -4,7 +4,7 @@
 
 ### Behavioural Changes and Deprecations
 
-- Removed the `EnableMetrics` option, following the .NET SDK where metrics are now always enabled and the option is a no-op. To drop metrics, use `SetBeforeSendMetric` and return `null`. ([#2828](https://github.com/getsentry/sentry-unity/pull/2828))
+- The `EnableMetrics` option is now marked as `[Obsolete]` and no longer has any effect, following the .NET SDK where metrics are always enabled. Disable the individual `Auto*Metrics` options instead, or filter emitted metrics with `SetBeforeSendMetric`. ([#2828](https://github.com/getsentry/sentry-unity/pull/2828))
 
 ### Fixes
 

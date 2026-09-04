@@ -153,6 +153,17 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public bool PlayStationNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool SwitchNativeSupportEnabled { get; set; } = true;
     [field: SerializeField] public bool Il2CppLineNumberSupportEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Metrics are always sent to Sentry.
+    /// </summary>
+    /// <remarks>
+    /// This option no longer has any effect. The getter always returns <see langword="true"/> and the
+    /// setter is ignored, matching <see cref="SentryOptions.EnableMetrics"/> in the .NET SDK.
+    /// </remarks>
+    [Obsolete("Metrics are always enabled. This option is ignored and will be removed in a future version. Disable the individual Auto*Metrics options instead, or filter emitted metrics with SetBeforeSendMetric.")]
+    public bool EnableMetrics { get => true; set { } }
+
     [field: SerializeField] public ExperimentalSentryUnityOptions Experimental { get; set; } = new();
     [field: SerializeField] public SentryOptionsConfiguration? OptionsConfiguration { get; set; }
 
