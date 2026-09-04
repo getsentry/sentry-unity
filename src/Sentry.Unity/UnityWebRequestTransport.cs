@@ -94,6 +94,7 @@ internal class UnityWebRequestTransport : HttpTransportBase
 
                 _options.LogWarning("Failed to send request: {0}. Backing off for {1:F1}s.", www.error, _backoffSeconds);
                 _options.ClientReportRecorder.RecordDiscardedEvents(DiscardReason.NetworkError, processedEnvelope);
+                RestoreClientReports(processedEnvelope);
                 yield break;
             }
 
@@ -104,6 +105,20 @@ internal class UnityWebRequestTransport : HttpTransportBase
             if (response is not null)
             {
                 HandleResponse(response, processedEnvelope);
+            }
+        }
+    }
+
+    // ProcessEnvelope drains the recorder into a client report item. Restore those counts instead of
+    // losing them along with the envelope we failed to send.
+    private void RestoreClientReports(Envelope envelope)
+    {
+        foreach (var item in envelope.Items)
+        {
+            if (item.TryGetType() == EnvelopeItem.TypeValueClientReport &&
+                item.Payload is JsonSerializable { Source: ClientReport report })
+            {
+                _options.ClientReportRecorder.Load(report);
             }
         }
     }
