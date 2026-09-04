@@ -6,6 +6,10 @@
 
 - The `EnableMetrics` option is now marked as `[Obsolete]` and no longer has any effect, following the .NET SDK where metrics are always enabled. Disable the individual `Auto*Metrics` options instead, or filter emitted metrics with `SetBeforeSendMetric`. ([#2828](https://github.com/getsentry/sentry-unity/pull/2828))
 
+### Features
+
+- Added Nintendo Switch 2 support. The SDK now recognises the platform, links the Switch 2 build of the native library from `Assets/Plugins/Sentry/Switch2/`, and uploads its debug symbols. Switch 2 shares the existing `SwitchNativeSupportEnabled` option ([#2834](https://github.com/getsentry/sentry-unity/pull/2834))
+
 ### Fixes
 
 - IL2CPP line numbers now work on Android x86/x86_64 builds. il2cpp fails to report the image UUID there, so the SDK falls back to looking the debug image up by name ([#2817](https://github.com/getsentry/sentry-unity/pull/2817))
