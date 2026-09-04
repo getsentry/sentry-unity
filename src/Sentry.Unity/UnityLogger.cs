@@ -30,7 +30,56 @@ public class UnityLogger : IDiagnosticLogger
             return;
         }
 
-        _logger.Log(GetUnityLogType(logLevel), LogTag, $"({logLevel.ToString()}) {Format(message, args)} {exception}");
+        // A diagnostic logger must never take its caller down with it. Callers routinely log from
+        // inside a `catch` that already handled the failure.
+        string logMessage;
+        try
+        {
+            logMessage = $"({logLevel.ToString()}) {Format(message, args)} {Describe(exception)}";
+        }
+        catch (Exception e)
+        {
+            // Keep the raw message - a bad format string shouldn't erase what the caller wanted to say.
+            logMessage = $"({logLevel.ToString()}) {message} (formatting failed: {e.GetType().Name})";
+        }
+
+        try
+        {
+            _logger.Log(GetUnityLogType(logLevel), LogTag, logMessage);
+        }
+        catch
+        {
+            // Reporting a logging failure would have to go through the very thing that just failed.
+        }
+    }
+
+    /// <summary>
+    /// Renders an exception without trusting <see cref="Exception.ToString"/>, which walks the
+    /// stack trace and can throw on platforms with limited stack trace support, i.e. Nintendo Switch.
+    /// </summary>
+    private static string Describe(Exception? exception)
+    {
+        if (exception is null)
+        {
+            return Empty;
+        }
+
+        try
+        {
+            return exception.ToString();
+        }
+        catch (Exception e)
+        {
+            try
+            {
+                return $"{exception.GetType().FullName}: {exception.Message}" +
+                       $" (stack trace unavailable: {e.GetType().Name})";
+            }
+            catch
+            {
+                return "<exception details unavailable>";
+            }
+        }
     }
 
     internal static LogType GetUnityLogType(SentryLevel logLevel)
