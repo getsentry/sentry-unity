@@ -9,6 +9,7 @@
         "LinuxStandalone64",
         "macOSStandalone",
         "Switch",
+        "Switch2",
         "PS5",
         "WSA",
         "WebGL",

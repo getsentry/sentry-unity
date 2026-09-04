@@ -2,9 +2,15 @@
 
 ## Unreleased
 
+### Features
+
+- Added Nintendo Switch 2 support. The SDK now recognises the platform, links the Switch 2 build of the native library from `Assets/Plugins/Sentry/Switch2/`, and uploads its debug symbols. Switch 2 shares the existing `SwitchNativeSupportEnabled` option ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
+
 ### Fixes
 
 - The `UnityWebRequestTransport` no longer opens a connection while the platform reports no network, and backs off exponentially (1s up to 60s) after a connection error instead of retrying on every envelope. On Nintendo Switch each send attempt made while offline raises the system's "connect to the internet" dialog, so a game with logs or metrics enabled produced a prompt every few seconds ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
+- The `UnityLogger` no longer throws while logging an exception whose stack trace cannot be stringified. On Nintendo Switch this escaped from inside the handler that had already dealt with the original error, aborting SDK initialization and leaving the Unity integrations unregistered ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
+- On Nintendo Switch the SDK now asks the native SDK whether the network is usable before sending, instead of relying on `Application.internetReachability`, which reports the console as reachable while it is offline. Every send attempted in that state raised the system's "connect to the internet" dialog. Requires a sentry-switch build exposing `sentry_switch_utils_is_network_available()` ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
 
 ### Dependencies
 
