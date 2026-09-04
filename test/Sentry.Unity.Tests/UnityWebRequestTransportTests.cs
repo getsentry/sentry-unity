@@ -16,9 +16,8 @@ public class UnityWebRequestTransportTests
     private static Envelope CreateEnvelope() => Envelope.FromEvent(new SentryEvent());
 
     /// <summary>
-    /// The coroutine has to bail before its first yield. Anything else means a
-    /// <see cref="UnityEngine.Networking.UnityWebRequest"/> got created, which is what raises the
-    /// system connection dialog on platforms like the Nintendo Switch.
+    /// A coroutine that yields has created a <see cref="UnityEngine.Networking.UnityWebRequest"/>,
+    /// which is what raises the system connection dialog on platforms like the Nintendo Switch.
     /// </summary>
     [Test]
     public void SendEnvelopeAsync_NetworkNotReachable_DoesNotOpenAConnection()
@@ -46,9 +45,8 @@ public class UnityWebRequestTransportTests
     }
 
     /// <summary>
-    /// The platform probe has the final say. On Nintendo Switch reachability reports the console as
-    /// reachable while it is offline, and attempting the send is what raises the system dialog - so
-    /// a probe saying "no network" has to win over reachability saying otherwise.
+    /// The probe has the final say: on Nintendo Switch reachability claims the console is reachable
+    /// while it is offline, which is the state the dialog gets raised in.
     /// </summary>
     [Test]
     public void SendEnvelopeAsync_ProbeReportsNoNetwork_OverridesReachability()

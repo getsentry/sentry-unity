@@ -494,14 +494,11 @@ public sealed class SentryUnityOptions : SentryOptions
     internal Action? NativeSupportCloseCallback { get; set; } = null;
 
     /// <summary>
-    /// Reports whether the network is currently usable, when the platform can answer that more
-    /// reliably than <see cref="UnityEngine.Application.internetReachability"/>.
+    /// Reports whether the network is usable on platforms where
+    /// <see cref="UnityEngine.Application.internetReachability"/> cannot be trusted.
     /// </summary>
     /// <remarks>
-    /// Set by the platform configuration where a native probe exists. On Nintendo Switch this
-    /// matters twice over: reachability reports the console as reachable while it is offline, and
-    /// merely attempting a connection there raises the system's "connect to the internet" dialog.
-    /// Must not block - it is called on the main thread before each send.
+    /// Must not block - the transport calls this on the main thread before each send.
     /// </remarks>
     internal Func<bool>? NetworkAvailabilityProbe { get; set; } = null;
 

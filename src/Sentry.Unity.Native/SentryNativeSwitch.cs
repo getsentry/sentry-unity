@@ -34,12 +34,11 @@ public static class SentryNativeSwitch
     private static IDiagnosticLogger? Logger;
 
     /// <summary>
-    /// Queries the network interface manager without submitting a network request.
+    /// Whether the console currently has a usable network.
     /// </summary>
     /// <remarks>
-    /// Unity's <c>Application.internetReachability</c> reports the console as reachable even while
-    /// it is offline, and every send attempted in that state raises the system's "connect to the
-    /// internet" dialog. Asking the native SDK first is what keeps the dialog off the screen.
+    /// <c>Application.internetReachability</c> reports the console as reachable while it is offline,
+    /// and every send attempted in that state raises the system's "connect to the internet" dialog.
     /// </remarks>
     internal static bool IsNetworkAvailable() => sentry_switch_utils_is_network_available() == 1;
 
@@ -85,8 +84,7 @@ public static class SentryNativeSwitch
             return;
         }
 
-        // Wired up before the storage and native SDK setup below: the probe only needs the native
-        // library to be linked, so the transport keeps the benefit even if either of those fails.
+        // The probe only needs the native library linked, so it survives a failure of the setup below.
         Logger?.LogDebug("Using the native SDK to determine network availability.");
         options.NetworkAvailabilityProbe = IsNetworkAvailable;
 

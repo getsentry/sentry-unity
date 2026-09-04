@@ -410,8 +410,7 @@ const char* sentry_switch_utils_get_default_user_id(void)
 
 int sentry_switch_utils_is_network_available(void)
 {
-    /* Return 1 - with no native SDK to ask, assume the network is usable and let the
-       transport fall back on its connection-error backoff */
+    /* No native SDK to ask - assume usable and let the transport's backoff take over */
     return 1;
 }
 

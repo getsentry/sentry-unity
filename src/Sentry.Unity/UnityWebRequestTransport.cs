@@ -55,13 +55,10 @@ internal class UnityWebRequestTransport : HttpTransportBase
 {
     private readonly SentryUnityOptions _options;
 
-    // This transport opens a connection per envelope. On platforms that raise a system dialog
-    // when the game reaches for an unavailable network - Nintendo Switch prompts to connect to
-    // the internet - every attempt made while offline puts that dialog on screen. A game with
-    // logs and metrics enabled flushes an envelope every few seconds, so a blind retry per
-    // envelope turns into a steady stream of prompts. Two guards bound that: the reachability
-    // check skips sending altogether while the platform reports no network, and the backoff
-    // spaces out attempts on platforms where reachability cannot be trusted.
+    // This transport opens a connection per envelope, and on Nintendo Switch every attempt made
+    // while offline raises the system's "connect to the internet" dialog. With logs or metrics
+    // enabled that is a prompt every few seconds, so sends are gated on network availability and
+    // spaced out by a backoff where availability cannot be trusted.
     private const double InitialBackoffSeconds = 1.0;
     private const double MaxBackoffSeconds = 60.0;
 
@@ -110,9 +107,8 @@ internal class UnityWebRequestTransport : HttpTransportBase
     }
 
     /// <summary>
-    /// Whether the platform reports a usable network. Prefers the platform's own probe where one
-    /// is available, because Unity's reachability cannot always be trusted - on Nintendo Switch it
-    /// reports the console as reachable while it is offline.
+    /// Whether the platform reports a usable network. The platform's own probe wins over
+    /// reachability, which on Nintendo Switch claims the console is reachable while it is offline.
     /// </summary>
     private bool IsNetworkAvailable()
     {
@@ -125,8 +121,8 @@ internal class UnityWebRequestTransport : HttpTransportBase
     }
 
     /// <summary>
-    /// Whether it is worth opening a connection for this envelope. Envelopes dropped here are
-    /// recorded as discarded so client reports still account for them.
+    /// Whether it is worth opening a connection for this envelope. Drops are recorded so client
+    /// reports still account for them.
     /// </summary>
     private bool CanAttemptSend(Envelope envelope)
     {
@@ -162,8 +158,8 @@ internal class UnityWebRequestTransport : HttpTransportBase
             InitialBackoffSeconds * Math.Pow(2, _consecutiveConnectionErrors - 1));
         _retryAfterRealtime = Time.realtimeSinceStartupAsDouble + backoff;
 
-        // Reachability is logged here because a platform reporting itself reachable while the
-        // connection fails is exactly the case the backoff exists to cover.
+        // Reachability is logged because a platform claiming to be reachable while the connection
+        // fails is the case the backoff exists to cover.
         var backoffDetail = $"{backoff:F1}s (consecutive failure #{_consecutiveConnectionErrors})";
         _options.LogWarning(
             "Failed to send request: {0}. Reachability reported as {1}. Backing off for {2}.",
