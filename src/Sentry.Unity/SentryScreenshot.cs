@@ -16,26 +16,37 @@ internal static class SentryScreenshot
         };
     }
 
+    /// <summary>
+    /// Scales the given size down to the quality's target resolution while conserving the original ratio,
+    /// based on which, width or height, is the smaller.
+    /// </summary>
+    internal static (int Width, int Height) GetTargetSize(ScreenshotQuality quality, int width, int height)
+    {
+        if (quality is ScreenshotQuality.Full)
+        {
+            return (width, height);
+        }
+
+        var targetResolution = GetTargetResolution(quality);
+        var ratioW = targetResolution / (float)width;
+        var ratioH = targetResolution / (float)height;
+        var ratio = Mathf.Min(ratioH, ratioW);
+        if (ratio is > 0.0f and < 1.0f)
+        {
+            width = Mathf.FloorToInt(width * ratio);
+            height = Mathf.FloorToInt(height * ratio);
+        }
+
+        return (width, height);
+    }
+
     public static Texture2D CreateNewScreenshotTexture2D(SentryUnityOptions options) =>
         CreateNewScreenshotTexture2D(options, Screen.width, Screen.height);
 
     // For testing
     internal static Texture2D CreateNewScreenshotTexture2D(SentryUnityOptions options, int width, int height)
     {
-        // Make sure the screenshot size does not exceed the target size by scaling the image while conserving the
-        // original ratio based on which, width or height, is the smaller
-        if (options.ScreenshotQuality is not ScreenshotQuality.Full)
-        {
-            var targetResolution = GetTargetResolution(options.ScreenshotQuality);
-            var ratioW = targetResolution / (float)width;
-            var ratioH = targetResolution / (float)height;
-            var ratio = Mathf.Min(ratioH, ratioW);
-            if (ratio is > 0.0f and < 1.0f)
-            {
-                width = Mathf.FloorToInt(width * ratio);
-                height = Mathf.FloorToInt(height * ratio);
-            }
-        }
+        (width, height) = GetTargetSize(options.ScreenshotQuality, width, height);
 
         RenderTexture? renderTextureFull = null;
         RenderTexture? renderTextureResized = null;

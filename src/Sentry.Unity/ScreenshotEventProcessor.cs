@@ -1,122 +1,64 @@
-using System;
-using System.Collections;
-using System.Threading;
 using Sentry.Extensibility;
-using Sentry.Internal;
-using UnityEngine;
 
 namespace Sentry.Unity;
 
-public class ScreenshotEventProcessor : ISentryEventProcessor
+public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 {
     private readonly SentryUnityOptions _options;
-    private readonly ISentryMonoBehaviour _sentryMonoBehaviour;
-    private volatile int _isCapturingScreenshot;
+    private readonly SentryScreenshotCache _cache;
 
-    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
+    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions)
+        : this(sentryOptions, GetOrCreateCache(sentryOptions)) { }
 
-    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, ISentryMonoBehaviour sentryMonoBehaviour)
+    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, SentryScreenshotCache cache)
     {
         _options = sentryOptions;
-        _sentryMonoBehaviour = sentryMonoBehaviour;
+        _cache = cache;
     }
 
-    public SentryEvent Process(SentryEvent @event)
+    private static SentryScreenshotCache GetOrCreateCache(SentryUnityOptions options)
     {
-        // Only ever capture one screenshot per frame
-        if (Interlocked.CompareExchange(ref _isCapturingScreenshot, 1, 0) == 0)
+        if (options.ScreenshotCache is { } cache)
         {
-            _options.LogDebug("Starting coroutine to capture a screenshot.");
-            // Capture must run on the main thread after WaitForEndOfFrame (ReadPixels needs a complete frame), but the
-            // event processor pipeline is synchronous and may run on any thread - blocking here would deadlock when
-            // called from the main thread. So we capture in a coroutine and ship the screenshot as a separate envelope.
-            _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(@event));
+            return cache;
         }
+
+        cache = new SentryScreenshotCache(options);
+        SentryMonoBehaviour.Instance.StartScreenshotCache(cache, options.ScreenshotCaptureInterval);
+        options.ScreenshotCache = cache;
+        return cache;
+    }
+
+    public SentryEvent? Process(SentryEvent @event) => @event;
+
+    public SentryEvent? Process(SentryEvent @event, SentryHint hint)
+    {
+        // Reading the cached frame back off the GPU is a main thread only operation.
+        if (!MainThreadData.IsMainThread())
+        {
+            _options.LogDebug("Screenshot capture skipped. Can't capture screenshots on other than the main thread.");
+            return @event;
+        }
+
+        if (_options.BeforeCaptureScreenshotInternal?.Invoke(@event) is false)
+        {
+            _options.LogInfo("Screenshot capture skipped by BeforeCaptureScreenshot callback.");
+            return @event;
+        }
+
+        var beforeSend = _options.BeforeSendScreenshotInternal;
+        var screenshotBytes = _cache.TryEncodeLatest(beforeSend is null
+            ? null
+            : screenshot => beforeSend(screenshot, @event));
+
+        if (screenshotBytes is null)
+        {
+            return @event;
+        }
+
+        hint.AddAttachment(screenshotBytes, "screenshot.jpg", AttachmentType.Default, "image/jpeg");
+        _options.LogDebug("Screenshot attached to event {0}", @event.EventId);
 
         return @event;
     }
-
-    internal IEnumerator CaptureScreenshotCoroutine(SentryEvent @event)
-    {
-        _options.LogDebug("Screenshot capture triggered. Waiting for End of Frame.");
-
-        // WaitForEndOfFrame does not work in headless mode so we're making it configurable for CI.
-        // See https://docs.unity3d.com/6000.1/Documentation/ScriptReference/WaitForEndOfFrame.html
-        yield return WaitForEndOfFrame();
-
-        Texture2D? screenshot = null;
-        try
-        {
-            if (!@event.IsCaptured)
-            {
-                _options.LogDebug("Skipping screenshot for event {0}. Event was not captured.", @event.EventId);
-                yield break;
-            }
-
-            if (_options.BeforeCaptureScreenshotInternal?.Invoke(@event) is false)
-            {
-                yield break;
-            }
-
-            screenshot = CreateNewScreenshotTexture2D(_options);
-
-            if (_options.BeforeSendScreenshotInternal != null)
-            {
-                var modifiedScreenshot = _options.BeforeSendScreenshotInternal(screenshot, @event);
-
-                if (modifiedScreenshot == null)
-                {
-                    _options.LogInfo("Screenshot discarded by BeforeSendScreenshot callback.");
-                    yield break;
-                }
-
-                // Clean up - If the user returned a new texture object and did not modify the passed in one
-                if (modifiedScreenshot != screenshot)
-                {
-                    _options.LogDebug("Applying modified screenshot.");
-                    UnityEngine.Object.Destroy(screenshot);
-                    screenshot = modifiedScreenshot;
-                }
-            }
-
-            var screenshotBytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
-            if (screenshotBytes is null || screenshotBytes.Length == 0)
-            {
-                _options.LogWarning("Screenshot capture returned empty data for event {0}", @event.EventId);
-                yield break;
-            }
-
-            var attachment = new SentryAttachment(
-                    AttachmentType.Default,
-                    new ByteAttachmentContent(screenshotBytes),
-                    "screenshot.jpg",
-                    "image/jpeg");
-
-            _options.LogDebug("Screenshot captured for event {0}", @event.EventId);
-
-            CaptureAttachment(@event.EventId, attachment);
-        }
-        catch (Exception e)
-        {
-            _options.LogError(e, "Failed to capture screenshot.");
-        }
-        finally
-        {
-            Interlocked.Exchange(ref _isCapturingScreenshot, 0);
-
-            if (screenshot != null)
-            {
-                UnityEngine.Object.Destroy(screenshot);
-            }
-        }
-    }
-
-    internal virtual Texture2D CreateNewScreenshotTexture2D(SentryUnityOptions options)
-        => SentryScreenshot.CreateNewScreenshotTexture2D(options);
-
-    internal virtual void CaptureAttachment(SentryId eventId, SentryAttachment attachment)
-        => (Sentry.SentrySdk.CurrentHub as Hub)?.CaptureAttachment(eventId, attachment);
-
-    internal virtual YieldInstruction WaitForEndOfFrame()
-        => new WaitForEndOfFrame();
 }

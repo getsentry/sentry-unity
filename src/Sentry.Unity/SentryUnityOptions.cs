@@ -191,6 +191,15 @@ public sealed class SentryUnityOptions : SentryOptions
     public int ScreenshotCompression { get; set; } = 75;
 
     /// <summary>
+    /// How often the SDK refreshes the screenshot it attaches to error events. Errors are attached the
+    /// most recently captured frame, so this doubles as the upper bound on how stale that frame can be.
+    /// Lowering it increases the per-frame rendering cost. Set to zero to capture every frame.
+    /// </summary>
+    public TimeSpan ScreenshotCaptureInterval { get; set; } = TimeSpan.FromMilliseconds(250);
+
+    internal SentryScreenshotCache? ScreenshotCache { get; set; }
+
+    /// <summary>
     /// Controls whether structured logs should be captured for each Unity log type.
     /// </summary>
     public Dictionary<LogType, bool> CaptureStructuredLogsForLogType { get; set; }
