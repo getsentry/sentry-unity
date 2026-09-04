@@ -28,7 +28,20 @@ public static class SentryNativeSwitch
     [DllImport("__Internal")]
     private static extern IntPtr sentry_switch_utils_get_default_user_id();
 
+    [DllImport("__Internal")]
+    private static extern int sentry_switch_utils_is_network_available();
+
     private static IDiagnosticLogger? Logger;
+
+    /// <summary>
+    /// Queries the network interface manager without submitting a network request.
+    /// </summary>
+    /// <remarks>
+    /// Unity's <c>Application.internetReachability</c> reports the console as reachable even while
+    /// it is offline, and every send attempted in that state raises the system's "connect to the
+    /// internet" dialog. Asking the native SDK first is what keeps the dialog off the screen.
+    /// </remarks>
+    internal static bool IsNetworkAvailable() => sentry_switch_utils_is_network_available() == 1;
 
     /// <summary>
     /// Configures the native support for Nintendo Switch.
@@ -71,6 +84,11 @@ public static class SentryNativeSwitch
             Logger?.LogDebug("Native support is disabled for '{0}'.", platform);
             return;
         }
+
+        // Wired up before the storage and native SDK setup below: the probe only needs the native
+        // library to be linked, so the transport keeps the benefit even if either of those fails.
+        Logger?.LogDebug("Using the native SDK to determine network availability.");
+        options.NetworkAvailabilityProbe = IsNetworkAvailable;
 
         Logger?.LogDebug("Mounting temporary storage for sentry-switch.");
 
