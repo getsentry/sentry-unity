@@ -53,9 +53,7 @@ public sealed class UnityLoggerTests
     }
 
     /// <summary>
-    /// Callers log from inside `catch` blocks that already handled the failure. If the logger
-    /// throws there, a handled error becomes a fatal one - which is how SDK initialization aborted
-    /// on Nintendo Switch, where stringifying certain exceptions throws again.
+    /// Callers log from inside `catch` blocks that already handled the failure.
     /// </summary>
     [Test]
     public void Log_ExceptionThrowsWhileBeingStringified_DoesNotPropagateAndStillLogs()
@@ -73,7 +71,7 @@ public sealed class UnityLoggerTests
     }
 
     [Test]
-    public void Log_MessageAndArgumentsDoNotMatch_DoesNotPropagate()
+    public void Log_MessageAndArgumentsDoNotMatch_DoesNotPropagateAndKeepsTheRawMessage()
     {
         var testLogger = new UnityTestLogger();
         var logger = new UnityLogger(new SentryOptions { DiagnosticLevel = SentryLevel.Debug }, testLogger);
@@ -82,6 +80,8 @@ public sealed class UnityLoggerTests
         Assert.DoesNotThrow(() => logger.Log(SentryLevel.Debug, "{0} {1} {2}", null, "only-one"));
 
         Assert.AreEqual(1, testLogger.Logs.Count);
+        // The unformatted message is still worth more than a bare "formatting failed".
+        StringAssert.Contains("{0} {1} {2}", testLogger.Logs[0].Item3);
     }
 
     private sealed class ThrowingToStringException : Exception

@@ -8,7 +8,7 @@
 
 ### Fixes
 
-- The `UnityLogger` no longer throws while logging an exception whose stack trace cannot be stringified. On Nintendo Switch this escaped from inside the handler that had already dealt with the original error, aborting SDK initialization and leaving the Unity integrations unregistered ([#2832](https://github.com/getsentry/sentry-unity/pull/2832))
+- Hardened the `UnityLogger` to no longer throw when failing to format a log message. ([#2832](https://github.com/getsentry/sentry-unity/pull/2832))
 - IL2CPP line numbers now work on Android x86/x86_64 builds. il2cpp fails to report the image UUID there, so the SDK falls back to looking the debug image up by name ([#2817](https://github.com/getsentry/sentry-unity/pull/2817))
 
 ### Dependencies

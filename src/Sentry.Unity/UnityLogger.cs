@@ -31,10 +31,7 @@ public class UnityLogger : IDiagnosticLogger
         }
 
         // A diagnostic logger must never take its caller down with it. Callers routinely log from
-        // inside a `catch` that already handled the failure - if logging throws there, a handled
-        // error turns into a fatal one. That is not hypothetical: on Nintendo Switch some
-        // exceptions throw again while their stack trace is being stringified, which aborted SDK
-        // initialization from inside the handler that had already dealt with the original problem.
+        // inside a `catch` that already handled the failure.
         string logMessage;
         try
         {
@@ -42,7 +39,8 @@ public class UnityLogger : IDiagnosticLogger
         }
         catch (Exception e)
         {
-            logMessage = $"({logLevel.ToString()}) Failed to format log message: {e.GetType().Name}";
+            // Keep the raw message - a bad format string shouldn't erase what the caller wanted to say.
+            logMessage = $"({logLevel.ToString()}) {message} (formatting failed: {e.GetType().Name})";
         }
 
         try
@@ -57,7 +55,7 @@ public class UnityLogger : IDiagnosticLogger
 
     /// <summary>
     /// Renders an exception without trusting <see cref="Exception.ToString"/>, which walks the
-    /// stack trace and can throw on platforms with limited stack trace support.
+    /// stack trace and can throw on platforms with limited stack trace support, i.e. Nintendo Switch.
     /// </summary>
     private static string Describe(Exception? exception)
     {
@@ -72,7 +70,6 @@ public class UnityLogger : IDiagnosticLogger
         }
         catch (Exception e)
         {
-            // Type and message are cheap to read and usually survive when the stack trace does not.
             try
             {
                 return $"{exception.GetType().FullName}: {exception.Message}" +
