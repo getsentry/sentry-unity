@@ -41,6 +41,7 @@ public sealed class TestApplication : IApplication
     public string UnityVersion { get; set; }
     public string PersistentDataPath { get; set; }
     public RuntimePlatform Platform { get; set; }
+    public NetworkReachability InternetReachability { get; set; } = NetworkReachability.ReachableViaLocalAreaNetwork;
 
     private void OnLogMessageReceived(string condition, string stacktrace, LogType type)
         => LogMessageReceived?.Invoke(condition, stacktrace, type);
