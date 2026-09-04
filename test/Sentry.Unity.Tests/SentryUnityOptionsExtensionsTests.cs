@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Tests.Stubs;
@@ -206,5 +207,35 @@ public class SentryUnityOptionsExtensionsTests
         var result = options.IsNativeSupportEnabled(platform);
 
         Assert.AreEqual(expectedResult, result);
+    }
+
+    /// <summary>
+    /// Switch 2 shares the Switch option. It is resolved by name because
+    /// <c>RuntimePlatform.Switch2</c> does not exist on the Unity versions the SDK still supports,
+    /// so this parses the member instead of referencing it and skips where it is unavailable.
+    /// </summary>
+    [Test]
+    [TestCase(true, true)]
+    [TestCase(false, false)]
+    public void IsNativeSupportEnabled_Switch2_FollowsSwitchOption(bool optionEnabled, bool expectedResult)
+    {
+        if (!Enum.TryParse<RuntimePlatform>(
+                SentryUnityOptionsExtensions.Switch2PlatformName, out var switch2))
+        {
+            Assert.Ignore("This Unity version predates 'RuntimePlatform.Switch2'.");
+        }
+
+        var options = _fixture.GetSut();
+        options.SwitchNativeSupportEnabled = optionEnabled;
+
+        Assert.AreEqual(expectedResult, options.IsNativeSupportEnabled(switch2));
+    }
+
+    [Test]
+    public void IsSwitch2_OtherPlatforms_ReturnsFalse()
+    {
+        Assert.IsFalse(RuntimePlatform.Switch.IsSwitch2());
+        Assert.IsFalse(RuntimePlatform.PS5.IsSwitch2());
+        Assert.IsFalse(RuntimePlatform.WindowsPlayer.IsSwitch2());
     }
 }
