@@ -493,13 +493,6 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     internal Action? NativeSupportCloseCallback { get; set; } = null;
 
-    /// <summary>
-    /// Reports whether the network is usable on platforms where
-    /// <see cref="UnityEngine.Application.internetReachability"/> cannot be trusted.
-    /// </summary>
-    /// <remarks>
-    /// Must not block - the transport calls this on the main thread before each send.
-    /// </remarks>
     internal Func<bool>? NetworkAvailabilityProbe { get; set; } = null;
 
     internal List<string> SdkIntegrationNames { get; set; } = new();

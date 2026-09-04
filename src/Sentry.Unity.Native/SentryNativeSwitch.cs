@@ -84,7 +84,6 @@ public static class SentryNativeSwitch
             return;
         }
 
-        // The probe only needs the native library linked, so it survives a failure of the setup below.
         Logger?.LogDebug("Using the native SDK to determine network availability.");
         options.NetworkAvailabilityProbe = IsNetworkAvailable;
 
