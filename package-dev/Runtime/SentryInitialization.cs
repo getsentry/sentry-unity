@@ -16,12 +16,8 @@
 #define SENTRY_NATIVE
 #endif
 
-#if UNITY_SWITCH
+#if UNITY_SWITCH || UNITY_SWITCH2
 #define SENTRY_NATIVE_SWITCH
-#endif
-
-#if UNITY_SWITCH2
-#define SENTRY_NATIVE_SWITCH2
 #endif
 
 #if UNITY_WEBGL
@@ -49,7 +45,7 @@ using Sentry.Unity.MacOS;
 using Sentry.Unity.iOS;
 #elif SENTRY_NATIVE_ANDROID
 using Sentry.Unity.Android;
-#elif SENTRY_NATIVE || SENTRY_NATIVE_SWITCH || SENTRY_NATIVE_SWITCH2
+#elif SENTRY_NATIVE || SENTRY_NATIVE_SWITCH
 using Sentry.Unity.Native;
 #elif SENTRY_WEBGL
 using Sentry.Unity.WebGL;
@@ -112,7 +108,7 @@ namespace Sentry.Unity
             SentryPlatformServices.PlatformConfiguration = SentryNativeCocoa.Configure;
 #elif SENTRY_NATIVE_ANDROID
             SentryPlatformServices.PlatformConfiguration = SentryNativeAndroid.Configure;
-#elif SENTRY_NATIVE_SWITCH || SENTRY_NATIVE_SWITCH2
+#elif SENTRY_NATIVE_SWITCH
             SentryPlatformServices.PlatformConfiguration = SentryNativeSwitch.Configure;
 #elif SENTRY_NATIVE
             SentryPlatformServices.PlatformConfiguration = SentryNative.Configure;

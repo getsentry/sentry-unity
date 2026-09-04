@@ -219,8 +219,7 @@ public class SentryUnityOptionsExtensionsTests
     [TestCase(false, false)]
     public void IsNativeSupportEnabled_Switch2_FollowsSwitchOption(bool optionEnabled, bool expectedResult)
     {
-        if (!Enum.TryParse<RuntimePlatform>(
-                SentryUnityOptionsExtensions.Switch2PlatformName, out var switch2))
+        if (!Enum.TryParse<RuntimePlatform>("Switch2", out var switch2))
         {
             Assert.Ignore("This Unity version predates 'RuntimePlatform.Switch2'.");
         }

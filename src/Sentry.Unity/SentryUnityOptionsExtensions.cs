@@ -50,26 +50,14 @@ public static class SentryUnityOptionsExtensions
     }
 
     /// <summary>
-    /// <c>RuntimePlatform.Switch2</c> was only added in Unity 6000.3. This assembly is compiled
-    /// against a single Unity version while the SDK still supports 2021.3, so Switch 2 is matched
-    /// by name instead of by enum member - referencing the member directly would stop the SDK from
-    /// building against the editors that predate it.
+    /// <c>RuntimePlatform.Switch2</c> was only added in Unity 6000.3.
     /// </summary>
-    internal const string Switch2PlatformName = "Switch2";
-
     internal static bool IsSwitch2(this RuntimePlatform platform) =>
-        string.Equals(platform.ToString(), Switch2PlatformName, StringComparison.Ordinal);
+        string.Equals(platform.ToString(), "Switch2", StringComparison.Ordinal);
 
     internal static bool IsNativeSupportEnabled(this SentryUnityOptions options, RuntimePlatform? platform = null)
     {
         platform ??= ApplicationAdapter.Instance.Platform;
-
-        // Switch 2 reuses the Switch native support, and therefore its option.
-        if (platform.Value.IsSwitch2())
-        {
-            return options.SwitchNativeSupportEnabled;
-        }
-
         return platform switch
         {
             RuntimePlatform.Android => options.AndroidNativeSupportEnabled,
@@ -80,6 +68,8 @@ public static class SentryUnityOptionsExtensions
             RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne => options.XboxNativeSupportEnabled,
             RuntimePlatform.PS5 => options.PlayStationNativeSupportEnabled,
             RuntimePlatform.Switch => options.SwitchNativeSupportEnabled,
+            // Switch 2 reuses the Switch native support.
+            _ when platform.Value.IsSwitch2() => options.SwitchNativeSupportEnabled,
             _ => false
         };
     }

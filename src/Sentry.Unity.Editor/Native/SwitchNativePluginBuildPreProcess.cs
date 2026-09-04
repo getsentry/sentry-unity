@@ -22,30 +22,25 @@ namespace Sentry.Unity.Editor.Native;
 /// </remarks>
 internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
 {
-    /// <summary>
-    /// <c>BuildTarget.Switch2</c> only exists in Unity 6000.3 and newer, and this assembly is
-    /// compiled against a single Unity version, so the target is matched by name. The build report
-    /// hands us the value itself, so the enum member never has to be referenced.
-    /// </summary>
-    internal const string Switch2BuildTargetName = "Switch2";
-
     private static bool IsSwitchFamily(BuildTarget target) =>
         target == BuildTarget.Switch || IsSwitch2(target);
 
+    /// <summary>
+    /// <c>BuildTarget.Switch2</c> only exists in Unity 6000.3 and newer.
+    /// </summary>
     private static bool IsSwitch2(BuildTarget target) =>
-        string.Equals(target.ToString(), Switch2BuildTargetName, StringComparison.Ordinal);
+        string.Equals(target.ToString(), "Switch2", StringComparison.Ordinal);
 
     /// <summary>
     /// Both platforms share one stub, so the required libraries are what differ between them.
     /// </summary>
-    private static string[] RequiredFilesFor(BuildTarget target)
+    private static string[] RequiredFilesFor(string targetDirectory)
     {
-        var directory = IsSwitch2(target) ? Switch2BuildTargetName : nameof(BuildTarget.Switch);
-        return new[]
-        {
-            $"Assets/Plugins/Sentry/{directory}/libsentry.a",
-            $"Assets/Plugins/Sentry/{directory}/libzstd.a",
-        };
+        return
+        [
+            $"Assets/Plugins/Sentry/{targetDirectory}/libsentry.a",
+            $"Assets/Plugins/Sentry/{targetDirectory}/libzstd.a"
+        ];
     }
 
     public int callbackOrder => -100;
@@ -60,13 +55,12 @@ internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
         var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
-        // Switch 2 reuses the Switch implementation and therefore its option.
         ConfigureStub(logger, options?.SwitchNativeSupportEnabled ?? false, report.summary.platform);
     }
 
     internal static void ConfigureStub(IDiagnosticLogger logger, bool nativeSupportEnabled, BuildTarget target)
     {
-        var requiredFiles = RequiredFilesFor(target);
+        var requiredFiles = RequiredFilesFor(nameof(target));
 
         logger.LogDebug("{0} native support: checking for required files:\n{1}",
             target, string.Join("\n", requiredFiles.Select(f => $"  - {f}")));
@@ -88,14 +82,12 @@ internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
         var someFilesPresent = existingFiles.Count > 0 && missingFiles.Count > 0;
         if (someFilesPresent)
         {
-            // LogError has no two-argument overload that does not also take an exception, so the
-            // target goes into the format string rather than being passed alongside the file list.
-            logger.LogError(
-                target + " native support is partially configured. Missing files:\n{0}\n" +
+            logger.LogWarning(
+                "{0} native support is partially configured. Missing files:\n{1}\n" +
                 "Please add all required files to enable native support, or remove all files to fall back on no-op stubs.\n" +
                 "Build sentry-switch and copy the libraries to the expected locations. " +
                 "See: https://github.com/getsentry/sentry-switch",
-                string.Join("\n", missingFiles.Select(f => $"  - {f}"))
+                target, string.Join("\n", missingFiles.Select(f => $"  - {f}"))
             );
             return;
         }
