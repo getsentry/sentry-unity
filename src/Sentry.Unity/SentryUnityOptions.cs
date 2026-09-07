@@ -493,6 +493,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     internal Action? NativeSupportCloseCallback { get; set; } = null;
 
+    internal Func<bool>? NetworkAvailabilityProbe { get; set; } = null;
+
     internal List<string> SdkIntegrationNames { get; set; } = new();
 
     internal ISentryUnityInfo UnityInfo { get; private set; }

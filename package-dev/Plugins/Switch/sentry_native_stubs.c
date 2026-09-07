@@ -408,6 +408,12 @@ const char* sentry_switch_utils_get_default_user_id(void)
     return "";
 }
 
+int sentry_switch_utils_is_network_available(void)
+{
+    /* No native SDK to ask - assume usable and let the transport's backoff take over */
+    return 1;
+}
+
 /*
  * =============================================================================
  * Utility Functions

@@ -6,7 +6,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using Sentry.Http;
+using Sentry.Internal;
+using Sentry.Internal.Extensions;
 using Sentry.Protocol.Envelopes;
+using Sentry.Unity.Integrations;
+using UnityEngine;
 using UnityEngine.Networking;
 
 namespace Sentry.Unity;
@@ -50,14 +54,31 @@ internal class WebBackgroundWorker : IBackgroundWorker
 internal class UnityWebRequestTransport : HttpTransportBase
 {
     private readonly SentryUnityOptions _options;
+    private readonly IApplication _application;
 
-    public UnityWebRequestTransport(SentryUnityOptions options)
+    private const double MaxBackoffSeconds = 300.0;
+    private double _backoffSeconds;
+    private double _retryAfterRealtime;
+
+    public UnityWebRequestTransport(SentryUnityOptions options, IApplication? application = null)
         : base(options)
-        => _options = options;
+    {
+        _options = options;
+        _application = application ?? ApplicationAdapter.Instance;
+    }
 
     // adapted HttpTransport.SendEnvelopeAsync()
     internal IEnumerator SendEnvelopeAsync(Envelope envelope)
     {
+        // This transport opens a connection per envelope, causing a prompt to appear on platforms
+        // like Nintendo Switch while offline.
+        if (!IsNetworkAvailable() || Time.realtimeSinceStartupAsDouble < _retryAfterRealtime)
+        {
+            _options.LogDebug("Network unavailable or backing off. Dropping envelope instead of attempting to send.");
+            _options.ClientReportRecorder.RecordDiscardedEvents(DiscardReason.NetworkError, envelope);
+            yield break;
+        }
+
         using var processedEnvelope = ProcessEnvelope(envelope);
         if (processedEnvelope.Items.Count > 0)
         {
@@ -66,12 +87,50 @@ internal class UnityWebRequestTransport : HttpTransportBase
             var www = CreateWebRequest(httpRequest);
             yield return www.SendWebRequest();
 
+            if (www.result == UnityWebRequest.Result.ConnectionError)
+            {
+                _backoffSeconds = Math.Min(MaxBackoffSeconds, _backoffSeconds > 0.0 ? _backoffSeconds * 2 : 1.0);
+                _retryAfterRealtime = Time.realtimeSinceStartupAsDouble + _backoffSeconds;
+
+                _options.LogWarning("Failed to send request: {0}. Backing off for {1:F1}s.", www.error, _backoffSeconds);
+                _options.ClientReportRecorder.RecordDiscardedEvents(DiscardReason.NetworkError, processedEnvelope);
+                RestoreClientReports(processedEnvelope);
+                yield break;
+            }
+
+            _backoffSeconds = 0.0;
+            _retryAfterRealtime = 0.0;
+
             var response = GetResponse(www);
             if (response is not null)
             {
                 HandleResponse(response, processedEnvelope);
             }
         }
+    }
+
+    // ProcessEnvelope drains the recorder into a client report item. Restore those counts instead of
+    // losing them along with the envelope we failed to send.
+    private void RestoreClientReports(Envelope envelope)
+    {
+        foreach (var item in envelope.Items)
+        {
+            if (item.TryGetType() == EnvelopeItem.TypeValueClientReport &&
+                item.Payload is JsonSerializable { Source: ClientReport report })
+            {
+                _options.ClientReportRecorder.Load(report);
+            }
+        }
+    }
+
+    private bool IsNetworkAvailable()
+    {
+        if (_options.NetworkAvailabilityProbe is { } probe)
+        {
+            return probe();
+        }
+
+        return _application.InternetReachability != NetworkReachability.NotReachable;
     }
 
     private UnityWebRequest CreateWebRequest(HttpRequestMessage message)
