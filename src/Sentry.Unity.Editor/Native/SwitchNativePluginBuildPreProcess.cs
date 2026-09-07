@@ -21,17 +21,24 @@ namespace Sentry.Unity.Editor.Native;
 /// </remarks>
 internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
 {
-    private static readonly string[] RequiredFiles =
+    /// <summary>
+    /// Both platforms share one stub, so the required libraries are what differ between them. The build target's
+    /// name doubles as the directory name, i.e. `Switch` and `Switch2`.
+    /// </summary>
+    internal static string[] RequiredFilesFor(BuildTarget target)
     {
-        "Assets/Plugins/Sentry/Switch/libsentry.a",
-        "Assets/Plugins/Sentry/Switch/libzstd.a",
-    };
+        return
+        [
+            $"Assets/Plugins/Sentry/{target}/libsentry.a",
+            $"Assets/Plugins/Sentry/{target}/libzstd.a"
+        ];
+    }
 
     public int callbackOrder => -100;
 
     public void OnPreprocessBuild(BuildReport report)
     {
-        if (report.summary.platform != BuildTarget.Switch)
+        if (!report.summary.platform.IsSwitchFamily())
         {
             return;
         }
@@ -39,14 +46,18 @@ internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
         var options = SentryScriptableObject.LoadOptions(isBuilding: true);
         var logger = options?.DiagnosticLogger ?? new UnityLogger(new SentryUnityOptions());
 
-        ConfigureStub(logger, options?.SwitchNativeSupportEnabled ?? false);
+        ConfigureStub(logger, options?.SwitchNativeSupportEnabled ?? false, report.summary.platform);
     }
 
-    internal static void ConfigureStub(IDiagnosticLogger logger, bool nativeSupportEnabled)
+    internal static void ConfigureStub(IDiagnosticLogger logger, bool nativeSupportEnabled, BuildTarget target)
     {
-        logger.LogDebug("Switch native support: checking for required files:\n{0}",
-            string.Join("\n", RequiredFiles.Select(f => $"  - {f}")));
+        var requiredFiles = RequiredFilesFor(target);
 
+        logger.LogDebug("{0} native support: checking for required files:\n{1}",
+            target, string.Join("\n", requiredFiles.Select(f => $"  - {f}")));
+
+        // One stub serves both platforms; the importer tracks compatibility per build target, so
+        // enabling it for one does not affect the other.
         var stubPath = Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "Switch", "sentry_native_stubs.c");
 
         var importer = AssetImporter.GetAtPath(stubPath) as PluginImporter;
@@ -56,18 +67,18 @@ internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
             return;
         }
 
-        var existingFiles = RequiredFiles.Where(File.Exists).ToList();
-        var missingFiles = RequiredFiles.Except(existingFiles).ToList();
+        var existingFiles = requiredFiles.Where(File.Exists).ToList();
+        var missingFiles = requiredFiles.Except(existingFiles).ToList();
 
         var someFilesPresent = existingFiles.Count > 0 && missingFiles.Count > 0;
         if (someFilesPresent)
         {
-            logger.LogError(
-                "Switch native support is partially configured. Missing files:\n{0}\n" +
+            logger.LogWarning(
+                "{0} native support is partially configured. Missing files:\n{1}\n" +
                 "Please add all required files to enable native support, or remove all files to fall back on no-op stubs.\n" +
                 "Build sentry-switch and copy the libraries to the expected locations. " +
                 "See: https://github.com/getsentry/sentry-switch",
-                string.Join("\n", missingFiles.Select(f => $"  - {f}"))
+                target, string.Join("\n", missingFiles.Select(f => $"  - {f}"))
             );
             return;
         }
@@ -75,26 +86,26 @@ internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
         var allFilesPresent = missingFiles.Count == 0;
         if (allFilesPresent)
         {
-            logger.LogInfo("Switch native libraries found:\n{0}",
-                string.Join("\n", existingFiles.Select(f => $"  - {f}")));
-            importer.SetCompatibleWithPlatform(BuildTarget.Switch, false);
+            logger.LogInfo("{0} native libraries found:\n{1}",
+                target, string.Join("\n", existingFiles.Select(f => $"  - {f}")));
+            importer.SetCompatibleWithPlatform(target, false);
         }
         else
         {
             if (nativeSupportEnabled)
             {
                 logger.LogWarning(
-                    "Switch native support is enabled but required files are missing:\n{0}\n" +
+                    "{0} native support is enabled but required files are missing:\n{1}\n" +
                     "Build sentry-switch and copy the libraries to the expected locations. " +
                     "See: https://github.com/getsentry/sentry-switch",
-                    string.Join("\n", missingFiles.Select(f => $"  - {f}"))
+                    target, string.Join("\n", missingFiles.Select(f => $"  - {f}"))
                 );
             }
             else
             {
-                logger.LogDebug("Switch native support is disabled. Enabling stubs (native calls will be no-op).");
+                logger.LogDebug("{0} native support is disabled. Enabling stubs (native calls will be no-op).", target);
             }
-            importer.SetCompatibleWithPlatform(BuildTarget.Switch, true);
+            importer.SetCompatibleWithPlatform(target, true);
         }
 
         importer.SaveAndReimport();

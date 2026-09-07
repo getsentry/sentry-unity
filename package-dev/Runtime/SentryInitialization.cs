@@ -16,7 +16,7 @@
 #define SENTRY_NATIVE
 #endif
 
-#if UNITY_SWITCH
+#if UNITY_SWITCH || UNITY_SWITCH2
 #define SENTRY_NATIVE_SWITCH
 #endif
 

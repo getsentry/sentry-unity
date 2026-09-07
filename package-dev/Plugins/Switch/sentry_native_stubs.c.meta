@@ -25,6 +25,7 @@ PluginImporter:
         Exclude Linux64: 1
         Exclude OSXUniversal: 1
         Exclude Switch: 0
+        Exclude Switch2: 0
         Exclude WebGL: 1
         Exclude Win: 1
         Exclude Win64: 1
@@ -44,6 +45,9 @@ PluginImporter:
       settings:
         CPU: None
     Switch:
+      enabled: 1
+      settings: {}
+    Switch2:
       enabled: 1
       settings: {}
     Win:

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Integrations;
@@ -53,6 +54,38 @@ public sealed class SentryUnityOptionsTests
         var sut = _fixture.GetSut();
 
         Assert.AreEqual(sut.CacheDirectoryPath, expectedCacheDirectoryPath);
+    }
+
+    /// <summary>
+    /// Switch 2 is resolved by name because <c>RuntimePlatform.Switch2</c> does not exist on the Unity versions
+    /// the SDK still supports, so this parses the member instead of referencing it.
+    /// </summary>
+    private static RuntimePlatform GetSwitch2OrIgnore()
+    {
+        if (!Enum.TryParse<RuntimePlatform>("Switch2", out var switch2))
+        {
+            Assert.Ignore("This Unity version predates 'RuntimePlatform.Switch2'.");
+        }
+
+        return switch2;
+    }
+
+    [Test]
+    public void IsKnownPlatform_Switch2_IsTrue() =>
+        Assert.IsTrue(SentryUnityOptions.IsKnownPlatform(GetSwitch2OrIgnore()));
+
+    /// <summary>
+    /// Just like on Switch, `Application.persistentDataPath` implicitly creates a directory and crashes.
+    /// </summary>
+    [Test]
+    public void Ctor_Switch2_DoesNotSetCacheDirectoryPath()
+    {
+        _fixture.Application.Platform = GetSwitch2OrIgnore();
+        _fixture.Application.PersistentDataPath = "some/path";
+
+        var sut = _fixture.GetSut();
+
+        Assert.IsNull(sut.CacheDirectoryPath);
     }
 
     [Test]

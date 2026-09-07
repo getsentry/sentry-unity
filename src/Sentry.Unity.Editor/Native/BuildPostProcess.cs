@@ -19,10 +19,12 @@ public static class BuildPostProcess
     public static void OnPostProcessBuild(BuildTarget target, string executablePath)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
-        if (targetGroup is not BuildTargetGroup.Standalone
-            and not BuildTargetGroup.GameCoreXboxSeries
-            and not BuildTargetGroup.PS5
-            and not BuildTargetGroup.Switch)
+        var isSupportedGroup = targetGroup is BuildTargetGroup.Standalone
+            or BuildTargetGroup.GameCoreXboxSeries
+            or BuildTargetGroup.PS5
+            or BuildTargetGroup.Switch
+            || targetGroup.IsSwitch2();
+        if (!isSupportedGroup)
         {
             return;
         }
@@ -58,6 +60,7 @@ public static class BuildPostProcess
             BuildTargetGroup.GameCoreXboxSeries => executablePath,
             BuildTargetGroup.PS5 => executablePath,
             BuildTargetGroup.Switch => Path.GetDirectoryName(executablePath),
+            _ when targetGroup.IsSwitch2() => Path.GetDirectoryName(executablePath),
             _ => string.Empty
         };
 
@@ -131,6 +134,8 @@ public static class BuildPostProcess
         BuildTarget.GameCoreXboxSeries or BuildTarget.GameCoreXboxOne => options.XboxNativeSupportEnabled,
         BuildTarget.PS5 => options.PlayStationNativeSupportEnabled,
         BuildTarget.Switch => options.SwitchNativeSupportEnabled,
+        // Switch 2 reuses the Switch native support.
+        _ when target.IsSwitch2() => options.SwitchNativeSupportEnabled,
         _ => false,
     };
 
@@ -238,6 +243,11 @@ public static class BuildPostProcess
                 // No standalone crash handler for Switch - uses Nintendo's crash reporter
                 break;
             default:
+                if (target.IsSwitch2())
+                {
+                    // No standalone crash handler for Switch - uses Nintendo's crash reporter
+                    break;
+                }
                 throw new ArgumentException($"Unsupported build target: {target}");
         }
     }
@@ -526,29 +536,41 @@ public static class BuildPostProcess
                 break;
 
             case BuildTarget.Switch:
-                // IL2CPP output, Managed DLLs/PDBs, and Symbols
-                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
-                {
-                    AddPath(paths, dir, logger);
-                }
-
-                // Burst
-                foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BurstDebugInformation_*"))
-                {
-                    AddPath(paths, dir, logger);
-                }
-
-                // When exporting as an NSP the assemblies are bundled inside the package. So we're also checking the build cache.
-                var beePath = Path.Combine(projectDir, "Library", "Bee", "artifacts", "SwitchPlayerBuildProgram");
-                AddPath(paths, beePath, logger);
-
-                // User-provided Sentry plugin
-                AddPath(paths, Path.GetFullPath("Assets/Plugins/Sentry/"), logger);
+                AddSwitchPaths();
                 break;
 
             default:
+                if (target.IsSwitch2())
+                {
+                    AddSwitchPaths();
+                    break;
+                }
+
                 logger.LogError("Symbol upload for '{0}' is currently not supported.", target);
                 return;
+        }
+
+        void AddSwitchPaths()
+        {
+            // IL2CPP output, Managed DLLs/PDBs, and Symbols
+            foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BackUpThisFolder_*"))
+            {
+                AddPath(paths, dir, logger);
+            }
+
+            // Burst
+            foreach (var dir in Directory.GetDirectories(buildOutputDir, "*_BurstDebugInformation_*"))
+            {
+                AddPath(paths, dir, logger);
+            }
+
+            // When exporting as an NSP the assemblies are bundled inside the package. So we're also checking the
+            // build cache. The build program is named after the build target, i.e. `SwitchPlayerBuildProgram`.
+            var beePath = Path.Combine(projectDir, "Library", "Bee", "artifacts", $"{target}PlayerBuildProgram");
+            AddPath(paths, beePath, logger);
+
+            // User-provided Sentry plugin
+            AddPath(paths, Path.GetFullPath("Assets/Plugins/Sentry/"), logger);
         }
 
         // Possible duplicate but check for the .pdb files that Unity stores for script assemblies in `./Temp/ManagedSymbols/`.

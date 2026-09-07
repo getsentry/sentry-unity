@@ -49,6 +49,12 @@ public static class SentryUnityOptionsExtensions
         return true;
     }
 
+    /// <summary>
+    /// <c>RuntimePlatform.Switch2</c> was only added in Unity 6000.3.
+    /// </summary>
+    internal static bool IsSwitch2(this RuntimePlatform platform) =>
+        string.Equals(platform.ToString(), "Switch2", StringComparison.Ordinal);
+
     internal static bool IsNativeSupportEnabled(this SentryUnityOptions options, RuntimePlatform? platform = null)
     {
         platform ??= ApplicationAdapter.Instance.Platform;
@@ -62,6 +68,8 @@ public static class SentryUnityOptionsExtensions
             RuntimePlatform.GameCoreXboxSeries or RuntimePlatform.GameCoreXboxOne => options.XboxNativeSupportEnabled,
             RuntimePlatform.PS5 => options.PlayStationNativeSupportEnabled,
             RuntimePlatform.Switch => options.SwitchNativeSupportEnabled,
+            // Switch 2 reuses the Switch native support.
+            _ when platform.Value.IsSwitch2() => options.SwitchNativeSupportEnabled,
             _ => false
         };
     }
