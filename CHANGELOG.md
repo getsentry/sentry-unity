@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Fixed a `NoSuchFieldError` during initialization on Android when setting the `sample rate`. ([#2838](https://github.com/getsentry/sentry-unity/issues/2838))
+
 ## 4.10.0
 
 ### Behavioural Changes and Deprecations
