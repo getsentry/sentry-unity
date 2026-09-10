@@ -6,6 +6,12 @@
 
 - Fixed a `NoSuchFieldError` during initialization on Android when setting the `sample rate`. ([#2838](https://github.com/getsentry/sentry-unity/issues/2838))
 
+### Dependencies
+
+- Bump Native SDK from v0.16.5 to v0.16.6 ([#2839](https://github.com/getsentry/sentry-unity/pull/2839))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0166)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.16.5...0.16.6)
+
 ## 4.10.0
 
 ### Behavioural Changes and Deprecations
