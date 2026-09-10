@@ -14,11 +14,7 @@ namespace Sentry.Unity.Native;
 /// <see href="https://github.com/getsentry/sentry-native"/>
 internal static class SentryNativeBridge
 {
-#if SENTRY_NATIVE_SWITCH
-    private const string SentryLib = "__Internal";
-#else
-    private const string SentryLib = "sentry";
-#endif
+    private const string SentryLib = SentryNativeLibrary.Name;
 
     private static IDiagnosticLogger? Logger; // This is also the logger we're forwarding native messages to.
     private static bool UseLibC;
@@ -163,7 +159,6 @@ internal static class SentryNativeBridge
 
     internal static void AppHangPause() => sentry_app_hang_pause();
 
-    // libsentry.so
     [DllImport(SentryLib)]
     private static extern IntPtr sentry_options_new();
 

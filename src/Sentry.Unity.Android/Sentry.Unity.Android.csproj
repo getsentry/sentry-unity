@@ -6,7 +6,13 @@
   <ItemGroup>
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
-    <ProjectReference Include="../Sentry.Unity.Native/Sentry.Unity.Native.csproj" Private="false" PrivateAssets="all" />
+    <!-- Build order only. Android binds to the Android variant of the shared P/Invoke layer, which
+         that project emits alongside its own output. See SentryNativeLibrary for why the desktop
+         assembly is not interchangeable here. -->
+    <ProjectReference Include="../Sentry.Unity.Native/Sentry.Unity.Native.csproj" Private="false" PrivateAssets="all" ReferenceOutputAssembly="false" />
+    <Reference Include="Sentry.Unity.Native.Android" Private="false">
+      <HintPath>$(PackageRuntimePath)/Sentry.Unity.Native.Android.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -139,6 +139,13 @@ public static class BuildPostProcess
         _ => false,
     };
 
+    // The names the package already ships the desktop runtime library under. `native-sdks.targets`
+    // renames it when the SDK is built. See `SentryNativeLibrary` in Sentry.Unity.Native for why
+    // binding to plain `sentry` breaks under Mono. Kept here only to clear stale artifacts.
+    internal const string WindowsLibraryName = "sentry-native.dll";
+    internal const string LinuxLibraryName = "libsentry-native.so";
+    internal const string MacOSLibraryName = "libsentry-native.dylib";
+
     private readonly struct NativePluginArtifact(string source, string destination, bool isExecutable = false)
     {
         public readonly string Source = source;
@@ -165,7 +172,7 @@ public static class BuildPostProcess
                         $"Sentry Windows plugin directory not found: {windowsBackendSourcePath}\n" +
                         $"Run 'dotnet msbuild /t:{buildTarget} src/Sentry.Unity' (or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it.");
                 }
-                // Flat copy of every non-PDB file next to the player .exe — sentry.dll and the
+                // Flat copy of every non-PDB file next to the player .exe. The native library and the
                 // crash handler (crashpad_handler.exe / sentry-crash.exe) all sit at the build root.
                 // PDBs stay in the package and are consumed at symbol-upload time only.
                 foreach (var file in Directory.GetFiles(windowsBackendSourcePath))
@@ -210,8 +217,8 @@ public static class BuildPostProcess
                         $"Sentry Linux plugin directory not found: {linuxBackendSourcePath}\n" +
                         $"Run 'dotnet msbuild /t:{buildTarget} src/Sentry.Unity' (or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it.");
                 }
-                // libsentry.so must sit in the player's native plugin dir (<name>_Data/Plugins/x86_64) where the
-                // Linux player resolves DllImport("sentry"). The crash daemon (sentry-crash, native backend only)
+                // The native library must sit in the player's native plugin dir (<name>_Data/Plugins/x86_64)
+                // where the Linux player resolves the P/Invoke. The crash daemon (sentry-crash, native backend only)
                 // sits next to the player executable so sentry-native can spawn it on crash.
                 // The .dbg.so / .dbg debug sidecars stay in the package and are consumed at symbol-upload time only.
                 var linuxPluginDir = GetLinuxPluginDir(buildOutputDir);
@@ -252,11 +259,9 @@ public static class BuildPostProcess
         }
     }
 
-    // On case-insensitive APFS, leftover artifacts from a prior build with
-    // the *other* macOS backend break DllImport("sentry") resolution
-    // (Sentry.dylib gets picked over libsentry.dylib, surfacing as
-    // `sentry_options_new` not found at runtime). Wipe both candidates
-    // before copying the current backend's files in.
+    // Wipe both backends' leftovers before copying the current one in, so an iterative build does
+    // not leave two libraries sitting in PlugIns. `libsentry.dylib` is the pre-rename name and only
+    // turns up when building over a player made by an older SDK.
     private static void CleanupStaleMacOSArtifacts(IDiagnosticLogger logger, string executablePath)
     {
         var contents = Path.Combine(executablePath, "Contents");
@@ -264,6 +269,7 @@ public static class BuildPostProcess
         {
             Path.Combine(contents, "PlugIns", "Sentry.dylib"),
             Path.Combine(contents, "PlugIns", "libsentry.dylib"),
+            Path.Combine(contents, "PlugIns", MacOSLibraryName),
             Path.Combine(contents, "MacOS", "sentry-crash"),
         })
         {
@@ -287,6 +293,8 @@ public static class BuildPostProcess
             Path.Combine(buildOutputDir, "crashpad_wer.dll"),
             Path.Combine(buildOutputDir, "sentry-crash.exe"),
             Path.Combine(buildOutputDir, "sentry-wer.dll"),
+            Path.Combine(buildOutputDir, "sentry.dll"),
+            Path.Combine(buildOutputDir, WindowsLibraryName),
         })
         {
             if (File.Exists(stale))
@@ -321,6 +329,7 @@ public static class BuildPostProcess
         if (dataDir is not null)
         {
             stalePaths.Add(Path.Combine(dataDir, "Plugins", "x86_64", "libsentry.so"));
+            stalePaths.Add(Path.Combine(dataDir, "Plugins", "x86_64", LinuxLibraryName));
         }
 
         foreach (var stale in stalePaths)
@@ -494,7 +503,7 @@ public static class BuildPostProcess
                 if (options.Experimental.MacosBackend == MacosBackend.Native)
                 {
                     var packageMacOSDir = $"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/SentryNative~";
-                    AddPath(paths, Path.GetFullPath($"{packageMacOSDir}/libsentry.dylib.dSYM"), logger);
+                    AddPath(paths, Path.GetFullPath($"{packageMacOSDir}/libsentry-native.dylib.dSYM"), logger);
                     AddPath(paths, Path.GetFullPath($"{packageMacOSDir}/sentry-crash.dSYM"), logger);
                 }
                 else
