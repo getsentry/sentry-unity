@@ -6,6 +6,12 @@
 
 - Fixed a `NoSuchFieldError` during initialization on Android when setting the `sample rate`. ([#2838](https://github.com/getsentry/sentry-unity/issues/2838))
 
+### Dependencies
+
+- Bump Cocoa SDK from v9.27.0 to v9.28.0 ([#2840](https://github.com/getsentry/sentry-unity/pull/2840))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9280)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.27.0...9.28.0)
+
 ## 4.10.0
 
 ### Behavioural Changes and Deprecations
