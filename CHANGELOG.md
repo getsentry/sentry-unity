@@ -6,6 +6,7 @@
 
 - When targeting Windows using the `Mono` scripting backend the SDK now correctly loads `sentry-native` to capture native crashes. ([#2842](https://github.com/getsentry/sentry-unity/pull/2842))
 - Fixed a `NoSuchFieldError` during initialization on Android when setting the `sample rate`. ([#2838](https://github.com/getsentry/sentry-unity/issues/2838))
+- The `Sentry.Unity.iOS` assembly is now scoped to iOS and macOS, matching the other platform-specific assemblies. It carries the `__Internal` P/Invoke declarations for the Cocoa bridge, which can only resolve where Unity compiles the native bridge into the player, so a Windows or Linux build that kept those types instead of stripping them failed to link with unresolved `SentryNativeBridge*` externals. ([#2847](https://github.com/getsentry/sentry-unity/pull/2847))
 
 ### Dependencies
 
