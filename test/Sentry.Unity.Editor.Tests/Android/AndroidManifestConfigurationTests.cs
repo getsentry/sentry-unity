@@ -547,6 +547,25 @@ public class AndroidManifestTests
     }
 
     [Test]
+    public void CopyAndroidSdkToGradleProject_AndroidSdkDisabledAndSourceMissing_DoesNotThrow()
+    {
+        var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+        var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+        DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+        Directory.Delete(
+            Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~"),
+            true);
+
+        _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
+        var sut = _fixture.GetSut();
+
+        Assert.DoesNotThrow(() => sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath));
+
+        Directory.Delete(fakeProjectPath, true);
+    }
+
+    [Test]
     public void CopyAndroidSdkToGradleProject_SdkAlreadyExists_OverwritesExistingSdk()
     {
         var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

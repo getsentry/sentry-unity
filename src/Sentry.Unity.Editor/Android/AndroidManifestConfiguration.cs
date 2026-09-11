@@ -114,10 +114,9 @@ public class AndroidManifestConfiguration
     }
 
     /// <summary>
-    /// Whether this build ships the Android SDK. Every build step that puts the SDK into the gradle project
-    /// shares this with <see cref="ModifyManifest"/>. They have to agree: an app that carries
-    /// `sentry-android-core` without the matching manifest entries lets `SentryInitProvider` auto-initialize
-    /// without a DSN, and sentry-java throws out of `ContentProvider.onCreate`, killing the app on startup.
+    /// Whether this build ships the Android SDK. Shared with <see cref="ModifyManifest"/> because an app that
+    /// carries `sentry-android-core` without the matching manifest entries auto-initializes without a DSN,
+    /// which crashes it on startup.
     /// </summary>
     private bool AndroidSdkEnabled => _androidSdkEnabled ??= EvaluateAndroidSdkEnabled();
 
@@ -160,8 +159,7 @@ public class AndroidManifestConfiguration
 
         if (!AndroidSdkEnabled)
         {
-            // The Android SDK gets removed from the gradle project further down. Should it end up in the app
-            // anyway, this keeps it from auto-initializing without a DSN and crashing on startup.
+            // Should the SDK end up in the app regardless, this keeps it from crashing on startup.
             _logger.LogDebug("Setting 'auto-init' to 'false'. The Android SDK is not part of this build.");
             androidManifest.SetAutoInit(false);
             _ = androidManifest.Save();
@@ -281,6 +279,13 @@ public class AndroidManifestConfiguration
         }
         else
         {
+            if (!Directory.Exists(androidSdkPath))
+            {
+                // A build that does not ship the SDK has no reason to fail over a missing SDK.
+                _logger.LogDebug("Failed to find the Android SDK at '{0}'. Nothing to remove.", androidSdkPath);
+                return;
+            }
+
             _logger.LogInfo("Removing the Android SDK from the output project.");
             foreach (var file in Directory.GetFiles(androidSdkPath))
             {
