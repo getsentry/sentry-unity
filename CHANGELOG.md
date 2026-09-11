@@ -5,6 +5,7 @@
 ### Fixes
 
 - Fixed a `NoSuchFieldError` during initialization on Android when setting the `sample rate`. ([#2838](https://github.com/getsentry/sentry-unity/issues/2838))
+- Fixed a potential startup crash when targeting Android. The SDK would still set up native support even without a DSN provided. This would cause `sentry-java` to auto-initialize during startup via the `SentryInitProvider`. The SDK now verifies the presence of a DSN at build time, skipping native support when it's missing and logs accordingly. ([#2846](https://github.com/getsentry/sentry-unity/issues/2846))
 
 ### Dependencies
 

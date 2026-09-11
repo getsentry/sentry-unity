@@ -48,6 +48,8 @@ public class AndroidManifestConfiguration
     private readonly bool _isDevelopmentBuild;
     private readonly ScriptingImplementation _scriptingImplementation;
 
+    private bool? _androidSdkEnabled;
+
     public AndroidManifestConfiguration()
         : this(
             SentryScriptableObject.LoadOptions,
@@ -111,6 +113,37 @@ public class AndroidManifestConfiguration
         SetupProguard(gradleProjectPath);
     }
 
+    /// <summary>
+    /// Whether this build ships the Android SDK. Shared with <see cref="ModifyManifest"/> because an app that
+    /// carries `sentry-android-core` without the matching manifest entries auto-initializes without a DSN,
+    /// which crashes it on startup.
+    /// </summary>
+    private bool AndroidSdkEnabled => _androidSdkEnabled ??= EvaluateAndroidSdkEnabled();
+
+    private bool EvaluateAndroidSdkEnabled()
+    {
+        if (_options is null)
+        {
+            _logger.LogWarning("Android native support disabled because Sentry has not been configured. " +
+                               "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
+            return false;
+        }
+
+        if (!_options.IsValid())
+        {
+            _logger.LogDebug("Android native support disabled.");
+            return false;
+        }
+
+        if (!_options.AndroidNativeSupportEnabled)
+        {
+            _logger.LogDebug("Android native support disabled through the options.");
+            return false;
+        }
+
+        return true;
+    }
+
     internal void ModifyManifest(string basePath)
     {
         var manifestPath = GetManifestPath(basePath);
@@ -120,33 +153,19 @@ public class AndroidManifestConfiguration
                 manifestPath);
         }
 
-        var enableNativeSupport = true;
-        if (_options is null)
-        {
-            _logger.LogWarning("Android native support disabled because Sentry has not been configured. " +
-                               "You can do that through the editor: {0}", SentryWindow.EditorMenuPath);
-            enableNativeSupport = false;
-        }
-        else if (!_options.IsValid())
-        {
-            _logger.LogDebug("Android native support disabled.");
-            enableNativeSupport = false;
-        }
-        else if (!_options.AndroidNativeSupportEnabled)
-        {
-            _logger.LogDebug("Android native support disabled through the options.");
-            enableNativeSupport = false;
-        }
-
         var androidManifest = new AndroidManifest(manifestPath, _logger);
         androidManifest.RemovePreviousConfigurations();
+        androidManifest.AddDisclaimerComment();
 
-        if (!enableNativeSupport)
+        if (!AndroidSdkEnabled)
         {
+            // Should the SDK end up in the app regardless, this keeps it from crashing on startup.
+            _logger.LogDebug("Setting 'auto-init' to 'false'. The Android SDK is not part of this build.");
+            androidManifest.SetAutoInit(false);
+            _ = androidManifest.Save();
+
             return;
         }
-
-        androidManifest.AddDisclaimerComment();
 
         if (_options?.AndroidNativeInitializationType is NativeInitializationType.Runtime)
         {
@@ -239,7 +258,7 @@ public class AndroidManifestConfiguration
         var androidSdkPath = Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
         var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
 
-        if (_options is { Enabled: true, AndroidNativeSupportEnabled: true })
+        if (AndroidSdkEnabled)
         {
             if (!Directory.Exists(androidSdkPath))
             {
@@ -260,6 +279,13 @@ public class AndroidManifestConfiguration
         }
         else
         {
+            if (!Directory.Exists(androidSdkPath))
+            {
+                // A build that does not ship the SDK has no reason to fail over a missing SDK.
+                _logger.LogDebug("Failed to find the Android SDK at '{0}'. Nothing to remove.", androidSdkPath);
+                return;
+            }
+
             _logger.LogInfo("Removing the Android SDK from the output project.");
             foreach (var file in Directory.GetFiles(androidSdkPath))
             {
@@ -275,7 +301,7 @@ public class AndroidManifestConfiguration
     internal void AddAndroidSdkDependencies(string gradleProjectPath)
     {
         var tool = new GradleSetup(_logger, gradleProjectPath);
-        var nativeSupportEnabled = _options is { Enabled: true, AndroidNativeSupportEnabled: true };
+        var nativeSupportEnabled = AndroidSdkEnabled;
 
         try
         {
@@ -358,7 +384,7 @@ public class AndroidManifestConfiguration
     private void SetupProguard(string gradleProjectPath)
     {
         var tool = new ProguardSetup(_logger, gradleProjectPath);
-        var nativeSupportEnabled = _options is { Enabled: true, AndroidNativeSupportEnabled: true };
+        var nativeSupportEnabled = AndroidSdkEnabled;
 
         try
         {
