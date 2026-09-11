@@ -32,7 +32,10 @@ Experimental native modes raise minimum shutdown timeout to 10 seconds.
 ## Console Plugins
 
 - PS5/Xbox libraries are user-supplied: `Assets/Plugins/Sentry/{PS5,XSX,XB1}/`.
-- Switch needs user-supplied static `libsentry.a` and `libzstd.a`; none uses shipped no-op stubs, partial installation is an error.
+- Switch needs user-supplied static `libsentry.a` and `libzstd.a` per target in `Assets/Plugins/Sentry/{Switch,Switch2}`. It is the only platform that binds `__Internal`, so a missing library is a link error, which is why it alone ships stubs.
+- `SwitchNativeStub` copies `Plugins/Switch/SentryStub~/sentry_native_stubs.c` into the user's plugin directory while the libraries are missing and deletes it once they arrive. Copying is limited to the active build target; deletion is not, because a stale stub shadows the libraries beside it.
+- The template lives behind a `~` so the AssetDatabase never imports it. Importer settings cannot be written to an immutable package, so it must not become a package asset.
+- A copy whose content differs from the template, line endings normalized away, is rewritten from it. That is what refreshes already-copied stubs on upgrade, so editing the template is all a stub change takes. `SwitchNativeStubTests.Stub_ContainsEverySwitchNativeBinding` keeps the template covering every `__Internal` entry point.
 - Console and Android assemblies compile separately with platform defines. Chained `Csc` targets in `Sentry.Unity.Native.csproj`.
 
 ## Tests

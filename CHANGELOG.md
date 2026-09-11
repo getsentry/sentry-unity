@@ -7,9 +7,16 @@
 - When targeting Windows using the `Mono` scripting backend the SDK now correctly loads `sentry-native` to capture native crashes. ([#2842](https://github.com/getsentry/sentry-unity/pull/2842))
 - Fixed a `NoSuchFieldError` during initialization on Android when setting the `sample rate`. ([#2838](https://github.com/getsentry/sentry-unity/issues/2838))
 - Individual assemblies and plugins are now scoped to the platforms that use them. ([#2848](https://github.com/getsentry/sentry-unity/pull/2848))
+- When targeting Nintendo Switch or Switch 2 the SDK no longer fails to initialize the native layer at runtime. The respective stubs are now written to `Assets/Plugins/Sentry` so the SDK can enable and disable them before the build starts. ([#2849](https://github.com/getsentry/sentry-unity/pull/2849))
 
 ### Dependencies
 
+- Bump Native SDK from v0.16.5 to v0.16.6 ([#2839](https://github.com/getsentry/sentry-unity/pull/2839))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0166)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.16.5...0.16.6)
+- Bump Cocoa SDK from v9.27.0 to v9.28.0 ([#2840](https://github.com/getsentry/sentry-unity/pull/2840))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9280)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.27.0...9.28.0)
 - Bump Java SDK from v8.55.0 to v8.56.0 ([#2841](https://github.com/getsentry/sentry-unity/pull/2841))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8560)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.55.0...8.56.0)
