@@ -114,6 +114,38 @@ public class AndroidManifestTests
     }
 
     [Test]
+    [TestCase(null)]
+    [TestCase("")]
+    public void ModifyManifest_AndroidSdkDisabled_SetsAutoInitToFalse(string? dsn)
+    {
+        _fixture.SentryUnityOptions!.Dsn = dsn;
+        var sut = _fixture.GetSut();
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.auto-init\" android:value=\"False\" />", manifest);
+    }
+
+    [Test]
+    public void CopyAndroidSdkToGradleProject_EnabledWithoutDsn_RemovesAndroidSdkFromGradleProject()
+    {
+        var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+        var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+        DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+        var androidSdk = Path.Combine(gradleProjectPath, "unityLibrary", "libs", "androidSdk.jar");
+        File.Create(androidSdk).Close();
+
+        _fixture.SentryUnityOptions!.Dsn = string.Empty;
+        var sut = _fixture.GetSut();
+
+        sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+
+        Assert.IsFalse(File.Exists(androidSdk));
+
+        Directory.Delete(fakeProjectPath, true);
+    }
+
+    [Test]
     public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDoesNotAddSentry()
     {
         _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
