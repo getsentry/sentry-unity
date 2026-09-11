@@ -19,6 +19,10 @@
 # Without it, validates the `package-dev` and `package` trees instead. Plugin .meta files are tracked
 # while the binaries they describe are generated, so scope checks are strict in both modes, while the
 # `__Internal` rule only covers the assemblies whose binary is actually present.
+#
+# Prefer the packed artifact when judging imports. The binaries in `package-dev` are whatever was
+# last built there, which need not match the checked-out sources, so their import tables can describe
+# a different branch entirely.
 
 $ErrorActionPreference = "Stop"
 
@@ -36,6 +40,10 @@ $ExpectedPluginScopes = @{
     # vsnprintf_sentry, imported as __Internal only under SENTRY_NATIVE_PLAYSTATION. The Switch gets
     # the same symbol from its own stubs or from sentry-switch, and Xbox goes through msvcrt.
     "Plugins/PS5/sentry_utils.c"                  = "PS5"
+    # The shipped default is the stub enabled, so the linker is satisfied even without the native
+    # libraries. SwitchNativePluginBuildPreProcess flips this importer at build time in the consumer's
+    # project, disabling the stub once Assets/Plugins/Sentry/<target> holds the real libsentry.a, so a
+    # local Switch build in this repo can legitimately leave this meta changed.
     "Plugins/Switch/sentry_native_stubs.c"        = "Switch, Switch2"
     "Plugins/iOS/SentryCxaThrowHook.cpp"          = "iOS"
     # The two bridge sources deliberately target nothing, so Unity never copies them into the
@@ -52,7 +60,10 @@ $ExpectedPluginScopes = @{
     "Runtime/Sentry.Unity.Native.PlayStation.dll" = "PS5"
     "Runtime/Sentry.Unity.Native.Switch.dll"      = "Switch, Switch2"
     "Runtime/Sentry.Unity.Native.Xbox.dll"        = "GameCoreScarlett, GameCoreXboxOne"
-    "Runtime/Sentry.Unity.Native.dll"             = "Android, Linux64, OSXUniversal, Win, Win64"
+    # Android binds to "sentry" from the .aar, desktop to "sentry-native", so they are separate
+    # builds of the same sources. See SentryNativeLibrary.Name.
+    "Runtime/Sentry.Unity.Native.Android.dll"      = "Android"
+    "Runtime/Sentry.Unity.Native.dll"             = "Linux64, OSXUniversal, Win, Win64"
     "Runtime/Sentry.Unity.dll"                    = "Any"
     # Holds the Cocoa bridge __Internal declarations, shared by the iOS and macOS integrations.
     "Runtime/Sentry.Unity.iOS.dll"                = "iOS, OSXUniversal"
