@@ -12,13 +12,18 @@ namespace Sentry.Unity.Editor.Tests.Native;
 
 public class SwitchNativeStubTests
 {
+    private static string PackageRoot() => Path.GetFullPath(Path.Combine(
+        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..", ".."));
+
+    private static string StubTemplatePath() =>
+        Path.Combine(PackageRoot(), "Plugins", "Switch", "SentryStub~", SwitchNativeStub.StubFileName);
+
     [Test]
     public void Stub_ContainsEverySwitchNativeBinding()
     {
-        var packageRoot = Path.GetFullPath(Path.Combine(
-            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..", ".."));
+        var packageRoot = PackageRoot();
         var switchAssemblyPath = Path.Combine(packageRoot, "Runtime", "Sentry.Unity.Native.Switch.dll");
-        var stubPath = Path.Combine(packageRoot, "Plugins", "Switch", "sentry_native_stubs.c");
+        var stubPath = StubTemplatePath();
 
         Assert.That(File.Exists(switchAssemblyPath), Is.True, $"Switch assembly not found at {switchAssemblyPath}");
         Assert.That(File.Exists(stubPath), Is.True, $"Switch stubs not found at {stubPath}");
@@ -48,13 +53,54 @@ public class SwitchNativeStubTests
     [Test]
     public void RequiredFilesFor_Switch_ProbesTheSwitchPluginDirectory()
     {
-        var requiredFiles = SwitchNativePluginBuildPreProcess.RequiredFilesFor(BuildTarget.Switch);
+        var requiredFiles = SwitchNativeStub.RequiredFilesFor(BuildTarget.Switch);
 
         Assert.That(requiredFiles, Is.EquivalentTo(new[]
         {
             "Assets/Plugins/Sentry/Switch/libsentry.a",
             "Assets/Plugins/Sentry/Switch/libzstd.a"
         }));
+    }
+
+    /// <summary>
+    /// The stub is written next to the libraries it stands in for, one copy per target, so a project
+    /// can have real native support on one Switch generation and stubs on the other.
+    /// </summary>
+    [Test]
+    public void StubPathFor_SitsBesideTheLibrariesItReplaces()
+    {
+        var stubPath = SwitchNativeStub.StubPathFor(BuildTarget.Switch);
+
+        Assert.That(stubPath, Is.EqualTo("Assets/Plugins/Sentry/Switch/sentry_native_stubs.c"));
+        Assert.That(SwitchNativeStub.RequiredFilesFor(BuildTarget.Switch),
+            Has.All.StartsWith(SwitchNativeStub.PluginDirectoryFor(BuildTarget.Switch)));
+    }
+
+    [Test]
+    public void Targets_CoverTheSwitchFamilyOnly()
+    {
+        Assert.That(SwitchNativeStub.Targets, Does.Contain(BuildTarget.Switch));
+        Assert.That(SwitchNativeStub.Targets, Has.All.Matches<BuildTarget>(target => target.IsSwitchFamily()));
+    }
+
+    /// <summary>
+    /// The stamp is the only thing that tells a copy in someone's project that it is behind. Without
+    /// it, a stub written before a binding was added stays put and the Switch build fails to link.
+    /// </summary>
+    [Test]
+    public void Stub_CarriesAVersionStamp()
+    {
+        var version = SwitchNativeStub.VersionOf(File.ReadAllText(StubTemplatePath()));
+
+        Assert.That(version, Is.Not.Null,
+            $"The stub template must carry a '{SwitchNativeStub.VersionMarker}' line in its header.");
+        Assert.That(version, Does.Match(@"^\d+$"), "The stub version must be a plain number.");
+    }
+
+    [Test]
+    public void VersionOf_IgnoresAStubThatCarriesNoStamp()
+    {
+        Assert.That(SwitchNativeStub.VersionOf("/* no stamp here */\nint main(void) { return 0; }"), Is.Null);
     }
 
     /// <summary>
@@ -69,7 +115,7 @@ public class SwitchNativeStubTests
             Assert.Ignore("This Unity version predates 'BuildTarget.Switch2'.");
         }
 
-        var requiredFiles = SwitchNativePluginBuildPreProcess.RequiredFilesFor(switch2);
+        var requiredFiles = SwitchNativeStub.RequiredFilesFor(switch2);
 
         Assert.That(requiredFiles, Is.EquivalentTo(new[]
         {

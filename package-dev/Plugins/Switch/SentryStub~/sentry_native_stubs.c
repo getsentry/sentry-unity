@@ -1,20 +1,28 @@
 /*
  * Sentry Switch Stubs
  *
- * No-op stub implementations for sentry-native and Switch helper functions.
- * These stubs are used when the user has not provided the actual sentry-switch
- * native library, allowing the SDK to compile and run without native crash support.
+ * sentry-unity stub version: 2
  *
- * When the real sentry-switch library is provided by the user at:
- *   Assets/Plugins/Sentry/Switch/libsentry.a
- *   Assets/Plugins/Sentry/Switch/SentrySwitchHelpers.cpp
+ * No-op stub implementations for sentry-native and Switch helper functions. They keep a Switch or
+ * Switch 2 player linking for anyone who does not have sentry-switch, which is distributed under
+ * NDA, so the SDK never breaks a build it cannot complete.
  *
- * This stub file will be automatically disabled by the build preprocessor,
- * and the real library will be linked instead.
+ * THIS FILE IS COPIED INTO THE CONSUMER PROJECT. `SwitchNativeStub` writes it to
+ * Assets/Plugins/Sentry/<target>/sentry_native_stubs.c whenever the real libraries are missing, and
+ * deletes it again once they appear. Do not edit the copy; edit this original and it propagates on
+ * the next domain reload.
  *
- * All functions here are no-ops that return safe default values.
- * The SDK will appear to initialize successfully, but native features
- * (crash reporting, native scope sync) will silently do nothing.
+ * BUMP THE VERSION ABOVE WHENEVER THIS FILE CHANGES. It is the whole of how the SDK decides that a
+ * copy already sitting in someone's project is behind, and a binding added without a stub to answer
+ * it is a Switch build that fails to link on a symbol nobody has heard of.
+ *
+ * The real libraries the copy stands in for:
+ *   Assets/Plugins/Sentry/Switch/libsentry.a   + libzstd.a
+ *   Assets/Plugins/Sentry/Switch2/libsentry.a  + libzstd.a
+ *
+ * Every function here returns a safe default. `sentry_init` returns failure, which is what
+ * `SentryNativeSwitch` keys off to report that native support is unavailable, so a stubbed build
+ * says so instead of silently reporting nothing.
  * Managed Sentry features continue to work normally.
  */
 
@@ -49,9 +57,10 @@ int sentry_init(void* options)
     return -1;
 }
 
-void sentry_close(void)
+int sentry_close(void)
 {
-    /* No-op */
+    /* Success, matching sentry-native's `int sentry_close(void)` */
+    return 0;
 }
 
 /*
@@ -251,9 +260,11 @@ sentry_value_t sentry_value_get_by_key(sentry_value_t value, const char* key)
     return SENTRY_VALUE_NULL;
 }
 
-void sentry_value_decref(sentry_value_t value)
+int sentry_value_decref(sentry_value_t value)
 {
+    /* Refcount reached zero, matching sentry-native's `int sentry_value_decref(sentry_value_t)` */
     (void)value;
+    return 0;
 }
 
 /*
@@ -352,9 +363,10 @@ int sentry_clear_crashed_last_run(void)
     return 0;
 }
 
-void sentry_reinstall_backend(void)
+int sentry_reinstall_backend(void)
 {
-    /* No-op */
+    /* Success, matching sentry-native's `int sentry_reinstall_backend(void)` */
+    return 0;
 }
 
 void sentry_app_hang_heartbeat(void)

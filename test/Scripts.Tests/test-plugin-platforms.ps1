@@ -40,11 +40,6 @@ $ExpectedPluginScopes = @{
     # vsnprintf_sentry, imported as __Internal only under SENTRY_NATIVE_PLAYSTATION. The Switch gets
     # the same symbol from its own stubs or from sentry-switch, and Xbox goes through msvcrt.
     "Plugins/PS5/sentry_utils.c"                  = "PS5"
-    # The shipped default is the stub enabled, so the linker is satisfied even without the native
-    # libraries. SwitchNativePluginBuildPreProcess flips this importer at build time in the consumer's
-    # project, disabling the stub once Assets/Plugins/Sentry/<target> holds the real libsentry.a, so a
-    # local Switch build in this repo can legitimately leave this meta changed.
-    "Plugins/Switch/sentry_native_stubs.c"        = "Switch, Switch2"
     "Plugins/iOS/SentryCxaThrowHook.cpp"          = "iOS"
     # The two bridge sources deliberately target nothing, so Unity never copies them into the
     # generated Xcode project. BuildPostProcess copies whichever one applies to
