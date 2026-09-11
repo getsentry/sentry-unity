@@ -105,9 +105,6 @@ internal static class SentryNativeBridge
         Logger?.LogDebug("Setting ShutdownTimeout: {0}ms", shutdownTimeoutMs);
         sentry_options_set_shutdown_timeout(cOptions, shutdownTimeoutMs);
 
-        Logger?.LogDebug("Setting EnableLogs: {0}", options.EnableLogs);
-        sentry_options_set_enable_logs(cOptions, options.EnableLogs ? 1 : 0);
-
         if (options.UnityInfo.IL2CPP)
         {
             Logger?.LogDebug("Setting the native logger");
@@ -134,12 +131,10 @@ internal static class SentryNativeBridge
 
     public static void Close() => sentry_close();
 
-    // Call after native init() to check if the application has crashed in the previous run and clear the status.
-    // Because the file is removed, the result will change on subsequent calls so it must be cached for the current runtime.
+    // Call after native init(), which reads and clears the persisted crash marker.
     internal static bool HandleCrashedLastRun(SentryUnityOptions options)
     {
         var result = sentry_get_crashed_last_run() == 1;
-        sentry_clear_crashed_last_run();
         return result;
     }
 
@@ -196,9 +191,6 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_shutdown_timeout(IntPtr options, ulong shutdown_timeout);
-
-    [DllImport(SentryLib)]
-    private static extern void sentry_options_set_enable_logs(IntPtr options, int enable_logs);
 
     [DllImport(SentryLib)]
     private static extern void sentry_options_set_enable_app_hang_tracking(IntPtr options, int enabled);
@@ -367,9 +359,6 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib)]
     private static extern int sentry_get_crashed_last_run();
-
-    [DllImport(SentryLib)]
-    private static extern int sentry_clear_crashed_last_run();
 
     [DllImport(SentryLib)]
     private static extern void sentry_reinstall_backend();
