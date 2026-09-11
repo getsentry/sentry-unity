@@ -9,7 +9,7 @@ using UnityEngine;
 public class Builder
 {
     public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group, BuildOptions buildOptions,
-        string defaultBuildPath = "./Builds/")
+        string defaultBuildPath = "./Builds/", ScriptingImplementation scripting = ScriptingImplementation.IL2CPP)
     {
         Debug.Log("Builder: Starting to build");
 
@@ -23,19 +23,22 @@ public class Builder
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
         EditorUserBuildSettings.development = false;
         EditorUserBuildSettings.allowDebugging = false;
-        PlayerSettings.SetScriptingBackend(NamedBuildTarget.FromBuildTargetGroup(group), ScriptingImplementation.IL2CPP);
+        PlayerSettings.SetScriptingBackend(NamedBuildTarget.FromBuildTargetGroup(group), scripting);
         // Making sure that the app keeps on running in the background. Linux CI is very unhappy with coroutines otherwise.
         PlayerSettings.runInBackground = true;
 
         DisableUnityAudio();
         DisableProgressiveLightMapper();
 
-        Debug.Log("Builder: Setting IL2CPP generation to OptimizeSpeed");
+        if (scripting == ScriptingImplementation.IL2CPP)
+        {
+            Debug.Log("Builder: Setting IL2CPP generation to OptimizeSpeed");
 #if UNITY_2022_1_OR_NEWER
-        PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.FromBuildTargetGroup(group), UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed);
+            PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.FromBuildTargetGroup(group), UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed);
 #elif UNITY_2021_2_OR_NEWER
-        EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed;
+            EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed;
 #endif
+        }
 
         Debug.Log("Builder: Configuring code stripping level");
 #if UNITY_6000_0_OR_NEWER
@@ -55,7 +58,7 @@ public class Builder
 
         Debug.Log("Builder: Disabling optimizations to reduce build time");
         // TODO Linux fails with `free(): invalid pointer` in the test, after everything seems to have shut down.
-        if (target != BuildTarget.StandaloneLinux64)
+        if (scripting == ScriptingImplementation.IL2CPP && target != BuildTarget.StandaloneLinux64)
         {
             PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.FromBuildTargetGroup(group), Il2CppCompilerConfiguration.Debug);
         }
@@ -129,6 +132,14 @@ public class Builder
         Debug.Log("Builder: Building Windows x86 IL2CPP Player");
         BuildIl2CPPPlayer(BuildTarget.StandaloneWindows, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
             defaultBuildPath: "./Builds/Windows/test.exe");
+    }
+
+    [MenuItem("Tools/Builder/Windows Mono")]
+    public static void BuildWindowsMonoPlayer()
+    {
+        Debug.Log("Builder: Building Windows Mono Player");
+        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows64, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Windows/test.exe", scripting: ScriptingImplementation.Mono2x);
     }
 
     [MenuItem("Tools/Builder/macOS")]
