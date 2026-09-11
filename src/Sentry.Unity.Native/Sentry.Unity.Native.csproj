@@ -65,8 +65,7 @@
     />
   </Target>
 
-  <!-- Build Android version after the Xbox build. Android's libsentry.so ships in the
-       sentry-android-ndk AAR and sentry-java loads it by name, so this build keeps "sentry" -->
+  <!-- Build Android version after the Xbox build. Android keeps "sentry"; sentry-java loads it by name -->
   <Target Name="BuildAndroidAssembly" AfterTargets="BuildXboxAssembly">
     <Message Importance="High" Text="Building Android-specific native assembly." />
 
