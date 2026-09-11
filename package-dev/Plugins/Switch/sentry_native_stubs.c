@@ -114,12 +114,6 @@ void sentry_options_set_enable_metrics(void* options, int enable_metrics)
     (void)enable_metrics;
 }
 
-void sentry_options_set_enable_logs(void* options, int enable_logs)
-{
-    (void)options;
-    (void)enable_logs;
-}
-
 void sentry_options_set_shutdown_timeout(void* options, uint64_t shutdown_timeout)
 {
     (void)options;
@@ -344,11 +338,6 @@ void sentry_clear_attachments(void)
 int sentry_get_crashed_last_run(void)
 {
     /* Return 0 - no crash detected (since we're not tracking) */
-    return 0;
-}
-
-int sentry_clear_crashed_last_run(void)
-{
     return 0;
 }
 
