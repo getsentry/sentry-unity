@@ -1,28 +1,18 @@
 # Pins which platforms every plugin and assembly definition in the package targets.
 #
-# Two kinds of check:
+# 1. A hardcoded scope per plugin importer and .asmdef. Any drift fails, so changing a scope takes a
+#    deliberate edit to the tables below. Guards against a repeat of the platform list inversion,
+#    where an allowlist became an exclude list and quietly widened what an assembly shipped to.
 #
-# 1. A hardcoded scope for every plugin importer and every .asmdef. Any drift fails, including a
-#    platform silently gained or lost. Changing a scope means editing the tables below, which makes
-#    the decision deliberate and reviewable. This is the guard against a repeat of the platform list
-#    inversion, where an explicit allowlist became an exclude list and quietly widened the set of
-#    platforms an assembly ships to.
+# 2. No managed plugin declaring `DllImport("__Internal")` may target a desktop standalone player.
+#    `__Internal` binds at link time against a symbol inside the player executable, which desktop
+#    never has, because a native plugin there is always a separate shared library loaded at runtime.
+#    Such a build only survives while the UnityLinker strips the unreferenced types.
 #
-# 2. A rule that holds regardless of the tables: no managed plugin declaring `DllImport("__Internal")`
-#    may target a desktop standalone player. `__Internal` binds at link time against a symbol inside
-#    the player executable. Unity can only provide that where it compiles native sources into the
-#    player, which on desktop it never does, because a native plugin there is always a separate
-#    shared library loaded at runtime. Such a build only survives while the UnityLinker strips the
-#    unreferenced types, so anything that preserves them turns the mismatch into unresolved externals.
-#
-# Runs against `package-release.zip` when it exists, which is what CI validates and what ships.
-# Without it, validates the `package-dev` and `package` trees instead. Plugin .meta files are tracked
-# while the binaries they describe are generated, so scope checks are strict in both modes, while the
-# `__Internal` rule only covers the assemblies whose binary is actually present.
-#
-# Prefer the packed artifact when judging imports. The binaries in `package-dev` are whatever was
-# last built there, which need not match the checked-out sources, so their import tables can describe
-# a different branch entirely.
+# Runs against `package-release.zip` when it exists, because that is what ships. The `package-dev`
+# binaries are whatever was last built there and can describe a different branch entirely. Without
+# the zip, the `package-dev` and `package` trees are checked instead, and the `__Internal` rule only
+# covers assemblies whose binary is present.
 
 $ErrorActionPreference = "Stop"
 
@@ -41,11 +31,8 @@ $ExpectedPluginScopes = @{
     # the same symbol from its own stubs or from sentry-switch, and Xbox goes through msvcrt.
     "Plugins/PS5/sentry_utils.c"                  = "PS5"
     "Plugins/iOS/SentryCxaThrowHook.cpp"          = "iOS"
-    # The two bridge sources deliberately target nothing, so Unity never copies them into the
-    # generated Xcode project. BuildPostProcess copies whichever one applies to
-    # Libraries/<package>/SentryNativeBridge.m and AddSentryNativeBridge adds that path to the
-    # target, so enabling a platform here would collide with the SDK's own copy. The same intent is
-    # recorded in .gitignore, which un-ignores these metas "to control target platforms".
+    # The two bridge sources target nothing on purpose. BuildPostProcess copies whichever one applies
+    # into the generated Xcode project, so enabling a platform here would collide with that copy.
     "Plugins/iOS/SentryNativeBridge.m"            = ""
     "Plugins/iOS/SentryNativeBridgeNoOp.m"        = ""
     "Plugins/macOS/SentryNativeBridge.m"          = "OSXUniversal"
@@ -64,8 +51,7 @@ $ExpectedPluginScopes = @{
     "Runtime/Sentry.Unity.iOS.dll"                = "iOS, OSXUniversal"
 }
 
-# The samples the release carries under `Samples~`. Demo native sources, not SDK plugins, but they
-# ship inside the package, so their scopes are pinned alongside everything else.
+# Demo sources rather than SDK plugins, but they ship inside the package, so they are pinned too.
 $ExpectedSampleScopes = @{
     "Samples~/unity-of-bugs/Scripts/NativeSupport/CPlugin.c"              = "Android, Any, iOS, Linux64, Lumin, OSXUniversal, tvOS, WebGL, Win, Win64"
     "Samples~/unity-of-bugs/Scripts/NativeSupport/CppPlugin.cpp"          = "Android, Any, iOS, Linux64, Lumin, OSXUniversal, tvOS, WebGL, Win, Win64"
@@ -75,10 +61,9 @@ $ExpectedSampleScopes = @{
 }
 
 # The third party assemblies scripts/alias-assemblies.ps1 renames into the `Sentry.` namespace. They
-# are managed and platform agnostic, so they carry Unity's folder default: editor only under Editor,
-# every platform under Runtime. Matched by pattern rather than by name, because the set turns over
-# with every sentry-dotnet dependency bump while the scope never does. The patterns cover only the
-# aliased prefixes, so a new first party assembly still has to be pinned by name above.
+# are managed and platform agnostic, so they carry Unity's folder default. Matched by pattern because
+# the set turns over with every sentry-dotnet bump while the scope never does. The patterns cover the
+# aliased prefixes only, so a new first party assembly still has to be pinned by name above.
 $AliasedDependencyScopes = @(
     @{ Pattern = '^Editor/Sentry\.(Microsoft|Mono)\..*\.dll$'  ; Scope = "Editor" }
     @{ Pattern = '^Runtime/Sentry\.(Microsoft|System)\..*\.dll$'; Scope = "Any" }

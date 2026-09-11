@@ -63,8 +63,8 @@ public class SwitchNativeStubTests
     }
 
     /// <summary>
-    /// The stub is written next to the libraries it stands in for, one copy per target, so a project
-    /// can have real native support on one Switch generation and stubs on the other.
+    /// One copy per target, so a project can have real native support on one Switch generation and
+    /// stubs on the other.
     /// </summary>
     [Test]
     public void StubPathFor_SitsBesideTheLibrariesItReplaces()
@@ -84,28 +84,8 @@ public class SwitchNativeStubTests
     }
 
     /// <summary>
-    /// The stamp is the only thing that tells a copy in someone's project that it is behind. Without
-    /// it, a stub written before a binding was added stays put and the Switch build fails to link.
-    /// </summary>
-    [Test]
-    public void Stub_CarriesAVersionStamp()
-    {
-        var version = SwitchNativeStub.VersionOf(File.ReadAllText(StubTemplatePath()));
-
-        Assert.That(version, Is.Not.Null,
-            $"The stub template must carry a '{SwitchNativeStub.VersionMarker}' line in its header.");
-        Assert.That(version, Does.Match(@"^\d+$"), "The stub version must be a plain number.");
-    }
-
-    [Test]
-    public void VersionOf_IgnoresAStubThatCarriesNoStamp()
-    {
-        Assert.That(SwitchNativeStub.VersionOf("/* no stamp here */\nint main(void) { return 0; }"), Is.Null);
-    }
-
-    /// <summary>
-    /// Switch 2 is resolved by name because <c>BuildTarget.Switch2</c> does not exist on the Unity versions the
-    /// SDK still supports, so this parses the member instead of referencing it and skips where it is unavailable.
+    /// Resolved by name because <c>BuildTarget.Switch2</c> does not exist on every Unity version the
+    /// SDK supports.
     /// </summary>
     [Test]
     public void RequiredFilesFor_Switch2_ProbesTheSwitch2PluginDirectory()

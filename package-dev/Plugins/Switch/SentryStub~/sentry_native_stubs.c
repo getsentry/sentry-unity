@@ -1,29 +1,14 @@
 /*
  * Sentry Switch Stubs
  *
- * sentry-unity stub version: 2
+ * No-op stubs for the sentry-switch bindings. sentry-switch is distributed under NDA, so without
+ * them the player fails to link for anyone who does not have it.
  *
- * No-op stub implementations for sentry-native and Switch helper functions. They keep a Switch or
- * Switch 2 player linking for anyone who does not have sentry-switch, which is distributed under
- * NDA, so the SDK never breaks a build it cannot complete.
+ * `SwitchNativeStub` copies this file into the user's project while the real libraries are missing.
+ * Edit the original here; a copy that differs from it is rewritten from this file.
  *
- * THIS FILE IS COPIED INTO THE CONSUMER PROJECT. `SwitchNativeStub` writes it to
- * Assets/Plugins/Sentry/<target>/sentry_native_stubs.c whenever the real libraries are missing, and
- * deletes it again once they appear. Do not edit the copy; edit this original and it propagates on
- * the next domain reload.
- *
- * BUMP THE VERSION ABOVE WHENEVER THIS FILE CHANGES. It is the whole of how the SDK decides that a
- * copy already sitting in someone's project is behind, and a binding added without a stub to answer
- * it is a Switch build that fails to link on a symbol nobody has heard of.
- *
- * The real libraries the copy stands in for:
- *   Assets/Plugins/Sentry/Switch/libsentry.a   + libzstd.a
- *   Assets/Plugins/Sentry/Switch2/libsentry.a  + libzstd.a
- *
- * Every function here returns a safe default. `sentry_init` returns failure, which is what
- * `SentryNativeSwitch` keys off to report that native support is unavailable, so a stubbed build
- * says so instead of silently reporting nothing.
- * Managed Sentry features continue to work normally.
+ * `sentry_init` returns failure so `SentryNativeSwitch` reports native support as unavailable
+ * instead of silently reporting nothing. Managed Sentry features are unaffected.
  */
 
 #include <stddef.h>
