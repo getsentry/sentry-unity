@@ -97,6 +97,7 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framew
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCFeedbackSource.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCFrame.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCGeo.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCHint.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCHttpStatusCodeRange.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCHub.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCId.h
@@ -131,6 +132,8 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framew
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCNSError.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCOptions.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCPrivateSDKOnly.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCProfileLifecycle.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCProfileOptions.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCRedactRegionType.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCReplayApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64_x86_64-simulator/SentryObjC.framework/Headers/SentryObjCReplayOptions.h
@@ -195,6 +198,7 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/Sentr
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCFeedbackSource.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCFrame.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCGeo.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCHint.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCHttpStatusCodeRange.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCHub.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCId.h
@@ -229,6 +233,8 @@ Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/Sentr
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCNSError.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCOptions.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCPrivateSDKOnly.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCProfileLifecycle.h
+Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCProfileOptions.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCRedactRegionType.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCReplayApi.h
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/SentryObjC.framework/Headers/SentryObjCReplayOptions.h
