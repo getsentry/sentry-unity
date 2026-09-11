@@ -83,6 +83,34 @@ jobs:
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.app/Contents/MacOS/IntegrationTest"
           Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI
 
+      # The harness buffers app output until the process exits, so a player that never quits
+      # shows up as an empty 20-minute step. Launch it once with a bounded wait and a log file.
+      - name: Probe the player (Windows x86)
+        if: inputs.platform == 'windows' && inputs.architecture == 'x86'
+        timeout-minutes: 5
+        run: |
+          $log = Join-Path $PWD "player-probe.log"
+          $p = Start-Process -FilePath "samples/IntegrationTest/Build/test.exe" `
+            -ArgumentList "--test", "message-capture", "-logFile", $log -PassThru
+          $null = $p.Handle # PowerShell drops ExitCode unless the handle is cached
+          $exited = $p.WaitForExit(120000)
+          if (-not $exited) {
+            Write-Host "::warning::Player did not exit within 120s"
+            Get-Process | Where-Object { $_.Name -match "test|sentry" } | Format-Table Id, Name, Path
+            $p.Kill()
+            $p.WaitForExit(10000) | Out-Null
+          }
+          Write-Host "::group::Player log"
+          if (Test-Path $log) { Get-Content $log } else { Write-Host "No log written to $log" }
+          Write-Host "::endgroup::"
+          Write-Host "::group::sentry-native daemon logs"
+          Get-ChildItem -Path "$env:USERPROFILE/AppData/LocalLow/DefaultCompany" -Recurse `
+            -Filter "sentry-daemon.log" -ErrorAction SilentlyContinue |
+            ForEach-Object { Write-Host "--- $($_.FullName)"; Get-Content $_.FullName }
+          Write-Host "::endgroup::"
+          if (-not $exited) { throw "Player hung - skipping the test run" }
+          Write-Host "Player exited with $($p.ExitCode)"
+
       - name: Run Integration Tests (Windows)
         if: inputs.platform == 'windows'
         timeout-minutes: 20
@@ -98,4 +126,5 @@ jobs:
           name: testapp-desktop-logs-${{ inputs.platform }}${{ inputs.architecture && format('-{0}', inputs.architecture) || '' }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}
           path: |
             test/IntegrationTest/results/
+            player-probe.log
           retention-days: 14
