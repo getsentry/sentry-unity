@@ -123,6 +123,14 @@ public class Builder
             defaultBuildPath: "./Builds/Windows/test.exe");
     }
 
+    [MenuItem("Tools/Builder/Windows x86")]
+    public static void BuildWindowsX86Il2CPPPlayer()
+    {
+        Debug.Log("Builder: Building Windows x86 IL2CPP Player");
+        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Windows/test.exe");
+    }
+
     [MenuItem("Tools/Builder/macOS")]
     public static void BuildMacIl2CPPPlayer()
     {

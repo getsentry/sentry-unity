@@ -427,6 +427,21 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
 
+  test-build-windows-x86:
+    # Unity still ships a 32-bit standalone player and it needs its own sentry-native build.
+    # Pinned to the oldest supported Unity version, native backend only: x86 is on its way out
+    # and the x64 matrix already covers the version spread and the crashpad backend.
+    name: Build Windows x86 2021.3 Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [test-create]
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+    uses: ./.github/workflows/test-build-windows-x86.yml
+    with:
+      unity-version: "2021.3"
+
   test-build-macos:
     name: Build macOS ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
@@ -478,6 +493,20 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       platform: windows
       backend: ${{ matrix.backend }}
+
+  test-run-windows-x86:
+    name: Run Windows x86 native 2021.3 Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [test-build-windows-x86]
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+    uses: ./.github/workflows/test-run-desktop.yml
+    with:
+      unity-version: "2021.3"
+      platform: windows
+      architecture: x86
+      backend: native
 
   test-run-macos:
     name: Run macOS ${{ matrix.backend }} ${{ matrix.unity-version }} Integration Test
