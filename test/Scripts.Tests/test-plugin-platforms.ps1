@@ -69,6 +69,26 @@ $ExpectedPluginScopes = @{
     "Runtime/Sentry.Unity.iOS.dll"                = "iOS, OSXUniversal"
 }
 
+# The samples the release carries under `Samples~`. Demo native sources, not SDK plugins, but they
+# ship inside the package, so their scopes are pinned alongside everything else.
+$ExpectedSampleScopes = @{
+    "Samples~/unity-of-bugs/Scripts/NativeSupport/CPlugin.c"              = "Android, Any, iOS, Linux64, Lumin, OSXUniversal, tvOS, WebGL, Win, Win64"
+    "Samples~/unity-of-bugs/Scripts/NativeSupport/CppPlugin.cpp"          = "Android, Any, iOS, Linux64, Lumin, OSXUniversal, tvOS, WebGL, Win, Win64"
+    "Samples~/unity-of-bugs/Scripts/NativeSupport/JavaScriptPlugin.jslib" = "WebGL"
+    "Samples~/unity-of-bugs/Scripts/NativeSupport/KotlinPlugin.kt"        = "Android"
+    "Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m"     = "iOS, tvOS"
+}
+
+# The third party assemblies scripts/alias-assemblies.ps1 renames into the `Sentry.` namespace. They
+# are managed and platform agnostic, so they carry Unity's folder default: editor only under Editor,
+# every platform under Runtime. Matched by pattern rather than by name, because the set turns over
+# with every sentry-dotnet dependency bump while the scope never does. The patterns cover only the
+# aliased prefixes, so a new first party assembly still has to be pinned by name above.
+$AliasedDependencyScopes = @(
+    @{ Pattern = '^Editor/Sentry\.(Microsoft|Mono)\..*\.dll$'  ; Scope = "Editor" }
+    @{ Pattern = '^Runtime/Sentry\.(Microsoft|System)\..*\.dll$'; Scope = "Any" }
+)
+
 # How package-dev deviates. The dev package keeps the test assemblies, which scripts/pack.ps1 excludes
 # from the release, and the iOS bridge stays editor-loadable for the editor-only
 # Sentry.Unity.iOS.Tests assembly that references it.
@@ -152,6 +172,14 @@ function Get-EnabledPlatforms([string]$metaText) {
     return (($platforms | Sort-Object -Unique) -join ", ")
 }
 
+# The pinned scope for an aliased third party assembly, or $null when the path is not one.
+function Get-AliasedDependencyScope([string]$path) {
+    foreach ($rule in $script:AliasedDependencyScopes) {
+        if ($path -match $rule.Pattern) { return $rule.Scope }
+    }
+    return $null
+}
+
 function Get-AsmdefPlatforms([string]$asmdefText) {
     $json = $asmdefText | ConvertFrom-Json
     return @{
@@ -218,14 +246,15 @@ function Test-Tree($label, $files, $expectedScopes, $expectedAsmdefs) {
             $actual = Get-EnabledPlatforms $entry.Text
             $seen[$described] = $true
 
-            if (-not $expectedScopes.ContainsKey($described)) {
+            $expected = if ($expectedScopes.ContainsKey($described)) { $expectedScopes[$described] } else { Get-AliasedDependencyScope $described }
+            if ($null -eq $expected) {
                 [void]$script:failures.Add("$label : '$described' is not in the expected table, it enables '$actual'")
                 continue
             }
 
             $script:scopesChecked++
-            if ($actual -ne $expectedScopes[$described]) {
-                [void]$script:failures.Add("$label : '$described' enables '$actual', expected '$($expectedScopes[$described])'")
+            if ($actual -ne $expected) {
+                [void]$script:failures.Add("$label : '$described' enables '$actual', expected '$expected'")
             }
 
             # The rule that holds no matter what the table says. Needs the binary, which is present in
@@ -281,7 +310,10 @@ if (Test-Path -Path $packageFile) {
         Write-Host "No .meta, .asmdef or .dll entries found in the package." -ForegroundColor Yellow
         exit 1
     }
-    Test-Tree "release" $files $ExpectedPluginScopes $ExpectedAsmdefs
+    $releaseScopes = @{}
+    foreach ($pair in $ExpectedPluginScopes.GetEnumerator()) { $releaseScopes[$pair.Key] = $pair.Value }
+    foreach ($pair in $ExpectedSampleScopes.GetEnumerator()) { $releaseScopes[$pair.Key] = $pair.Value }
+    Test-Tree "release" $files $releaseScopes $ExpectedAsmdefs
 }
 else {
     Write-Host "'$packageFile' not found - validating the package-dev and package trees instead"
