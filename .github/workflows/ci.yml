@@ -427,6 +427,23 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
 
+  test-build-windows-mono:
+    # The Mono scripting backend resolves P/Invokes differently than IL2CPP, so it needs its own
+    # player. One version, default (Crashpad) backend only: the IL2CPP matrix already covers the
+    # version spread and both backends. The version is the first matrix entry rather than a
+    # literal, because `test-create` only builds what the matrix holds and Unity-bump PRs narrow
+    # it to the bumped version. The lists in create-unity-matrix.yml are oldest-first.
+    name: Build Windows Mono ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }} Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [test-create, create-unity-matrix]
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+    uses: ./.github/workflows/test-build-windows-mono.yml
+    with:
+      unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }}
+
   test-build-macos:
     name: Build macOS ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
@@ -478,6 +495,20 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       platform: windows
       backend: ${{ matrix.backend }}
+
+  test-run-windows-mono:
+    name: Run Windows Mono ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }} Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [test-build-windows-mono, create-unity-matrix]
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+    uses: ./.github/workflows/test-run-desktop.yml
+    with:
+      unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }}
+      platform: windows
+      scripting: mono
+      backend: crashpad
 
   test-run-macos:
     name: Run macOS ${{ matrix.backend }} ${{ matrix.unity-version }} Integration Test

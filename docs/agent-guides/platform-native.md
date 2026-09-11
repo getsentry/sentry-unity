@@ -7,6 +7,8 @@
 - `sentry_get_crashed_last_run` clears native state; SDK caches its result for the process lifetime. Do not make it repeatable.
 - Native backend reinstalls before first scene after Unity takes crash/signal handlers.
 - Native logger forwarding to C# exists only under IL2CPP.
+- Desktop library is named `sentry-native`; plain `sentry` resolves to the managed `Sentry.dll` under Mono. Renamed in `build/native-sdks.targets`, so the package already ships it that way.
+- Android keeps `sentry` because sentry-java loads its AAR library by name, so it gets its own `Sentry.Unity.Native.Android.dll`.
 
 ## Backend Choices
 
@@ -22,15 +24,16 @@ Experimental native modes raise minimum shutdown timeout to 10 seconds.
 
 `Sentry.Unity.Editor/Native/BuildPostProcess.cs` selects legacy `Sentry~` or experimental `SentryNative~`, clears stale handler artifacts when switching backend, copies runtime libraries to player locations, and leaves symbols in package for upload.
 
-- Windows: runtime files beside player `.exe`.
-- Linux: `libsentry.so` under `<Player>_Data/Plugins/x86_64`; native daemon beside executable.
-- macOS: dylib in `.app/Contents/PlugIns`; handler in `.app/Contents/MacOS`.
+- Windows: runtime files beside player `.exe`; the library lands as `sentry-native.dll`.
+- Linux: `libsentry-native.so` under `<Player>_Data/Plugins/x86_64`; native daemon beside executable.
+- macOS: `libsentry-native.dylib` in `.app/Contents/PlugIns`; handler in `.app/Contents/MacOS`. Cocoa's `Sentry.dylib` keeps its name, it is dlopened not P/Invoked.
+- Post-build copies names through unchanged; stale cleanup wipes pre-rename names.
 
 ## Console Plugins
 
 - PS5/Xbox libraries are user-supplied: `Assets/Plugins/Sentry/{PS5,XSX,XB1}/`.
 - Switch needs user-supplied static `libsentry.a` and `libzstd.a`; none uses shipped no-op stubs, partial installation is an error.
-- Console assemblies compile separately with platform defines.
+- Console and Android assemblies compile separately with platform defines. Chained `Csc` targets in `Sentry.Unity.Native.csproj`.
 
 ## Tests
 
