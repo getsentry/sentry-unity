@@ -24,11 +24,14 @@ internal static class SentryNativeBridge
     {
         Logger = options.DiagnosticLogger;
 
+        // Only x86-64 System V platforms need the `VaListLinux64` copy in `nativeLogImpl`. There
+        // `va_list` is `__va_list_tag[1]` - an array that decays to a pointer - so `vsnprintf`
+        // consumes the caller's list and it cannot be handed over twice. On AArch64 (Android, iOS,
+        // Switch, Switch 2, Apple silicon) `va_list` is a struct that is copied by value at every
+        // call, so the pointer can be reused as-is.
         UseLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
-            or RuntimePlatform.PS5
-            or RuntimePlatform.Switch
-            || Application.platform.IsSwitch2();
+            or RuntimePlatform.PS5;
         if ((Application.platform
             is RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer)
             && RuntimeInformation.ProcessArchitecture == Architecture.X64)
