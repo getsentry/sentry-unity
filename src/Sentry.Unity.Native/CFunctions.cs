@@ -87,90 +87,90 @@ internal static class C
         return null;
     }
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern sentry_value_t sentry_value_new_object();
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern sentry_value_t sentry_value_new_null();
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern sentry_value_t sentry_value_new_bool(int value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern sentry_value_t sentry_value_new_double(double value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern sentry_value_t sentry_value_new_int32(int value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern sentry_value_t sentry_value_new_string(string value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern sentry_value_t sentry_value_new_breadcrumb(string? type, string? message);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern int sentry_value_set_by_key(sentry_value_t value, string k, sentry_value_t v);
 
     internal static bool IsNull(sentry_value_t value) => sentry_value_is_null(value) != 0;
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern int sentry_value_is_null(sentry_value_t value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern int sentry_value_as_int32(sentry_value_t value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern double sentry_value_as_double(sentry_value_t value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern IntPtr sentry_value_as_string(sentry_value_t value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern UIntPtr sentry_value_get_length(sentry_value_t value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern sentry_value_t sentry_value_get_by_index(sentry_value_t value, UIntPtr index);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern sentry_value_t sentry_value_get_by_key(sentry_value_t value, string key);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_set_context(string key, sentry_value_t value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_add_breadcrumb(sentry_value_t breadcrumb);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_set_tag(string key, string value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_remove_tag(string key);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_set_user(sentry_value_t user);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_remove_user();
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_set_extra(string key, sentry_value_t value);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_remove_extra(string key);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_set_trace(string traceId, string parentSpanId);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_set_environment(string? environment);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern IntPtr sentry_attach_file(string path);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern IntPtr sentry_attach_bytes(byte[] buf, UIntPtr buf_len, string filename);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_clear_attachments();
 
     internal static readonly Lazy<IEnumerable<DebugImage>> DebugImages = new(LoadDebugImages);
@@ -224,10 +224,10 @@ internal static class C
 
     // Returns a new reference to an immutable, frozen list.
     // The reference must be released with `sentry_value_decref`.
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern sentry_value_t sentry_get_modules_list();
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern int sentry_value_decref(sentry_value_t value);
 
     // native union sentry_value_u/t
