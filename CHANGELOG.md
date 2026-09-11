@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Native crash capture now works on 32-bit Windows standalone builds. The SDK shipped only an x64 library while enabling native support for both architectures, so the player failed to load it. ([#2847](https://github.com/getsentry/sentry-unity/pull/2847))
 - Fixed a `NoSuchFieldError` during initialization on Android when setting the `sample rate`. ([#2838](https://github.com/getsentry/sentry-unity/issues/2838))
 
 ### Dependencies
