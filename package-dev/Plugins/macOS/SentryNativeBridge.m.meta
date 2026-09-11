@@ -79,7 +79,7 @@ PluginImporter:
   - first:
       tvOS: tvOS
     second:
-      enabled: 1
+      enabled: 0
       settings: {}
   userData: 
   assetBundleName: 

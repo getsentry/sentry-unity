@@ -33,12 +33,19 @@ $packageFile = Join-Path $projectRoot "package-release.zip"
 $ExpectedPluginScopes = @{
     "Editor/Sentry.Unity.Editor.dll"              = "Editor"
     "Editor/iOS/Sentry.Unity.Editor.iOS.dll"      = "Editor"
-    "Plugins/PS5/sentry_utils.c"                  = "GameCoreScarlett, GameCoreXboxOne, PS5"
+    # vsnprintf_sentry, imported as __Internal only under SENTRY_NATIVE_PLAYSTATION. The Switch gets
+    # the same symbol from its own stubs or from sentry-switch, and Xbox goes through msvcrt.
+    "Plugins/PS5/sentry_utils.c"                  = "PS5"
     "Plugins/Switch/sentry_native_stubs.c"        = "Switch, Switch2"
     "Plugins/iOS/SentryCxaThrowHook.cpp"          = "iOS"
-    "Plugins/iOS/SentryNativeBridge.m"            = "tvOS"
-    "Plugins/iOS/SentryNativeBridgeNoOp.m"        = "tvOS"
-    "Plugins/macOS/SentryNativeBridge.m"          = "OSXUniversal, tvOS"
+    # The two bridge sources deliberately target nothing, so Unity never copies them into the
+    # generated Xcode project. BuildPostProcess copies whichever one applies to
+    # Libraries/<package>/SentryNativeBridge.m and AddSentryNativeBridge adds that path to the
+    # target, so enabling a platform here would collide with the SDK's own copy. The same intent is
+    # recorded in .gitignore, which un-ignores these metas "to control target platforms".
+    "Plugins/iOS/SentryNativeBridge.m"            = ""
+    "Plugins/iOS/SentryNativeBridgeNoOp.m"        = ""
+    "Plugins/macOS/SentryNativeBridge.m"          = "OSXUniversal"
     "Runtime/Sentry.dll"                          = "Any"
     "Runtime/Sentry.Unity.Android.dll"            = "Android"
     "Runtime/Sentry.Unity.MacOS.dll"              = "OSXUniversal"
