@@ -97,6 +97,13 @@ jobs:
           if (-not $exited) {
             Write-Host "::warning::Player did not exit within 120s"
             Get-Process | Where-Object { $_.Name -match "test|sentry" } | Format-Table Id, Name, Path
+            $sig = '[DllImport("dbghelp.dll", SetLastError = true)] public static extern bool MiniDumpWriteDump(IntPtr hProcess, uint pid, IntPtr hFile, int dumpType, IntPtr exception, IntPtr userStream, IntPtr callback);'
+            Add-Type -Name Dbg -Namespace Probe -MemberDefinition $sig
+            $fs = [IO.File]::Create((Join-Path $PWD "player-probe.dmp"))
+            $ok = [Probe.Dbg]::MiniDumpWriteDump($p.Handle, $p.Id,
+              $fs.SafeFileHandle.DangerousGetHandle(), 0, 0, 0, 0)
+            $fs.Close()
+            Write-Host "MiniDumpWriteDump: $ok ($((Get-Item player-probe.dmp).Length) bytes)"
             $p.Kill()
             $p.WaitForExit(10000) | Out-Null
           }
@@ -127,4 +134,5 @@ jobs:
           path: |
             test/IntegrationTest/results/
             player-probe.log
+            player-probe.dmp
           retention-days: 14
