@@ -6,6 +6,7 @@
 
 - When targeting Windows using the `Mono` scripting backend the SDK now correctly loads `sentry-native` to capture native crashes. ([#2842](https://github.com/getsentry/sentry-unity/pull/2842))
 - Fixed a `NoSuchFieldError` during initialization on Android when setting the `sample rate`. ([#2838](https://github.com/getsentry/sentry-unity/issues/2838))
+- Individual assemblies and plugins are now scoped to the platforms that use them. ([#2848](https://github.com/getsentry/sentry-unity/pull/2848))
 
 ### Dependencies
 

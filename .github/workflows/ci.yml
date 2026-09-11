@@ -88,6 +88,10 @@ jobs:
         with:
           name: package-release
 
+      - name: Check plugin platform scopes
+        shell: pwsh
+        run: ./test/Scripts.Tests/test-plugin-platforms.ps1
+
       - name: Check snapshot
         id: snapshot-check
         shell: pwsh
