@@ -19,12 +19,8 @@
     <SentryWindowsArtifactsDestination>$(SentryArtifactsDestination)Windows/Sentry~/</SentryWindowsArtifactsDestination>
     <SentryWindowsNativeArtifactsDestination>$(SentryArtifactsDestination)Windows/SentryNative~/</SentryWindowsNativeArtifactsDestination>
 
-    <!--
-      The desktop runtime library ships renamed. `sentry` resolves to the managed `Sentry.dll` that
-      Unity puts in the player's `Managed/` folder, which Mono probes first on a case-insensitive
-      file system. See `SentryNativeLibrary` in Sentry.Unity.Native. Debug sidecars keep the names
-      their binaries record, and the Cocoa `Sentry.dylib` is dlopened by name rather than P/Invoked.
-    -->
+    <!-- Renamed because `sentry` resolves to the managed `Sentry.dll` under Mono. See `SentryNativeLibrary`.
+         Debug sidecars keep the names their binaries record. -->
     <SentryWindowsLibraryName>sentry-native.dll</SentryWindowsLibraryName>
     <SentryLinuxLibraryName>libsentry-native.so</SentryLinuxLibraryName>
     <SentryMacOSLibraryName>libsentry-native.dylib</SentryMacOSLibraryName>

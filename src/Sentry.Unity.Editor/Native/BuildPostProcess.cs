@@ -139,9 +139,7 @@ public static class BuildPostProcess
         _ => false,
     };
 
-    // The names the package already ships the desktop runtime library under. `native-sdks.targets`
-    // renames it when the SDK is built. See `SentryNativeLibrary` in Sentry.Unity.Native for why
-    // binding to plain `sentry` breaks under Mono. Kept here only to clear stale artifacts.
+    // Only needed to clear stale artifacts; the package already ships these names.
     internal const string WindowsLibraryName = "sentry-native.dll";
     internal const string LinuxLibraryName = "libsentry-native.so";
     internal const string MacOSLibraryName = "libsentry-native.dylib";
@@ -179,9 +177,8 @@ public static class BuildPostProcess
                         $"Sentry Windows plugin directory not found: {windowsBackendSourcePath}\n" +
                         $"Run 'dotnet msbuild /t:{buildTarget} src/Sentry.Unity' (or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it.");
                 }
-                // Flat copy of every non-PDB file next to the player .exe. The native library and the
-                // crash handler (crashpad_handler.exe / sentry-crash.exe) all sit at the build root.
-                // PDBs stay in the package and are consumed at symbol-upload time only.
+                // Windows resolves both the library and the crash handler next to the player .exe.
+                // PDBs stay in the package for symbol upload.
                 foreach (var file in Directory.GetFiles(windowsBackendSourcePath))
                 {
                     if (file.EndsWith(".pdb", StringComparison.OrdinalIgnoreCase))
@@ -203,8 +200,7 @@ public static class BuildPostProcess
                 {
                     var name = Path.GetFileName(file);
                     var isDylib = name.EndsWith(".dylib", StringComparison.OrdinalIgnoreCase);
-                    // The .dylibs need to go into the `*.app/Contents/Plugins` dirctory and will be picked
-                    // up by unity. The crash handler (sentry-native) needs to be next to the game's executable
+                    // Unity loads dylibs from PlugIns; the crash handler has to be next to the executable.
                     var desination = Path.Combine(contents, isDylib ? "PlugIns" : "MacOS", name);
                     yield return new NativePluginArtifact(
                         file,
@@ -224,10 +220,8 @@ public static class BuildPostProcess
                         $"Sentry Linux plugin directory not found: {linuxBackendSourcePath}\n" +
                         $"Run 'dotnet msbuild /t:{buildTarget} src/Sentry.Unity' (or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it.");
                 }
-                // The native library must sit in the player's native plugin dir (<name>_Data/Plugins/x86_64)
-                // where the Linux player resolves the P/Invoke. The crash daemon (sentry-crash, native backend only)
-                // sits next to the player executable so sentry-native can spawn it on crash.
-                // The .dbg.so / .dbg debug sidecars stay in the package and are consumed at symbol-upload time only.
+                // The Linux player resolves the P/Invoke from the plugin dir, and sentry-native spawns
+                // the crash daemon from next to the executable. Debug sidecars stay in the package.
                 var linuxPluginDir = GetLinuxPluginDir(buildOutputDir);
                 foreach (var file in Directory.GetFiles(linuxBackendSourcePath))
                 {
@@ -266,9 +260,8 @@ public static class BuildPostProcess
         }
     }
 
-    // Wipe both backends' leftovers before copying the current one in, so an iterative build does
-    // not leave two libraries sitting in PlugIns. `libsentry.dylib` is the pre-rename name and only
-    // turns up when building over a player made by an older SDK.
+    // A prior build with the other backend, or an older SDK's pre-rename library, would otherwise
+    // leave a second library behind in PlugIns.
     private static void CleanupStaleMacOSArtifacts(IDiagnosticLogger logger, string executablePath)
     {
         var contents = Path.Combine(executablePath, "Contents");
