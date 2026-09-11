@@ -131,7 +131,8 @@ internal class SentryJava : ISentryJava
 
                 if (options.SampleRate.HasValue)
                 {
-                    androidOptions.SetIfNotNull("setSampleRate", options.SampleRate.Value);
+                    using var sampleRate = new AndroidJavaObject("java.lang.Double", (double)options.SampleRate.Value);
+                    androidOptions.Call("setSampleRate", sampleRate);
                 }
 
                 androidOptions.Call("setMaxBreadcrumbs", options.MaxBreadcrumbs);
