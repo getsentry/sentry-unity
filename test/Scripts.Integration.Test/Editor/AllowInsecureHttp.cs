@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Xml;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -21,6 +23,14 @@ public class AllowInsecureHttp : IPostprocessBuildWithReport, IPreprocessBuildWi
     public void OnPostprocessBuild(BuildReport report)
     {
         var pathToBuiltProject = report.summary.outputPath;
+        if (report.summary.platform == BuildTarget.StandaloneOSX)
+        {
+            // ATS applies to macOS players too and blocks plain HTTP to an IP literal, which is what
+            // the envelope capture server is. The iOS module isn't available on macOS build agents,
+            // so patch the plist as plain XML instead of going through PlistDocument.
+            AllowArbitraryLoadsInMacPlist(Path.Combine(pathToBuiltProject, "Contents", "Info.plist"));
+        }
+
         if (report.summary.platform == BuildTarget.iOS)
         {
             var plistPath = Path.Combine(pathToBuiltProject, "Info.plist");
@@ -50,5 +60,57 @@ public class AllowInsecureHttp : IPostprocessBuildWithReport, IPreprocessBuildWi
 
             File.WriteAllText(plistPath, contents);
         }
+    }
+
+    private static void AllowArbitraryLoadsInMacPlist(string plistPath)
+    {
+        if (!File.Exists(plistPath))
+        {
+            Debug.LogError($"Failed to find the plist at {plistPath}.");
+            return;
+        }
+
+        var document = new XmlDocument { XmlResolver = null };
+        // Parse (not Ignore) keeps the DOCTYPE in the document; the null resolver keeps us from
+        // fetching the external DTD Apple references.
+        using (var reader = XmlReader.Create(plistPath, new XmlReaderSettings { DtdProcessing = DtdProcessing.Parse, XmlResolver = null }))
+        {
+            document.Load(reader);
+        }
+
+        var root = document.SelectSingleNode("/plist/dict");
+        if (root is null)
+        {
+            Debug.LogError("Failed to find the root <dict> in the plist.");
+            return;
+        }
+
+        foreach (XmlNode child in root.ChildNodes)
+        {
+            if (child.Name == "key" && child.InnerText == "NSAppTransportSecurity")
+            {
+                Debug.Log("AllowInsecureHttp: plist already contains NSAppTransportSecurity, nothing to do.");
+                return;
+            }
+        }
+
+        var key = document.CreateElement("key");
+        key.InnerText = "NSAppTransportSecurity";
+        var value = document.CreateElement("dict");
+        var allowKey = document.CreateElement("key");
+        allowKey.InnerText = "NSAllowsArbitraryLoads";
+        value.AppendChild(allowKey);
+        value.AppendChild(document.CreateElement("true"));
+
+        root.AppendChild(key);
+        root.AppendChild(value);
+        document.Save(plistPath);
+
+        // XmlDocument serializes the DOCTYPE with an empty internal subset (`...PropertyList-1.0.dtd"[]>`)
+        // which Apple's plist parser rejects. Drop it again.
+        var patched = Regex.Replace(File.ReadAllText(plistPath), @"(<!DOCTYPE[^>\[]*)\[\]>", "$1>");
+        File.WriteAllText(plistPath, patched);
+
+        Debug.Log("AllowInsecureHttp: added NSAllowsArbitraryLoads to the macOS plist.");
     }
 }
