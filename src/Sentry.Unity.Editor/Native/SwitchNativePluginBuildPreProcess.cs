@@ -35,6 +35,13 @@ internal class SwitchNativePluginBuildPreProcess : IPreprocessBuildWithReport
 
         SwitchNativeStub.Sync(logger, target);
 
+        if (!SwitchNativeStub.IsInSync(target))
+        {
+            throw new BuildFailedException(
+                $"Sentry failed to update the Switch no-op stub at '{SwitchNativeStub.StubPathFor(target)}'. " +
+                "See the errors above, resolve it by hand, and trigger the build again.");
+        }
+
         throw new BuildFailedException(
             "Sentry's Switch no-op stubs in 'Assets/Plugins/Sentry' were out of step with the " +
             "installed libraries and have been updated. Please trigger the build again.");
