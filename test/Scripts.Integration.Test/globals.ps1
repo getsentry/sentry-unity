@@ -148,6 +148,7 @@ function BuildMethodFor([string] $platform)
         "Android-Export" { return "Builder.BuildAndroidIl2CPPProject" }
         "MacOS" { return "Builder.BuildMacIl2CPPPlayer" }
         "Windows" { return "Builder.BuildWindowsIl2CPPPlayer" }
+        "Windows-Mono" { return "Builder.BuildWindowsMonoPlayer" }
         "Linux" { return "Builder.BuildLinuxIl2CPPPlayer" }
         "WebGL" { return "Builder.BuildWebGLPlayer" }
         "iOS" { return "Builder.BuildIOSProject" }

@@ -14,6 +14,11 @@ on:
         type: string
         default: ""
         description: "macOS: native or cocoa. Windows: native or crashpad. Linux: native or breakpad."
+      scripting:
+        required: false
+        type: string
+        default: ""
+        description: "Only set for non-default scripting backends, e.g. mono for the Windows Mono player."
     secrets:
       SENTRY_AUTH_TOKEN:
         required: true
@@ -26,7 +31,7 @@ defaults:
 
 jobs:
   run:
-    name: ${{ inputs.platform }}${{ inputs.backend && format(' ({0})', inputs.backend) || '' }} ${{ inputs.unity-version }}
+    name: ${{ inputs.platform }}${{ inputs.scripting && format(' {0}', inputs.scripting) || '' }}${{ inputs.backend && format(' ({0})', inputs.backend) || '' }} ${{ inputs.unity-version }}
     runs-on: ${{ inputs.platform == 'linux' && 'ubuntu-latest' || inputs.platform == 'macos' && 'macos-latest' || 'windows-latest' }}
     env:
       SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
@@ -43,7 +48,7 @@ jobs:
       - name: Download test app artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: testapp-desktop-compiled-${{ inputs.unity-version }}-${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}
+          name: testapp-desktop-compiled-${{ inputs.unity-version }}-${{ inputs.platform }}${{ inputs.scripting && format('-{0}', inputs.scripting) || '' }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}
 
       - name: Extract test app
         run: tar -xvzf test-app-desktop.tar.gz
@@ -81,6 +86,8 @@ jobs:
       - name: Run Integration Tests (Windows)
         if: inputs.platform == 'windows'
         timeout-minutes: 20
+        env:
+          SENTRY_TEST_SCRIPTING_BACKEND: ${{ inputs.scripting }}
         run: |
           $env:SENTRY_TEST_PLATFORM = "Desktop"
           $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test.exe"
@@ -90,7 +97,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: testapp-desktop-logs-${{ inputs.platform }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}
+          name: testapp-desktop-logs-${{ inputs.platform }}${{ inputs.scripting && format('-{0}', inputs.scripting) || '' }}${{ inputs.backend && format('-{0}', inputs.backend) || '' }}-${{ inputs.unity-version }}
           path: |
             test/IntegrationTest/results/
           retention-days: 14

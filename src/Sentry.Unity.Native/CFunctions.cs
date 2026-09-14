@@ -8,11 +8,7 @@ namespace Sentry.Unity.Native;
 
 internal static class C
 {
-#if SENTRY_NATIVE_SWITCH
-    private const string SentryLib = "__Internal";
-#else
-    private const string SentryLib = "sentry";
-#endif
+    private const string SentryLib = SentryNativeLibrary.Name;
 
     internal static void SetValueIfNotNull(sentry_value_t obj, string key, string? value)
     {
