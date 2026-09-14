@@ -28,6 +28,7 @@ Editor/sentry-cli/sentry-cli-Linux-x86_64.meta
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe
 Editor/sentry-cli/sentry-cli-Windows-x86_64.exe.meta
 Plugins/Linux/
+Plugins/Switch/
 Plugins/Windows/
 Plugins/Android.meta
 Plugins/iOS.meta
@@ -280,8 +281,7 @@ Plugins/Android/Sentry~/sentry-android-core-release.aar
 Plugins/Android/Sentry~/sentry-android-ndk-release.aar
 Plugins/Android/Sentry~/sentry-native-ndk-release.aar
 Plugins/Android/Sentry~/sentry.jar
-Plugins/Switch/sentry_native_stubs.c
-Plugins/Switch/sentry_native_stubs.c.meta
+Plugins/Switch/SentryStub~/sentry_native_stubs.c
 Plugins/Windows/SentryNative~/sentry-crash.exe
 Plugins/Windows/SentryNative~/sentry-crash.pdb
 Plugins/Windows/SentryNative~/sentry-wer.dll
