@@ -1,21 +1,14 @@
 /*
  * Sentry Switch Stubs
  *
- * No-op stub implementations for sentry-native and Switch helper functions.
- * These stubs are used when the user has not provided the actual sentry-switch
- * native library, allowing the SDK to compile and run without native crash support.
+ * No-op stubs for the sentry-switch bindings. sentry-switch is distributed under NDA, so without
+ * them the player fails to link for anyone who does not have it.
  *
- * When the real sentry-switch library is provided by the user at:
- *   Assets/Plugins/Sentry/Switch/libsentry.a
- *   Assets/Plugins/Sentry/Switch/SentrySwitchHelpers.cpp
+ * `SwitchNativeStub` copies this file into the user's project while the real libraries are missing.
+ * Edit the original here; a copy that differs from it is rewritten from this file.
  *
- * This stub file will be automatically disabled by the build preprocessor,
- * and the real library will be linked instead.
- *
- * All functions here are no-ops that return safe default values.
- * The SDK will appear to initialize successfully, but native features
- * (crash reporting, native scope sync) will silently do nothing.
- * Managed Sentry features continue to work normally.
+ * `sentry_init` returns failure so `SentryNativeSwitch` reports native support as unavailable
+ * instead of silently reporting nothing. Managed Sentry features are unaffected.
  */
 
 #include <stddef.h>
@@ -49,9 +42,10 @@ int sentry_init(void* options)
     return -1;
 }
 
-void sentry_close(void)
+int sentry_close(void)
 {
-    /* No-op */
+    /* Success, matching sentry-native's `int sentry_close(void)` */
+    return 0;
 }
 
 /*
@@ -251,9 +245,11 @@ sentry_value_t sentry_value_get_by_key(sentry_value_t value, const char* key)
     return SENTRY_VALUE_NULL;
 }
 
-void sentry_value_decref(sentry_value_t value)
+int sentry_value_decref(sentry_value_t value)
 {
+    /* Refcount reached zero, matching sentry-native's `int sentry_value_decref(sentry_value_t)` */
     (void)value;
+    return 0;
 }
 
 /*
@@ -352,9 +348,10 @@ int sentry_clear_crashed_last_run(void)
     return 0;
 }
 
-void sentry_reinstall_backend(void)
+int sentry_reinstall_backend(void)
 {
-    /* No-op */
+    /* Success, matching sentry-native's `int sentry_reinstall_backend(void)` */
+    return 0;
 }
 
 void sentry_app_hang_heartbeat(void)

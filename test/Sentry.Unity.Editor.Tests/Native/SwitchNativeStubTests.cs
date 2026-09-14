@@ -12,13 +12,18 @@ namespace Sentry.Unity.Editor.Tests.Native;
 
 public class SwitchNativeStubTests
 {
+    private static string PackageRoot() => Path.GetFullPath(Path.Combine(
+        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..", ".."));
+
+    private static string StubTemplatePath() =>
+        Path.Combine(PackageRoot(), "Plugins", "Switch", "SentryStub~", SwitchNativeStub.StubFileName);
+
     [Test]
     public void Stub_ContainsEverySwitchNativeBinding()
     {
-        var packageRoot = Path.GetFullPath(Path.Combine(
-            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..", ".."));
+        var packageRoot = PackageRoot();
         var switchAssemblyPath = Path.Combine(packageRoot, "Runtime", "Sentry.Unity.Native.Switch.dll");
-        var stubPath = Path.Combine(packageRoot, "Plugins", "Switch", "sentry_native_stubs.c");
+        var stubPath = StubTemplatePath();
 
         Assert.That(File.Exists(switchAssemblyPath), Is.True, $"Switch assembly not found at {switchAssemblyPath}");
         Assert.That(File.Exists(stubPath), Is.True, $"Switch stubs not found at {stubPath}");
@@ -48,7 +53,7 @@ public class SwitchNativeStubTests
     [Test]
     public void RequiredFilesFor_Switch_ProbesTheSwitchPluginDirectory()
     {
-        var requiredFiles = SwitchNativePluginBuildPreProcess.RequiredFilesFor(BuildTarget.Switch);
+        var requiredFiles = SwitchNativeStub.RequiredFilesFor(BuildTarget.Switch);
 
         Assert.That(requiredFiles, Is.EquivalentTo(new[]
         {
@@ -58,8 +63,29 @@ public class SwitchNativeStubTests
     }
 
     /// <summary>
-    /// Switch 2 is resolved by name because <c>BuildTarget.Switch2</c> does not exist on the Unity versions the
-    /// SDK still supports, so this parses the member instead of referencing it and skips where it is unavailable.
+    /// One copy per target, so a project can have real native support on one Switch generation and
+    /// stubs on the other.
+    /// </summary>
+    [Test]
+    public void StubPathFor_SitsBesideTheLibrariesItReplaces()
+    {
+        var stubPath = SwitchNativeStub.StubPathFor(BuildTarget.Switch);
+
+        Assert.That(stubPath, Is.EqualTo("Assets/Plugins/Sentry/Switch/sentry_native_stubs.c"));
+        Assert.That(SwitchNativeStub.RequiredFilesFor(BuildTarget.Switch),
+            Has.All.StartsWith(SwitchNativeStub.PluginDirectoryFor(BuildTarget.Switch)));
+    }
+
+    [Test]
+    public void Targets_CoverTheSwitchFamilyOnly()
+    {
+        Assert.That(SwitchNativeStub.Targets, Does.Contain(BuildTarget.Switch));
+        Assert.That(SwitchNativeStub.Targets, Has.All.Matches<BuildTarget>(target => target.IsSwitchFamily()));
+    }
+
+    /// <summary>
+    /// Resolved by name because <c>BuildTarget.Switch2</c> does not exist on every Unity version the
+    /// SDK supports.
     /// </summary>
     [Test]
     public void RequiredFilesFor_Switch2_ProbesTheSwitch2PluginDirectory()
@@ -69,7 +95,7 @@ public class SwitchNativeStubTests
             Assert.Ignore("This Unity version predates 'BuildTarget.Switch2'.");
         }
 
-        var requiredFiles = SwitchNativePluginBuildPreProcess.RequiredFilesFor(switch2);
+        var requiredFiles = SwitchNativeStub.RequiredFilesFor(switch2);
 
         Assert.That(requiredFiles, Is.EquivalentTo(new[]
         {
