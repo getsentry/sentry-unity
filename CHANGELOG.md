@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Added the `NativeHandlerPath` option. It sets `handler_path` on the native SDK, so the out-of-process crash handler can be placed somewhere other than next to the player executable. Left unset, sentry-native keeps looking for the handler next to the executable as before.
+
 ## 4.10.1
 
 ### Fixes
