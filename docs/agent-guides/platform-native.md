@@ -28,6 +28,7 @@ Experimental native modes raise minimum shutdown timeout to 10 seconds.
 - Linux: `libsentry-native.so` under `<Player>_Data/Plugins/x86_64`; native daemon beside executable.
 - macOS: `libsentry-native.dylib` in `.app/Contents/PlugIns`; handler in `.app/Contents/MacOS`. Cocoa's `Sentry.dylib` keeps its name, it is dlopened not P/Invoked.
 - Post-build copies names through unchanged; stale cleanup wipes pre-rename names.
+- Placement is what sentry-native probes by default. `SentryUnityOptions.NativeHandlerPath` overrides it via `handler_path`, for handlers staged somewhere else; sidecars the handler resolves relative to itself, such as `crashpad_wer.dll`, move with it.
 
 ## Console Plugins
 
