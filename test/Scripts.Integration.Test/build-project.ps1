@@ -21,6 +21,11 @@ Write-Log "Build method: $buildMethod"
 Write-Detail "Output path: $outputPath"
 $unityArgs = @("-batchmode", "-projectPath ", "$(GetNewProjectPath)", "-executeMethod", $buildMethod , "-buildPath", $outputPath, "-quit")
 
+if ($Platform -eq "Switch")
+{
+    $unityArgs += @("-buildTarget", "Switch")
+}
+
 RunUnityCustom $unityPath $unityArgs
 
 if ($Platform -eq "Android-Export")
