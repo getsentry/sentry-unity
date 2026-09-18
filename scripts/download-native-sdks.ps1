@@ -16,22 +16,22 @@ $SDKs = @(
     @{
         Name = "Windows"
         Destination = Join-Path $ArtifactsDestination "Windows/Sentry~"
-        CheckFile = "sentry.dll"
+        CheckFile = "sentry-native.dll"
     },
     @{
         Name = "WindowsNative"
         Destination = Join-Path $ArtifactsDestination "Windows/SentryNative~"
-        CheckFile = "sentry.dll"
+        CheckFile = "sentry-native.dll"
     },
     @{
         Name = "Linux"
         Destination = Join-Path $ArtifactsDestination "Linux/Sentry~"
-        CheckFile = "libsentry.so"
+        CheckFile = "libsentry-native.so"
     },
     @{
         Name = "LinuxNative"
         Destination = Join-Path $ArtifactsDestination "Linux/SentryNative~"
-        CheckFile = "libsentry.so"
+        CheckFile = "libsentry-native.so"
     },
     @{
         Name = "Android"
@@ -50,7 +50,7 @@ $SDKs = @(
     @{
         Name = "MacOSNative"
         Destination = Join-Path $ArtifactsDestination "macOS/SentryNative~"
-        CheckFile = "libsentry.dylib"
+        CheckFile = "libsentry-native.dylib"
     }
 )
 

@@ -6,7 +6,11 @@
   <ItemGroup>
     <ProjectReference Include="../sentry-dotnet/src/Sentry/Sentry.csproj" Private="false" />
     <ProjectReference Include="../Sentry.Unity/Sentry.Unity.csproj" Private="false" />
-    <ProjectReference Include="../Sentry.Unity.Native/Sentry.Unity.Native.csproj" Private="false" PrivateAssets="all" />
+    <!-- Build order only. Android needs the variant that keeps DllImport("sentry"), see SentryNativeLibrary -->
+    <ProjectReference Include="../Sentry.Unity.Native/Sentry.Unity.Native.csproj" Private="false" PrivateAssets="all" ReferenceOutputAssembly="false" />
+    <Reference Include="Sentry.Unity.Native.Android" Private="false">
+      <HintPath>$(PackageRuntimePath)/Sentry.Unity.Native.Android.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

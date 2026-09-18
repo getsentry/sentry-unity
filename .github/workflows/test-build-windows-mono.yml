@@ -1,0 +1,137 @@
+name: "Test: Build Windows Mono"
+on:
+  workflow_call:
+    inputs:
+      unity-version:
+        required: true
+        type: string
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG:
+        required: true
+      SENTRY_AUTH_TOKEN:
+        required: true
+      SENTRY_TEST_DSN:
+        required: true
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+    name: Windows Mono ${{ inputs.unity-version }}
+    runs-on: windows-latest
+    env:
+      UNITY_VERSION: ${{ inputs.unity-version }}
+      BUILD_PLATFORM: Windows-Mono
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Load env
+        id: env
+        run: |
+          $u = (Get-Content scripts/unity-versions.json -Raw | ConvertFrom-Json).'${{ env.UNITY_VERSION }}'
+          "unityVersion=$($u.version)"     >> $env:GITHUB_OUTPUT
+          "unityChangeset=$($u.changeset)" >> $env:GITHUB_OUTPUT
+
+      - name: Setup Unity
+        uses: getsentry/setup-unity@61c0c0944851685b6c1225e940d1b1ab349e3aa3
+        with:
+          unity-version: ${{ steps.env.outputs.unityVersion }}
+          unity-version-changeset: ${{ steps.env.outputs.unityChangeset }}
+          unity-modules: windows-il2cpp
+
+      - name: Create Unity license config
+        run: |
+          New-Item -Path "C:/ProgramData/Unity/config/" -ItemType Directory -Force
+          Set-Content -Path "C:/ProgramData/Unity/config/services-config.json" -Value "$env:UNITY_LICENSE_SERVER_CONFIG"
+        env:
+          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+
+      - name: Download IntegrationTest project
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: test-${{ env.UNITY_VERSION }}
+
+      - name: Extract project archive
+        run: tar -xvzf test-project.tar.gz
+
+      - name: Restore Unity Library cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/IntegrationTest/Library
+          key: it-library-windows-mono-${{ env.UNITY_VERSION }}-${{ github.run_id }}
+          restore-keys: |
+            it-library-windows-mono-${{ env.UNITY_VERSION }}-
+
+      - name: Download UPM package
+        uses: ./.github/actions/wait-for-artifact
+        with:
+          name: package-release
+
+      - name: Extract UPM package
+        run: ./test/Scripts.Integration.Test/extract-package.ps1
+
+      - name: Add Sentry to the project
+        run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
+
+      - name: Download DependencyConflict package
+        uses: ./.github/actions/wait-for-artifact
+        with:
+          name: dependency-conflict-package
+          path: dependency-conflict-package
+
+      - name: Add DependencyConflict to the project
+        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
+
+      - name: Configure Sentry
+        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+
+      # Crashpad backend only. The point of this job is that a Mono player resolves the
+      # P/Invokes to `sentry-native` instead of the managed `Sentry.dll` at all; both Windows
+      # backends bind against the same library, and the IL2CPP matrix already covers the
+      # backend spread. Crashpad is what players ship with by default.
+      - name: Build with Sentry SDK
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows-Mono -UnityVersion "$env:UNITY_VERSION"
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: Assert symbols and sources were uploaded
+        run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log
+
+      # We create tar explicitly because upload-artifact is slow for many files.
+      - name: Create archive
+        run: |
+          Remove-Item -Recurse -Force samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame -ErrorAction SilentlyContinue
+          Copy-Item unity.log samples/IntegrationTest/Build/ -ErrorAction SilentlyContinue
+          tar -cvzf test-app-desktop.tar.gz samples/IntegrationTest/Build
+
+      - name: Upload test app
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: testapp-desktop-compiled-${{ env.UNITY_VERSION }}-windows-mono-crashpad
+          if-no-files-found: error
+          path: test-app-desktop.tar.gz
+          retention-days: 14
+
+      - name: Save Unity Library cache
+        if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/IntegrationTest/Library
+          key: it-library-windows-mono-${{ env.UNITY_VERSION }}-${{ github.run_id }}
+
+      - name: Upload IntegrationTest project on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: failed-project-desktop-windows-mono-${{ env.UNITY_VERSION }}
+          path: |
+            samples/IntegrationTest
+            unity.log
+            !samples/IntegrationTest/Build/*_BackUpThisFolder_ButDontShipItWithYourGame
+          retention-days: 14
