@@ -4,9 +4,18 @@
 
 ### Dependencies
 
+- Bump .NET SDK from v6.10.0 to v6.11.0 ([#2850](https://github.com/getsentry/sentry-unity/pull/2850))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6110)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.10.0...6.11.0)
+- Bump Java SDK from v8.56.0 to v8.57.0 ([#2856](https://github.com/getsentry/sentry-unity/pull/2856))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8570)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.56.0...8.57.0)
 - Bump Cocoa SDK from v9.28.0 to v9.29.0 ([#2857](https://github.com/getsentry/sentry-unity/pull/2857))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9290)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.28.0...9.29.0)
+- Bump CLI from v3.7.0 to v3.8.0 ([#2855](https://github.com/getsentry/sentry-unity/pull/2855))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#380)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.7.0...3.8.0)
 
 ## 4.10.1
 
