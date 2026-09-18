@@ -75,9 +75,6 @@ internal static class SwitchNativeStub
     private static string Normalize(string content) =>
         content.Replace("\r\n", "\n").Replace("\r", "\n").TrimEnd();
 
-    [InitializeOnLoadMethod]
-    private static void OnDomainReload() => EditorApplication.delayCall += () => Sync(null);
-
     /// <summary>
     /// Syncs the SDK with the state of the game. Adds/removes the stub.
     /// </summary>
@@ -213,7 +210,8 @@ internal static class SwitchNativeStub
 internal class SwitchNativeStubWatcher : AssetPostprocessor
 {
     private static void OnPostprocessAllAssets(
-        string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
+        string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths,
+        bool didDomainReload)
     {
         var librariesChanged = importedAssets
             .Concat(deletedAssets)
@@ -222,9 +220,9 @@ internal class SwitchNativeStubWatcher : AssetPostprocessor
             .Any(path => SwitchNativeStub.LibraryFileNames.Any(
                 library => path.EndsWith(library, StringComparison.Ordinal)));
 
-        if (librariesChanged)
+        if (didDomainReload || librariesChanged)
         {
-            EditorApplication.delayCall += () => SwitchNativeStub.Sync(null);
+            SwitchNativeStub.Sync(null);
         }
     }
 }

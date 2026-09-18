@@ -6,6 +6,20 @@
 
 - Fixed a potential startup crash when targeting Android. The SDK would still set up native support even without a DSN provided. This would cause `sentry-java` to auto-initialize during startup via the `SentryInitProvider`. The SDK now verifies the presence of a DSN at build time, skipping native support when it's missing and logs accordingly. ([#2846](https://github.com/getsentry/sentry-unity/issues/2846))
 
+## Unreleased
+
+### Dependencies
+
+- Bump .NET SDK from v6.10.0 to v6.11.0 ([#2850](https://github.com/getsentry/sentry-unity/pull/2850))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6110)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.10.0...6.11.0)
+- Bump Java SDK from v8.56.0 to v8.57.0 ([#2856](https://github.com/getsentry/sentry-unity/pull/2856))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8570)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.56.0...8.57.0)
+- Bump CLI from v3.7.0 to v3.8.0 ([#2855](https://github.com/getsentry/sentry-unity/pull/2855))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#380)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.7.0...3.8.0)
+
 ## 4.10.1
 
 ### Fixes
