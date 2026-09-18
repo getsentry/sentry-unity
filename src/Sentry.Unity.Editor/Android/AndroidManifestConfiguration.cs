@@ -496,7 +496,7 @@ internal class AndroidManifest : AndroidXmlDocument
         _applicationElement.AppendChild(_applicationElement.OwnerDocument.CreateComment(Disclaimer));
 
     internal void SetAutoInit(bool enableAutoInit)
-        => SetMetaData($"{SentryPrefix}.auto-init", enableAutoInit.ToString());
+        => SetMetaData($"{SentryPrefix}.auto-init", enableAutoInit);
 
     internal void SetDsn(string dsn) => SetMetaData($"{SentryPrefix}.dsn", dsn);
 
@@ -508,58 +508,58 @@ internal class AndroidManifest : AndroidXmlDocument
 
     internal void SetDist(string dist) => SetMetaData($"{SentryPrefix}.dist", dist);
 
-    internal void SetAttachScreenshot(bool value) => SetMetaData($"{SentryPrefix}.attach-screenshot", value.ToString());
+    internal void SetAttachScreenshot(bool value) => SetMetaData($"{SentryPrefix}.attach-screenshot", value);
 
     internal void SetEnvironment(string environment) => SetMetaData($"{SentryPrefix}.environment", environment);
 
     internal void SetSDK(string name) => SetMetaData($"{SentryPrefix}.sdk.name", name);
 
     internal void SetAutoSessionTracking(bool enableAutoSessionTracking)
-        => SetMetaData($"{SentryPrefix}.auto-session-tracking.enable", enableAutoSessionTracking.ToString());
+        => SetMetaData($"{SentryPrefix}.auto-session-tracking.enable", enableAutoSessionTracking);
 
     public void SetAutoAppLifecycleBreadcrumbs(bool enableAutoAppLifeCycleBreadcrumbs)
-        => SetMetaData($"{SentryPrefix}.breadcrumbs.app-lifecycle", enableAutoAppLifeCycleBreadcrumbs.ToString());
+        => SetMetaData($"{SentryPrefix}.breadcrumbs.app-lifecycle", enableAutoAppLifeCycleBreadcrumbs);
 
     internal void SetAnr(bool enableAnr)
-        => SetMetaData($"{SentryPrefix}.anr.enable", enableAnr.ToString());
+        => SetMetaData($"{SentryPrefix}.anr.enable", enableAnr);
 
     internal void SetPersistentScopeObserver(bool enableScopePersistence)
-        => SetMetaData($"{SentryPrefix}.enable-scope-persistence", enableScopePersistence.ToString());
+        => SetMetaData($"{SentryPrefix}.enable-scope-persistence", enableScopePersistence);
 
     internal void SetAttachAnrThreadDump(bool attachAnrThreadDump)
-        => SetMetaData($"{SentryPrefix}.anr.attach-thread-dumps", attachAnrThreadDump.ToString());
+        => SetMetaData($"{SentryPrefix}.anr.attach-thread-dumps", attachAnrThreadDump);
 
     internal void SetNdkAppHangTracking(bool enableNdkAppHangTracking)
-        => SetMetaData($"{SentryPrefix}.ndk.app-hang.enable", enableNdkAppHangTracking.ToString());
+        => SetMetaData($"{SentryPrefix}.ndk.app-hang.enable", enableNdkAppHangTracking);
 
     internal void SetNdkAppHangTimeout(long ndkAppHangTimeout)
         => SetMetaData($"{SentryPrefix}.ndk.app-hang.timeout-interval-millis", ndkAppHangTimeout.ToString(CultureInfo.InvariantCulture));
 
     internal void SetTombstone(bool enableTombstone)
-        => SetMetaData($"{SentryPrefix}.tombstone.enable", enableTombstone.ToString());
+        => SetMetaData($"{SentryPrefix}.tombstone.enable", enableTombstone);
 
     internal void SetTombstoneReportHistorical(bool enableTombstoneReportHistorical)
-        => SetMetaData($"{SentryPrefix}.tombstone.report-historical", enableTombstoneReportHistorical.ToString());
+        => SetMetaData($"{SentryPrefix}.tombstone.report-historical", enableTombstoneReportHistorical);
 
     internal void SetNdkEnabled(bool enableNdk)
-        => SetMetaData($"{SentryPrefix}.ndk.enable", enableNdk.ToString());
+        => SetMetaData($"{SentryPrefix}.ndk.enable", enableNdk);
 
     internal void SetNdkScopeSync(bool enableNdkScopeSync)
-        => SetMetaData($"{SentryPrefix}.ndk.scope-sync.enable", enableNdkScopeSync.ToString());
+        => SetMetaData($"{SentryPrefix}.ndk.scope-sync.enable", enableNdkScopeSync);
 
     internal void SetNdkSdkName(string sdkName)
         => SetMetaData($"{SentryPrefix}.ndk.sdk-name", sdkName);
 
     internal void SetAutoTraceIdGeneration(bool enableAutoTraceIdGeneration)
-        => SetMetaData($"{SentryPrefix}.traces.enable-auto-id-generation", enableAutoTraceIdGeneration.ToString());
+        => SetMetaData($"{SentryPrefix}.traces.enable-auto-id-generation", enableAutoTraceIdGeneration);
 
     internal void SetEnableUserInteractionBreadcrumbs(bool enableUserInteractionBreadcrumbs)
-        => SetMetaData($"{SentryPrefix}.breadcrumbs.user-interaction", enableUserInteractionBreadcrumbs.ToString());
+        => SetMetaData($"{SentryPrefix}.breadcrumbs.user-interaction", enableUserInteractionBreadcrumbs);
 
     internal void SetEnableUserInteractionTracing(bool enableUserInteractionTracing)
-        => SetMetaData($"{SentryPrefix}.traces.user-interaction.enable", enableUserInteractionTracing.ToString());
+        => SetMetaData($"{SentryPrefix}.traces.user-interaction.enable", enableUserInteractionTracing);
 
-    internal void SetDebug(bool debug) => SetMetaData($"{SentryPrefix}.debug", debug ? "true" : "false");
+    internal void SetDebug(bool debug) => SetMetaData($"{SentryPrefix}.debug", debug);
 
     // https://github.com/getsentry/sentry-java/blob/db4dfc92f202b1cefc48d019fdabe24d487db923/sentry/src/main/java/io/sentry/SentryLevel.java#L4-L9
     internal void SetLevel(SentryLevel level) =>
@@ -572,6 +572,9 @@ internal class AndroidManifest : AndroidXmlDocument
             SentryLevel.Warning => "warning",
             _ => "debug"
         });
+
+    // The Sentry Gradle plugin only recognizes lowercase booleans when resolving the metadata at build time.
+    private void SetMetaData(string key, bool value) => SetMetaData(key, value ? "true" : "false");
 
     private void SetMetaData(string key, string value)
     {

@@ -4,9 +4,7 @@
 
 ### Fixes
 
-- Fixed a potential startup crash when targeting Android. The SDK would still set up native support even without a DSN provided. This would cause `sentry-java` to auto-initialize during startup via the `SentryInitProvider`. The SDK now verifies the presence of a DSN at build time, skipping native support when it's missing and logs accordingly. ([#2846](https://github.com/getsentry/sentry-unity/issues/2846))
-
-## Unreleased
+- Fixed an Android startup crash (`DSN is required`) when initializing the native SDK at runtime alongside the Sentry Android Gradle Plugin. ([#2846](https://github.com/getsentry/sentry-unity/pull/2846))
 
 ### Dependencies
 
