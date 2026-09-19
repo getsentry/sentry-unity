@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Fixed an Android startup crash (`DSN is required`) when initializing the native SDK at runtime alongside the Sentry Android Gradle Plugin. ([#2846](https://github.com/getsentry/sentry-unity/pull/2846))
+
 ### Dependencies
 
 - Bump .NET SDK from v6.10.0 to v6.11.0 ([#2850](https://github.com/getsentry/sentry-unity/pull/2850))
