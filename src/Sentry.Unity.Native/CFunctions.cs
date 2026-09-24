@@ -165,10 +165,10 @@ internal static class C
     internal static extern void sentry_set_environment(string? environment);
 
     [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern IntPtr sentry_attach_file(string path);
+    internal static extern sentry_uuid_t sentry_attach_file(string path);
 
     [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
-    internal static extern IntPtr sentry_attach_bytes(byte[] buf, UIntPtr buf_len, string filename);
+    internal static extern sentry_uuid_t sentry_attach_bytes(byte[] buf, UIntPtr buf_len, string filename);
 
     [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     internal static extern void sentry_clear_attachments();
@@ -238,6 +238,14 @@ internal static class C
         internal ulong _bits;
         [FieldOffset(0)]
         internal double _double;
+    }
+
+    // native struct sentry_uuid_s/t (char bytes[16])
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct sentry_uuid_t
+    {
+        internal ulong _low;
+        internal ulong _high;
     }
 
 }
