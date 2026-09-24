@@ -114,6 +114,38 @@ public class AndroidManifestTests
     }
 
     [Test]
+    [TestCase(null)]
+    [TestCase("")]
+    public void ModifyManifest_AndroidSdkDisabled_SetsAutoInitToFalse(string? dsn)
+    {
+        _fixture.SentryUnityOptions!.Dsn = dsn;
+        var sut = _fixture.GetSut();
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />", manifest);
+    }
+
+    [Test]
+    public void CopyAndroidSdkToGradleProject_EnabledWithoutDsn_RemovesAndroidSdkFromGradleProject()
+    {
+        var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+        var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+        DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+        var androidSdk = Path.Combine(gradleProjectPath, "unityLibrary", "libs", "androidSdk.jar");
+        File.Create(androidSdk).Close();
+
+        _fixture.SentryUnityOptions!.Dsn = string.Empty;
+        var sut = _fixture.GetSut();
+
+        sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+
+        Assert.IsFalse(File.Exists(androidSdk));
+
+        Directory.Delete(fakeProjectPath, true);
+    }
+
+    [Test]
     public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabledFalse_LogDebugAndDoesNotAddSentry()
     {
         _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
@@ -135,7 +167,7 @@ public class AndroidManifestTests
 
         _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, "Setting 'auto-init' to 'false'. The Android SDK will be initialized at runtime.");  // Sanity Check
 
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.auto-init\" android:value=\"False\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.auto-init\" android:value=\"false\" />", manifest);
     }
 
     [Test]
@@ -151,6 +183,18 @@ public class AndroidManifestTests
     }
 
     [Test]
+    public void ModifyManifest_InitTypeBuildTime_WritesLowercaseBooleans()
+    {
+        _fixture.SentryUnityOptions!.AndroidNativeInitializationType = NativeInitializationType.BuildTime;
+        var sut = _fixture.GetSut();
+
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.DoesNotContain("android:value=\"True\"", manifest);
+        StringAssert.DoesNotContain("android:value=\"False\"", manifest);
+    }
+
+    [Test]
     public void ModifyManifest_AndroidNativeAnrEnabled_True_WritesAnrMetadataEnabled()
     {
         _fixture.SentryUnityOptions!.AndroidNativeAnrEnabled = true;
@@ -158,8 +202,8 @@ public class AndroidManifestTests
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"True\" />", manifest);
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.enable-scope-persistence\" android:value=\"True\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"true\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.enable-scope-persistence\" android:value=\"true\" />", manifest);
     }
 
     [Test]
@@ -170,8 +214,8 @@ public class AndroidManifestTests
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"False\" />", manifest);
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.enable-scope-persistence\" android:value=\"False\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.enable\" android:value=\"false\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.enable-scope-persistence\" android:value=\"false\" />", manifest);
     }
 
     [Test]
@@ -182,7 +226,7 @@ public class AndroidManifestTests
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.attach-thread-dumps\" android:value=\"True\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.anr.attach-thread-dumps\" android:value=\"true\" />", manifest);
     }
 
     [Test]
@@ -194,7 +238,7 @@ public class AndroidManifestTests
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.ndk.app-hang.enable\" android:value=\"True\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.ndk.app-hang.enable\" android:value=\"true\" />", manifest);
         StringAssert.Contains("<meta-data android:name=\"io.sentry.ndk.app-hang.timeout-interval-millis\" android:value=\"2000\" />", manifest);
     }
 
@@ -206,7 +250,7 @@ public class AndroidManifestTests
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.enable\" android:value=\"True\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.enable\" android:value=\"true\" />", manifest);
     }
 
     [Test]
@@ -217,7 +261,7 @@ public class AndroidManifestTests
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.enable\" android:value=\"False\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.enable\" android:value=\"false\" />", manifest);
     }
 
     [Test]
@@ -228,7 +272,7 @@ public class AndroidManifestTests
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.report-historical\" android:value=\"True\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.report-historical\" android:value=\"true\" />", manifest);
     }
 
     [Test]
@@ -239,7 +283,7 @@ public class AndroidManifestTests
 
         var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
 
-        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.report-historical\" android:value=\"False\" />", manifest);
+        StringAssert.Contains("<meta-data android:name=\"io.sentry.tombstone.report-historical\" android:value=\"false\" />", manifest);
     }
 
     [Test]
@@ -510,6 +554,25 @@ public class AndroidManifestTests
         sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
 
         Assert.IsFalse(File.Exists(androidSdk));
+
+        Directory.Delete(fakeProjectPath, true);
+    }
+
+    [Test]
+    public void CopyAndroidSdkToGradleProject_AndroidSdkDisabledAndSourceMissing_DoesNotThrow()
+    {
+        var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+        var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+        DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+        Directory.Delete(
+            Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~"),
+            true);
+
+        _fixture.SentryUnityOptions!.AndroidNativeSupportEnabled = false;
+        var sut = _fixture.GetSut();
+
+        Assert.DoesNotThrow(() => sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath));
 
         Directory.Delete(fakeProjectPath, true);
     }

@@ -1,8 +1,8 @@
 fileFormatVersion: 2
-guid: 3e53c83de0e67254dbada2456cd849ba
+guid: 7b1845f97d56c487bb20875e78b23bb7
 PluginImporter:
   externalObjects: {}
-  serializedVersion: 3
+  serializedVersion: 2
   iconMap: {}
   executionOrder: {}
   defineConstraints: []
@@ -11,55 +11,72 @@ PluginImporter:
   isExplicitlyReferenced: 0
   validateReferences: 1
   platformData:
-    Android:
-      enabled: 0
-      settings:
-        AndroidLibraryDependee: UnityLibrary
-        AndroidSharedLibraryType: Executable
-        CPU: ARMv7
-    Any:
+  - first:
+      : Any
+    second:
       enabled: 0
       settings:
         Exclude Android: 1
         Exclude Editor: 1
         Exclude Linux64: 1
-        Exclude OSXUniversal: 1
-        Exclude Switch: 0
-        Exclude Switch2: 0
+        Exclude OSXUniversal: 0
         Exclude WebGL: 1
         Exclude Win: 1
         Exclude Win64: 1
-        Exclude iOS: 1
-    Editor:
+        Exclude iOS: 0
+  - first:
+      Android: Android
+    second:
+      enabled: 0
+      settings:
+        CPU: ARMv7
+  - first:
+      Any: 
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      Editor: Editor
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
         DefaultValueInitialized: true
         OS: AnyOS
-    Linux64:
+  - first:
+      Standalone: Linux64
+    second:
       enabled: 0
       settings:
         CPU: None
-    OSXUniversal:
-      enabled: 0
-      settings:
-        CPU: None
-    Switch:
+  - first:
+      Standalone: OSXUniversal
+    second:
       enabled: 1
-      settings: {}
-    Switch2:
+      settings:
+        CPU: AnyCPU
+  - first:
+      Standalone: Win
+    second:
+      enabled: 0
+      settings:
+        CPU: None
+  - first:
+      Standalone: Win64
+    second:
+      enabled: 0
+      settings:
+        CPU: None
+  - first:
+      Windows Store Apps: WindowsStoreApps
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      iPhone: iOS
+    second:
       enabled: 1
-      settings: {}
-    Win:
-      enabled: 0
-      settings:
-        CPU: None
-    Win64:
-      enabled: 0
-      settings:
-        CPU: None
-    iOS:
-      enabled: 0
       settings:
         AddToEmbeddedBinaries: false
         CPU: AnyCPU
