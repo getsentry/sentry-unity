@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Native crash capture now works on 32-bit Windows standalone builds. The SDK shipped only an x64 library while enabling native support for both architectures, so the player failed to load it. The P/Invokes into `sentry-native` also declare `Cdecl` now - without it the 32-bit player corrupted its stack on the first call. ([#2847](https://github.com/getsentry/sentry-unity/pull/2847))
+
 ### Dependencies
 
 - Bump Native SDK from v0.16.6 to v0.17.0 ([#2862](https://github.com/getsentry/sentry-unity/pull/2862))

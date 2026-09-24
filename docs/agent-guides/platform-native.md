@@ -24,7 +24,9 @@ Experimental native modes raise minimum shutdown timeout to 10 seconds.
 
 `Sentry.Unity.Editor/Native/BuildPostProcess.cs` selects legacy `Sentry~` or experimental `SentryNative~`, clears stale handler artifacts when switching backend, copies runtime libraries to player locations, and leaves symbols in package for upload.
 
-- Windows: runtime files beside player `.exe`; the library lands as `sentry-native.dll`.
+- Windows: runtime files beside player `.exe`; the library lands as `sentry-native.dll`. Both
+  architectures ship, under `x86/` and `x64/` inside each backend folder, because Unity still
+  builds a 32-bit standalone player. `BuildTarget.StandaloneWindows` picks `x86/`.
 - Linux: `libsentry-native.so` under `<Player>_Data/Plugins/x86_64`; native daemon beside executable.
 - macOS: `libsentry-native.dylib` in `.app/Contents/PlugIns`; handler in `.app/Contents/MacOS`. Cocoa's `Sentry.dylib` keeps its name, it is dlopened not P/Invoked.
 - Post-build copies names through unchanged; stale cleanup wipes pre-rename names.

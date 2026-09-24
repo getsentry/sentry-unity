@@ -5,6 +5,7 @@ using System.Linq;
 using NUnit.Framework;
 using Sentry.Unity.Editor.Native;
 using Sentry.Unity.Tests.SharedClasses;
+using UnityEditor;
 
 namespace Sentry.Unity.Editor.Tests.Native;
 
@@ -79,5 +80,21 @@ public class BuildPostProcessTests
         Assert.IsTrue(_logger.Logs.Any(l =>
             l.logLevel == SentryLevel.Warning &&
             l.message.Contains("Required path not found")));
+    }
+
+    [TestCase(BuildTarget.StandaloneWindows, WindowsBackend.Crashpad, "Sentry~", "x86")]
+    [TestCase(BuildTarget.StandaloneWindows64, WindowsBackend.Crashpad, "Sentry~", "x64")]
+    [TestCase(BuildTarget.StandaloneWindows, WindowsBackend.Native, "SentryNative~", "x86")]
+    [TestCase(BuildTarget.StandaloneWindows64, WindowsBackend.Native, "SentryNative~", "x64")]
+    public void GetWindowsBackendDir_ResolvesBackendAndArchitecture(
+        BuildTarget target, WindowsBackend backend, string expectedBackendDir, string expectedArchDir)
+    {
+        var options = new SentryUnityOptions();
+        options.Experimental.WindowsBackend = backend;
+
+        var actual = BuildPostProcess.GetWindowsBackendDir(target, options);
+
+        Assert.AreEqual(expectedArchDir, Path.GetFileName(actual));
+        Assert.AreEqual(expectedBackendDir, Path.GetFileName(Path.GetDirectoryName(actual)));
     }
 }
