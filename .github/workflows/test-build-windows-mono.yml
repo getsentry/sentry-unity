@@ -77,14 +77,9 @@ jobs:
       - name: Add Sentry to the project
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
-      - name: Download DependencyConflict package
-        uses: ./.github/actions/wait-for-artifact
-        with:
-          name: dependency-conflict-package
-          path: dependency-conflict-package
-
-      - name: Add DependencyConflict to the project
-        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
+      # The package's unaliased System.Text.Json throws a FieldAccessException on Mono with High stripping.
+      - name: Disable DependencyConflict
+        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -Disable
 
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows
