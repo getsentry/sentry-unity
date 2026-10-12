@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Android tombstone parsing via `AndroidTombstoneEnabled` no longer fails with `NoClassDefFoundError`. The SDK now ships the `epitaph` dependency that `sentry-android-core` requires. If you added `com.abovevacant:epitaph` to your Gradle template as a workaround, remove it to avoid duplicate classes. ([#2878](https://github.com/getsentry/sentry-unity/issues/2878))
+- Android tombstone parsing via `AndroidTombstoneEnabled` no longer fails with `NoClassDefFoundError`. The SDK now ships with its `epitaph` dependency. If you added `com.abovevacant:epitaph` to your Gradle template as a workaround, remove it to avoid duplicate classes. ([#2879](https://github.com/getsentry/sentry-unity/issues/2879))
 
 ### Dependencies
 
