@@ -22,14 +22,22 @@ if (-not (Test-Path (Join-Path $CocoaRoot "Sentry.xcodeproj"))) {
     exit 1
 }
 
-# All build artifacts go under XCFrameworkBuildPath/ which is already in sentry-cocoa's .gitignore.
-$buildPath = Join-Path $CocoaRoot "XCFrameworkBuildPath"
+# Build artifacts must live outside the package root so file writes avoid triggering packager resolving
+# Keyed by the sentry-cocoa commit so re-runs reuse the xcframeworks and submodule bumps rebuild.
+$cachePath = Join-Path (Split-Path $PSScriptRoot -Parent) "temp/sentry-cocoa"
+$cocoaCommit = git -C $CocoaRoot rev-parse HEAD
+$buildPath = Join-Path $cachePath $cocoaCommit
 $iOSXcframeworkPath = Join-Path $buildPath "SentryObjC-Dynamic-iOS.xcframework"
 $macOSXcframeworkPath = Join-Path $buildPath "SentryObjC-Dynamic-macOS.xcframework"
 
-if ($Clean -and (Test-Path $buildPath)) {
-    Write-Host "Clean build requested — removing $buildPath" -ForegroundColor Yellow
-    Remove-Item -Path $buildPath -Recurse -Force
+if ($Clean -and (Test-Path $cachePath)) {
+    Write-Host "Clean build requested — removing $cachePath" -ForegroundColor Yellow
+    Remove-Item -Path $cachePath -Recurse -Force
+}
+
+# Prune builds of other sentry-cocoa commits
+if (Test-Path $cachePath) {
+    Get-ChildItem -Path $cachePath -Directory | Where-Object { $_.Name -ne $cocoaCommit } | Remove-Item -Recurse -Force
 }
 
 Write-Host "Building Cocoa SDK from source..." -ForegroundColor Yellow
@@ -44,15 +52,10 @@ try {
         # (SentryObjC + SentryObjCCompat + SentryObjCInternal) into a single self-contained framework,
         # so Unity links/dlopens only one binary. The dynamic slices are arm64-only (no arm64e), so no
         # architecture stripping is needed — unlike the main `Sentry` scheme's Xcode-project build.
-        & ./scripts/build-xcframework-sentryobjc.sh --sdks "iphoneos,iphonesimulator" --variant dynamic
+        & ./scripts/build-xcframework-sentryobjc.sh --sdks "iphoneos,iphonesimulator" --variant dynamic --output-dir $buildPath
         & ./scripts/validate-xcframework-format.sh --xcframework "SentryObjC-Dynamic.xcframework"
         # build-xcframework-sentryobjc.sh outputs to the working directory — move into our build cache
         Move-Item -Path "SentryObjC-Dynamic.xcframework" -Destination $iOSXcframeworkPath -Force
-        # Clean up intermediate archives, keep the final xcframework
-        $archivePath = Join-Path $buildPath "archive"
-        if (Test-Path $archivePath) {
-            Remove-Item -Path $archivePath -Recurse -Force
-        }
     }
 
     $privacyManifest = Join-Path $CocoaRoot "Sources/Resources/PrivacyInfo.xcprivacy"
@@ -99,16 +102,9 @@ try {
 
     if (-not (Test-Path $macOSXcframeworkPath)) {
         Write-Host "Building macOS xcframework..." -ForegroundColor Yellow
-        & ./scripts/build-xcframework-sentryobjc.sh --sdks "macosx" --variant dynamic
+        & ./scripts/build-xcframework-sentryobjc.sh --sdks "macosx" --variant dynamic --output-dir $buildPath
         & ./scripts/validate-xcframework-format.sh --xcframework "SentryObjC-Dynamic.xcframework"
         Move-Item -Path "SentryObjC-Dynamic.xcframework" -Destination $macOSXcframeworkPath -Force
-        # Clean up all remaining build intermediates
-        foreach ($dir in @("archive", "DerivedData")) {
-            $dirPath = Join-Path $buildPath $dir
-            if (Test-Path $dirPath) {
-                Remove-Item -Path $dirPath -Recurse -Force
-            }
-        }
     }
 
     Write-Host "Setting up macOS support..." -ForegroundColor Yellow

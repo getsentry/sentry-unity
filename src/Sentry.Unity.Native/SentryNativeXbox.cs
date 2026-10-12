@@ -15,7 +15,7 @@ namespace Sentry.Unity.Native;
 /// </remarks>
 internal static class SentryNativeXbox
 {
-    [DllImport("sentry")]
+    [DllImport("sentry", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr sentry_xbox_utils_get_pls_path();
 
     /// <summary>
