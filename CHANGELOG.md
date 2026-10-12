@@ -4,7 +4,13 @@
 
 ### Dependencies
 
-- Bump Cocoa SDK from v9.29.0 to v9.30.1 ([#2875](https://github.com/getsentry/sentry-unity/pull/2875))
+- Bump Native SDK from v0.17.0 to v0.17.2 ([#2874](https://github.com/getsentry/sentry-unity/pull/2874))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0172)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.0...0.17.2)
+- Bump Java SDK from v8.57.0 to v8.60.0 ([#2876](https://github.com/getsentry/sentry-unity/pull/2876))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8600)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.57.0...8.60.0)
+ - Bump Cocoa SDK from v9.29.0 to v9.30.1 ([#2875](https://github.com/getsentry/sentry-unity/pull/2875))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9301)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.29.0...9.30.1)
 
