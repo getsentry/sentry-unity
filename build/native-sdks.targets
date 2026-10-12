@@ -29,22 +29,15 @@
   <!--
     Build the Cocoa SDK:
         dotnet msbuild /t:BuildCocoaSDK src/Sentry.Unity
-    Always wipes prior outputs (in package-dev/Plugins/iOS, package-dev/Plugins/macOS
-    and modules/sentry-cocoa/XCFrameworkBuildPath/) and rebuilds from source.
+    Builds from source into temp/sentry-cocoa/<sentry-cocoa commit>/
   -->
   <Target Name="BuildCocoaSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="$([MSBuild]::IsOSPlatform('Windows'))" Text="BuildCocoaSDK cannot run on Windows. Use macOS or Linux." />
     <Error Condition="!Exists('$(SentryCocoaRoot)Sentry.xcodeproj')" Text="sentry-cocoa submodule not checked out at $(SentryCocoaRoot). Run: git submodule update --init modules/sentry-cocoa" />
 
-    <Message Importance="High" Text="Building Cocoa SDK from submodule (clean rebuild)." />
+    <Message Importance="High" Text="Building Cocoa SDK from submodule." />
 
-    <!-- Wipe prior outputs -->
-    <RemoveDir Directories="$(SentryCocoaRoot)XCFrameworkBuildPath" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryiOSArtifactsDestination)" ContinueOnError="true" />
-    <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib" ContinueOnError="true" />
-    <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM" ContinueOnError="true" />
-
-    <Exec Command="pwsh &quot;$(RepoRoot)scripts/build-cocoa-sdk.ps1&quot; -CocoaRoot &quot;$(SentryCocoaRoot)&quot; -iOSDestination &quot;$(SentryiOSArtifactsDestination)&quot; -macOSDestination &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot; -Clean" />
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/build-cocoa-sdk.ps1&quot; -CocoaRoot &quot;$(SentryCocoaRoot)&quot; -iOSDestination &quot;$(SentryiOSArtifactsDestination)&quot; -macOSDestination &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot;" />
 
     <Error Condition="!Exists('$(SentryiOSArtifactsDestination)')" Text="Failed to set up the iOS SDK." />
     <Error Condition="!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM')" Text="Failed to set up the macOS SDK." />
