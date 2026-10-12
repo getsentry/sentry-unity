@@ -330,6 +330,27 @@
     <Error Condition="!Exists('$(SentryNativeNdkLocalAar)')" Text="sentry-native-ndk-release.aar not produced at $(SentryNativeNdkLocalAar). PublishNativeNdkLocal may have failed." />
     <Copy SourceFiles="$(SentryNativeNdkLocalAar)" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
 
+    <!-- sentry-android-core parses tombstones with epitaph, a Maven dependency that local AARs don't
+         pull in. Ship the jar resolved by the Gradle build above; Unity picks up `libs/*.jar`. -->
+    <ReadLinesFromFile File="$(SentryAndroidRoot)gradle/libs.versions.toml">
+      <Output TaskParameter="Lines" ItemName="_SentryJavaCatalogLines" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <_EpitaphCatalogLine Include="@(_SentryJavaCatalogLines)" Condition="$([System.String]::Copy('%(Identity)').Contains('com.abovevacant:epitaph'))" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_EpitaphCatalogLine>@(_EpitaphCatalogLine)</_EpitaphCatalogLine>
+      <EpitaphVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EpitaphCatalogLine)', '^.*version\s*=\s*"([^"]+)".*$', '$1'))</EpitaphVersion>
+      <GradleUserHome>$(GRADLE_USER_HOME)</GradleUserHome>
+      <GradleUserHome Condition="'$(GradleUserHome)' == ''">$([System.Environment]::GetFolderPath(SpecialFolder.UserProfile))/.gradle</GradleUserHome>
+    </PropertyGroup>
+    <Error Condition="'$(_EpitaphCatalogLine)' == '' Or '$(EpitaphVersion)' == '$(_EpitaphCatalogLine)'" Text="Couldn't find the epitaph version in $(SentryAndroidRoot)gradle/libs.versions.toml." />
+    <ItemGroup>
+      <EpitaphJar Include="$(GradleUserHome)/caches/modules-2/files-2.1/com.abovevacant/epitaph/$(EpitaphVersion)/*/epitaph-$(EpitaphVersion).jar" />
+    </ItemGroup>
+    <Error Condition="@(EpitaphJar->Count()) == 0" Text="epitaph-$(EpitaphVersion).jar not found in the Gradle cache at $(GradleUserHome). The Gradle build likely failed." />
+    <Copy SourceFiles="%(EpitaphJar.FullPath)" DestinationFiles="$(SentryAndroidArtifactsDestination)epitaph.jar" />
+
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to set up the Android SDK." />
   </Target>
 
