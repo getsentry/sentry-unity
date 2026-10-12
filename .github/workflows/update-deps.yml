@@ -34,7 +34,7 @@ jobs:
           name: ${{ matrix.name }}
           path: ${{ matrix.path }}
           post-update-script: ${{ matrix.post-update-script }}
-          api-token: ${{ secrets.CI_DEPLOY_KEY }}
+          ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
   unity:
     name: Unity ${{ matrix.unity-prefix }} PR
