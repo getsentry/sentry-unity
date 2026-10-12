@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- The SDK now preserves the types Mono's HTTP stack needs, so events are sent when using `Mono` with a high managed stripping level ([#2858](https://github.com/getsentry/sentry-unity/pull/2858))
+- The SDK now preserves the types Mono's HTTP stack needs, even with high stripping level. ([#2858](https://github.com/getsentry/sentry-unity/pull/2858))
 
 ### Dependencies
 
