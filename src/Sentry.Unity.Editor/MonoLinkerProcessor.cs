@@ -29,7 +29,11 @@ internal class MonoLinkerProcessor : IUnityLinkerProcessor
 
     public string? GenerateAdditionalLinkXmlFile(BuildReport report, UnityLinkerBuildPipelineData data)
     {
-        var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(report.summary.platformGroup);
+        var summary = report.summary;
+        var namedBuildTarget = summary.platformGroup == BuildTargetGroup.Standalone
+                               && summary.GetSubtarget<StandaloneBuildSubtarget>() == StandaloneBuildSubtarget.Server
+            ? NamedBuildTarget.Server
+            : NamedBuildTarget.FromBuildTargetGroup(summary.platformGroup);
         if (PlayerSettings.GetScriptingBackend(namedBuildTarget) != ScriptingImplementation.Mono2x)
         {
             return null;
