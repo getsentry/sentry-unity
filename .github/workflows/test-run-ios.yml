@@ -63,7 +63,7 @@ jobs:
         if: ${{ env.IOS_VERSION != 'latest'}}
         uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
         with:
-          xcode-version: '15.0' # to run iOS 17.0 we need Xcode 15.0
+          xcode-version: '16.4' # to run iOS 18.5 we need Xcode 16.4
 
       - name: Run iOS Integration Tests
         id: integration-test

@@ -47,7 +47,7 @@ jobs:
 
       - name: Compile Xcode project without Sentry
         if: ${{ inputs.init-type == 'runtime' && steps.cache-compiled-nosentry.outputs.cache-hit != 'true' }}
-        run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
+        run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "18.5"
         timeout-minutes: 20
 
       - name: Save compiled app without Sentry
@@ -73,7 +73,7 @@ jobs:
         run: tar -xvzf "test-app-$env:INIT_TYPE.tar.gz"
 
       - name: iOS test
-        run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "17.0"
+        run: ./scripts/compile-xcode-project.ps1 -iOSMinVersion "18.5"
         timeout-minutes: 20
 
       - name: Assert symbols and sources were uploaded
