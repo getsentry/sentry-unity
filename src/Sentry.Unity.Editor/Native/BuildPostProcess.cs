@@ -7,16 +7,28 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build;
-using UnityEditor.Callbacks;
+using UnityEditor.Build.Reporting;
 using System.Diagnostics;
 using System.Linq;
 
 namespace Sentry.Unity.Editor.Native;
 
+internal class BuildPostProcessor : IPostprocessBuildWithReport
+{
+    public int callbackOrder => 1;
+
+    public void OnPostprocessBuild(BuildReport report) =>
+        BuildPostProcess.OnPostProcessBuild(report.summary.platform, report.summary.outputPath,
+            NamedBuildTargets.FromBuildReport(report));
+}
+
 public static class BuildPostProcess
 {
-    [PostProcessBuild(1)]
-    public static void OnPostProcessBuild(BuildTarget target, string executablePath)
+    public static void OnPostProcessBuild(BuildTarget target, string executablePath) =>
+        OnPostProcessBuild(target, executablePath,
+            NamedBuildTarget.FromBuildTargetGroup(BuildPipeline.GetBuildTargetGroup(target)));
+
+    internal static void OnPostProcessBuild(BuildTarget target, string executablePath, NamedBuildTarget namedBuildTarget)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
         var isSupportedGroup = targetGroup is BuildTargetGroup.Standalone
@@ -46,7 +58,6 @@ public static class BuildPostProcess
             return;
         }
 
-        var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(targetGroup);
         var isMono = PlayerSettings.GetScriptingBackend(namedBuildTarget) == ScriptingImplementation.Mono2x;
 
         // The executable path resolves to the following when pointing Unity into a `build/platform/` directory:
