@@ -25,8 +25,8 @@ try
         -scheme "Unity-iPhone" `
         -configuration "Release" `
         -sdk "iphonesimulator" `
-        -destination "platform=iOS Simulator,OS=$iOSMinVersion" `
-        -destination "platform=iOS Simulator,OS=latest" `
+        -destination "platform=iOS Simulator,arch=x86_64,OS=$iOSMinVersion" `
+        -destination "platform=iOS Simulator,arch=x86_64,OS=latest" `
         -parallel-testing-enabled YES `
         -derivedDataPath "$ArchivePath/$ProjectName" `
     | Write-Host
