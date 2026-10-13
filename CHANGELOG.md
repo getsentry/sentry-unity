@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added the `NativeHandlerPath` option. It sets `handler_path` on the native SDK, so the out-of-process crash handler can be placed somewhere other than next to the player executable. Left unset, sentry-native keeps looking for the handler next to the executable as before. ([#2881](https://github.com/getsentry/sentry-unity/pull/2881))
+
 ### Fixes
 
 - The SDK now preserves the types Mono's HTTP stack needs, even with high stripping level. ([#2858](https://github.com/getsentry/sentry-unity/pull/2858))
