@@ -63,6 +63,10 @@ package-dev/Plugins/Windows/SentryNative~/*
 package-dev/Plugins/Linux/Sentry~/*
 package-dev/Plugins/Linux/SentryNative~/*
 
+# macOS SDK files
+package-dev/Plugins/macOS/Sentry~/*
+package-dev/Plugins/macOS/SentryNative~/*
+
 # CLI
 package-dev/Editor/sentry-cli
 

@@ -14,11 +14,7 @@ namespace Sentry.Unity.Native;
 /// <see href="https://github.com/getsentry/sentry-native"/>
 internal static class SentryNativeBridge
 {
-#if SENTRY_NATIVE_SWITCH
-    private const string SentryLib = "__Internal";
-#else
-    private const string SentryLib = "sentry";
-#endif
+    private const string SentryLib = SentryNativeLibrary.Name;
 
     private static IDiagnosticLogger? Logger; // This is also the logger we're forwarding native messages to.
     private static bool UseLibC;
@@ -28,10 +24,14 @@ internal static class SentryNativeBridge
     {
         Logger = options.DiagnosticLogger;
 
+        // Only x86-64 System V platforms need the `VaListLinux64` copy in `nativeLogImpl`. There
+        // `va_list` is `__va_list_tag[1]` - an array that decays to a pointer - so `vsnprintf`
+        // consumes the caller's list and it cannot be handed over twice. On AArch64 (Android, iOS,
+        // Switch, Switch 2, Apple silicon) `va_list` is a struct that is copied by value at every
+        // call, so the pointer can be reused as-is.
         UseLibC = Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
-            or RuntimePlatform.PS5
-            or RuntimePlatform.Switch;
+            or RuntimePlatform.PS5;
         if ((Application.platform
             is RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer)
             && RuntimeInformation.ProcessArchitecture == Architecture.X64)
@@ -105,9 +105,6 @@ internal static class SentryNativeBridge
         Logger?.LogDebug("Setting ShutdownTimeout: {0}ms", shutdownTimeoutMs);
         sentry_options_set_shutdown_timeout(cOptions, shutdownTimeoutMs);
 
-        Logger?.LogDebug("Setting EnableLogs: {0}", options.EnableLogs);
-        sentry_options_set_enable_logs(cOptions, options.EnableLogs ? 1 : 0);
-
         if (options.UnityInfo.IL2CPP)
         {
             Logger?.LogDebug("Setting the native logger");
@@ -134,12 +131,10 @@ internal static class SentryNativeBridge
 
     public static void Close() => sentry_close();
 
-    // Call after native init() to check if the application has crashed in the previous run and clear the status.
-    // Because the file is removed, the result will change on subsequent calls so it must be cached for the current runtime.
+    // Call after native init(), which reads and clears the persisted crash marker.
     internal static bool HandleCrashedLastRun(SentryUnityOptions options)
     {
         var result = sentry_get_crashed_last_run() == 1;
-        sentry_clear_crashed_last_run();
         return result;
     }
 
@@ -162,61 +157,57 @@ internal static class SentryNativeBridge
 
     internal static void AppHangPause() => sentry_app_hang_pause();
 
-    // libsentry.so
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr sentry_options_new();
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_dsn(IntPtr options, string dsn);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_release(IntPtr options, string release);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_debug(IntPtr options, int debug);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_environment(IntPtr options, string environment);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_sample_rate(IntPtr options, double rate);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_database_path(IntPtr options, string path);
 
 #if !SENTRY_NATIVE_SWITCH
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_database_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);
 #endif
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_auto_session_tracking(IntPtr options, int debug);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_attach_screenshot(IntPtr options, int attachScreenshot);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_shutdown_timeout(IntPtr options, ulong shutdown_timeout);
 
-    [DllImport(SentryLib)]
-    private static extern void sentry_options_set_enable_logs(IntPtr options, int enable_logs);
-
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_enable_app_hang_tracking(IntPtr options, int enabled);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_app_hang_timeout(IntPtr options, ulong timeout);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_app_hang_pause();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, SetLastError = true)]
     private delegate void sentry_logger_function_t(int level, IntPtr message, IntPtr argsAddress, IntPtr userData);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_logger(IntPtr options, sentry_logger_function_t logger, IntPtr userData);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_logger_enabled_when_crashed(IntPtr options, int enabled);
 
     // This method is called from the C library and forwards incoming messages to the currently set _logger.
@@ -307,14 +298,14 @@ internal static class SentryNativeBridge
     }
 
 #if SENTRY_NATIVE_PLAYSTATION || SENTRY_NATIVE_SWITCH
-    [DllImport("__Internal", EntryPoint = "vsnprintf_sentry")]
+    [DllImport("__Internal", EntryPoint = "vsnprintf_sentry", CallingConvention = CallingConvention.Cdecl)]
     private static extern int vsnprintf_sentry(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 #else
     // For Windows/Linux: use platform's native C library directly
-    [DllImport("msvcrt", EntryPoint = "vsnprintf")]
+    [DllImport("msvcrt", EntryPoint = "vsnprintf", CallingConvention = CallingConvention.Cdecl)]
     private static extern int vsnprintf_windows(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 
-    [DllImport("libc", EntryPoint = "vsnprintf")]
+    [DllImport("libc", EntryPoint = "vsnprintf", CallingConvention = CallingConvention.Cdecl)]
     private static extern int vsnprintf_linux(IntPtr buffer, UIntPtr bufferSize, IntPtr format, IntPtr args);
 #endif
 
@@ -360,21 +351,18 @@ internal static class SentryNativeBridge
             action(ptr);
         });
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern int sentry_init(IntPtr options);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern int sentry_close();
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern int sentry_get_crashed_last_run();
 
-    [DllImport(SentryLib)]
-    private static extern int sentry_clear_crashed_last_run();
-
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_reinstall_backend();
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_app_hang_heartbeat();
 }

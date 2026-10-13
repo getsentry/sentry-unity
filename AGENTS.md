@@ -50,4 +50,4 @@ Read only guide relevant to task. Do not import all guides at startup.
 ## Commits
 
 - Use direct, capitalized commit subjects without conventional-commit prefixes.
-- Include the committing agent's own `Co-Authored-By` attribution when a commit is requested.
+- Do not add agent attribution trailers such as `Co-Authored-By`.

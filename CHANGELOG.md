@@ -2,28 +2,104 @@
 
 ## Unreleased
 
-### Behavioural Changes and Deprecations
+### Dependencies
 
-- The `EnableMetrics` option is now marked as `[Obsolete]` and no longer has any effect, following the .NET SDK where metrics are always enabled. Disable the individual `Auto*Metrics` options instead, or filter emitted metrics with `SetBeforeSendMetric`. ([#2828](https://github.com/getsentry/sentry-unity/pull/2828))
+- Bump Native SDK from v0.17.0 to v0.17.2 ([#2874](https://github.com/getsentry/sentry-unity/pull/2874))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0172)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.0...0.17.2)
+- Bump Java SDK from v8.57.0 to v8.60.0 ([#2876](https://github.com/getsentry/sentry-unity/pull/2876))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8600)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.57.0...8.60.0)
+ - Bump Cocoa SDK from v9.29.0 to v9.30.1 ([#2875](https://github.com/getsentry/sentry-unity/pull/2875))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9301)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.29.0...9.30.1)
+
+## 4.10.3
 
 ### Fixes
 
+- Native crash capture now works on 32-bit Windows standalone builds. The SDK shipped only an x64 library while enabling native support for both architectures, so the player failed to load it. The P/Invokes into `sentry-native` also declare `Cdecl` now - without it the 32-bit player corrupted its stack on the first call. ([#2847](https://github.com/getsentry/sentry-unity/pull/2847))
+
+### Dependencies
+
+- Bump Native SDK from v0.16.6 to v0.17.0 ([#2862](https://github.com/getsentry/sentry-unity/pull/2862))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0170)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.16.6...0.17.0)
+
+## 4.10.2
+
+### Fixes
+
+- Fixed an Android startup crash (`DSN is required`) when initializing the native SDK at runtime alongside the Sentry Android Gradle Plugin. ([#2846](https://github.com/getsentry/sentry-unity/pull/2846))
+
+### Dependencies
+
+- Bump .NET SDK from v6.10.0 to v6.11.0 ([#2850](https://github.com/getsentry/sentry-unity/pull/2850))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6110)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.10.0...6.11.0)
+- Bump Java SDK from v8.56.0 to v8.57.0 ([#2856](https://github.com/getsentry/sentry-unity/pull/2856))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8570)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.56.0...8.57.0)
+- Bump Cocoa SDK from v9.28.0 to v9.29.0 ([#2857](https://github.com/getsentry/sentry-unity/pull/2857))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9290)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.28.0...9.29.0)
+- Bump CLI from v3.7.0 to v3.8.0 ([#2855](https://github.com/getsentry/sentry-unity/pull/2855))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#380)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.7.0...3.8.0)
+
+## 4.10.1
+
+### Fixes
+
+- When targeting Windows using the `Mono` scripting backend the SDK now correctly loads `sentry-native` to capture native crashes. ([#2842](https://github.com/getsentry/sentry-unity/pull/2842))
+- Fixed a `NoSuchFieldError` during initialization on Android when setting the `sample rate`. ([#2838](https://github.com/getsentry/sentry-unity/issues/2838))
+- Individual assemblies and plugins are now scoped to the platforms that use them. ([#2848](https://github.com/getsentry/sentry-unity/pull/2848))
+- When targeting Nintendo Switch or Switch 2 the SDK no longer fails to initialize the native layer at runtime. The respective stubs are now written to `Assets/Plugins/Sentry` so the SDK can enable and disable them before the build starts. ([#2849](https://github.com/getsentry/sentry-unity/pull/2849))
+
+### Dependencies
+
+- Bump Native SDK from v0.16.5 to v0.16.6 ([#2839](https://github.com/getsentry/sentry-unity/pull/2839))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0166)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.16.5...0.16.6)
+- Bump Cocoa SDK from v9.27.0 to v9.28.0 ([#2840](https://github.com/getsentry/sentry-unity/pull/2840))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9280)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.27.0...9.28.0)
+- Bump Java SDK from v8.55.0 to v8.56.0 ([#2841](https://github.com/getsentry/sentry-unity/pull/2841))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8560)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.55.0...8.56.0)
+
+## 4.10.0
+
+### Behavioural Changes and Deprecations
+
+- The `EnableMetrics` option is now marked as `[Obsolete]` and no longer has any effect, following the .NET SDK where metrics are always enabled. Disable the individual `Auto*Metrics` options instead, or filter emitted metrics with `SetBeforeSendMetric`. ([#2828](https://github.com/getsentry/sentry-unity/pull/2828))
+- The runtime assembly is now compiled for any platform except CloudRendering, EmbeddedLinux, PS4, tvOS and Xbox One, instead of an explicit allowlist. Platforms without a dedicated integration, like visionOS and the dedicated server targets now run the SDK in managed-only mode. ([#2834](https://github.com/getsentry/sentry-unity/pull/2834))
+
+### Features
+
+- Added Nintendo Switch 2 support. The SDK now correctly recognises the platform, providing native support and automatic debug symbol upload. Switch 2 shares the existing `SwitchNativeSupportEnabled` option. ([#2834](https://github.com/getsentry/sentry-unity/pull/2834))
+
+### Fixes
+
+- Hardened the `UnityLogger` to no longer throw when failing to format a log message. ([#2832](https://github.com/getsentry/sentry-unity/pull/2832))
 - IL2CPP line numbers now work on Android x86/x86_64 builds. il2cpp fails to report the image UUID there, so the SDK falls back to looking the debug image up by name ([#2817](https://github.com/getsentry/sentry-unity/pull/2817))
+- When targeting WebGL or Nintendo Switch without native support, `UnityWebRequestTransport` no longer opens a connection while the platform reports no network, and backs off exponentially (1s up to 300s) after a connection error instead of retrying on every envelope. ([#2833](https://github.com/getsentry/sentry-unity/pull/2833))
+- When targeting Nintendo Switch, the SDK now utilizes sentry-switch to poll the network status before sending. ([#2833](https://github.com/getsentry/sentry-unity/pull/2833))
 
 ### Dependencies
 
 - Bump .NET SDK from v6.8.0 to v6.10.0 ([#2815](https://github.com/getsentry/sentry-unity/pull/2815), [#2828](https://github.com/getsentry/sentry-unity/pull/2828))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6100)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.8.0...6.10.0)
-- Bump Native SDK from v0.16.2 to v0.16.4 ([#2820](https://github.com/getsentry/sentry-unity/pull/2820))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0164)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.16.2...0.16.4)
-- Bump Java SDK from v8.53.0 to v8.54.0 ([#2822](https://github.com/getsentry/sentry-unity/pull/2822))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8540)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.53.0...8.54.0)
-- Bump Cocoa SDK from v9.26.0 to v9.26.1 ([#2823](https://github.com/getsentry/sentry-unity/pull/2823))
-  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9261)
-  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.26.0...9.26.1)
+- Bump Native SDK from v0.16.2 to v0.16.5 ([#2820](https://github.com/getsentry/sentry-unity/pull/2820), [#2826](https://github.com/getsentry/sentry-unity/pull/2826))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0165)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.16.2...0.16.5)
+- Bump Java SDK from v8.53.0 to v8.55.0 ([#2822](https://github.com/getsentry/sentry-unity/pull/2822), [#2829](https://github.com/getsentry/sentry-unity/pull/2829))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8550)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.53.0...8.55.0)
+- Bump Cocoa SDK from v9.26.0 to v9.27.0 ([#2823](https://github.com/getsentry/sentry-unity/pull/2823), [#2830](https://github.com/getsentry/sentry-unity/pull/2830))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9270)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.26.0...9.27.0)
 - Bump CLI from v3.6.2 to v3.7.0 ([#2824](https://github.com/getsentry/sentry-unity/pull/2824))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#370)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.6.2...3.7.0)

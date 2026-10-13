@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Sentry.Unity.Native.PlayStation")]
 [assembly: InternalsVisibleTo("Sentry.Unity.Native.Switch")]
 [assembly: InternalsVisibleTo("Sentry.Unity.Native.Xbox")]
+[assembly: InternalsVisibleTo("Sentry.Unity.Native.Android")]
 [assembly: InternalsVisibleTo("Sentry.Unity.Tests")]
 [assembly: InternalsVisibleTo("Sentry.Unity.Editor")]
 [assembly: InternalsVisibleTo("Sentry.Unity.Editor.Tests")]

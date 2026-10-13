@@ -13,22 +13,34 @@ namespace Sentry.Unity.Native;
 public static class SentryNativeSwitch
 {
     // P/Invoke to sentry_switch_utils.cpp
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern int sentry_switch_utils_mount();
 
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr sentry_switch_utils_get_cache_path();
 
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern int sentry_switch_utils_is_mounted();
 
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_switch_utils_unmount();
 
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr sentry_switch_utils_get_default_user_id();
 
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+    private static extern int sentry_switch_utils_is_network_available();
+
     private static IDiagnosticLogger? Logger;
+
+    /// <summary>
+    /// Whether the console currently has a usable network.
+    /// </summary>
+    /// <remarks>
+    /// <c>Application.internetReachability</c> reports the console as reachable while it is offline,
+    /// and every send attempted in that state raises the system's "connect to the internet" dialog.
+    /// </remarks>
+    internal static bool IsNetworkAvailable() => sentry_switch_utils_is_network_available() == 1;
 
     /// <summary>
     /// Configures the native support for Nintendo Switch.
@@ -71,6 +83,9 @@ public static class SentryNativeSwitch
             Logger?.LogDebug("Native support is disabled for '{0}'.", platform);
             return;
         }
+
+        Logger?.LogDebug("Using the native SDK to determine network availability.");
+        options.NetworkAvailabilityProbe = IsNetworkAvailable;
 
         Logger?.LogDebug("Mounting temporary storage for sentry-switch.");
 

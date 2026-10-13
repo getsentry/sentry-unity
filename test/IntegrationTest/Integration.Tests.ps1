@@ -9,6 +9,7 @@
 #
 #   SENTRY_TEST_APP: path to the test app (APK, executable, .app bundle, WebGL build directory,
 #                    or Xbox packaged build directory containing a .xvc)
+#   SENTRY_TEST_SCRIPTING_BACKEND: set to "mono" for a Mono player; empty means IL2CPP
 #
 # Platform-specific environment variables:
 #   iOS:     SENTRY_IOS_VERSION - iOS simulator version (e.g. "17.0" or "latest")
@@ -440,6 +441,10 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
         It "Resolves the throw frame to its source line" {
             if ($script:Platform -in "WebGL") {
                 Set-ItResult -Skipped -Because "Source-line assertions are unsupported on $script:Platform"
+                return
+            }
+            if ($env:SENTRY_TEST_SCRIPTING_BACKEND -eq "mono") {
+                Set-ItResult -Skipped -Because "line numbers come from the IL2CPP mappings, which a Mono player does not produce"
                 return
             }
 

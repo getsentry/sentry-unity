@@ -17,6 +17,7 @@ internal interface IApplication
     string UnityVersion { get; }
     string PersistentDataPath { get; }
     RuntimePlatform Platform { get; }
+    NetworkReachability InternetReachability { get; }
 }
 
 /// <summary>
@@ -53,6 +54,8 @@ public sealed class ApplicationAdapter : IApplication
     public string PersistentDataPath => Application.persistentDataPath;
 
     public RuntimePlatform Platform => Application.platform;
+
+    public NetworkReachability InternetReachability => Application.internetReachability;
 
     private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
         => LogMessageReceived?.Invoke(condition, stackTrace, type);
