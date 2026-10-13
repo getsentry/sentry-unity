@@ -332,19 +332,12 @@
 
     <!-- sentry-android-core parses tombstones with epitaph, a Maven dependency that local AARs don't
          pull in. Ship the jar resolved by the Gradle build above; Unity picks up `libs/*.jar`. -->
-    <ReadLinesFromFile File="$(SentryAndroidRoot)gradle/libs.versions.toml">
-      <Output TaskParameter="Lines" ItemName="_SentryJavaCatalogLines" />
-    </ReadLinesFromFile>
-    <ItemGroup>
-      <_EpitaphCatalogLine Include="@(_SentryJavaCatalogLines)" Condition="$([System.String]::Copy('%(Identity)').Contains('com.abovevacant:epitaph'))" />
-    </ItemGroup>
     <PropertyGroup>
-      <_EpitaphCatalogLine>@(_EpitaphCatalogLine)</_EpitaphCatalogLine>
-      <EpitaphVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EpitaphCatalogLine)', '^.*version\s*=\s*"([^"]+)".*$', '$1'))</EpitaphVersion>
+      <EpitaphVersion>$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(SentryAndroidRoot)gradle/libs.versions.toml')), '"com\.abovevacant:epitaph",\s*version\s*=\s*"([^"]+)"').Groups[1].Value)</EpitaphVersion>
       <GradleUserHome>$(GRADLE_USER_HOME)</GradleUserHome>
       <GradleUserHome Condition="'$(GradleUserHome)' == ''">$([System.Environment]::GetFolderPath(SpecialFolder.UserProfile))/.gradle</GradleUserHome>
     </PropertyGroup>
-    <Error Condition="'$(_EpitaphCatalogLine)' == '' Or '$(EpitaphVersion)' == '$(_EpitaphCatalogLine)'" Text="Couldn't find the epitaph version in $(SentryAndroidRoot)gradle/libs.versions.toml." />
+    <Error Condition="'$(EpitaphVersion)' == ''" Text="Couldn't find an inline epitaph version in $(SentryAndroidRoot)gradle/libs.versions.toml." />
     <ItemGroup>
       <EpitaphJar Include="$(GradleUserHome)/caches/modules-2/files-2.1/com.abovevacant/epitaph/$(EpitaphVersion)/*/epitaph-$(EpitaphVersion).jar" />
     </ItemGroup>
