@@ -4,6 +4,9 @@
 
 ### Dependencies
 
+- Bump .NET SDK from v6.11.0 to v6.12.0 ([#2870](https://github.com/getsentry/sentry-unity/pull/2870))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6120)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.11.0...6.12.0)
 - Bump Native SDK from v0.17.0 to v0.17.3 ([#2874](https://github.com/getsentry/sentry-unity/pull/2874), [#2880](https://github.com/getsentry/sentry-unity/pull/2880))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0173)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.17.0...0.17.3)
