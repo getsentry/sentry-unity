@@ -343,15 +343,9 @@ public sealed class SentryUnityOptions : SentryOptions
     public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
 
     /// <summary>
-    /// Where to find the crash handler executable, i.e. <c>crashpad_handler.exe</c> on Windows.
-    /// Defaults to <c>null</c>: sentry-native then looks for it next to the player executable, which is
-    /// where the SDK's build post-process puts it.
+    /// Path to the native crash handler executable. Defaults to next to the player executable.
+    /// Applies to Windows, Linux, and macOS with <see cref="MacosBackend.Native"/>.
     /// </summary>
-    /// <remarks>
-    /// Set this only if you move the handler yourself. Use an absolute path, and on Windows move
-    /// <c>crashpad_wer.dll</c> with it. Windows, macOS and Linux only. There is no Editor field for it,
-    /// so set it from a <see cref="SentryOptionsConfiguration"/>.
-    /// </remarks>
     public string? NativeHandlerPath { get; set; }
 
     /// <summary>
