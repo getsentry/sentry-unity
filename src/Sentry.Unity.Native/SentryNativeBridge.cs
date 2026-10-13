@@ -104,17 +104,17 @@ internal static class SentryNativeBridge
 #if !SENTRY_NATIVE_SWITCH
         // Left unset, sentry-native looks for the handler next to the running executable.
         // Switch does not run an out-of-process handler, so the option does not apply there.
-        if (options.NativeHandlerPath is not null)
+        if (options.NativeHandlerPath is { } handlerPath && !string.IsNullOrWhiteSpace(handlerPath))
         {
             if (IsWindows)
             {
-                Logger?.LogDebug("Setting HandlerPath on Windows: {0}", options.NativeHandlerPath);
-                sentry_options_set_handler_pathw(cOptions, options.NativeHandlerPath);
+                Logger?.LogDebug("Setting HandlerPath on Windows: {0}", handlerPath);
+                sentry_options_set_handler_pathw(cOptions, handlerPath);
             }
             else
             {
-                Logger?.LogDebug("Setting HandlerPath: {0}", options.NativeHandlerPath);
-                sentry_options_set_handler_path(cOptions, options.NativeHandlerPath);
+                Logger?.LogDebug("Setting HandlerPath: {0}", handlerPath);
+                sentry_options_set_handler_path(cOptions, handlerPath);
             }
         }
 #endif
@@ -200,10 +200,10 @@ internal static class SentryNativeBridge
     [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_database_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_handler_path(IntPtr options, string path);
 
-    [DllImport(SentryLib)]
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_handler_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);
 #endif
 

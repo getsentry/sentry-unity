@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+- Added the `NativeHandlerPath` option. It sets `handler_path` on the native SDK, so the out-of-process crash handler can be placed somewhere other than next to the player executable. Left unset, sentry-native keeps looking for the handler next to the executable as before. ([#2853](https://github.com/getsentry/sentry-unity/pull/2853))
+
 ### Dependencies
 
 - Bump .NET SDK from v6.11.0 to v6.12.0 ([#2870](https://github.com/getsentry/sentry-unity/pull/2870))
@@ -49,12 +53,6 @@
 - Bump CLI from v3.7.0 to v3.8.0 ([#2855](https://github.com/getsentry/sentry-unity/pull/2855))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#380)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.7.0...3.8.0)
-
-## Unreleased
-
-### Features
-
-- Added the `NativeHandlerPath` option. It sets `handler_path` on the native SDK, so the out-of-process crash handler can be placed somewhere other than next to the player executable. Left unset, sentry-native keeps looking for the handler next to the executable as before. ([#2853](https://github.com/getsentry/sentry-unity/pull/2853))
 
 ## 4.10.1
 
