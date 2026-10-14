@@ -19,6 +19,13 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             options.Enabled = false;
         }
 
+        // The screenshot performance harness initializes the SDK itself, once per configuration
+        if (sceneName == ScreenshotPerfHarness.SceneName)
+        {
+            Debug.Log("Disabling the SDK auto-initialization for the screenshot performance harness.");
+            options.Enabled = false;
+        }
+
         // BeforeSend is currently limited to C# code. Native errors - such as crashes in C/C++ code - are getting
         // captured by the native SDKs, but the native SDKs won't invoke this callback.
         options.SetBeforeSend((sentryEvent, _) =>
