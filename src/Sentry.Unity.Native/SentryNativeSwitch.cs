@@ -13,22 +13,22 @@ namespace Sentry.Unity.Native;
 public static class SentryNativeSwitch
 {
     // P/Invoke to sentry_switch_utils.cpp
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern int sentry_switch_utils_mount();
 
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr sentry_switch_utils_get_cache_path();
 
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern int sentry_switch_utils_is_mounted();
 
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_switch_utils_unmount();
 
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr sentry_switch_utils_get_default_user_id();
 
-    [DllImport("__Internal")]
+    [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
     private static extern int sentry_switch_utils_is_network_available();
 
     private static IDiagnosticLogger? Logger;

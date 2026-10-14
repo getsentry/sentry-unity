@@ -371,18 +371,18 @@ jobs:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-        # On PRs only the newest simulator runs; `17.0` is an OS-compat axis (not SDK behavior) and runs on main.
-        ios-version: ${{ github.event_name == 'pull_request' && fromJSON('["latest"]') || fromJSON('["17.0", "latest"]') }}
+        # On PRs only the newest simulator runs; `18.5` is an OS-compat axis (not SDK behavior) and runs on main.
+        ios-version: ${{ github.event_name == 'pull_request' && fromJSON('["latest"]') || fromJSON('["18.5", "latest"]') }}
         init-type: ["runtime", "buildtime"]
         # Check https://support.apple.com/en-us/HT201222 for the latest minor version for a given major one.
-        # https://developer.apple.com/support/app-store/ shows that of all iOS devices
-        # - `iOS 18`: 88 %
-        # - `iOS 17`: 17 %
-        # - the rest:  4 %
-        # as of August, 2025. Therefore, let's stick to testing iOS 17 and `latest` for now.
+        # https://developer.apple.com/support/app-store/ shows that of all iPhones
+        # - `iOS 26`: 79 %
+        # - `iOS 18`: 14 %
+        # - the rest:  7 %
+        # as of June, 2026. Therefore, let's stick to testing iOS 18 and `latest` for now.
         # Numbers as string otherwise GH will reformat the runtime numbers removing the fractions.
         # Also make sure to match the versions available here:
-        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
+        #  - https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md
 
   test-run-webgl:
     name: Run WebGL ${{ matrix.unity-version }} Integration Test
@@ -430,6 +430,23 @@ jobs:
     uses: ./.github/workflows/test-build-windows.yml
     with:
       unity-version: ${{ matrix.unity-version }}
+
+  test-build-windows-x86:
+    # Unity still ships a 32-bit standalone player and it needs its own sentry-native build.
+    # One version, native backend only: x86 is on its way out and the x64 matrix already covers
+    # the version spread and the crashpad backend. The version is the first matrix entry rather
+    # than a literal, because `test-create` only builds what the matrix holds and Unity-bump PRs
+    # narrow it to the bumped version. The lists in create-unity-matrix.yml are oldest-first.
+    name: Build Windows x86 ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }} Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [test-create, create-unity-matrix]
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+    uses: ./.github/workflows/test-build-windows-x86.yml
+    with:
+      unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }}
 
   test-build-windows-mono:
     # The Mono scripting backend resolves P/Invokes differently than IL2CPP, so it needs its own
@@ -499,6 +516,20 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       platform: windows
       backend: ${{ matrix.backend }}
+
+  test-run-windows-x86:
+    name: Run Windows x86 native ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }} Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [test-build-windows-x86, create-unity-matrix]
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+    uses: ./.github/workflows/test-run-desktop.yml
+    with:
+      unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }}
+      platform: windows
+      architecture: x86
+      backend: native
 
   test-run-windows-mono:
     name: Run Windows Mono ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }} Integration Test

@@ -16,12 +16,18 @@ $SDKs = @(
     @{
         Name = "Windows"
         Destination = Join-Path $ArtifactsDestination "Windows/Sentry~"
-        CheckFile = "sentry-native.dll"
+        CheckFiles = @(
+            "x64/sentry-native.dll",
+            "x86/sentry-native.dll"
+        )
     },
     @{
         Name = "WindowsNative"
         Destination = Join-Path $ArtifactsDestination "Windows/SentryNative~"
-        CheckFile = "sentry-native.dll"
+        CheckFiles = @(
+            "x64/sentry-native.dll",
+            "x86/sentry-native.dll"
+        )
     },
     @{
         Name = "Linux"

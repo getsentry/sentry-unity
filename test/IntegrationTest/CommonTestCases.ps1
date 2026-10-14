@@ -28,6 +28,10 @@ $CommonTestCases = @(
                 Set-ItResult -Skipped -Because "DependencyConflict is not installed on Unity 2021 + WebGL"
                 return
             }
+            if ($env:SENTRY_TEST_SCRIPTING_BACKEND -eq "mono") {
+                Set-ItResult -Skipped -Because "DependencyConflict is not installed on Mono"
+                return
+            }
 
             $RunResult.Output | Where-Object { $_ -match "DependencyConflict: FAILED" } |
                 Should -BeNullOrEmpty -Because "the DependencyConflict package threw at runtime - assembly aliasing likely regressed"

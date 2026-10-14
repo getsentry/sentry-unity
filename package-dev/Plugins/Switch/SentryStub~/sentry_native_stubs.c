@@ -24,6 +24,14 @@ typedef union {
 /* Null value constant */
 static const sentry_value_t SENTRY_VALUE_NULL = {0};
 
+/* sentry_uuid_t is a 16-byte struct in sentry-native */
+typedef struct {
+    char bytes[16];
+} sentry_uuid_t;
+
+/* Nil UUID, returned by sentry-native when an attachment is not added */
+static const sentry_uuid_t SENTRY_UUID_NIL = {{0}};
+
 /*
  * =============================================================================
  * sentry-native Core Functions
@@ -100,18 +108,6 @@ void sentry_options_set_attach_screenshot(void* options, int attach)
 {
     (void)options;
     (void)attach;
-}
-
-void sentry_options_set_enable_metrics(void* options, int enable_metrics)
-{
-    (void)options;
-    (void)enable_metrics;
-}
-
-void sentry_options_set_enable_logs(void* options, int enable_logs)
-{
-    (void)options;
-    (void)enable_logs;
 }
 
 void sentry_options_set_shutdown_timeout(void* options, uint64_t shutdown_timeout)
@@ -312,18 +308,18 @@ void sentry_set_environment(const char* environment)
     (void)environment;
 }
 
-void* sentry_attach_file(const char* path)
+sentry_uuid_t sentry_attach_file(const char* path)
 {
     (void)path;
-    return NULL;
+    return SENTRY_UUID_NIL;
 }
 
-void* sentry_attach_bytes(const char* buffer, size_t buffer_length, const char* filename)
+sentry_uuid_t sentry_attach_bytes(const char* buffer, size_t buffer_length, const char* filename)
 {
     (void)buffer;
     (void)buffer_length;
     (void)filename;
-    return NULL;
+    return SENTRY_UUID_NIL;
 }
 
 void sentry_clear_attachments(void)
@@ -340,11 +336,6 @@ void sentry_clear_attachments(void)
 int sentry_get_crashed_last_run(void)
 {
     /* Return 0 - no crash detected (since we're not tracking) */
-    return 0;
-}
-
-int sentry_clear_crashed_last_run(void)
-{
     return 0;
 }
 

@@ -2,6 +2,48 @@
 
 ## Unreleased
 
+### Features
+
+- Added the `NativeHandlerPath` option. It sets `handler_path` on the native SDK, so the out-of-process crash handler can be placed somewhere other than next to the player executable. Left unset, sentry-native keeps looking for the handler next to the executable as before. ([#2881](https://github.com/getsentry/sentry-unity/pull/2881))
+
+### Fixes
+
+- The SDK now preserves the types Mono's HTTP stack needs, even with high stripping level. ([#2858](https://github.com/getsentry/sentry-unity/pull/2858))
+- When targeting a dedicated server, the SDK now relies on the actual scripting backend to set up IL2CPP line number and native support and to set up the automatic debug symbol upload ([#2882](https://github.com/getsentry/sentry-unity/pull/2882))
+
+### Dependencies
+
+- Bump .NET SDK from v6.11.0 to v6.12.0 ([#2870](https://github.com/getsentry/sentry-unity/pull/2870))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6120)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.11.0...6.12.0)
+- Bump Native SDK from v0.17.0 to v0.17.3 ([#2874](https://github.com/getsentry/sentry-unity/pull/2874), [#2880](https://github.com/getsentry/sentry-unity/pull/2880))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0173)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.0...0.17.3)
+- Bump Java SDK from v8.57.0 to v8.60.0 ([#2876](https://github.com/getsentry/sentry-unity/pull/2876))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8600)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.57.0...8.60.0)
+ - Bump Cocoa SDK from v9.29.0 to v9.30.1 ([#2875](https://github.com/getsentry/sentry-unity/pull/2875))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9301)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.29.0...9.30.1)
+
+## 4.10.3
+
+### Fixes
+
+- Native crash capture now works on 32-bit Windows standalone builds. The SDK shipped only an x64 library while enabling native support for both architectures, so the player failed to load it. The P/Invokes into `sentry-native` also declare `Cdecl` now - without it the 32-bit player corrupted its stack on the first call. ([#2847](https://github.com/getsentry/sentry-unity/pull/2847))
+
+### Dependencies
+
+- Bump Native SDK from v0.16.6 to v0.17.0 ([#2862](https://github.com/getsentry/sentry-unity/pull/2862))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0170)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.16.6...0.17.0)
+
+## 4.10.2
+
+### Fixes
+
+- Fixed an Android startup crash (`DSN is required`) when initializing the native SDK at runtime alongside the Sentry Android Gradle Plugin. ([#2846](https://github.com/getsentry/sentry-unity/pull/2846))
+
 ### Dependencies
 
 - Bump .NET SDK from v6.10.0 to v6.11.0 ([#2850](https://github.com/getsentry/sentry-unity/pull/2850))
@@ -10,6 +52,9 @@
 - Bump Java SDK from v8.56.0 to v8.57.0 ([#2856](https://github.com/getsentry/sentry-unity/pull/2856))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8570)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.56.0...8.57.0)
+- Bump Cocoa SDK from v9.28.0 to v9.29.0 ([#2857](https://github.com/getsentry/sentry-unity/pull/2857))
+  - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9290)
+  - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.28.0...9.29.0)
 - Bump CLI from v3.7.0 to v3.8.0 ([#2855](https://github.com/getsentry/sentry-unity/pull/2855))
   - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#380)
   - [diff](https://github.com/getsentry/sentry-cli/compare/3.7.0...3.8.0)

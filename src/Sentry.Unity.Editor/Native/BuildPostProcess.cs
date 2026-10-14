@@ -7,16 +7,21 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build;
-using UnityEditor.Callbacks;
+using UnityEditor.Build.Reporting;
 using System.Diagnostics;
 using System.Linq;
 
 namespace Sentry.Unity.Editor.Native;
 
-public static class BuildPostProcess
+internal class BuildPostProcess : IPostprocessBuildWithReport
 {
-    [PostProcessBuild(1)]
-    public static void OnPostProcessBuild(BuildTarget target, string executablePath)
+    public int callbackOrder => 1;
+
+    public void OnPostprocessBuild(BuildReport report) =>
+        OnPostProcessBuild(report.summary.platform, report.summary.outputPath,
+            NamedBuildTargets.FromBuildReport(report));
+
+    private static void OnPostProcessBuild(BuildTarget target, string executablePath, NamedBuildTarget namedBuildTarget)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
         var isSupportedGroup = targetGroup is BuildTargetGroup.Standalone
@@ -46,7 +51,6 @@ public static class BuildPostProcess
             return;
         }
 
-        var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(targetGroup);
         var isMono = PlayerSettings.GetScriptingBackend(namedBuildTarget) == ScriptingImplementation.Mono2x;
 
         // The executable path resolves to the following when pointing Unity into a `build/platform/` directory:
@@ -144,6 +148,15 @@ public static class BuildPostProcess
     internal const string LinuxLibraryName = "libsentry-native.so";
     internal const string MacOSLibraryName = "libsentry-native.dylib";
 
+    // Windows ships both architectures. Unity still builds a 32-bit standalone player and it cannot
+    // load the x64 library, so `native-sdks.targets` writes each backend into an `x86`/`x64` subfolder.
+    internal static string GetWindowsBackendDir(BuildTarget target, SentryUnityOptions options)
+    {
+        var backend = options.Experimental.WindowsBackend == WindowsBackend.Native ? "SentryNative~" : "Sentry~";
+        var arch = target == BuildTarget.StandaloneWindows ? "x86" : "x64";
+        return Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/{backend}/{arch}");
+    }
+
     private readonly struct NativePluginArtifact(string source, string destination, bool isExecutable = false)
     {
         public readonly string Source = source;
@@ -160,9 +173,7 @@ public static class BuildPostProcess
         {
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
-                var windowsBackendSourcePath = options.Experimental.WindowsBackend == WindowsBackend.Native
-                    ? Path.Combine(pluginsPath, "Windows", "SentryNative~")
-                    : Path.Combine(pluginsPath, "Windows", "Sentry~");
+                var windowsBackendSourcePath = GetWindowsBackendDir(target, options);
                 if (!Directory.Exists(windowsBackendSourcePath))
                 {
                     var buildTarget = options.Experimental.WindowsBackend == WindowsBackend.Native ? "BuildWindowsNativeSDK" : "BuildWindowsSDK";
@@ -392,11 +403,7 @@ public static class BuildPostProcess
                 // Sentry native SDK symbols from package.
                 // Glob *.pdb from whichever backend's source dir is in use, so adding
                 // or removing PDBs at build time doesn't require touching this code.
-                var windowsBackendDir = options.Experimental.WindowsBackend == WindowsBackend.Native
-                    ? "SentryNative~"
-                    : "Sentry~";
-                var windowsPdbDir = Path.GetFullPath(
-                    $"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/{windowsBackendDir}");
+                var windowsPdbDir = GetWindowsBackendDir(target, options);
                 if (Directory.Exists(windowsPdbDir))
                 {
                     foreach (var pdb in Directory.GetFiles(windowsPdbDir, "*.pdb"))

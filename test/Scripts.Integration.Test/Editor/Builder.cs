@@ -126,6 +126,14 @@ public class Builder
             defaultBuildPath: "./Builds/Windows/test.exe");
     }
 
+    [MenuItem("Tools/Builder/Windows x86")]
+    public static void BuildWindowsX86Il2CPPPlayer()
+    {
+        Debug.Log("Builder: Building Windows x86 IL2CPP Player");
+        BuildIl2CPPPlayer(BuildTarget.StandaloneWindows, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Windows/test.exe");
+    }
+
     [MenuItem("Tools/Builder/Windows Mono")]
     public static void BuildWindowsMonoPlayer()
     {
@@ -203,6 +211,9 @@ public class Builder
     public static void BuildIOSProject()
     {
         Debug.Log("Builder: Building iOS Project");
+#if UNITY_2022_3_OR_NEWER
+        PlayerSettings.iOS.simulatorSdkArchitecture = AppleMobileArchitectureSimulator.Universal;
+#endif
         BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS, BuildOptions.StrictMode,
             defaultBuildPath: "./Builds/iOS/");
     }

@@ -1,7 +1,3 @@
-param (
-    [string] $iOSMinVersion = ""
-)
-
 . $PSScriptRoot/../test/Scripts.Integration.Test/common.ps1
 
 $ProjectName = "Unity-iPhone"
@@ -25,8 +21,7 @@ try
         -scheme "Unity-iPhone" `
         -configuration "Release" `
         -sdk "iphonesimulator" `
-        -destination "platform=iOS Simulator,OS=$iOSMinVersion" `
-        -destination "platform=iOS Simulator,OS=latest" `
+        -destination "generic/platform=iOS Simulator" `
         -parallel-testing-enabled YES `
         -derivedDataPath "$ArchivePath/$ProjectName" `
     | Write-Host
