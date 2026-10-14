@@ -35,7 +35,8 @@ internal static class EnrichmentTab
                 new GUIContent("Attach Screenshots to Events", "Try to attach current screenshot on events.\n" +
                                                     "This is an early-access feature and may not work on all platforms (it is explicitly disabled on WebGL).\n" +
                                                     "The SDK periodically captures the screen and attaches the most recent capture to an event.\n" +
-                                                    "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
+                                                    "A screenshot might not be able to be attached, for example when the error happens on a background thread\n" +
+                                                    "on a device without async GPU readback support, or with a BeforeSendScreenshot callback set."),
                 options.AttachScreenshot);
             EditorGUI.indentLevel++;
 

@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Behavioral Changes
+
+- Screenshots are now attached to the error event itself and sent in the same envelope, instead of being sent separately after the fact. They no longer get orphaned when their event gets dropped, e.g. by sampling or rate limiting. The SDK keeps a recently captured frame around and attaches that, so a screenshot can be up to `ScreenshotCaptureInterval` old. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- `SetBeforeCaptureScreenshot` now decides whether the screenshot gets attached and can be invoked on a background thread. Events captured on background threads now get a screenshot as well, on devices that support async GPU readback. With `SetBeforeSendScreenshot` set, screenshots only get attached to events captured on the main thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+
+### Features
+
+- Added `ScreenshotCaptureInterval` to control how often the SDK refreshes the screenshot it attaches to events. It defaults to 250 ms. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+
+### Fixes
+
+- Attaching a screenshot no longer stalls the frame an error happens in. The frame gets read back from the GPU asynchronously and only encoded once the SDK writes the event to disk or the network on its background worker. On an iPhone at `ScreenshotQuality.High`, this takes an error on the main thread from blocking it for ~35 ms down to no measurable overhead. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+
 ### Dependencies
 
 - Bump .NET SDK from v6.11.0 to v6.12.0 ([#2870](https://github.com/getsentry/sentry-unity/pull/2870))

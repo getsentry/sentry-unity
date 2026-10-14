@@ -1,9 +1,13 @@
+using System;
 using Sentry.Extensibility;
+using Unity.Profiling;
 
 namespace Sentry.Unity;
 
 public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 {
+    private static readonly ProfilerMarker ProcessMarker = new("Sentry.Screenshot.Process");
+
     private readonly SentryUnityOptions _options;
     private readonly SentryScreenshotCache _cache;
 
@@ -33,30 +37,38 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 
     public SentryEvent? Process(SentryEvent @event, SentryHint hint)
     {
-        // Reading the cached frame back off the GPU is a main thread only operation.
-        if (!MainThreadData.IsMainThread())
+        using var _ = ProcessMarker.Auto();
+
+        // A processor throwing drops the whole event, so a failing callback must only cost the screenshot.
+        try
         {
-            _options.LogDebug("Screenshot capture skipped. Can't capture screenshots on other than the main thread.");
+            if (_options.BeforeCaptureScreenshotInternal?.Invoke(@event) is false)
+            {
+                _options.LogInfo("Screenshot capture skipped by BeforeCaptureScreenshot callback.");
+                return @event;
+            }
+        }
+        catch (Exception e)
+        {
+            _options.LogError(e, "The BeforeCaptureScreenshot callback threw an exception. Skipping the screenshot.");
             return @event;
         }
 
-        if (_options.BeforeCaptureScreenshotInternal?.Invoke(@event) is false)
-        {
-            _options.LogInfo("Screenshot capture skipped by BeforeCaptureScreenshot callback.");
-            return @event;
-        }
-
+        // Without a callback to apply, the encode gets deferred until the envelope is serialized on the SDK's
+        // background worker. The callback operates on a Texture2D, which ties it to encoding right away.
         var beforeSend = _options.BeforeSendScreenshotInternal;
-        var screenshotBytes = _cache.TryEncodeLatest(beforeSend is null
-            ? null
-            : screenshot => beforeSend(screenshot, @event));
+        var content = beforeSend is null
+            ? _cache.TryGetLatestContent()
+            : _cache.TryEncodeLatest(screenshot => beforeSend(screenshot, @event)) is { } bytes
+                ? new ByteAttachmentContent(bytes)
+                : null;
 
-        if (screenshotBytes is null)
+        if (content is null)
         {
             return @event;
         }
 
-        hint.AddAttachment(screenshotBytes, "screenshot.jpg", AttachmentType.Default, "image/jpeg");
+        hint.Attachments.Add(new SentryAttachment(AttachmentType.Default, content, "screenshot.jpg", "image/jpeg"));
         _options.LogDebug("Screenshot attached to event {0}", @event.EventId);
 
         return @event;

@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
+using Sentry.Extensibility;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -12,7 +14,7 @@ public class ScreenshotEventProcessorTests
 {
     private class TestScreenshotCache : SentryScreenshotCache
     {
-        public int EncodeCallCount { get; private set; }
+        public int CacheCallCount { get; private set; }
         public byte[]? Bytes { get; set; } = { 1, 2, 3 };
         public Texture2D? TransformInput { get; set; }
 
@@ -20,9 +22,15 @@ public class ScreenshotEventProcessorTests
 
         internal override void Refresh() { }
 
+        internal override IAttachmentContent? TryGetLatestContent()
+        {
+            CacheCallCount++;
+            return Bytes is null ? null : new ByteAttachmentContent(Bytes);
+        }
+
         internal override byte[]? TryEncodeLatest(Func<Texture2D, Texture2D?>? transform = null)
         {
-            EncodeCallCount++;
+            CacheCallCount++;
 
             if (transform is null)
             {
@@ -91,7 +99,37 @@ public class ScreenshotEventProcessorTests
 
         processor.Process(new SentryEvent(), hint);
 
-        Assert.AreEqual(0, cache.EncodeCallCount);
+        Assert.AreEqual(0, cache.CacheCallCount);
+        Assert.IsEmpty(hint.Attachments);
+    }
+
+    [Test]
+    public void Process_OffTheMainThread_AttachesToHint()
+    {
+        // Errors raised on background threads must not lose their screenshot - the cache decides
+        // whether it can encode on the calling thread.
+        var (processor, cache) = GetSut();
+        var hint = new SentryHint();
+
+        Task.Run(() => processor.Process(new SentryEvent(), hint)).Wait();
+
+        Assert.AreEqual(1, cache.CacheCallCount);
+        Assert.AreEqual(1, hint.Attachments.Count);
+    }
+
+    [Test]
+    public void Process_BeforeCaptureScreenshotThrows_ReturnsEventWithoutAttachment()
+    {
+        var options = new SentryUnityOptions();
+        options.SetBeforeCaptureScreenshot(_ => throw new InvalidOperationException("test"));
+        var (processor, cache) = GetSut(options);
+        var hint = new SentryHint();
+        var @event = new SentryEvent();
+
+        var processed = processor.Process(@event, hint);
+
+        Assert.AreSame(@event, processed);
+        Assert.AreEqual(0, cache.CacheCallCount);
         Assert.IsEmpty(hint.Attachments);
     }
 

@@ -21,7 +21,8 @@
 - Startup transaction: `app.start`, name `runtime.initialization`; spans cover subsystem registration, assemblies, splash screen, and first scene.
 - Scene tracing replaces global `SceneManagerAPI.overrideAPI`; it overwrites application customization and logs a warning.
 - C# ANR monitoring pauses while backgrounded. Cocoa/native app-hang tracking can disable it to prevent duplicate reports.
-- Screenshot capture and view-hierarchy capture must run on Unity main thread.
+- View-hierarchy capture must run on Unity main thread.
+- Screenshots: `SentryScreenshotCache` refreshes a frame on the main thread at end of frame and reads it back via `AsyncGPUReadback`. The processor attaches it to the event's own envelope; `SentryScreenshotAttachmentContent` defers the JPG encode until the envelope is serialized on the SDK's worker. Without async readback or with `BeforeSendScreenshot` set, it encodes right away on the main thread.
 
 ## Tests
 
