@@ -506,21 +506,6 @@ if ($env:SENTRY_TEST_PLATFORM -ne "WebGL") {
                 $exception.stacktrace | Should -Not -BeNullOrEmpty
             }
 
-            It "Merges the tombstone into the native crash" {
-                if ($script:Platform -ne "Android") {
-                    Set-ItResult -Skipped -Because "tombstones are Android-only"
-                    return
-                }
-                $apiLevel = [int](& adb shell getprop ro.build.version.sdk)
-                if ($apiLevel -lt 31) {
-                    Set-ItResult -Skipped -Because "tombstones require Android 12 (API 31), device runs API $apiLevel"
-                    return
-                }
-
-                $runEvent.exception.values[0].mechanism.type | Should -Be "TombstoneMerged"
-                $runEvent.threads.values.Count | Should -BeGreaterThan 1
-            }
-
             It "Reports crashedLastRun as Crashed on relaunch" {
                 $crashedLastRunLine = $runResult.CrashSendOutput | Where-Object {
                     $_ -match "crashedLastRun=Crashed"

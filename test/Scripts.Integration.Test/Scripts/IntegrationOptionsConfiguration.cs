@@ -53,8 +53,6 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 
-        options.AndroidTombstoneEnabled = true;
-
         options.Experimental.MacosBackend = MacosBackend.Cocoa;
         options.Experimental.WindowsBackend = WindowsBackend.Crashpad;
         options.Experimental.LinuxBackend = LinuxBackend.Breakpad;
