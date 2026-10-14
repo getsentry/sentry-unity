@@ -13,22 +13,15 @@ using System.Linq;
 
 namespace Sentry.Unity.Editor.Native;
 
-internal class BuildPostProcessor : IPostprocessBuildWithReport
+internal class BuildPostProcess : IPostprocessBuildWithReport
 {
     public int callbackOrder => 1;
 
     public void OnPostprocessBuild(BuildReport report) =>
-        BuildPostProcess.OnPostProcessBuild(report.summary.platform, report.summary.outputPath,
+        OnPostProcessBuild(report.summary.platform, report.summary.outputPath,
             NamedBuildTargets.FromBuildReport(report));
-}
 
-public static class BuildPostProcess
-{
-    public static void OnPostProcessBuild(BuildTarget target, string executablePath) =>
-        OnPostProcessBuild(target, executablePath,
-            NamedBuildTarget.FromBuildTargetGroup(BuildPipeline.GetBuildTargetGroup(target)));
-
-    internal static void OnPostProcessBuild(BuildTarget target, string executablePath, NamedBuildTarget namedBuildTarget)
+    private static void OnPostProcessBuild(BuildTarget target, string executablePath, NamedBuildTarget namedBuildTarget)
     {
         var targetGroup = BuildPipeline.GetBuildTargetGroup(target);
         var isSupportedGroup = targetGroup is BuildTargetGroup.Standalone
