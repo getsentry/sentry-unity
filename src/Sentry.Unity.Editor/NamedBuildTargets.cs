@@ -10,8 +10,11 @@ namespace Sentry.Unity.Editor;
 /// </summary>
 internal static class NamedBuildTargets
 {
+    // `GetSubtarget` throws on platforms without a subtarget, e.g. Android.
     internal static NamedBuildTarget FromBuildReport(BuildReport report) =>
-        From(report.summary.platformGroup, report.summary.GetSubtarget<StandaloneBuildSubtarget>());
+        report.summary.platformGroup == BuildTargetGroup.Standalone
+            ? From(BuildTargetGroup.Standalone, report.summary.GetSubtarget<StandaloneBuildSubtarget>())
+            : NamedBuildTarget.FromBuildTargetGroup(report.summary.platformGroup);
 
     internal static NamedBuildTarget From(BuildTargetGroup group, StandaloneBuildSubtarget subtarget) =>
         group == BuildTargetGroup.Standalone && subtarget == StandaloneBuildSubtarget.Server

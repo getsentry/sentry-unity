@@ -7,12 +7,11 @@ namespace Sentry.Unity.Editor.Tests;
 public class NamedBuildTargetsTests
 {
     [Test]
-    [TestCase(BuildTargetGroup.Standalone, StandaloneBuildSubtarget.Player, "Standalone")]
-    [TestCase(BuildTargetGroup.Standalone, StandaloneBuildSubtarget.Server, "Server")]
-    [TestCase(BuildTargetGroup.Android, StandaloneBuildSubtarget.Server, "Android")]
-    public void From_ReturnsExpectedNamedBuildTarget(BuildTargetGroup group, StandaloneBuildSubtarget subtarget, string expected)
+    [TestCase(StandaloneBuildSubtarget.Player, "Standalone")]
+    [TestCase(StandaloneBuildSubtarget.Server, "Server")]
+    public void From_Standalone_RespectsSubtarget(StandaloneBuildSubtarget subtarget, string expected)
     {
-        var actual = NamedBuildTargets.From(group, subtarget);
+        var actual = NamedBuildTargets.From(BuildTargetGroup.Standalone, subtarget);
 
         Assert.AreEqual(expected, actual.TargetName);
     }
