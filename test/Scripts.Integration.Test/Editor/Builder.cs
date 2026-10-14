@@ -211,6 +211,9 @@ public class Builder
     public static void BuildIOSProject()
     {
         Debug.Log("Builder: Building iOS Project");
+#if UNITY_2022_3_OR_NEWER
+        PlayerSettings.iOS.simulatorSdkArchitecture = AppleMobileArchitectureSimulator.Universal;
+#endif
         BuildIl2CPPPlayer(BuildTarget.iOS, BuildTargetGroup.iOS, BuildOptions.StrictMode,
             defaultBuildPath: "./Builds/iOS/");
     }
