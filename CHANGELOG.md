@@ -13,7 +13,7 @@
 
 ### Fixes
 
-- Attaching a screenshot no longer stalls the frame an error happens in. The frame gets read back from the GPU asynchronously and only encoded once the SDK writes the event to disk or the network on its background worker. On an iPhone at `ScreenshotQuality.High`, this takes an error on the main thread from blocking it for ~35 ms down to no measurable overhead. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Attaching a screenshot no longer reads back and encodes the frame on the main thread. The frame gets read back from the GPU asynchronously and only encoded once the SDK writes the event's envelope on its background worker. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Dependencies
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Sentry.Extensibility;
-using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -26,10 +25,6 @@ internal class SentryScreenshotCache : IDisposable
     // Frames held on to by attachments waiting for their envelope to get serialized. Past this, attaching encodes
     // right away, which bounds the memory pending screenshots can hold on to.
     internal const int MaxPendingFrames = 2;
-
-    private static readonly ProfilerMarker RefreshMarker = new("Sentry.Screenshot.Refresh");
-    private static readonly ProfilerMarker ReadbackCompleteMarker = new("Sentry.Screenshot.ReadbackComplete");
-    private static readonly ProfilerMarker EncodeMarker = new("Sentry.Screenshot.Encode");
 
     private readonly SentryUnityOptions _options;
     private readonly bool _useAsyncReadback;
@@ -102,8 +97,6 @@ internal class SentryScreenshotCache : IDisposable
         {
             return;
         }
-
-        using var _ = RefreshMarker.Auto();
 
         var screenWidth = Screen.width;
         var screenHeight = Screen.height;
@@ -182,8 +175,6 @@ internal class SentryScreenshotCache : IDisposable
         {
             return;
         }
-
-        using var _ = ReadbackCompleteMarker.Auto();
 
         try
         {
@@ -363,11 +354,7 @@ internal class SentryScreenshotCache : IDisposable
         {
             screenshot = ReadTexture();
 
-            byte[]? bytes;
-            using (EncodeMarker.Auto())
-            {
-                bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
-            }
+            var bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
 
             if (bytes is null || bytes.Length == 0)
             {
@@ -423,11 +410,7 @@ internal class SentryScreenshotCache : IDisposable
                 screenshot = transformed;
             }
 
-            byte[]? bytes;
-            using (EncodeMarker.Auto())
-            {
-                bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
-            }
+            var bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
 
             if (bytes is null || bytes.Length == 0)
             {

@@ -1,7 +1,5 @@
 using System;
-using System.Diagnostics;
 using Sentry.Extensibility;
-using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
@@ -18,8 +16,6 @@ namespace Sentry.Unity;
 /// </remarks>
 internal sealed class SentryScreenshotFrame
 {
-    private static readonly ProfilerMarker EncodeMarker = new("Sentry.Screenshot.Encode");
-
     // Serializes encoders. Retiring never takes it, so the main thread can't get blocked by an encode in progress.
     private readonly object _encodeLock = new();
     private volatile byte[]? _pixels;
@@ -78,9 +74,6 @@ internal sealed class SentryScreenshotFrame
 
             try
             {
-                using var _ = EncodeMarker.Auto();
-                var start = Stopwatch.GetTimestamp();
-
                 // Thread safe, so it can run wherever the attachment gets serialized
                 var bytes = ImageConversion.EncodeArrayToJPG(pixels, GraphicsFormat.R8G8B8A8_UNorm,
                     (uint)Width, (uint)Height, 0, options.ScreenshotCompression);
@@ -88,10 +81,6 @@ internal sealed class SentryScreenshotFrame
                 if (bytes is { Length: > 0 })
                 {
                     _encoded = bytes;
-
-                    // The profiler under-reports long samples on background threads, so the duration gets logged
-                    var elapsedMs = (Stopwatch.GetTimestamp() - start) * 1000.0 / Stopwatch.Frequency;
-                    options.LogDebug("Screenshot encoded in {0} ms to {1} bytes.", elapsedMs, bytes.Length);
                 }
                 else
                 {

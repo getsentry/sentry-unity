@@ -1,13 +1,10 @@
 using System;
 using Sentry.Extensibility;
-using Unity.Profiling;
 
 namespace Sentry.Unity;
 
 public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 {
-    private static readonly ProfilerMarker ProcessMarker = new("Sentry.Screenshot.Process");
-
     private readonly SentryUnityOptions _options;
     private readonly SentryScreenshotCache _cache;
 
@@ -37,8 +34,6 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 
     public SentryEvent? Process(SentryEvent @event, SentryHint hint)
     {
-        using var _ = ProcessMarker.Auto();
-
         // A processor throwing drops the whole event, so a failing callback must only cost the screenshot.
         try
         {
