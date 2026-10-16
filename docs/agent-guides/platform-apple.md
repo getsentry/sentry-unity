@@ -19,6 +19,7 @@
 - App-hang tracking disables the C# ANR watchdog on iOS and macOS when the Cocoa backend is active.
 - macOS Cocoa screenshots are disabled because UIKit is unavailable.
 - Cocoa attachment synchronization is not implemented.
+- iOS external initialization: C# never initializes or closes Cocoa, attaches only if the host app already initialized it, keeps the host's SDK name, and keeps the C# ANR watchdog.
 
 ## iOS Export
 

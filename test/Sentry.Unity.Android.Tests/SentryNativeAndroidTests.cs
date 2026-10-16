@@ -231,4 +231,44 @@ public class SentryNativeAndroidTests
 
         Assert.Null(options.ScopeObserver);
     }
+
+    [Test]
+    public void Configure_ExternalNotInitialized_LogsWarningAndDoesNotInitialize()
+    {
+        var options = new SentryUnityOptions
+        {
+            Debug = true,
+            DiagnosticLevel = SentryLevel.Debug,
+            DiagnosticLogger = _logger,
+            AndroidNativeInitializationType = NativeInitializationType.External
+        };
+        _testSentryJava.Enabled = false;
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.IsTrue(_logger.Logs.Any(log =>
+            log.logLevel == SentryLevel.Warning &&
+            log.message.Contains("expected to be initialized by the app")));
+        Assert.False(_testSentryJava.InitCalled);
+        Assert.Null(options.ScopeObserver);
+        Assert.False(options.EnableScopeSync);
+    }
+
+    [Test]
+    public void Configure_ExternalInitialized_AttachesWithoutTakingOwnership()
+    {
+        var options = new SentryUnityOptions
+        {
+            AndroidNativeInitializationType = NativeInitializationType.External
+        };
+        _testSentryJava.Enabled = true;
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.False(_testSentryJava.InitCalled);
+        Assert.IsAssignableFrom<AndroidJavaScopeObserver>(options.ScopeObserver);
+        Assert.True(options.EnableScopeSync);
+        Assert.True(_reinstallCalled);
+        Assert.Null(options.NativeSupportCloseCallback);
+    }
 }

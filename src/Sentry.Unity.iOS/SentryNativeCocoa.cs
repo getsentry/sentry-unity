@@ -30,11 +30,20 @@ public static class SentryNativeCocoa
             return;
         }
 
+        var isExternal = platform == RuntimePlatform.IPhonePlayer &&
+                         options.IosNativeInitializationType is NativeInitializationType.External;
+
         if (platform == RuntimePlatform.IPhonePlayer)
         {
             if (SentryCocoaBridgeProxy.IsEnabled())
             {
                 Logger?.LogDebug("The native SDK is already initialized");
+            }
+            else if (isExternal)
+            {
+                Logger?.LogWarning("The native SDK is expected to be initialized by the app but it is not. " +
+                                   "Make sure the app initializes Sentry before the game starts. Skipping native support.");
+                return;
             }
             else if (!SentryCocoaBridgeProxy.Init(options))
             {
@@ -55,7 +64,8 @@ public static class SentryNativeCocoa
             options.ScopeObserver = new NativeScopeObserver("macOS", options);
         }
 
-        if (options.EnableAppHangTracking)
+        // The app's options decide whether sentry-cocoa tracks app hangs, so the C# ANR watchdog stays in charge.
+        if (!isExternal && options.EnableAppHangTracking)
         {
             Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-cocoa handles app hang detection.");
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -63,7 +73,10 @@ public static class SentryNativeCocoa
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        SentryCocoaBridgeProxy.SetSdkName(); // Since we're not building the SDK we have to overwrite the name here
+        if (!isExternal)
+        {
+            SentryCocoaBridgeProxy.SetSdkName(); // Since we're not building the SDK we have to overwrite the name here
+        }
 
         options.NativeContextWriter = new NativeContextWriter();
         options.EnableScopeSync = true;
@@ -77,7 +90,12 @@ public static class SentryNativeCocoa
             return crashedLastRun;
         };
 
-        options.NativeSupportCloseCallback += () => Close(options);
+        // The app owns the SDK's lifetime.
+        if (!isExternal)
+        {
+            options.NativeSupportCloseCallback += () => Close(options);
+        }
+
         if (options.UnityInfo.IL2CPP)
         {
             var installationId = SentryCocoaBridgeProxy.GetInstallationId();

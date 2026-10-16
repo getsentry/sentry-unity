@@ -267,6 +267,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// When set to <see cref="NativeInitializationType.BuildTime"/>, the options are written and hardcoded into the
     /// Xcode project during the build process. This means that the options cannot be changed at runtime, as they are
     /// embedded into the project itself.
+    /// When set to <see cref="NativeInitializationType.External"/>, the app that embeds the game initializes the native
+    /// SDK, e.g. when using Unity as a Library.
     /// </remarks>
     public NativeInitializationType IosNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
@@ -284,6 +286,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// When set to <see cref="NativeInitializationType.BuildTime"/>, the options are written and hardcoded into the
     /// Gradle project during the build process. This means that the options cannot be changed at runtime, as they are
     /// embedded into the project itself.
+    /// When set to <see cref="NativeInitializationType.External"/>, the app that embeds the game initializes the native
+    /// SDK, e.g. when using Unity as a Library.
     /// </remarks>
     public NativeInitializationType AndroidNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
@@ -748,4 +752,10 @@ public enum NativeInitializationType
     /// game. Options that you modify programmatically will not apply to the native SDK.
     /// </summary>
     BuildTime,
+    /// <summary>
+    /// The app that embeds the game owns the native SDK, e.g. when using Unity as a Library. The SDK does not initialize
+    /// or close the native SDK. It attaches to it if the app has initialized it before the game starts. Options that
+    /// you set in Unity do not apply to the native SDK.
+    /// </summary>
+    External,
 }
