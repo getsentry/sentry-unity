@@ -101,6 +101,26 @@ public class BuildPostProcessorTests
     }
 
     [Test]
+    public void AddSentryToXcodeProject_NativeSupportEnabledAndInitializationTypeExternal_SetsUpSdkButDoesNotInitialize()
+    {
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeSupportEnabled = true,
+            IosNativeInitializationType = NativeInitializationType.External
+        };
+        var testLogger = new TestLogger();
+
+        BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
+
+        var mainFile = File.ReadAllText(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
+        var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName);
+
+        Assert.IsTrue(File.Exists(bridgePath));
+        Assert.IsFalse(NativeMain.ContainsSentry(mainFile, null)); // The main.mm must not contain Sentry
+    }
+
+    [Test]
     public void AddSentryToXcodeProject_NativeSupportEnabledAndInitializationTypeBuildTime_SetsUpSdkAndAddsAutoInitialize()
     {
         var options = new SentryUnityOptions
