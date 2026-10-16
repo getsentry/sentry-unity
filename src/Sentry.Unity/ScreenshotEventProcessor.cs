@@ -6,28 +6,28 @@ namespace Sentry.Unity;
 public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 {
     private readonly SentryUnityOptions _options;
-    private readonly SentryScreenshotCache _cache;
+    private readonly SentryScreenshotCapturer _capturer;
 
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions)
-        : this(sentryOptions, GetOrCreateCache(sentryOptions)) { }
+        : this(sentryOptions, GetOrCreateCapturer(sentryOptions)) { }
 
-    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, SentryScreenshotCache cache)
+    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, SentryScreenshotCapturer capturer)
     {
         _options = sentryOptions;
-        _cache = cache;
+        _capturer = capturer;
     }
 
-    private static SentryScreenshotCache GetOrCreateCache(SentryUnityOptions options)
+    private static SentryScreenshotCapturer GetOrCreateCapturer(SentryUnityOptions options)
     {
-        if (options.ScreenshotCache is { } cache)
+        if (options.ScreenshotCapturer is { } capturer)
         {
-            return cache;
+            return capturer;
         }
 
-        cache = new SentryScreenshotCache(options);
-        SentryMonoBehaviour.Instance.StartScreenshotCache(cache, options.ScreenshotCaptureInterval);
-        options.ScreenshotCache = cache;
-        return cache;
+        capturer = new SentryScreenshotCapturer(options);
+        SentryMonoBehaviour.Instance.StartScreenshotCapturer(capturer);
+        options.ScreenshotCapturer = capturer;
+        return capturer;
     }
 
     public SentryEvent? Process(SentryEvent @event) => @event;
@@ -49,14 +49,13 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        // Without a callback to apply, the encode gets deferred until the envelope is serialized on the SDK's
-        // background worker. The callback operates on a Texture2D, which ties it to encoding right away.
-        var beforeSend = _options.BeforeSendScreenshotInternal;
-        var content = beforeSend is null
-            ? _cache.TryGetLatestContent()
-            : _cache.TryEncodeLatest(screenshot => beforeSend(screenshot, @event)) is { } bytes
-                ? new ByteAttachmentContent(bytes)
-                : null;
+        // The screenshot gets taken at the end of this frame. A callback to its pixels gets applied on the SDK's worker
+        // right before encoding. The obsolete Texture2D callback ties applying it - and encoding - to the main thread.
+        var content = _options.BeforeSendScreenshotPixelsInternal is { } beforeSendPixels
+            ? _capturer.TryRequest(beforeEncode: pixels => beforeSendPixels(pixels, @event))
+            : _options.BeforeSendScreenshotInternal is { } beforeSend
+                ? _capturer.TryRequest(screenshot => beforeSend(screenshot, @event))
+                : _capturer.TryRequest();
 
         if (content is null)
         {
@@ -64,7 +63,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
         }
 
         hint.Attachments.Add(new SentryAttachment(AttachmentType.Default, content, "screenshot.jpg", "image/jpeg"));
-        _options.LogDebug("Screenshot attached to event {0}", @event.EventId);
+        _options.LogDebug("Screenshot requested for event {0}", @event.EventId);
 
         return @event;
     }

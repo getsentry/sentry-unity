@@ -1,60 +1,46 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
 namespace Sentry.Unity;
 
 /// <summary>
-/// Drives the refresh of the screenshot cache.
+/// Drives taking the screenshots requested by events.
 /// </summary>
 public partial class SentryMonoBehaviour
 {
     private Coroutine? _screenshotCoroutine;
 
-    internal void StartScreenshotCache(SentryScreenshotCache cache, TimeSpan interval)
-        => StartScreenshotCache(cache, interval, new WaitForEndOfFrame());
+    internal void StartScreenshotCapturer(SentryScreenshotCapturer capturer)
+        => StartScreenshotCapturer(capturer, new WaitForEndOfFrame());
 
     // For testing - WaitForEndOfFrame never resumes in batch mode.
-    internal void StartScreenshotCache(SentryScreenshotCache cache, TimeSpan interval, YieldInstruction? endOfFrame)
+    internal void StartScreenshotCapturer(SentryScreenshotCapturer capturer, YieldInstruction? endOfFrame)
     {
         if (_screenshotCoroutine is not null)
         {
             StopCoroutine(_screenshotCoroutine);
         }
 
-        _screenshotCoroutine = StartCoroutine(ScreenshotCacheCoroutine(cache, interval, endOfFrame));
+        _screenshotCoroutine = StartCoroutine(ScreenshotCapturerCoroutine(capturer, endOfFrame));
     }
 
-    private static IEnumerator ScreenshotCacheCoroutine(SentryScreenshotCache cache, TimeSpan interval, YieldInstruction? endOfFrame)
+    private static IEnumerator ScreenshotCapturerCoroutine(SentryScreenshotCapturer capturer, YieldInstruction? endOfFrame)
     {
-        // Reusing a WaitForSecondsRealtime is not an option - it captures its deadline on construction,
-        // so every wait after the first returns immediately. Tracking the deadline here avoids both that
-        // and an allocation per refresh.
-        var intervalSeconds = (float)interval.TotalSeconds;
-        var nextRefresh = 0f;
-
         while (true)
         {
-            // Capturing mid-frame yields an incomplete image, so the cache is only ever refreshed once
-            // the frame has been rendered. This never resumes in headless mode, which leaves the cache
-            // empty rather than holding a blank image.
+            // Capturing mid-frame yields an incomplete image, so screenshots are only ever taken once the frame has
+            // been rendered. This never resumes in headless mode, where waiting for a screenshot times out instead.
             yield return endOfFrame;
 
             // The SDK can get closed from any thread, so instead of being stopped from the outside the
             // coroutine ends itself. GPU resources can only be released here, on the main thread.
-            if (cache.IsDisposed)
+            if (capturer.IsDisposed)
             {
-                cache.ReleaseResources();
+                capturer.ReleaseResources();
                 yield break;
             }
 
-            if (Time.realtimeSinceStartup < nextRefresh)
-            {
-                continue;
-            }
-
-            cache.Refresh();
-            nextRefresh = Time.realtimeSinceStartup + intervalSeconds;
+            capturer.OnEndOfFrame();
         }
     }
 }

@@ -34,9 +34,8 @@ internal static class EnrichmentTab
             options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Attach Screenshots to Events", "Try to attach current screenshot on events.\n" +
                                                     "This is an early-access feature and may not work on all platforms (it is explicitly disabled on WebGL).\n" +
-                                                    "The SDK periodically captures the screen and attaches the most recent capture to an event.\n" +
-                                                    "A screenshot might not be able to be attached, for example when the error happens on a background thread\n" +
-                                                    "on a device without async GPU readback support, or with a BeforeSendScreenshot callback set."),
+                                                    "The screenshot is taken at the end of the frame the error happened in.\n" +
+                                                    "Errors in quick succession share a screenshot."),
                 options.AttachScreenshot);
             EditorGUI.indentLevel++;
 
@@ -51,12 +50,6 @@ internal static class EnrichmentTab
             options.ScreenshotCompression = EditorGUILayout.IntSlider(
                 new GUIContent("Compression", "The compression of the screenshot."),
                 options.ScreenshotCompression, 1, 100);
-
-            options.ScreenshotCaptureIntervalMilliseconds = EditorGUILayout.IntSlider(
-                new GUIContent("Capture Interval (ms)", "How often the SDK captures the screen.\n" +
-                                                       "This is the upper bound on how stale an attached screenshot can be.\n" +
-                                                       "Lower values increase the per-frame rendering cost."),
-                options.ScreenshotCaptureIntervalMilliseconds, 0, 1000);
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndToggleGroup();

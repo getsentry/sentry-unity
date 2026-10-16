@@ -22,7 +22,7 @@
 - Scene tracing replaces global `SceneManagerAPI.overrideAPI`; it overwrites application customization and logs a warning.
 - C# ANR monitoring pauses while backgrounded. Cocoa/native app-hang tracking can disable it to prevent duplicate reports.
 - View-hierarchy capture must run on Unity main thread.
-- Screenshots: `SentryScreenshotCache` refreshes a frame on the main thread at end of frame and reads it back via `AsyncGPUReadback`. The processor attaches it to the event's own envelope; `SentryScreenshotAttachmentContent` defers the JPG encode until the envelope is serialized on the SDK's worker. Without async readback or with `BeforeSendScreenshot` set, it encodes right away on the main thread.
+- Screenshots: the processor requests one from `SentryScreenshotCapturer` and attaches `SentryScreenshotAttachmentContent` to the event's own envelope. Events in quick succession share a request. The capturer takes it at end of frame on the main thread: it captures the screen at full resolution (`CaptureScreenshotIntoRenderTexture` copies, it doesn't scale), blits it down to the quality's size and reads it back (`AsyncGPUReadback`, else `ReadPixels`) into a pooled `NativeArray`. The obsolete `BeforeSendScreenshot` gets applied on the main thread, once per screenshot. The content waits for the screenshot and encodes it when the envelope is serialized on the SDK's worker, applying `BeforeSendScreenshotPixels` right before; it never waits on the main thread and times out if the main thread stops rendering.
 
 ## Tests
 

@@ -12,45 +12,34 @@ namespace Sentry.Unity.Tests;
 
 public class ScreenshotEventProcessorTests
 {
-    private class TestScreenshotCache : SentryScreenshotCache
+    private class TestScreenshotCapturer : SentryScreenshotCapturer
     {
-        public int CacheCallCount { get; private set; }
-        public byte[]? Bytes { get; set; } = { 1, 2, 3 };
-        public Texture2D? TransformInput { get; set; }
+        public int RequestCount { get; private set; }
+        public bool Available { get; set; } = true;
+        public Func<Texture2D, Texture2D?>? Transform { get; private set; }
+        public Func<SentryScreenshotPixels, bool>? BeforeEncode { get; private set; }
 
-        public TestScreenshotCache(SentryUnityOptions options) : base(options) { }
+        public TestScreenshotCapturer(SentryUnityOptions options) : base(options, useAsyncReadback: false) { }
 
-        internal override void Refresh() { }
-
-        internal override IAttachmentContent? TryGetLatestContent()
+        internal override IAttachmentContent? TryRequest(Func<Texture2D, Texture2D?>? transform = null,
+            Func<SentryScreenshotPixels, bool>? beforeEncode = null)
         {
-            CacheCallCount++;
-            return Bytes is null ? null : new ByteAttachmentContent(Bytes);
-        }
-
-        internal override byte[]? TryEncodeLatest(Func<Texture2D, Texture2D?>? transform = null)
-        {
-            CacheCallCount++;
-
-            if (transform is null)
-            {
-                return Bytes;
-            }
-
-            var input = TransformInput ??= new Texture2D(1, 1);
-            return transform.Invoke(input) is null ? null : Bytes;
+            RequestCount++;
+            Transform = transform;
+            BeforeEncode = beforeEncode;
+            return Available ? new ByteAttachmentContent(new byte[] { 1, 2, 3 }) : null;
         }
     }
 
-    private static (ScreenshotEventProcessor Processor, TestScreenshotCache Cache) GetSut(SentryUnityOptions? options = null)
+    private static (ScreenshotEventProcessor Processor, TestScreenshotCapturer Capturer) GetSut(SentryUnityOptions? options = null)
     {
         options ??= new SentryUnityOptions();
-        var cache = new TestScreenshotCache(options);
-        return (new ScreenshotEventProcessor(options, cache), cache);
+        var capturer = new TestScreenshotCapturer(options);
+        return (new ScreenshotEventProcessor(options, capturer), capturer);
     }
 
     [Test]
-    public void Process_CachedScreenshotAvailable_AttachesToHint()
+    public void Process_ScreenshotAvailable_AttachesToHint()
     {
         var (processor, _) = GetSut();
         var hint = new SentryHint();
@@ -64,10 +53,10 @@ public class ScreenshotEventProcessorTests
     }
 
     [Test]
-    public void Process_CacheReturnsNothing_DoesNotAttach()
+    public void Process_CapturerReturnsNothing_DoesNotAttach()
     {
-        var (processor, cache) = GetSut();
-        cache.Bytes = null;
+        var (processor, capturer) = GetSut();
+        capturer.Available = false;
         var hint = new SentryHint();
 
         processor.Process(new SentryEvent(), hint);
@@ -90,30 +79,29 @@ public class ScreenshotEventProcessorTests
     }
 
     [Test]
-    public void Process_BeforeCaptureScreenshotReturnsFalse_SkipsTheCacheEntirely()
+    public void Process_BeforeCaptureScreenshotReturnsFalse_SkipsTheCapturerEntirely()
     {
         var options = new SentryUnityOptions();
         options.SetBeforeCaptureScreenshot(_ => false);
-        var (processor, cache) = GetSut(options);
+        var (processor, capturer) = GetSut(options);
         var hint = new SentryHint();
 
         processor.Process(new SentryEvent(), hint);
 
-        Assert.AreEqual(0, cache.CacheCallCount);
+        Assert.AreEqual(0, capturer.RequestCount);
         Assert.IsEmpty(hint.Attachments);
     }
 
     [Test]
     public void Process_OffTheMainThread_AttachesToHint()
     {
-        // Errors raised on background threads must not lose their screenshot - the cache decides
-        // whether it can encode on the calling thread.
-        var (processor, cache) = GetSut();
+        // Errors raised on background threads must not lose their screenshot
+        var (processor, capturer) = GetSut();
         var hint = new SentryHint();
 
         Task.Run(() => processor.Process(new SentryEvent(), hint)).Wait();
 
-        Assert.AreEqual(1, cache.CacheCallCount);
+        Assert.AreEqual(1, capturer.RequestCount);
         Assert.AreEqual(1, hint.Attachments.Count);
     }
 
@@ -122,14 +110,14 @@ public class ScreenshotEventProcessorTests
     {
         var options = new SentryUnityOptions();
         options.SetBeforeCaptureScreenshot(_ => throw new InvalidOperationException("test"));
-        var (processor, cache) = GetSut(options);
+        var (processor, capturer) = GetSut(options);
         var hint = new SentryHint();
         var @event = new SentryEvent();
 
         var processed = processor.Process(@event, hint);
 
         Assert.AreSame(@event, processed);
-        Assert.AreEqual(0, cache.CacheCallCount);
+        Assert.AreEqual(0, capturer.RequestCount);
         Assert.IsEmpty(hint.Attachments);
     }
 
@@ -153,39 +141,41 @@ public class ScreenshotEventProcessorTests
     }
 
     [Test]
-    public void Process_BeforeSendScreenshotReturnsNull_DoesNotAttach()
+    public void Process_NoBeforeSendScreenshot_RequestsWithoutTransform()
     {
-        var options = new SentryUnityOptions();
-        options.SetBeforeSendScreenshot((_, _) => null);
-        var (processor, _) = GetSut(options);
-        var hint = new SentryHint();
+        var (processor, capturer) = GetSut();
 
-        processor.Process(new SentryEvent(), hint);
+        processor.Process(new SentryEvent(), new SentryHint());
 
-        Assert.IsEmpty(hint.Attachments);
+        Assert.IsNull(capturer.Transform);
     }
 
     [Test]
-    public void Process_BeforeSendScreenshotReceivesScreenshotAndEvent()
+    public void Process_BeforeSendScreenshot_PassesTheScreenshotAndEventThroughTheTransform()
     {
         var options = new SentryUnityOptions();
         Texture2D? receivedScreenshot = null;
         SentryEvent? receivedEvent = null;
+#pragma warning disable CS0618 // Still supported until removed
         options.SetBeforeSendScreenshot((screenshot, @event) =>
         {
             receivedScreenshot = screenshot;
             receivedEvent = @event;
             return screenshot;
         });
-        var (processor, cache) = GetSut(options);
+#pragma warning restore CS0618
+        var (processor, capturer) = GetSut(options);
 
         var eventId = SentryId.Create();
         processor.Process(new SentryEvent(eventId: eventId), new SentryHint());
 
-        Assert.NotNull(receivedScreenshot);
-        Assert.AreSame(cache.TransformInput, receivedScreenshot);
-        Assert.NotNull(receivedEvent);
+        // The capturer applies the transform once the screenshot is taken
+        Assert.IsNotNull(capturer.Transform);
+        var screenshot = new Texture2D(1, 1);
+        Assert.AreSame(screenshot, capturer.Transform!(screenshot));
+        Assert.AreSame(screenshot, receivedScreenshot);
         Assert.AreEqual(eventId, receivedEvent!.EventId);
+        UnityEngine.Object.Destroy(screenshot);
     }
 
     [UnityTest]
@@ -199,7 +189,7 @@ public class ScreenshotEventProcessorTests
             Dsn = SentryTests.TestDsn,
             CreateHttpMessageHandler = () => httpHandler
         };
-        options.AddEventProcessor(new ScreenshotEventProcessor(options, new TestScreenshotCache(options)));
+        options.AddEventProcessor(new ScreenshotEventProcessor(options, new TestScreenshotCapturer(options)));
 
         SentrySdk.Init(options);
 
@@ -218,5 +208,43 @@ public class ScreenshotEventProcessorTests
         {
             SentrySdk.Close();
         }
+    }
+
+    [Test]
+    public void Process_BeforeSendScreenshotPixelsSet_PassesItToTheCapturerWithTheEvent()
+    {
+        var options = new SentryUnityOptions();
+        SentryEvent? receivedEvent = null;
+        options.SetBeforeSendScreenshotPixels((_, @event) =>
+        {
+            receivedEvent = @event;
+            return true;
+        });
+        var (processor, capturer) = GetSut(options);
+
+        var eventId = SentryId.Create();
+        processor.Process(new SentryEvent(eventId: eventId), new SentryHint());
+
+        // Applied by the frame right before encoding, on the SDK's worker
+        Assert.IsNotNull(capturer.BeforeEncode);
+        Assert.IsNull(capturer.Transform);
+        Assert.IsTrue(capturer.BeforeEncode!(default));
+        Assert.AreEqual(eventId, receivedEvent!.EventId);
+    }
+
+    [Test]
+    public void Process_BothScreenshotCallbacksSet_PrefersThePixelsCallback()
+    {
+        var options = new SentryUnityOptions();
+#pragma warning disable CS0618 // Still supported until removed
+        options.SetBeforeSendScreenshot((screenshot, _) => screenshot);
+#pragma warning restore CS0618
+        options.SetBeforeSendScreenshotPixels((_, _) => true);
+        var (processor, capturer) = GetSut(options);
+
+        processor.Process(new SentryEvent(), new SentryHint());
+
+        Assert.IsNotNull(capturer.BeforeEncode);
+        Assert.IsNull(capturer.Transform);
     }
 }

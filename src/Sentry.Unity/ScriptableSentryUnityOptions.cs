@@ -66,9 +66,8 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     [field: SerializeField] public string EnvironmentOverride { get; set; } = string.Empty;
     [field: SerializeField] public bool AttachStacktrace { get; set; }
     [field: SerializeField] public bool AttachScreenshot { get; set; }
-    [field: SerializeField] public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
+    [field: SerializeField] public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.Low;
     [field: SerializeField] public int ScreenshotCompression { get; set; } = 75;
-    [field: SerializeField] public int ScreenshotCaptureIntervalMilliseconds { get; set; } = 250;
 
     [field: SerializeField] public bool AttachViewHierarchy { get; set; } = false;
     [field: SerializeField] public int MaxViewHierarchyRootObjects { get; set; } = 100;
@@ -217,7 +216,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
             AttachScreenshot = AttachScreenshot,
             ScreenshotQuality = ScreenshotQuality,
             ScreenshotCompression = ScreenshotCompression,
-            ScreenshotCaptureInterval = TimeSpan.FromMilliseconds(ScreenshotCaptureIntervalMilliseconds),
             AttachViewHierarchy = AttachViewHierarchy,
             MaxViewHierarchyRootObjects = MaxViewHierarchyRootObjects,
             MaxViewHierarchyObjectChildCount = MaxViewHierarchyObjectChildCount,

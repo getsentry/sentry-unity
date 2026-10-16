@@ -67,8 +67,8 @@ internal class SentryUnitySdk
         try
         {
             ApplicationAdapter.Instance.Quitting -= Close;
-            _options.ScreenshotCache?.Dispose();
-            _options.ScreenshotCache = null;
+            _options.ScreenshotCapturer?.Dispose();
+            _options.ScreenshotCapturer = null;
             _options.DisposeGameMetricAttributes();
             _options.NativeSupportCloseCallback?.Invoke();
             _options.NativeSupportCloseCallback = null;
@@ -127,13 +127,12 @@ internal class SentryUnitySdk
         SentryHint? hint = null;
         if (addScreenshot)
         {
-            var screenshotBytes = CaptureFeedbackScreenshot();
-            if (screenshotBytes is { Length: > 0 })
+            if (CaptureFeedbackScreenshot() is { } content)
             {
                 hint = SentryHint.WithAttachments(
                     new SentryAttachment(
                         AttachmentType.Default,
-                        new ByteAttachmentContent(screenshotBytes),
+                        content,
                         "screenshot.jpg",
                         "image/jpeg"));
             }
@@ -142,20 +141,21 @@ internal class SentryUnitySdk
         return Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
     }
 
-    private byte[]? CaptureFeedbackScreenshot()
+    private IAttachmentContent? CaptureFeedbackScreenshot()
     {
-        // The cache holds a fully rendered frame. Capturing here instead would happen mid-frame,
+        // Taken at the end of the frame. Capturing here instead would happen mid-frame,
         // i.e. while handling the input that submitted the feedback, and yield an incomplete image.
-        if (_options.ScreenshotCache is { HasContent: true } cache)
+        if (_options.ScreenshotCapturer is { } capturer)
         {
-            return cache.TryEncodeLatest();
+            return capturer.TryRequest();
         }
 
         Texture2D? screenshot = null;
         try
         {
             screenshot = SentryScreenshot.CreateNewScreenshotTexture2D(_options);
-            return screenshot.EncodeToJPG(_options.ScreenshotCompression);
+            var bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
+            return bytes is { Length: > 0 } ? new ByteAttachmentContent(bytes) : null;
         }
         finally
         {

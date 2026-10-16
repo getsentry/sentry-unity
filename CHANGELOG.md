@@ -4,16 +4,19 @@
 
 ### Behavioral Changes
 
-- Screenshots are now attached to the error event itself and sent in the same envelope, instead of being sent separately after the fact. They no longer get orphaned when their event gets dropped, e.g. by sampling or rate limiting. The SDK keeps a recently captured frame around and attaches that, so a screenshot can be up to `ScreenshotCaptureInterval` old. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
-- `SetBeforeCaptureScreenshot` now decides whether the screenshot gets attached and can be invoked on a background thread. Events captured on background threads now get a screenshot as well, on devices that support async GPU readback. With `SetBeforeSendScreenshot` set, screenshots only get attached to events captured on the main thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Screenshots are now attached to the error event itself and sent in the same envelope, instead of being sent separately after the fact. They no longer get orphaned when their event gets dropped, e.g. by sampling or rate limiting. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- `SetBeforeCaptureScreenshot` now decides whether the screenshot gets attached and can be invoked on a background thread. Events captured on background threads now get a screenshot as well. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Events captured in quick succession share a screenshot. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- `ScreenshotQuality` now defaults to `Low`. Taking a screenshot at higher resolutions can make the frame it gets taken in miss its display refresh. Configurations that set the quality explicitly keep it. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- `SetBeforeSendScreenshot` is deprecated in favor of `SetBeforeSendScreenshotPixels`. Operating on a `Texture2D` ties compressing the screenshot to the main thread, which stalls it. The callback now gets invoked once per screenshot, with the first of the events sharing it, on the main thread for events captured on any thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Features
 
-- Added `ScreenshotCaptureInterval` to control how often the SDK refreshes the screenshot it attaches to events. It defaults to 250 ms. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Added `SetBeforeSendScreenshotPixels` to modify or discard screenshots before they are sent. It operates on the screenshot's raw pixels and gets invoked on a background thread right before the screenshot gets compressed, so it doesn't stall the main thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Fixes
 
-- Attaching a screenshot no longer reads back and encodes the frame on the main thread. The frame gets read back from the GPU asynchronously and only encoded once the SDK writes the event's envelope on its background worker. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Attaching a screenshot no longer reads back and encodes the frame on the main thread. The screenshot gets taken at the end of the frame the error happened in, read back from the GPU asynchronously, and only encoded once the SDK writes the event's envelope on its background worker. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Dependencies
 
