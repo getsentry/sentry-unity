@@ -39,6 +39,13 @@ public static class SentryNativeAndroid
         SentryJava ??= new SentryJava(Logger);
         if (!SentryJava.IsSentryJavaPresent())
         {
+            if (options.AndroidNativeInitializationType is NativeInitializationType.External)
+            {
+                Logger?.LogWarning("The Android SDK is expected to be provided by the app but it is missing. " +
+                                   "Add 'io.sentry:sentry-android' to the app. Skipping native support.");
+                return;
+            }
+
             Logger?.LogError("Android Native Support has been enabled but the " +
                                                "Android SDK is missing. This could have been caused by a mismatching" +
                                                "build time / runtime configuration. Please make sure you have " +
@@ -48,9 +55,16 @@ public static class SentryNativeAndroid
 
         Logger?.LogDebug("Checking whether the Android SDK has already been initialized");
 
+        var isExternal = options.AndroidNativeInitializationType is NativeInitializationType.External;
         if (SentryJava.IsEnabled() is true)
         {
             Logger?.LogDebug("The Android SDK is already initialized");
+        }
+        else if (isExternal)
+        {
+            Logger?.LogWarning("The Android SDK is expected to be initialized by the app but it is not. " +
+                               "Make sure the app initializes Sentry before the game starts. Skipping native support.");
+            return;
         }
         else
         {
@@ -74,7 +88,8 @@ public static class SentryNativeAndroid
         options.EnableScopeSync = true;
         options.NativeDebugImageProvider = new Native.NativeDebugImageProvider();
 
-        if (options.NativeAppHangTrackingEnabled && options.NdkIntegrationEnabled)
+        // The app's options decide whether sentry-native tracks app hangs, so the C# ANR watchdog stays in charge.
+        if (!isExternal && options.NativeAppHangTrackingEnabled && options.NdkIntegrationEnabled)
         {
             Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
             SentryMonoBehaviour.Instance.StartAppHangHeartbeat(
@@ -119,7 +134,11 @@ public static class SentryNativeAndroid
                 e, "Failed to reinstall backend. Captured native crashes will miss scope data and tag.");
         }
 
-        options.NativeSupportCloseCallback = () => Close(options);
+        // The app owns the SDK's lifetime.
+        if (!isExternal)
+        {
+            options.NativeSupportCloseCallback = () => Close(options);
+        }
 
         Logger?.LogDebug("Fetching installation ID");
 

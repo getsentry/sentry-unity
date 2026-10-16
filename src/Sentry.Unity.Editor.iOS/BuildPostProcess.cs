@@ -76,8 +76,8 @@ public static class BuildPostProcess
         // We want to avoid users getting stuck on a cached built output.
         // This can happen if the user appends builds
         //   - and toggles the `IosNativeSupportEnabled` from `true` to `false`
-        //   - and toggles the `IosNativeInitializationType` from `Standalone` to `Runtime`
-        if (options.IosNativeInitializationType is NativeInitializationType.Runtime)
+        //   - and toggles the `IosNativeInitializationType` from `BuildTime` to `Runtime` or `External`
+        if (options.IosNativeInitializationType is not NativeInitializationType.BuildTime)
         {
             var mainPath = Path.Combine(pathToProject, SentryXcodeProject.MainPath);
             if (File.Exists(mainPath))

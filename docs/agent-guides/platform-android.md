@@ -12,6 +12,7 @@
 - Runtime initialization writes `io.sentry.auto-init=false`; C# initializes the Java SDK later.
 - Build-time initialization writes options to the Android manifest and lets Java auto-initialize.
 - Runtime option changes cannot alter build-time initialization behavior.
+- External initialization leaves `auto-init` unset (it would merge into the host app's manifest) and does not copy the Android SDK or add its Gradle dependencies; the host app depends on `io.sentry:sentry-android`. ProGuard keep rules still ship. C# never initializes or closes the Java SDK, attaches only if the host already initialized it, and keeps the C# ANR watchdog.
 
 ## Export Processing
 
