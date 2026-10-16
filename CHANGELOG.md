@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Android tombstone parsing via `AndroidTombstoneEnabled` no longer fails with `NoClassDefFoundError`. The SDK now ships with its `epitaph` dependency. If you added `com.abovevacant:epitaph` to your Gradle template as a workaround, remove it to avoid duplicate classes. ([#2879](https://github.com/getsentry/sentry-unity/pull/2879))
+
 ### Features
 
 - Added the `NativeHandlerPath` option. It sets `handler_path` on the native SDK, so the out-of-process crash handler can be placed somewhere other than next to the player executable. Left unset, sentry-native keeps looking for the handler next to the executable as before. ([#2881](https://github.com/getsentry/sentry-unity/pull/2881))
