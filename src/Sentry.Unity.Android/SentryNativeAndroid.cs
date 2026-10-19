@@ -73,6 +73,7 @@ public static class SentryNativeAndroid
         options.ScopeObserver = new AndroidJavaScopeObserver(options, SentryJava);
         options.EnableScopeSync = true;
         options.NativeDebugImageProvider = new Native.NativeDebugImageProvider();
+        options.NativeConnection = SentryJava.GetConnection;
 
         if (options.NativeAppHangTrackingEnabled && options.NdkIntegrationEnabled)
         {

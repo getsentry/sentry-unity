@@ -10,6 +10,7 @@ internal class TestSentryJava : ISentryJava
     public bool SentryPresent { get; set; } = true;
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
+    public (string? Type, string? EffectiveType) Connection { get; set; }
 
     public bool? IsEnabled() => Enabled;
 
@@ -18,6 +19,8 @@ internal class TestSentryJava : ISentryJava
     public string? GetInstallationId() => InstallationId;
 
     public bool? CrashedLastRun() => IsCrashedLastRun;
+
+    public (string? Type, string? EffectiveType) GetConnection() => Connection;
 
     public void Close() { }
 

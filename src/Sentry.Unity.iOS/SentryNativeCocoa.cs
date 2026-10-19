@@ -66,6 +66,7 @@ public static class SentryNativeCocoa
         SentryCocoaBridgeProxy.SetSdkName(); // Since we're not building the SDK we have to overwrite the name here
 
         options.NativeContextWriter = new NativeContextWriter();
+        options.NativeConnection = SentryCocoaBridgeProxy.GetConnection;
         options.EnableScopeSync = true;
         options.CrashedLastRun = () =>
         {

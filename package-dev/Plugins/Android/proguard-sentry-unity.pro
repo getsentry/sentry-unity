@@ -10,4 +10,6 @@
 -keep class io.sentry.Scope { *; }
 -keep class io.sentry.ScopeCallback { *; }
 -keep class io.sentry.protocol.** { *; }
+-keep class io.sentry.android.core.internal.util.AndroidConnectionStatusProvider { *; }
+-keep class io.sentry.android.core.internal.util.NetworkConnection { *; }
 -dontwarn io.sentry.**
