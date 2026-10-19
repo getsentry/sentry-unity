@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- The SDK no longer fails to compile in projects without `com.unity.ugui`, such as headless dedicated servers. The `SentryUserFeedback` component is only compiled when uGUI is installed. ([#2888](https://github.com/getsentry/sentry-unity/issues/2888))
 - The SDK now preserves the types Mono's HTTP stack needs, even with high stripping level. ([#2858](https://github.com/getsentry/sentry-unity/pull/2858))
 - When targeting a dedicated server, the SDK now relies on the actual scripting backend to set up IL2CPP line number and native support and to set up the automatic debug symbol upload ([#2882](https://github.com/getsentry/sentry-unity/pull/2882))
 
