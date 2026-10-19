@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+- Android tombstone parsing via `AndroidTombstoneEnabled` no longer fails with `NoClassDefFoundError`. The SDK now ships with its `epitaph` dependency. If you added `com.abovevacant:epitaph` to your Gradle template as a workaround, remove it to avoid duplicate classes. ([#2879](https://github.com/getsentry/sentry-unity/pull/2879))
+
 ### Features
 
 - Added the `NativeHandlerPath` option. It sets `handler_path` on the native SDK, so the out-of-process crash handler can be placed somewhere other than next to the player executable. Left unset, sentry-native keeps looking for the handler next to the executable as before. ([#2881](https://github.com/getsentry/sentry-unity/pull/2881))
@@ -17,9 +21,9 @@
 - Bump .NET SDK from v6.11.0 to v6.12.0 ([#2870](https://github.com/getsentry/sentry-unity/pull/2870))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6120)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.11.0...6.12.0)
-- Bump Native SDK from v0.17.0 to v0.17.3 ([#2874](https://github.com/getsentry/sentry-unity/pull/2874), [#2880](https://github.com/getsentry/sentry-unity/pull/2880))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0173)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.0...0.17.3)
+- Bump Native SDK from v0.17.0 to v0.17.4 ([#2874](https://github.com/getsentry/sentry-unity/pull/2874), [#2880](https://github.com/getsentry/sentry-unity/pull/2880), [#2886](https://github.com/getsentry/sentry-unity/pull/2886))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0174)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.0...0.17.4)
 - Bump Java SDK from v8.57.0 to v8.61.0 ([#2876](https://github.com/getsentry/sentry-unity/pull/2876), [#2883](https://github.com/getsentry/sentry-unity/pull/2883))
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8610)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.57.0...8.61.0)
