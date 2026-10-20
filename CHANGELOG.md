@@ -5,16 +5,13 @@
 ### Fixes
 
 - Android tombstone parsing via `AndroidTombstoneEnabled` no longer fails with `NoClassDefFoundError`. The SDK now ships with its `epitaph` dependency. If you added `com.abovevacant:epitaph` to your Gradle template as a workaround, remove it to avoid duplicate classes. ([#2879](https://github.com/getsentry/sentry-unity/pull/2879))
+- The SDK no longer fails to compile in projects without `com.unity.ugui`, such as headless dedicated servers. The `SentryUserFeedback` component is only compiled when uGUI is installed. ([#2888](https://github.com/getsentry/sentry-unity/issues/2888))
+- The SDK now preserves the types Mono's HTTP stack needs, even with high stripping level. ([#2858](https://github.com/getsentry/sentry-unity/pull/2858))
+- When targeting a dedicated server, the SDK now relies on the actual scripting backend to set up IL2CPP line number and native support and to set up the automatic debug symbol upload ([#2882](https://github.com/getsentry/sentry-unity/pull/2882))
 
 ### Features
 
 - Added the `NativeHandlerPath` option. It sets `handler_path` on the native SDK, so the out-of-process crash handler can be placed somewhere other than next to the player executable. Left unset, sentry-native keeps looking for the handler next to the executable as before. ([#2881](https://github.com/getsentry/sentry-unity/pull/2881))
-
-### Fixes
-
-- The SDK no longer fails to compile in projects without `com.unity.ugui`, such as headless dedicated servers. The `SentryUserFeedback` component is only compiled when uGUI is installed. ([#2888](https://github.com/getsentry/sentry-unity/issues/2888))
-- The SDK now preserves the types Mono's HTTP stack needs, even with high stripping level. ([#2858](https://github.com/getsentry/sentry-unity/pull/2858))
-- When targeting a dedicated server, the SDK now relies on the actual scripting backend to set up IL2CPP line number and native support and to set up the automatic debug symbol upload ([#2882](https://github.com/getsentry/sentry-unity/pull/2882))
 
 ### Dependencies
 
