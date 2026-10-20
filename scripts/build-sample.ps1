@@ -48,7 +48,7 @@ function Wait-ForUnityPipelineBuild([string] $projectPath, [int] $timeoutSeconds
 
     while ((Get-Date) -lt $deadline) {
         try {
-            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "build_status"
+            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "build status"
         }
         catch {
             $lastError = $_
@@ -88,7 +88,7 @@ function Wait-ForUnityPipelineBuild([string] $projectPath, [int] $timeoutSeconds
 $executionMode = Get-UnityExecutionMode -ProjectPath $projectPath
 if ($executionMode -eq "Pipeline") {
     Prepare-UnityPipelineEditor -ProjectPath $projectPath -TimeoutSeconds $timeoutSeconds
-    $started = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "build" -CommandArguments @("--target", $Target, "--outputPath", $outputPath, "--confirm", "true")
+    $started = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "build run" -CommandArguments @("--target", $Target, "--outputPath", $outputPath, "--confirm", "true")
     if ($started.status -ne "queued") {
         $errorsProperty = $started.PSObject.Properties["validationErrors"]
         $errors = if ($errorsProperty) { @($errorsProperty.Value) } else { @() }
