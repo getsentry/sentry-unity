@@ -1,3 +1,4 @@
+#if SENTRY_UGUI
 using UnityEngine;
 using UnityEditor;
 
@@ -69,3 +70,4 @@ namespace Sentry.Unity
         }
     }
 }
+#endif
