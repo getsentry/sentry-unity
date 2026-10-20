@@ -26,6 +26,12 @@ public partial class SentryMonoBehaviour
 
     private static IEnumerator ScreenshotCapturerCoroutine(SentryScreenshotCapturer capturer, YieldInstruction? endOfFrame)
     {
+        yield return endOfFrame;
+        if (!capturer.IsDisposed)
+        {
+            capturer.Warmup();
+        }
+
         while (true)
         {
             // Capturing mid-frame yields an incomplete image, so screenshots are only ever taken once the frame has

@@ -17,12 +17,14 @@ namespace Sentry.Unity;
 
 internal class WebBackgroundWorker : IBackgroundWorker
 {
+    private readonly SentryUnityOptions _options;
     private readonly SentryMonoBehaviour _behaviour;
     private readonly UnityWebRequestTransport _transport;
     private int _pendingItems;
 
     public WebBackgroundWorker(SentryUnityOptions options, SentryMonoBehaviour behaviour)
     {
+        _options = options;
         _behaviour = behaviour;
         _transport = new UnityWebRequestTransport(options);
     }
@@ -38,6 +40,13 @@ internal class WebBackgroundWorker : IBackgroundWorker
     {
         try
         {
+            // Serializing the envelope reads its screenshot right here on the main thread, so it has to be taken first.
+            // It gets taken at the end of the frame, before the next one starts.
+            if (_options.ScreenshotCapturer is not null)
+            {
+                yield return null;
+            }
+
             yield return _transport.SendEnvelopeAsync(envelope);
         }
         finally

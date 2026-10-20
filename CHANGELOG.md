@@ -4,19 +4,19 @@
 
 ### Behavioral Changes
 
-- Screenshots are now attached to the error event itself and sent in the same envelope, instead of being sent separately after the fact. They no longer get orphaned when their event gets dropped, e.g. by sampling or rate limiting. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
-- `SetBeforeCaptureScreenshot` now decides whether the screenshot gets attached and can be invoked on a background thread. Events captured on background threads now get a screenshot as well. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
-- Events captured in quick succession share a screenshot. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
-- `ScreenshotQuality` now defaults to `Low`. Taking a screenshot at higher resolutions can make the frame it gets taken in miss its display refresh. Configurations that set the quality explicitly keep it. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
-- `SetBeforeSendScreenshot` is deprecated in favor of `SetBeforeSendScreenshotPixels`. Operating on a `Texture2D` ties compressing the screenshot to the main thread, which stalls it. The callback now gets invoked once per screenshot, with the first of the events sharing it, on the main thread for events captured on any thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Screenshots are now sent in the same envelope as their event instead of separately, so they no longer get orphaned when the event gets dropped, e.g. by sampling or rate limiting. Events captured on background threads now get a screenshot as well, and events in quick succession share one. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Screenshots are taken at the end of the frame the error happened in. Events whose frame takes longer than a second to finish, e.g. while synchronously loading a scene, get sent without one. Screenshots are no longer attached in batch mode, nor to user feedback unless requested via `addScreenshot`. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- `SetBeforeCaptureScreenshot` can now get invoked on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- `ScreenshotQuality` now defaults to `Low`, as higher resolutions can make the frame the screenshot is taken in miss its display refresh. Configurations that set the quality explicitly keep it. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- `SetBeforeSendScreenshot` is deprecated in favor of `SetBeforeSendScreenshotPixels`, as operating on a `Texture2D` ties compressing the screenshot to the main thread. It now gets invoked on the main thread once per screenshot, with the first of the events sharing it. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Features
 
-- Added `SetBeforeSendScreenshotPixels` to modify or discard screenshots before they are sent. It operates on the screenshot's raw pixels and gets invoked on a background thread right before the screenshot gets compressed, so it doesn't stall the main thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Added `SetBeforeSendScreenshotPixels` to modify or discard screenshots before they are sent. It operates on the raw pixels on a background thread, right before the screenshot gets compressed. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Fixes
 
-- Attaching a screenshot no longer reads back and encodes the frame on the main thread. The screenshot gets taken at the end of the frame the error happened in, read back from the GPU asynchronously, and only encoded once the SDK writes the event's envelope on its background worker. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Attaching a screenshot no longer stalls the main thread. The frame gets read back from the GPU asynchronously and only encoded once the SDK writes the event's envelope on its background worker. Everything needed to take screenshots gets set up at the end of the first frame after initializing the SDK, so the first screenshot doesn't stall either. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Dependencies
 

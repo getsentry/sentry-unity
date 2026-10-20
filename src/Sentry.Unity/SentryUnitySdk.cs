@@ -199,7 +199,15 @@ internal class SentryUnitySdk
         }
         if (!ApplicationAdapter.Instance.IsEditor && options.AttachScreenshot)
         {
-            options.AddEventProcessor(new ScreenshotEventProcessor(options));
+            // Headless, the end of the frame never comes and every event would wait for a screenshot in vain
+            if (Application.isBatchMode)
+            {
+                options.LogDebug("Running in batch mode. Not attaching screenshots.");
+            }
+            else
+            {
+                options.AddEventProcessor(new ScreenshotEventProcessor(options));
+            }
         }
 
         if (!ApplicationAdapter.Instance.IsEditor &&

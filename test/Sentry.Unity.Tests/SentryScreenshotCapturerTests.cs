@@ -86,12 +86,20 @@ public class SentryScreenshotCapturerTests
         }
     }
 
+    // By default, the event makes it into its envelope, as it would through the SDK
     private static SentryScreenshotAttachmentContent Request(SentryScreenshotCapturer capturer,
-        Func<Texture2D, Texture2D?>? transform = null, Func<SentryScreenshotPixels, bool>? beforeEncode = null)
+        Func<Texture2D, Texture2D?>? transform = null, Func<SentryScreenshotPixels, bool>? beforeEncode = null,
+        bool claim = true)
     {
         var content = capturer.TryRequest(transform, beforeEncode);
         Assert.IsInstanceOf<SentryScreenshotAttachmentContent>(content);
-        return (SentryScreenshotAttachmentContent)content!;
+        var screenshot = (SentryScreenshotAttachmentContent)content!;
+        if (claim)
+        {
+            screenshot.Request.Claim();
+        }
+
+        return screenshot;
     }
 
     // WaitForEndOfFrame never resumes in batch mode. Capturing the known image doesn't depend on the frame
@@ -380,6 +388,86 @@ public class SentryScreenshotCapturerTests
         GC.KeepAlive(pending);
     }
 
+    [Test]
+    public void OnEndOfFrame_FallbackWorker_ReadsBackSynchronouslyForTheMainThreadToRead()
+    {
+        var options = GetOptions();
+        options.BackgroundWorker = new WebBackgroundWorker(options, SentryMonoBehaviour.Instance);
+        using var capturer = new KnownImageCapturer(options, _source, useAsyncReadback: true);
+        var content = Request(capturer);
+
+        capturer.OnEndOfFrame();
+
+        Assert.IsTrue(content.Request.IsCompleted);
+        Object.Destroy(Decode(ReadAll(content)));
+    }
+
+    [Test]
+    public void OnEndOfFrame_EventsDroppedBeforeTheirEnvelope_DoesNotTakeTheScreenshot()
+    {
+        using var capturer = new KnownImageCapturer(GetOptions(), _source, useAsyncReadback: false);
+        var content = Request(capturer, claim: false);
+
+        capturer.OnEndOfFrame();
+
+        Assert.AreEqual(0, capturer.CaptureCount);
+        Assert.IsFalse(capturer.HasRequest);
+        Assert.IsTrue(content.Request.IsCompleted);
+        Assert.IsNull(content.Request.Frame.Result);
+    }
+
+    [UnityTest]
+    public IEnumerator OnEndOfFrame_RequestedOffTheMainThread_TakesTheScreenshotBeforeTheEnvelope()
+    {
+        using var capturer = new KnownImageCapturer(GetOptions(), _source, useAsyncReadback: false);
+
+        // The event might only reach its envelope after the end of the frame
+        var task = Task.Run(() => capturer.TryRequest());
+        yield return WaitFor(() => task.IsCompleted);
+
+        capturer.OnEndOfFrame();
+
+        Assert.AreEqual(1, capturer.CaptureCount);
+    }
+
+    [UnityTest]
+    public IEnumerator TryRequest_OneOfTheEventsMadeItIntoAnEnvelope_TakesTheScreenshot()
+    {
+        using var capturer = new KnownImageCapturer(GetOptions(), _source, useAsyncReadback: false);
+        Request(capturer, claim: false);
+        var sent = Request(capturer);
+        yield return TakeScreenshot(capturer, sent);
+
+        Assert.AreEqual(1, capturer.CaptureCount);
+        yield return ReadOnWorker(sent, bytes => Assert.IsNotEmpty(bytes));
+    }
+
+    [UnityTest]
+    public IEnumerator TryRequest_ScreenshotsOfDroppedEnvelopes_DoNotCountAsPending()
+    {
+        using var capturer = new KnownImageCapturer(GetOptions(), _source, useAsyncReadback: false);
+
+        // Kept alive, so that only their envelopes getting dropped makes them not count
+        var dropped = new List<SentryScreenshotAttachmentContent>();
+        for (var i = 0; i < SentryScreenshotCapturer.MaxPendingRequests; i++)
+        {
+            yield return new WaitForSecondsRealtime((float)SentryScreenshotCapturer.MinCaptureInterval.TotalSeconds * 1.5f);
+            dropped.Add(Request(capturer, claim: false));
+            var stream = dropped[i].GetStream();
+            yield return TakeScreenshot(capturer, dropped[i]);
+
+            // e.g. by a full queue or rate limiting, without ever being read
+            stream.Dispose();
+        }
+
+        yield return new WaitForSecondsRealtime((float)SentryScreenshotCapturer.MinCaptureInterval.TotalSeconds * 1.5f);
+        var content = Request(capturer);
+
+        Assert.AreNotSame(dropped.Last().Request, content.Request);
+        Assert.IsTrue(capturer.HasRequest);
+        GC.KeepAlive(dropped);
+    }
+
     [UnityTest]
     public IEnumerator TryRequest_NotTakenInTime_ResolvesEmptyAndSkipsUntilTheNextEndOfFrame()
     {
@@ -442,6 +530,22 @@ public class SentryScreenshotCapturerTests
 
         Assert.IsEmpty(discardedBytes);
         Assert.IsNotEmpty(keptBytes, "A transform only affects the event it was applied for.");
+    }
+
+    [UnityTest]
+    public IEnumerator TryRequest_WithoutTransformAfterATransformOnlyScreenshot_DoesNotShareIt()
+    {
+        using var capturer = new KnownImageCapturer(GetOptions(), _source, useAsyncReadback: false);
+
+        var transformed = Request(capturer, texture => texture);
+        capturer.OnEndOfFrame();
+
+        // Within the interval, but its pixels go once the transform ran, which leaves nothing to encode
+        var plain = Request(capturer);
+        yield return TakeScreenshot(capturer, transformed, plain);
+
+        Assert.AreNotSame(transformed.Request, plain.Request);
+        yield return ReadOnWorker(plain, bytes => Assert.IsNotEmpty(bytes));
     }
 
     [UnityTest]
@@ -633,6 +737,34 @@ public class SentryScreenshotCapturerTests
     }
 
     [UnityTest]
+    public IEnumerator StartScreenshotCapturer_WarmsUpAtTheFirstEndOfFrame()
+    {
+        using var capturer = new KnownImageCapturer(GetOptions(), _source, useAsyncReadback: false);
+        var gameObject = new GameObject("ScreenshotCapturerTest");
+        var behaviour = gameObject.AddComponent<SentryMonoBehaviour>();
+
+        try
+        {
+            behaviour.StartScreenshotCapturer(capturer, endOfFrame: null);
+            yield return WaitFor(() => capturer.CaptureCount > 0);
+
+            // The first event's screenshot reuses what the warmup allocated
+            Assert.AreEqual(0, capturer.UsedBufferCount);
+            Assert.AreEqual(1, capturer.FreeBufferCount);
+            Assert.IsFalse(capturer.HasRequest);
+
+            var content = Request(capturer);
+            yield return TakeScreenshot(capturer, content);
+            Assert.AreEqual(0, capturer.FreeBufferCount);
+            yield return ReadOnWorker(content, bytes => Assert.IsNotEmpty(bytes));
+        }
+        finally
+        {
+            Object.Destroy(gameObject);
+        }
+    }
+
+    [UnityTest]
     public IEnumerator Dispose_StopsTheCoroutine()
     {
         var capturer = new KnownImageCapturer(GetOptions(), _source, useAsyncReadback: false);
@@ -642,8 +774,9 @@ public class SentryScreenshotCapturerTests
         try
         {
             behaviour.StartScreenshotCapturer(capturer, endOfFrame: null);
-            Request(capturer);
             yield return WaitFor(() => capturer.CaptureCount > 0);
+            Request(capturer);
+            yield return WaitFor(() => capturer.CaptureCount > 1);
 
             capturer.Dispose();
             yield return null;
@@ -654,7 +787,7 @@ public class SentryScreenshotCapturerTests
                 yield return null;
             }
 
-            Assert.AreEqual(1, capturer.CaptureCount);
+            Assert.AreEqual(2, capturer.CaptureCount);
         }
         finally
         {
@@ -685,6 +818,37 @@ public class SentryScreenshotCapturerTests
         finally
         {
             Object.Destroy(gameObject);
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator TryRequest_ThroughTheSdk_DroppedEventDoesNotTakeTheScreenshot()
+    {
+        var capturer = new KnownImageCapturer(GetOptions(), _source, useAsyncReadback: false);
+        var options = new SentryUnityOptions(application: new TestApplication())
+        {
+            Dsn = SentryTests.TestDsn,
+            CreateHttpMessageHandler = () => new TestHttpClientHandler("DroppedScreenshotTest")
+        };
+        options.SetBeforeSend((_, _) => null);
+        options.AddEventProcessor(new ScreenshotEventProcessor(options, capturer));
+
+        SentrySdk.Init(options);
+
+        try
+        {
+            SentrySdk.CaptureMessage("dropped");
+            Assert.IsTrue(capturer.HasRequest, "The screenshot gets requested before BeforeSend and sampling.");
+
+            yield return null;
+            capturer.OnEndOfFrame();
+
+            Assert.AreEqual(0, capturer.CaptureCount);
+        }
+        finally
+        {
+            SentrySdk.Close();
+            capturer.Dispose();
         }
     }
 

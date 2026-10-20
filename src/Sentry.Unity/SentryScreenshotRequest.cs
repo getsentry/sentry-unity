@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using UnityEngine;
@@ -21,6 +22,7 @@ internal sealed class SentryScreenshotRequest
     private Func<Texture2D, Texture2D?>? _transform;
     private TaskCompletionSource<byte[]?>? _transformed;
     private volatile bool _hasFrameConsumers;
+    private int _claims;
 
     /// <summary>
     /// When the frame was taken, in <see cref="System.Diagnostics.Stopwatch"/> ticks. Zero until then.
@@ -35,6 +37,22 @@ internal sealed class SentryScreenshotRequest
         get => _hasFrameConsumers;
         set => _hasFrameConsumers = value;
     }
+
+    /// <summary>
+    /// Whether an event attaching the screenshot made it into an envelope. Events that get dropped before, e.g. by
+    /// sampling or BeforeSend, never get there.
+    /// </summary>
+    internal bool IsClaimed => Volatile.Read(ref _claims) > 0;
+
+    /// <summary>
+    /// Whether an event requested it off the main thread. Those might only reach their envelope after the end of the
+    /// frame, so whether they get dropped isn't known in time.
+    /// </summary>
+    internal bool RequestedOffMainThread { get; set; }
+
+    internal void Claim() => Interlocked.Increment(ref _claims);
+
+    internal void Unclaim() => Interlocked.Decrement(ref _claims);
 
     /// <summary>
     /// Whether a transform got registered, so its result can be shared.

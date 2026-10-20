@@ -33,7 +33,12 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
 
     internal SentryScreenshotRequest Request => _request;
 
-    public Stream GetStream() => new EncodeOnReadStream(this);
+    // The SDK gets the stream once the event made it past sampling and BeforeSend, when building its envelope
+    public Stream GetStream()
+    {
+        _request.Claim();
+        return new EncodeOnReadStream(this);
+    }
 
     internal async Task<byte[]> GetEncodedAsync()
     {
@@ -67,6 +72,7 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
     {
         private readonly SentryScreenshotAttachmentContent _content;
         private MemoryStream? _encoded;
+        private bool _disposed;
 
         public EncodeOnReadStream(SentryScreenshotAttachmentContent content) => _content = content;
 
@@ -100,8 +106,16 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && !_disposed)
             {
+                _disposed = true;
+
+                // Disposed without being read, e.g. because the envelope got dropped from a full queue
+                if (_encoded is null)
+                {
+                    _content._request.Unclaim();
+                }
+
                 _encoded?.Dispose();
             }
 

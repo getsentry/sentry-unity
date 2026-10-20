@@ -164,6 +164,11 @@ internal class SentryScreenshotCapturer : IDisposable
     private IAttachmentContent Attach(SentryScreenshotRequest request, Func<Texture2D, Texture2D?>? transform,
         Func<SentryScreenshotPixels, bool>? beforeEncode)
     {
+        if (!MainThreadData.IsMainThread())
+        {
+            request.RequestedOffMainThread = true;
+        }
+
         Task<byte[]?>? transformed = null;
         if (transform is null)
         {
@@ -192,17 +197,34 @@ internal class SentryScreenshotCapturer : IDisposable
             return request.HasTransform;
         }
 
+        // Taken with only the transform reading the frame, its pixels go as soon as the transform ran
+        if (request.TakenTimestamp != 0 && !request.HasFrameConsumers)
+        {
+            return false;
+        }
+
         return !request.IsCompleted || request.Frame.Result is not { } frame || frame.IsEncodable;
     }
 
     // Must be called while holding _lock
     private int CountPending()
     {
-        // Captures drop out once nothing is left to encode, or once the attachments holding on to them are gone -
-        // e.g. because the event got dropped before being sent
+        // Captures drop out once nothing is left to encode, or once the attachments holding on to them are gone
         _pending.RemoveAll(reference => !reference.TryGetTarget(out var request) || request.IsSettled);
         ReclaimBuffers();
-        return _pending.Count;
+
+        // Screenshots of events that got dropped are never going to be encoded, but only get collected eventually.
+        // Counting them would keep the events that do get sent from getting a screenshot of their own.
+        var count = 0;
+        foreach (var reference in _pending)
+        {
+            if (reference.TryGetTarget(out var request) && request.IsClaimed)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     // Must be called while holding _lock
@@ -323,6 +345,7 @@ internal class SentryScreenshotCapturer : IDisposable
         }
 
         SentryScreenshotRequest? request;
+        var dropped = false;
         lock (_lock)
         {
             _stalled = false;
@@ -334,12 +357,46 @@ internal class SentryScreenshotCapturer : IDisposable
                 return;
             }
 
-            request.TakenTimestamp = Stopwatch.GetTimestamp();
-            _latest = request;
-            _pending.Add(new WeakReference<SentryScreenshotRequest>(request));
+            // Events on the main thread are done being captured by now. If none of them made it into an envelope,
+            // e.g. because they got sampled out, nothing is going to send the screenshot.
+            if (!request.IsClaimed && !request.RequestedOffMainThread)
+            {
+                _options.LogDebug("Screenshot skipped. The events requesting it got dropped.");
+                dropped = true;
+            }
+            else
+            {
+                request.TakenTimestamp = Stopwatch.GetTimestamp();
+                _latest = request;
+                _pending.Add(new WeakReference<SentryScreenshotRequest>(request));
+            }
+        }
+
+        if (dropped)
+        {
+            request.Abandon();
+            return;
         }
 
         Take(request);
+    }
+
+    /// <summary>
+    /// Takes a screenshot nothing reads, so the first one requested by an event doesn't pay for allocating the
+    /// textures and buffers, or for the graphics driver setting up the capture. Must run on the main thread at end of
+    /// frame.
+    /// </summary>
+    internal void Warmup()
+    {
+        var request = new SentryScreenshotRequest();
+        Take(request);
+
+        // Hands the buffer back to the pool, whether the readback is still pending or already done
+        request.Abandon();
+        if (request.Frame.Result is { } frame)
+        {
+            frame.ReleasePixels();
+        }
     }
 
     private void Take(SentryScreenshotRequest request)
@@ -377,7 +434,8 @@ internal class SentryScreenshotCapturer : IDisposable
                 Graphics.Blit(screen, _capture);
             }
 
-            if (_useAsyncReadback)
+            // The fallback worker reads the attachment on the main thread, where it can't wait for a readback
+            if (_useAsyncReadback && _options.BackgroundWorker is not WebBackgroundWorker)
             {
                 // The readback copies the texture as of now, so later captures into it don't affect this one
                 RequestReadback(request, _capture!);

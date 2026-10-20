@@ -34,6 +34,12 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 
     public SentryEvent? Process(SentryEvent @event, SentryHint hint)
     {
+        // Feedback attaches a screenshot only when asked to, see SentryUnitySdk.CaptureFeedback
+        if (@event.Contexts.Feedback is not null)
+        {
+            return @event;
+        }
+
         // A processor throwing drops the whole event, so a failing callback must only cost the screenshot.
         try
         {

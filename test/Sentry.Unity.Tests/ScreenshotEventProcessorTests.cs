@@ -122,6 +122,20 @@ public class ScreenshotEventProcessorTests
     }
 
     [Test]
+    public void Process_Feedback_DoesNotAttach()
+    {
+        var (processor, capturer) = GetSut();
+        var feedback = new SentryEvent();
+        feedback.Contexts.Feedback = new SentryFeedback("message");
+        var hint = new SentryHint();
+
+        processor.Process(feedback, hint);
+
+        Assert.AreEqual(0, capturer.RequestCount);
+        Assert.IsEmpty(hint.Attachments);
+    }
+
+    [Test]
     public void Process_BeforeCaptureScreenshotReceivesEvent()
     {
         var options = new SentryUnityOptions();
