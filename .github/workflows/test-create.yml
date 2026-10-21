@@ -35,10 +35,9 @@ jobs:
 
     - name: Setup Unity
       if: steps.cache-project.outputs.cache-hit != 'true'
-      uses: ./.github/actions/setup-unity
-      with:
-        unity-version: ${{ inputs.unity-version }}
-        license-server-config: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      run: ./scripts/setup-unity.ps1 -UnityVersion "${{ inputs.unity-version }}"
+      env:
+        UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
     - name: Create new Project
       if: steps.cache-project.outputs.cache-hit != 'true'

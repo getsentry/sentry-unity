@@ -22,7 +22,7 @@ Exact Unity editor versions and changesets live in `scripts/unity-versions.json`
 `build.yml`:
 
 1. Checks out `src/sentry-dotnet`.
-2. Installs the Unity Editor via `.github/actions/setup-unity` (Unity CLI).
+2. Installs the Unity Editor via `scripts/setup-unity.ps1` (Unity CLI).
 3. Restores .NET workloads and downloads native CI artifacts.
 4. Runs `dotnet build -c Release -v:d`.
 5. Installs `Sentry.AssemblyAlias` and runs `scripts/alias-assemblies.ps1`.

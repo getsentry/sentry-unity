@@ -13,7 +13,7 @@ $CliBinaries = @{
     'win32-x64'    = @('unity-windows-x64.exe', '78761a0547cd4a9bc212e27a217c66e6a621bf48c753ba440e4b2327ee7ff8ac')
 }
 
-$unity = (Get-Content "$PSScriptRoot/../../../scripts/unity-versions.json" -Raw | ConvertFrom-Json).$UnityVersion
+$unity = (Get-Content "$PSScriptRoot/unity-versions.json" -Raw | ConvertFrom-Json).$UnityVersion
 if (-not $unity) { throw "Unity version '$UnityVersion' not found in scripts/unity-versions.json" }
 $moduleList = -split $Modules
 
