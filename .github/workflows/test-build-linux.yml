@@ -191,6 +191,14 @@ jobs:
 
           Write-Host "`n=== Unity log from container ==="
           docker exec unity cat /sentry-unity/unity.log 2>&1 || echo "unity.log not found"
+
+          Write-Host "`n=== Kernel log ==="
+          sudo dmesg -T | Select-Object -Last 60
+
+          Write-Host "`n=== Memory ==="
+          free -m
+          docker exec unity df -h /dev/shm
+          docker exec unity ls -la /opt/unity/Editor/Data/PlaybackEngines/LinuxStandaloneSupport
         continue-on-error: true
 
       - name: Upload IntegrationTest project on failure
