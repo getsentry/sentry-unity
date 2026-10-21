@@ -77,8 +77,8 @@ public static class SentryNativeCocoa
             options.ScopeObserver = new NativeScopeObserver("macOS", options);
         }
 
-        // The app's options decide whether sentry-cocoa tracks app hangs, so the C# ANR watchdog stays in charge.
-        if (!isExternal && options.EnableAppHangTracking)
+        // With external initialization, the app's sentry-cocoa handles app hangs.
+        if (isExternal || options.EnableAppHangTracking)
         {
             Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-cocoa handles app hang detection.");
 #pragma warning disable CS0618 // Type or member is obsolete
