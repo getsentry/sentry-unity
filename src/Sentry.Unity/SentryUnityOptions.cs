@@ -286,8 +286,6 @@ public sealed class SentryUnityOptions : SentryOptions
     /// When set to <see cref="NativeInitializationType.BuildTime"/>, the options are written and hardcoded into the
     /// Gradle project during the build process. This means that the options cannot be changed at runtime, as they are
     /// embedded into the project itself.
-    /// When set to <see cref="NativeInitializationType.External"/>, the app that embeds the game initializes the native
-    /// SDK, e.g. when using Unity as a Library.
     /// </remarks>
     public NativeInitializationType AndroidNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
@@ -493,6 +491,10 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     internal ContextWriter? NativeContextWriter { get; set; } = null;
 
+    // Lets the native SDK of an app that embeds the game provide release and environment, unless they were set.
+    internal string? DefaultRelease { get; }
+    internal string DefaultEnvironment { get; }
+
     /// <summary>
     /// Provides debug images from the native SDK for IL2CPP line number support.
     /// </summary>
@@ -628,6 +630,9 @@ public sealed class SentryUnityOptions : SentryOptions
             ? "editor"
             : "production";
 
+        DefaultRelease = Release;
+        DefaultEnvironment = Environment;
+
         CaptureStructuredLogsForLogType = new Dictionary<LogType, bool>
         {
             { LogType.Log, false },
@@ -755,7 +760,8 @@ public enum NativeInitializationType
     /// <summary>
     /// The app that embeds the game owns the native SDK, e.g. when using Unity as a Library. The SDK does not initialize
     /// or close the native SDK. It attaches to it if the app has initialized it before the game starts. Options that
-    /// you set in Unity do not apply to the native SDK.
+    /// you set in Unity do not apply to the native SDK. Events from the game use the app's release, environment, and
+    /// trace, unless the release and environment are set in the options. Currently supported on iOS.
     /// </summary>
     External,
 }

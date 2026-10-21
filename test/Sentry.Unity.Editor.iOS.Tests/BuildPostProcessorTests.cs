@@ -207,6 +207,24 @@ public class BuildPostProcessorTests
     }
 
     [Test]
+    public void SetupSentry_InitializationTypeExternal_CopiesBridgeButNotFramework()
+    {
+        var options = new SentryUnityOptions { IosNativeInitializationType = NativeInitializationType.External };
+        var testLogger = new TestLogger();
+
+        BuildPostProcess.SetupSentry(options, testLogger, _outputProjectPath);
+
+        var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(),
+            SentryXcodeProject.BridgeName);
+        var frameworkPath = Path.Combine(_outputProjectPath, "Frameworks", SentryXcodeProject.FrameworkName);
+
+        Assert.IsTrue(File.Exists(bridgePath));
+        Assert.IsFalse(Directory.Exists(frameworkPath));
+        StringAssert.DoesNotContain(SentryXcodeProject.FrameworkName,
+            File.ReadAllText(Path.Combine(_outputProjectPath, "Unity-iPhone.xcodeproj", "project.pbxproj")));
+    }
+
+    [Test]
     public void AddSentryToXcodeProject_AppendBuildsAndToggleNativeSupport_ThrowsBuildFailedException()
     {
         var file = new FileInfo(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));

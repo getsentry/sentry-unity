@@ -19,13 +19,15 @@
 - App-hang tracking disables the C# ANR watchdog on iOS and macOS when the Cocoa backend is active.
 - macOS Cocoa screenshots are disabled because UIKit is unavailable.
 - Cocoa attachment synchronization is not implemented.
-- iOS external initialization: C# never initializes or closes Cocoa, attaches only if the host app already initialized it, keeps the host's SDK name, and keeps the C# ANR watchdog.
+- iOS external initialization: C# never initializes or closes Cocoa, attaches only if the host app already initialized it, keeps the host's SDK name, and keeps the C# ANR watchdog. It doesn't sync user, environment, or trace to the host's scope, turns off C# session tracking, uses the host's release and environment unless set, continues the host's trace (`NativePropagationContext`, read through the bridge on every use), and removes the `unity` context while the game is unloaded.
 
 ## iOS Export
 
 - iOS editor code is in `src/Sentry.Unity.Editor.iOS/`.
 - It copies `Sentry.xcframework~` and bridge source, mutates the PBX project through reflection, embeds/links the framework, adds `-ObjC`, and can write build-time options into `main.mm`.
 - Reflection avoids requiring iOS editor modules on Windows or Linux.
+- The iOS bridge looks up sentry-cocoa classes at runtime: the `SentryObjC*` classes when the export bundles the framework, otherwise the core classes of the app's own SDK (`SentrySDKInternal`, `SentryScope`, `SentryBreadcrumb`, `SentryUser`). It is compiled with `-fobjc-exceptions`.
+- External exports copy no framework and add the symbol upload build phase to `UnityFramework`, which an embedding app builds.
 - Disabled/unconfigured iOS still installs a no-op bridge so P/Invoke symbols resolve.
 - Changing an append build from build-time to runtime/disabled requires a Replace export; postprocessing fails rather than preserve stale `main.mm` initialization.
 

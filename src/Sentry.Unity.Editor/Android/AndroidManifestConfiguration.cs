@@ -120,13 +120,6 @@ public class AndroidManifestConfiguration
     /// </summary>
     private bool AndroidSdkEnabled => _androidSdkEnabled ??= EvaluateAndroidSdkEnabled();
 
-    /// <summary>
-    /// Whether the Android SDK gets copied into the Gradle project. With <see cref="NativeInitializationType.External"/>
-    /// the app that embeds the game provides it.
-    /// </summary>
-    private bool BundlesAndroidSdk =>
-        AndroidSdkEnabled && _options?.AndroidNativeInitializationType is not NativeInitializationType.External;
-
     private bool EvaluateAndroidSdkEnabled()
     {
         if (_options is null)
@@ -169,15 +162,6 @@ public class AndroidManifestConfiguration
             // Should the SDK end up in the app regardless, this keeps it from crashing on startup.
             _logger.LogDebug("Setting 'auto-init' to 'false'. The Android SDK is not part of this build.");
             androidManifest.SetAutoInit(false);
-            _ = androidManifest.Save();
-
-            return;
-        }
-
-        if (_options?.AndroidNativeInitializationType is NativeInitializationType.External)
-        {
-            // 'auto-init' would merge into the app's manifest and turn off the app's SDK.
-            _logger.LogDebug("Leaving 'auto-init' unset. The app initializes the Android SDK.");
             _ = androidManifest.Save();
 
             return;
@@ -274,7 +258,7 @@ public class AndroidManifestConfiguration
         var androidSdkPath = Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
         var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
 
-        if (BundlesAndroidSdk)
+        if (AndroidSdkEnabled)
         {
             if (!Directory.Exists(androidSdkPath))
             {
@@ -317,7 +301,7 @@ public class AndroidManifestConfiguration
     internal void AddAndroidSdkDependencies(string gradleProjectPath)
     {
         var tool = new GradleSetup(_logger, gradleProjectPath);
-        var nativeSupportEnabled = BundlesAndroidSdk;
+        var nativeSupportEnabled = AndroidSdkEnabled;
 
         try
         {

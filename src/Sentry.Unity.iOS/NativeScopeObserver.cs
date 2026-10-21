@@ -1,10 +1,32 @@
 using System;
+using Sentry.Extensibility;
 
 namespace Sentry.Unity.iOS;
 
 public class NativeScopeObserver : ScopeObserver
 {
-    public NativeScopeObserver(string name, SentryOptions options) : base(name, options) { }
+    private readonly SentryOptions _options;
+
+    // The app that embeds the game owns the native SDK's user, environment, and trace.
+    private readonly bool _isExternal;
+
+    public NativeScopeObserver(string name, SentryOptions options) : this(name, options, false) { }
+
+    internal NativeScopeObserver(string name, SentryOptions options, bool isExternal) : base(name, options)
+    {
+        _options = options;
+        _isExternal = isExternal;
+    }
+
+    private bool IsOwnedByApp(string property)
+    {
+        if (_isExternal)
+        {
+            _options.DiagnosticLogger?.LogDebug("Not syncing the {0}. The app owns it.", property);
+        }
+
+        return _isExternal;
+    }
 
     public override void AddBreadcrumbImpl(Breadcrumb breadcrumb)
     {
@@ -47,16 +69,37 @@ public class NativeScopeObserver : ScopeObserver
 
     public override void UnsetTagImpl(string key) => SentryCocoaBridgeProxy.UnsetTag(key);
 
-    public override void SetUserImpl(SentryUser user) =>
-        SentryCocoaBridgeProxy.SetUser(user.Email, user.Id, user.IpAddress, user.Username);
+    public override void SetUserImpl(SentryUser user)
+    {
+        if (!IsOwnedByApp("user"))
+        {
+            SentryCocoaBridgeProxy.SetUser(user.Email, user.Id, user.IpAddress, user.Username);
+        }
+    }
 
-    public override void UnsetUserImpl() => SentryCocoaBridgeProxy.UnsetUser();
+    public override void UnsetUserImpl()
+    {
+        if (!IsOwnedByApp("user"))
+        {
+            SentryCocoaBridgeProxy.UnsetUser();
+        }
+    }
 
-    public override void SetTraceImpl(SentryId traceId, SpanId spanId) =>
-        SentryCocoaBridgeProxy.SetTrace(traceId.ToString(), spanId.ToString());
+    public override void SetTraceImpl(SentryId traceId, SpanId spanId)
+    {
+        if (!IsOwnedByApp("trace"))
+        {
+            SentryCocoaBridgeProxy.SetTrace(traceId.ToString(), spanId.ToString());
+        }
+    }
 
-    public override void SetEnvironmentImpl(string? environment) =>
-        SentryCocoaBridgeProxy.SetEnvironment(environment);
+    public override void SetEnvironmentImpl(string? environment)
+    {
+        if (!IsOwnedByApp("environment"))
+        {
+            SentryCocoaBridgeProxy.SetEnvironment(environment);
+        }
+    }
 
     public override void AddFileAttachmentImpl(string filePath, string fileName, string? contentType)
     {

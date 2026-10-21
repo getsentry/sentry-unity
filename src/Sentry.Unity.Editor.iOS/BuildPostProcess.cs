@@ -115,21 +115,34 @@ public static class BuildPostProcess
     {
         logger.LogInfo("Attempting to add Sentry to the Xcode project.");
 
+        // The app that embeds the game links its own SDK, which the bridge finds at runtime.
+        var bundlesSdk = options.IosNativeInitializationType is not NativeInitializationType.External;
+
         try
         {
-            // The SentryObjC.xcframework ends in '~' to hide it from Unity. This prevents Unity from exporting it with the Xcode build.
-            // Ideally, we would let Unity copy this over but:
-            // - Detection of `.xcframework` as datatype and non-folder happened in Unity 2021
-            // - Without a `.meta` file we cannot opt-in embedding the framework
-            // - Even if Unity copies it, the framework still requires to be 'linked with binary' for it to work
-            var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.FrameworkName + "~"));
-            CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", SentryXcodeProject.FrameworkName), logger);
+            if (bundlesSdk)
+            {
+                // The SentryObjC.xcframework ends in '~' to hide it from Unity. This prevents Unity from exporting it with the Xcode build.
+                // Ideally, we would let Unity copy this over but:
+                // - Detection of `.xcframework` as datatype and non-folder happened in Unity 2021
+                // - Without a `.meta` file we cannot opt-in embedding the framework
+                // - Even if Unity copies it, the framework still requires to be 'linked with binary' for it to work
+                var frameworkPath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.FrameworkName + "~"));
+                CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", SentryXcodeProject.FrameworkName), logger);
+            }
 
             var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.BridgeName));
             CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
 
             using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
-            sentryXcodeProject.AddSentryFramework();
+            if (bundlesSdk)
+            {
+                sentryXcodeProject.AddSentryFramework();
+            }
+            else
+            {
+                sentryXcodeProject.SetDebugInformationFormat();
+            }
             sentryXcodeProject.AddSentryNativeBridge();
 
             if (options.IosNativeInitializationType is NativeInitializationType.BuildTime)
@@ -171,7 +184,9 @@ public static class BuildPostProcess
         try
         {
             using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
-            sentryXcodeProject.AddBuildPhaseSymbolUpload(cliOptions);
+            // The app that embeds the game builds `UnityFramework`, but not the Unity app target.
+            sentryXcodeProject.AddBuildPhaseSymbolUpload(cliOptions,
+                uploadFromUnityFramework: options.IosNativeInitializationType is NativeInitializationType.External);
         }
         catch (Exception e)
         {

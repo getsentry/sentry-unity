@@ -1,6 +1,7 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.iOS;
 
@@ -51,8 +52,20 @@ public static class SentryNativeCocoa
                 return;
             }
 
-            options.ScopeObserver = new NativeScopeObserver("iOS", options);
+            options.ScopeObserver = new NativeScopeObserver("iOS", options, isExternal);
 
+            if (isExternal)
+            {
+                UseAppReleaseAndEnvironment(options);
+                NativePropagationContext.Use(options, SentryCocoaBridgeProxy.GetTraceHeader);
+                RemoveUnityContextWhileUnloaded(options);
+
+                if (options.AutoSessionTracking)
+                {
+                    Logger?.LogDebug("Disabling session tracking - the app tracks sessions.");
+                    options.AutoSessionTracking = false;
+                }
+            }
         }
         else
         {
@@ -110,6 +123,45 @@ public static class SentryNativeCocoa
         }
 
         Logger?.LogInfo("Successfully configured the native SDK");
+    }
+
+    // Events from the game belong to the app's release and environment, unless they were set in the options.
+    private static void UseAppReleaseAndEnvironment(SentryUnityOptions options)
+    {
+        if (options.Release == options.DefaultRelease && SentryCocoaBridgeProxy.GetOption("releaseName") is { } release)
+        {
+            Logger?.LogDebug("Using the app's release: {0}", release);
+            options.Release = release;
+            options.Distribution ??= SentryCocoaBridgeProxy.GetOption("dist");
+        }
+
+        if (options.Environment == options.DefaultEnvironment && SentryCocoaBridgeProxy.GetOption("environment") is { } environment)
+        {
+            Logger?.LogDebug("Using the app's environment: {0}", environment);
+            options.Environment = environment;
+        }
+    }
+
+    // The app keeps running while the game is unloaded, and can load it again. The C# SDK stays initialized.
+    private static void RemoveUnityContextWhileUnloaded(SentryUnityOptions options)
+    {
+        var unloaded = false;
+        Application.unloading += () =>
+        {
+            Logger?.LogDebug("Removing the Unity context from the app's scope.");
+            SentryCocoaBridgeProxy.RemoveContext("unity");
+            unloaded = true;
+        };
+        SceneManager.sceneLoaded += (_, _) =>
+        {
+            if (!unloaded || options.NativeContextWriter is not { } contextWriter)
+            {
+                return;
+            }
+
+            unloaded = false;
+            SentrySdk.ConfigureScope(contextWriter.Write);
+        };
     }
 
     /// <summary>

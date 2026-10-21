@@ -171,19 +171,6 @@ public class AndroidManifestTests
     }
 
     [Test]
-    public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabled_InitTypeExternal_DoesNotSetAutoInitOrOptions()
-    {
-        _fixture.SentryUnityOptions!.AndroidNativeInitializationType = NativeInitializationType.External;
-        var sut = _fixture.GetSut();
-        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
-
-        _fixture.UnityTestLogger.AssertLogContains(SentryLevel.Debug, "Leaving 'auto-init' unset. The app initializes the Android SDK."); // Sanity Check
-
-        StringAssert.DoesNotContain("io.sentry.auto-init", manifest);
-        StringAssert.DoesNotContain("io.sentry.dsn", manifest);
-    }
-
-    [Test]
     public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabled_InitTypeBuildTime_AddsSentryAndAutoInits()
     {
         _fixture.SentryUnityOptions!.AndroidNativeInitializationType = NativeInitializationType.BuildTime;
@@ -547,44 +534,6 @@ public class AndroidManifestTests
         sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
 
         Assert.IsTrue(File.Exists(Path.Combine(gradleProjectPath, "unityLibrary", "libs", "androidSdk.jar")));
-
-        Directory.Delete(fakeProjectPath, true);
-    }
-
-    [Test]
-    public void CopyAndroidSdkToGradleProject_InitTypeExternalAndSdkAlreadyCopied_RemovesAndroidSdkFromGradleProject()
-    {
-        var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
-        var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
-        DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
-        var androidSdk = Path.Combine(gradleProjectPath, "unityLibrary", "libs", "androidSdk.jar");
-        File.Create(androidSdk).Close();
-
-        _fixture.SentryUnityOptions!.AndroidNativeInitializationType = NativeInitializationType.External;
-        var sut = _fixture.GetSut();
-
-        sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
-
-        Assert.IsFalse(File.Exists(androidSdk));
-
-        Directory.Delete(fakeProjectPath, true);
-    }
-
-    [Test]
-    public void AddAndroidSdkDependencies_InitTypeExternal_DoesNotAddDependencies()
-    {
-        var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
-        DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
-
-        _fixture.SentryUnityOptions!.AndroidNativeInitializationType = NativeInitializationType.External;
-        var sut = _fixture.GetSut();
-
-        sut.AddAndroidSdkDependencies(gradleProjectPath);
-
-        var unityLibraryGradle = File.ReadAllText(Path.Combine(gradleProjectPath, "unityLibrary", "build.gradle"));
-        StringAssert.DoesNotContain(GradleSetup.SdkDependencies, unityLibraryGradle);
 
         Directory.Delete(fakeProjectPath, true);
     }

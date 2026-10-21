@@ -10,18 +10,16 @@ internal class TestSentryJava : ISentryJava
     public bool SentryPresent { get; set; } = true;
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
-    public bool InitCalled { get; private set; }
-    public bool CloseCalled { get; private set; }
 
     public bool? IsEnabled() => Enabled;
 
-    public void Init(SentryUnityOptions options) => InitCalled = true;
+    public void Init(SentryUnityOptions options) { }
 
     public string? GetInstallationId() => InstallationId;
 
     public bool? CrashedLastRun() => IsCrashedLastRun;
 
-    public void Close() => CloseCalled = true;
+    public void Close() { }
 
     public void WriteScope(
         string? AppStartTime,
