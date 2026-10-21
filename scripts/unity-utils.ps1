@@ -4,21 +4,7 @@ $ClearUnityLogTimeoutSeconds = 30
 
 function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
 {
-    If ($unityPath.StartsWith("docker "))
-    {
-        # Move docker arguments from $unityPath to $arguments, leaving "docker" as $unityPath
-        $arguments = ($unityPath.Split(" ") | Select-Object -Skip 1) + $arguments
-        $unityPath = "docker"
-    }
-
-    If ($unityPath -eq "docker")
-    {
-        # Remove "-batchmode" which ends up being duplicate because the referenced unity-editor script already adds it
-        Write-Host "Removing argument '-batchmode' - it would be duplicate and cause a build to fail"
-        $arguments = $arguments | Where-Object { $_ –ne "-batchmode" }
-        Write-Host "Updated arguments: $arguments"
-    }
-    ElseIf ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "" -and $unityPath -ne "xvfb-run")
+    If ($IsLinux -and "$env:XDG_CURRENT_DESKTOP" -eq "" -and $unityPath -ne "xvfb-run")
     {
         $arguments = @("-ae", "/dev/stdout", "$unityPath") + $arguments
         $unityPath = "xvfb-run"

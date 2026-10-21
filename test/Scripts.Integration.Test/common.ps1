@@ -75,7 +75,7 @@ function Write-PhaseFailed
 
 function RunUnityAndExpect([string] $UnityPath, [string] $name, [string] $successMessage, [string[]] $arguments)
 {
-    $stdout = RunUnityCustom $UnityPath $arguments -ReturnLogOutput
+    $stdout = RunUnity $UnityPath $arguments -ReturnLogOutput
     $lineWithSuccess = $stdout | Select-String $successMessage
     If ($null -ne $lineWithSuccess)
     {

@@ -107,10 +107,7 @@ function FormatUnityPath
         Throw "Unity path is required."
     }
 
-    If ($unityPath.StartsWith("docker "))
-    {
-    }
-    ElseIf ($IsMacOS)
+    If ($IsMacOS)
     {
         If (-not $unityPath.EndsWith("Contents/MacOS/Unity"))
         {
@@ -178,16 +175,4 @@ function BuildMethodFor([string] $platform)
         }
         Default { Throw "Unsupported build platform: '$platform'" }
     }
-}
-
-function RunUnityCustom([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
-{
-    If ($unityPath.StartsWith("docker "))
-    {
-        # Fix paths (they're supposed to be the current working directory in the docker container)
-        Write-Detail "Replacing project root ($(ProjectRoot)) in docker arguments"
-        $arguments = $arguments | ForEach-Object { $_.Replace("$(ProjectRoot)", "/sentry-unity") }
-    }
-
-    return RunUnity $unityPath $arguments -ReturnLogOutput:$ReturnLogOutput
 }

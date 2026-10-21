@@ -61,7 +61,7 @@ $rootName = if ($IsMacOS) { 'Unity.app' }          else { 'Editor' }
 # Each "install" candidate is a directory like <hub>/<version>/ that contains
 # either Editor/ (win/linux) or Unity.app/ (mac).
 $installs = [System.Collections.Generic.List[string]]::new()
-if ($IsLinux -and $env:UNITY_PATH) { $installs.Add($env:UNITY_PATH) }
+if ($IsLinux -and $env:UNITY_PATH) { $installs.Add((Split-Path (Split-Path $env:UNITY_PATH))) }
 if ($HubInstallDir -and $UnityVersion) { $installs.Add((Join-Path $HubInstallDir $UnityVersion)) }
 if ($HubInstallDir -and $HubDefaultEditor -and $UnityVersion -ne $HubDefaultEditor) {
     $installs.Add((Join-Path $HubInstallDir $HubDefaultEditor))

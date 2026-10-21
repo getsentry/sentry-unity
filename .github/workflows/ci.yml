@@ -130,7 +130,7 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  # A Linux, docker-based build to prepare a WebGL player. The tests run in `test-run-webgl`.
+  # A Linux build to prepare a WebGL player. The tests run in `test-run-webgl`.
   test-build-webgl:
     name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
@@ -144,8 +144,6 @@ jobs:
         include:
           - platform: WebGL
             build_platform: WebGL
-    env:
-      UNITY_PATH: docker exec unity unity-editor
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -160,22 +158,12 @@ jobs:
           docker-images: false
           swap-storage: true
 
-      - name: Docker Login
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+      - name: Setup Unity
+        uses: ./.github/actions/setup-unity
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }} 
-          password: ${{ secrets.GITHUB_TOKEN }} 
-
-      - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh "$UNITY_VERSION" "$PLATFORM_WITH_SUFFIX" "$UNITY_LICENSE_SERVER_CONFIG"
-        shell: bash
-        env:
-          UNITY_VERSION: ${{ matrix.unity-version }}
-          PLATFORM: ${{ matrix.platform }}
-          IMAGE_SUFFIX: ${{ matrix.image-suffix }}
-          PLATFORM_WITH_SUFFIX: ${{ matrix.platform }}${{ matrix.image-suffix }}
-          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+          unity-version: ${{ matrix.unity-version }}
+          modules: webgl
+          license-server-config: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
       - name: Download IntegrationTest project
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1

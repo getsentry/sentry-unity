@@ -12,7 +12,6 @@ on:
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
-  GITHUB_ACTOR: ${{ github.actor }}
   UNITY_VERSION: ${{ inputs.unity-version }}
 
 defaults:
@@ -49,6 +48,7 @@ jobs:
         run: |
           $v = (Get-Content scripts/unity-versions.json -Raw | ConvertFrom-Json).'${{ env.UNITY_VERSION }}'.version
           "unityVersion=$v" >> $env:GITHUB_OUTPUT
+          "UNITY_VERSION=$v" >> $env:GITHUB_ENV
 
       - name: Cache Unity Library
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -58,18 +58,12 @@ jobs:
           restore-keys: |
             Library-unity-of-bugs-${{ steps.env.outputs.unityVersion }}-
 
-      - name: Docker Login
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+      - name: Setup Unity
+        uses: ./.github/actions/setup-unity
         with:
-          registry: ghcr.io
-          username: ${{ env.GITHUB_ACTOR }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Start the Unity docker container
-        run: ./scripts/ci-docker.sh "$UNITY_VERSION" 'ios' "$UNITY_LICENSE_SERVER_CONFIG"
-        shell: bash
-        env:
-          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+          unity-version: ${{ inputs.unity-version }}
+          modules: ios
+          license-server-config: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
       - name: Install .NET SDK
         if: runner.os != 'Windows'
@@ -126,17 +120,17 @@ jobs:
           path: package-dev/Plugins/Windows/SentryNative~
 
       - name: Build Sentry.Unity Solution
-        run: docker exec unity dotnet build -c Release -v:d
+        run: dotnet build -c Release -v:d
 
       - name: Install assemblyalias
-        run: docker exec unity dotnet tool install --global Sentry.AssemblyAlias --version 0.5.0 --allow-roll-forward
+        run: dotnet tool install --global Sentry.AssemblyAlias --version 0.5.0 --allow-roll-forward
 
       - name: Alias assemblies
-        run: docker exec unity pwsh scripts/alias-assemblies.ps1 -AssemblyAlias /home/gh/.dotnet/tools/assemblyalias
+        run: ./scripts/alias-assemblies.ps1 -AssemblyAlias "$HOME/.dotnet/tools/assemblyalias"
 
       - name: Package for release
         run: |
-          docker exec unity dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+          dotnet msbuild /t:UnityConfigureSentryOptions /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
           ./scripts/pack.ps1
 
       - name: Upload release artifacts
@@ -148,7 +142,7 @@ jobs:
             package-release.zip
 
       - name: Build DependencyConflict package
-        run: docker exec unity dotnet build test/Scripts.Integration.Test/DependencyConflictPackage
+        run: dotnet build test/Scripts.Integration.Test/DependencyConflictPackage
 
       - name: Upload DependencyConflict package
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -158,16 +152,16 @@ jobs:
           path: test/Scripts.Integration.Test/DependencyConflictPackage/DependencyConflict
 
       - name: Run Unity tests (playmode)
-        run: docker exec unity dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
+        run: dotnet msbuild /t:UnityPlayModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Tests
 
       - name: Run Unity tests (editmode)
-        run: docker exec unity dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
+        run: dotnet msbuild /t:UnityEditModeTest /p:Configuration=Release /p:OutDir=other test/Sentry.Unity.Editor.Tests
 
       - name: Publish Test Results
         uses: dorny/test-reporter@a6ddd83ac95ff4586f5d3aceeb314d9a1841db95 # v3.0.0
         if: ${{ !cancelled() }}
         with:
-          name: Unity Test Results - ${{ env.UNITY_VERSION }}
+          name: Unity Test Results - ${{ inputs.unity-version }}
           path: artifacts/test/**/*.xml
           reporter: dotnet-nunit
           fail-on-error: false
@@ -175,11 +169,11 @@ jobs:
       - name: Upload test artifacts (playmode)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: Test results (playmode) - ${{ env.UNITY_VERSION }}
+          name: Test results (playmode) - ${{ inputs.unity-version }}
           path: artifacts/test/playmode
 
       - name: Upload test artifacts (editmode)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: Test results (editmode) - ${{ env.UNITY_VERSION }}
+          name: Test results (editmode) - ${{ inputs.unity-version }}
           path: artifacts/test/editmode

@@ -1,0 +1,28 @@
+name: 'Setup Unity'
+description: 'Installs a Unity Editor and modules with the Unity CLI and configures the license server.'
+inputs:
+  unity-version:
+    description: 'Unity version key in scripts/unity-versions.json, e.g. 2021.3'
+    required: true
+  modules:
+    description: 'Space-separated Unity module IDs, e.g. android. Child modules are included.'
+    required: false
+    default: ''
+  license-server-config:
+    description: 'Contents of the Unity license server services-config.json'
+    required: true
+outputs:
+  unity-version:
+    description: 'Installed Unity Editor version, e.g. 2021.3.45f2'
+    value: ${{ steps.setup.outputs.unity-version }}
+
+runs:
+  using: composite
+  steps:
+    - id: setup
+      env:
+        UNITY_VERSION_KEY: ${{ inputs.unity-version }}
+        UNITY_MODULES: ${{ inputs.modules }}
+        UNITY_LICENSE_SERVER_CONFIG: ${{ inputs.license-server-config }}
+      shell: pwsh
+      run: '& "$env:GITHUB_ACTION_PATH/setup-unity.ps1" -UnityVersion $env:UNITY_VERSION_KEY -Modules $env:UNITY_MODULES'
