@@ -10,60 +10,54 @@ namespace Sentry.Unity;
 /// Attachment content for a screenshot that gets taken at the end of the frame the event was captured in.
 /// </summary>
 /// <remarks>
-/// The SDK reads attachment content when serializing the envelope on its background worker. Waiting for the request
+/// The SDK reads attachment content when serializing the envelope on its background worker. Waiting for the screenshot
 /// and encoding it only then keeps both off the thread that captured the event, while the screenshot still goes out in
-/// the same envelope as the event. Events that get dropped before being sent - e.g. sampled out - never pay for the
-/// encode.
+/// the same envelope as the event.
 /// </remarks>
 internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
 {
-    private readonly SentryScreenshotCapturer _capturer;
-    private readonly SentryScreenshotRequest _request;
-    private readonly Task<byte[]?>? _transformed;
+    // How long the worker waits for the main thread to take the screenshot, e.g. while it's hanging or paused
+    internal static readonly TimeSpan CaptureTimeout = TimeSpan.FromSeconds(1);
+
+    private readonly Task<Lazy<byte[]?>?> _screenshot;
     private readonly SentryUnityOptions _options;
 
-    internal SentryScreenshotAttachmentContent(SentryScreenshotCapturer capturer, SentryScreenshotRequest request,
-        Task<byte[]?>? transformed, SentryUnityOptions options)
+    internal SentryScreenshotAttachmentContent(Task<Lazy<byte[]?>?> screenshot, SentryUnityOptions options)
     {
-        _capturer = capturer;
-        _request = request;
-        _transformed = transformed;
+        _screenshot = screenshot;
         _options = options;
     }
 
-    internal SentryScreenshotRequest Request => _request;
-
-    // The SDK gets the stream once the event made it past sampling and BeforeSend, when building its envelope
-    public Stream GetStream()
-    {
-        _request.Claim();
-        return new EncodeOnReadStream(this);
-    }
+    public Stream GetStream() => new EncodeOnReadStream(this);
 
     internal async Task<byte[]> GetEncodedAsync()
     {
-        if (!_request.IsCompleted)
+        if (!_screenshot.IsCompleted)
         {
             // Taking the screenshot needs the main thread to reach the end of the frame. Waiting on it there would deadlock.
             if (MainThreadData.IsMainThread())
             {
-                _options.LogDebug("Screenshot not taken yet and the attachment is read on the main thread. Skipping.");
+                _options.LogWarning("Screenshot not taken yet and the attachment is read on the main thread. Skipping.");
                 return Array.Empty<byte>();
             }
 
-            await _capturer.WaitAsync(_request).ConfigureAwait(false);
+            if (await Task.WhenAny(_screenshot, Task.Delay(CaptureTimeout)).ConfigureAwait(false) != _screenshot)
+            {
+                _options.LogWarning("Screenshot was not taken in time. Skipping.");
+                return Array.Empty<byte>();
+            }
         }
 
-        var bytes = _transformed is not null
-            ? await _transformed.ConfigureAwait(false)
-            : (await _request.Frame.ConfigureAwait(false))?.GetEncoded(_options, _request.BeforeEncode);
-
-        if (bytes is null)
+        try
         {
-            _options.LogWarning("Screenshot attachment is empty. Taking or encoding the screenshot failed.");
+            var bytes = (await _screenshot.ConfigureAwait(false))?.Value;
+            return bytes is { Length: > 0 } ? bytes : Array.Empty<byte>();
         }
-
-        return bytes ?? Array.Empty<byte>();
+        catch (Exception e)
+        {
+            _options.LogError(e, "Failed to encode the screenshot.");
+            return Array.Empty<byte>();
+        }
     }
 
     // Deliberately not seekable: the SDK checks the length of attachment streams when building the envelope, on the
@@ -72,7 +66,6 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
     {
         private readonly SentryScreenshotAttachmentContent _content;
         private MemoryStream? _encoded;
-        private bool _disposed;
 
         public EncodeOnReadStream(SentryScreenshotAttachmentContent content) => _content = content;
 
@@ -106,16 +99,8 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && !_disposed)
+            if (disposing)
             {
-                _disposed = true;
-
-                // Disposed without being read, e.g. because the envelope got dropped from a full queue
-                if (_encoded is null)
-                {
-                    _content._request.Unclaim();
-                }
-
                 _encoded?.Dispose();
             }
 

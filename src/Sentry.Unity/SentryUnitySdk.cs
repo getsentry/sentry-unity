@@ -67,8 +67,6 @@ internal class SentryUnitySdk
         try
         {
             ApplicationAdapter.Instance.Quitting -= Close;
-            _options.ScreenshotCapturer?.Dispose();
-            _options.ScreenshotCapturer = null;
             _options.DisposeGameMetricAttributes();
             _options.NativeSupportCloseCallback?.Invoke();
             _options.NativeSupportCloseCallback = null;
@@ -127,43 +125,33 @@ internal class SentryUnitySdk
         SentryHint? hint = null;
         if (addScreenshot)
         {
-            if (CaptureFeedbackScreenshot() is { } content)
+            Texture2D? screenshot = null;
+
+            try
             {
-                hint = SentryHint.WithAttachments(
-                    new SentryAttachment(
-                        AttachmentType.Default,
-                        content,
-                        "screenshot.jpg",
-                        "image/jpeg"));
+                screenshot = SentryScreenshot.CreateNewScreenshotTexture2D(_options);
+                var screenshotBytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
+
+                if (screenshotBytes.Length > 0)
+                {
+                    hint = SentryHint.WithAttachments(
+                        new SentryAttachment(
+                            AttachmentType.Default,
+                            new ByteAttachmentContent(screenshotBytes),
+                            "screenshot.jpg",
+                            "image/jpeg"));
+                }
+            }
+            finally
+            {
+                if (screenshot)
+                {
+                    UnityEngine.Object.Destroy(screenshot);
+                }
             }
         }
 
         return Sentry.SentrySdk.CurrentHub.CaptureFeedback(message, email, name, hint: hint);
-    }
-
-    private IAttachmentContent? CaptureFeedbackScreenshot()
-    {
-        // Taken at the end of the frame. Capturing here instead would happen mid-frame,
-        // i.e. while handling the input that submitted the feedback, and yield an incomplete image.
-        if (_options.ScreenshotCapturer is { } capturer)
-        {
-            return capturer.TryRequest();
-        }
-
-        Texture2D? screenshot = null;
-        try
-        {
-            screenshot = SentryScreenshot.CreateNewScreenshotTexture2D(_options);
-            var bytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
-            return bytes is { Length: > 0 } ? new ByteAttachmentContent(bytes) : null;
-        }
-        finally
-        {
-            if (screenshot)
-            {
-                UnityEngine.Object.Destroy(screenshot);
-            }
-        }
     }
 
     internal static void SetUpWindowsPlayerCaching(SentryUnitySdk unitySdk, SentryUnityOptions options)

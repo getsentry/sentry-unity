@@ -1,33 +1,26 @@
 using System;
+using System.Collections;
+using System.Threading.Tasks;
 using Sentry.Extensibility;
+using UnityEngine;
 
 namespace Sentry.Unity;
 
 public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
 {
     private readonly SentryUnityOptions _options;
-    private readonly SentryScreenshotCapturer _capturer;
+    private readonly ISentryMonoBehaviour _sentryMonoBehaviour;
 
-    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions)
-        : this(sentryOptions, GetOrCreateCapturer(sentryOptions)) { }
+    // Events in the same frame share a screenshot
+    private readonly object _lock = new();
+    private TaskCompletionSource<Lazy<byte[]?>?>? _pending;
 
-    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, SentryScreenshotCapturer capturer)
+    public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
+
+    internal ScreenshotEventProcessor(SentryUnityOptions sentryOptions, ISentryMonoBehaviour sentryMonoBehaviour)
     {
         _options = sentryOptions;
-        _capturer = capturer;
-    }
-
-    private static SentryScreenshotCapturer GetOrCreateCapturer(SentryUnityOptions options)
-    {
-        if (options.ScreenshotCapturer is { } capturer)
-        {
-            return capturer;
-        }
-
-        capturer = new SentryScreenshotCapturer(options);
-        SentryMonoBehaviour.Instance.StartScreenshotCapturer(capturer);
-        options.ScreenshotCapturer = capturer;
-        return capturer;
+        _sentryMonoBehaviour = sentryMonoBehaviour;
     }
 
     public SentryEvent? Process(SentryEvent @event) => @event;
@@ -40,12 +33,10 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        // A processor throwing drops the whole event, so a failing callback must only cost the screenshot.
         try
         {
             if (_options.BeforeCaptureScreenshotInternal?.Invoke(@event) is false)
             {
-                _options.LogInfo("Screenshot capture skipped by BeforeCaptureScreenshot callback.");
                 return @event;
             }
         }
@@ -55,22 +46,101 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        // The screenshot gets taken at the end of this frame. A callback to its pixels gets applied on the SDK's worker
-        // right before encoding. The obsolete Texture2D callback ties applying it - and encoding - to the main thread.
-        var content = _options.BeforeSendScreenshotPixelsInternal is { } beforeSendPixels
-            ? _capturer.TryRequest(beforeEncode: pixels => beforeSendPixels(pixels, @event))
-            : _options.BeforeSendScreenshotInternal is { } beforeSend
-                ? _capturer.TryRequest(screenshot => beforeSend(screenshot, @event))
-                : _capturer.TryRequest();
-
-        if (content is null)
+        Task<Lazy<byte[]?>?> screenshot;
+        lock (_lock)
         {
-            return @event;
+            if (_pending is null)
+            {
+                _pending = new TaskCompletionSource<Lazy<byte[]?>?>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(_pending, @event));
+            }
+
+            screenshot = _pending.Task;
         }
 
-        hint.Attachments.Add(new SentryAttachment(AttachmentType.Default, content, "screenshot.jpg", "image/jpeg"));
-        _options.LogDebug("Screenshot requested for event {0}", @event.EventId);
+        // The screenshot gets read, and encoded, when the SDK serializes the event's envelope on its worker
+        hint.Attachments.Add(new SentryAttachment(
+            AttachmentType.Default,
+            new SentryScreenshotAttachmentContent(screenshot, _options),
+            "screenshot.jpg",
+            "image/jpeg"));
 
         return @event;
     }
+
+    private IEnumerator CaptureScreenshotCoroutine(TaskCompletionSource<Lazy<byte[]?>?> screenshot, SentryEvent @event)
+    {
+        // Capturing mid-frame yields an incomplete image
+        yield return WaitForEndOfFrame();
+
+        lock (_lock)
+        {
+            _pending = null;
+        }
+
+        try
+        {
+            // The Texture2D callback and the main thread worker need the screenshot right away
+            if (_options.BeforeSendScreenshotInternal is null && CanReadBackAsync())
+            {
+                SentryScreenshot.CaptureAsync(_options, result => screenshot.TrySetResult(result));
+            }
+            else
+            {
+                screenshot.TrySetResult(CaptureScreenshot(@event));
+            }
+        }
+        catch (Exception e)
+        {
+            _options.LogError(e, "Failed to capture screenshot.");
+            screenshot.TrySetResult(null);
+        }
+    }
+
+    private Lazy<byte[]?>? CaptureScreenshot(SentryEvent @event)
+    {
+        Texture2D? screenshot = null;
+        try
+        {
+            screenshot = CreateNewScreenshotTexture2D(_options);
+
+            if (_options.BeforeSendScreenshotInternal != null)
+            {
+                var modifiedScreenshot = _options.BeforeSendScreenshotInternal(screenshot, @event);
+
+                if (modifiedScreenshot == null)
+                {
+                    _options.LogInfo("Screenshot discarded by BeforeSendScreenshot callback.");
+                    return null;
+                }
+
+                // Clean up - If the user returned a new texture object and did not modify the passed in one
+                if (modifiedScreenshot != screenshot)
+                {
+                    _options.LogDebug("Applying modified screenshot.");
+                    UnityEngine.Object.Destroy(screenshot);
+                    screenshot = modifiedScreenshot;
+                }
+            }
+
+            var screenshotBytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
+            return new Lazy<byte[]?>(() => screenshotBytes);
+        }
+        finally
+        {
+            if (screenshot != null)
+            {
+                UnityEngine.Object.Destroy(screenshot);
+            }
+        }
+    }
+
+    internal virtual bool CanReadBackAsync()
+        => SystemInfo.supportsAsyncGPUReadback && _options.BackgroundWorker is not WebBackgroundWorker;
+
+    internal virtual Texture2D CreateNewScreenshotTexture2D(SentryUnityOptions options)
+        => SentryScreenshot.CreateNewScreenshotTexture2D(options);
+
+    internal virtual YieldInstruction? WaitForEndOfFrame()
+        => new WaitForEndOfFrame();
 }

@@ -4,19 +4,11 @@
 
 ### Behavioral Changes
 
-- Screenshots are now sent in the same envelope as their event instead of separately, so they no longer get orphaned when the event gets dropped, e.g. by sampling or rate limiting. Events captured on background threads now get a screenshot as well, and events in quick succession share one. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
-- Screenshots are taken at the end of the frame the error happened in. Events whose frame takes longer than a second to finish, e.g. while synchronously loading a scene, get sent without one. Screenshots are no longer attached in batch mode, nor to user feedback unless requested via `addScreenshot`. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
-- `SetBeforeCaptureScreenshot` can now get invoked on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
-- `ScreenshotQuality` now defaults to `Low`, as higher resolutions can make the frame the screenshot is taken in miss its display refresh. Configurations that set the quality explicitly keep it. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
-- `SetBeforeSendScreenshot` is deprecated in favor of `SetBeforeSendScreenshotPixels`, as operating on a `Texture2D` ties compressing the screenshot to the main thread. It now gets invoked on the main thread once per screenshot, with the first of the events sharing it. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
-
-### Features
-
-- Added `SetBeforeSendScreenshotPixels` to modify or discard screenshots before they are sent. It operates on the raw pixels on a background thread, right before the screenshot gets compressed. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Screenshots are now sent in the same envelope as their event instead of separately, so they no longer get orphaned when the event gets dropped, e.g. by sampling or rate limiting. Events captured on background threads now get a screenshot as well, and events in the same frame share one. Screenshots are no longer attached in batch mode, nor to user feedback unless requested via `addScreenshot`. `SetBeforeCaptureScreenshot` can now get invoked on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Fixes
 
-- Attaching a screenshot no longer stalls the main thread. The frame gets read back from the GPU asynchronously and only encoded once the SDK writes the event's envelope on its background worker. Everything needed to take screenshots gets set up at the end of the first frame after initializing the SDK, so the first screenshot doesn't stall either. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+- Attaching a screenshot no longer stalls the main thread. Unless `SetBeforeSendScreenshot` is set, the frame gets read back from the GPU asynchronously and only encoded once the SDK writes the event's envelope on its background worker. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Dependencies
 

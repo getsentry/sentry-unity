@@ -42,7 +42,7 @@ internal class WebBackgroundWorker : IBackgroundWorker
         {
             // Serializing the envelope reads its screenshot right here on the main thread, so it has to be taken first.
             // It gets taken at the end of the frame, before the next one starts.
-            if (_options.ScreenshotCapturer is not null)
+            if (_options.AttachScreenshot)
             {
                 yield return null;
             }

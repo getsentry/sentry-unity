@@ -34,8 +34,8 @@ internal static class EnrichmentTab
             options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Attach Screenshots to Events", "Try to attach current screenshot on events.\n" +
                                                     "This is an early-access feature and may not work on all platforms (it is explicitly disabled on WebGL).\n" +
-                                                    "The screenshot is taken at the end of the frame the error happened in.\n" +
-                                                    "Errors in quick succession share a screenshot."),
+                                                    "Additionally, the screenshot is captured mid-frame, when an event happens, so it may be incomplete.\n" +
+                                                    "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
                 options.AttachScreenshot);
             EditorGUI.indentLevel++;
 

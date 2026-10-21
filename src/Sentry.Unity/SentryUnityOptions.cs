@@ -183,18 +183,12 @@ public sealed class SentryUnityOptions : SentryOptions
     /// <summary>
     /// The quality of the attached screenshot
     /// </summary>
-    /// <remarks>
-    /// Defaults to <see cref="ScreenshotQuality.Low"/>. Taking a screenshot at higher resolutions can make the frame it
-    /// gets taken in miss its display refresh.
-    /// </remarks>
-    public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.Low;
+    public ScreenshotQuality ScreenshotQuality { get; set; } = ScreenshotQuality.High;
 
     /// <summary>
     /// The JPG compression quality of the attached screenshot
     /// </summary>
     public int ScreenshotCompression { get; set; } = 75;
-
-    internal SentryScreenshotCapturer? ScreenshotCapturer { get; set; }
 
     /// <summary>
     /// Controls whether structured logs should be captured for each Unity log type.
@@ -427,34 +421,9 @@ public sealed class SentryUnityOptions : SentryOptions
     /// You can modify the texture (blur areas, redact PII, etc.) and return it, or return null to discard.
     /// </remarks>
     /// <param name="beforeSendScreenshot">The callback function to invoke before sending screenshots.</param>
-    [Obsolete("Operating on a Texture2D ties compressing the screenshot to the main thread, which stalls it. " +
-              "Use SetBeforeSendScreenshotPixels instead.")]
     public void SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?> beforeSendScreenshot)
     {
         BeforeSendScreenshotInternal = beforeSendScreenshot;
-    }
-
-    internal Func<SentryScreenshotPixels, SentryEvent, bool>? BeforeSendScreenshotPixelsInternal { get; private set; }
-
-    /// <summary>
-    /// Configures a callback to modify or discard screenshots before they are sent, operating on their raw pixels.
-    /// </summary>
-    /// <remarks>
-    /// The callback receives the screenshot's pixels right before they get compressed. Edit them in place - e.g. to
-    /// redact areas - and return <c>true</c> to send the screenshot, or <c>false</c> to discard it.
-    /// <para>
-    /// It gets invoked on a background thread, so it doesn't stall the main thread. Don't call Unity APIs that are
-    /// restricted to the main thread from it, and don't hold on to the pixels beyond the call.
-    /// </para>
-    /// <para>
-    /// Events captured close together share a screenshot. The callback gets invoked once per screenshot, with the first
-    /// of those events. Takes precedence over <see cref="SetBeforeSendScreenshot"/>.
-    /// </para>
-    /// </remarks>
-    /// <param name="beforeSendScreenshotPixels">The callback function to invoke before sending screenshots.</param>
-    public void SetBeforeSendScreenshotPixels(Func<SentryScreenshotPixels, SentryEvent, bool> beforeSendScreenshotPixels)
-    {
-        BeforeSendScreenshotPixelsInternal = beforeSendScreenshotPixels;
     }
 
     internal Func<SentryEvent, bool>? BeforeCaptureViewHierarchyInternal { get; private set; }
