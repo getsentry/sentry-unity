@@ -152,9 +152,6 @@ internal static class SentryCocoaBridgeProxy
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeGetTraceHeader")]
     public static extern string? GetTraceHeader();
 
-    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeRemoveContext")]
-    public static extern void RemoveContext(string key);
-
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeSetTrace")]
     public static extern void SetTrace(string traceId, string spanId);
 

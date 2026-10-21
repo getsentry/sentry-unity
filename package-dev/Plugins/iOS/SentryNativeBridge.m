@@ -430,19 +430,6 @@ char *SentryNativeBridgeGetTraceHeader()
     return SentryCopyString(traceHeader);
 }
 
-void SentryNativeBridgeRemoveContext(const char *key)
-{
-    if (key == NULL) {
-        return;
-    }
-
-    NSString *keyString = [NSString stringWithUTF8String:key];
-
-    SentryConfigureScope(^(id scope) {
-        [scope performSelector:@selector(removeContextForKey:) withObject:keyString];
-    });
-}
-
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
     if (traceId == NULL || spanId == NULL) {

@@ -1,7 +1,6 @@
 using Sentry.Extensibility;
 using Sentry.Unity.Integrations;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Sentry.Unity.iOS;
 
@@ -52,13 +51,14 @@ public static class SentryNativeCocoa
                 return;
             }
 
-            options.ScopeObserver = new NativeScopeObserver("iOS", options, isExternal);
+            options.ScopeObserver = isExternal
+                ? new ExternalNativeScopeObserver("iOS", options)
+                : new NativeScopeObserver("iOS", options);
 
             if (isExternal)
             {
                 UseAppReleaseAndEnvironment(options);
                 NativePropagationContext.Use(options, SentryCocoaBridgeProxy.GetTraceHeader);
-                RemoveUnityContextWhileUnloaded(options);
 
                 if (options.AutoSessionTracking)
                 {
@@ -140,28 +140,6 @@ public static class SentryNativeCocoa
             Logger?.LogDebug("Using the app's environment: {0}", environment);
             options.Environment = environment;
         }
-    }
-
-    // The app keeps running while the game is unloaded, and can load it again. The C# SDK stays initialized.
-    private static void RemoveUnityContextWhileUnloaded(SentryUnityOptions options)
-    {
-        var unloaded = false;
-        Application.unloading += () =>
-        {
-            Logger?.LogDebug("Removing the Unity context from the app's scope.");
-            SentryCocoaBridgeProxy.RemoveContext("unity");
-            unloaded = true;
-        };
-        SceneManager.sceneLoaded += (_, _) =>
-        {
-            if (!unloaded || options.NativeContextWriter is not { } contextWriter)
-            {
-                return;
-            }
-
-            unloaded = false;
-            SentrySdk.ConfigureScope(contextWriter.Write);
-        };
     }
 
     /// <summary>
