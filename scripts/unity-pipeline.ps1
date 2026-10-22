@@ -36,9 +36,22 @@ function Get-UnityCliErrorCode([object] $response) {
     return $null
 }
 
+# Absolute path with symlinks resolved, as the Editor reports its project path.
+function Resolve-UnityProjectPath([string] $path) {
+    $resolved = (Resolve-Path -LiteralPath $path).Path
+    if (-not $IsWindows) {
+        $real = & realpath $resolved 2>$null
+        if ($LASTEXITCODE -eq 0 -and $real) {
+            return $real
+        }
+    }
+
+    return $resolved
+}
+
 function Get-UnityExecutionMode([string] $projectPath) {
-    $projectName = Split-Path $projectPath -Leaf
-    $status = Invoke-UnityCli @("status", "--project", $projectName, "--format", "json")
+    # Match by full path: worktrees of this repo share the project folder name.
+    $status = Invoke-UnityCli @("status", "--project-path", $projectPath, "--format", "json")
     $successProperty = $null
     if ($status.Response) {
         $successProperty = $status.Response.PSObject.Properties["success"]
@@ -66,8 +79,8 @@ function Invoke-UnityPipelineCommand(
     [string[]] $commandArguments = @(),
     [int] $timeoutSeconds = 30
 ) {
-    $arguments = @(
-        "--json", "command", $command,
+    # Pipeline 0.9 names commands as `<group> <name>` (e.g. "editor status").
+    $arguments = @("--json", "command") + ($command -split " ") + @(
         "--project-path", $projectPath,
         "--timeout", $timeoutSeconds
     ) + $commandArguments
@@ -84,11 +97,23 @@ function Invoke-UnityPipelineCommand(
         throw "Unity command '$command' returned invalid JSON:`n$($output | Out-String)"
     }
 
-    if (-not $response.success -or -not $response.data.success) {
+    # Older CLIs also report the command's own result in data.success; newer ones only in success.
+    $dataSuccess = $response.data.PSObject.Properties["success"]
+    if (-not $response.success -or ($dataSuccess -and -not $dataSuccess.Value)) {
         throw "Unity command '$command' failed:`n$($output | Out-String)"
     }
 
-    return $response.data.result
+    # Some commands return their result as a JSON string.
+    $result = $response.data.result
+    if ($result -is [string]) {
+        try {
+            $result = $result | ConvertFrom-Json
+        }
+        catch {
+        }
+    }
+
+    return $result
 }
 
 function Wait-ForUnityEditorReady([string] $projectPath, [int] $timeoutSeconds) {
@@ -97,7 +122,7 @@ function Wait-ForUnityEditorReady([string] $projectPath, [int] $timeoutSeconds) 
 
     while ((Get-Date) -lt $deadline) {
         try {
-            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "editor_status"
+            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "editor status"
         }
         catch {
             $lastError = $_
@@ -110,7 +135,7 @@ function Wait-ForUnityEditorReady([string] $projectPath, [int] $timeoutSeconds) 
                 throw "Unity Editor must be stopped before continuing. Current play mode: $($status.playMode)."
             }
 
-            if ((Resolve-Path $status.projectPath).Path -ne $projectPath) {
+            if ((Resolve-UnityProjectPath $status.projectPath) -ne (Resolve-UnityProjectPath $projectPath)) {
                 throw "Unity Pipeline is connected to $($status.projectPath), not $projectPath."
             }
 
@@ -128,11 +153,11 @@ function Wait-ForUnityEditorReady([string] $projectPath, [int] $timeoutSeconds) 
 }
 
 function Enable-UnityPipelineAutoTick([string] $projectPath) {
-    Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "set_autotick" -CommandArguments @("--enable", "true") | Out-Null
+    Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "editor set_auto_tick" -CommandArguments @("--enable", "true") | Out-Null
 }
 
 function Wait-ForUnityRecompile([string] $projectPath, [int] $timeoutSeconds) {
-    $recompile = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "recompile" -TimeoutSeconds $timeoutSeconds
+    $recompile = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "script recompile" -TimeoutSeconds $timeoutSeconds
     if ($recompile.status -eq "up_to_date") {
         return
     }
@@ -141,7 +166,7 @@ function Wait-ForUnityRecompile([string] $projectPath, [int] $timeoutSeconds) {
     $lastError = $null
     while ((Get-Date) -lt $deadline) {
         try {
-            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "recompile_status"
+            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "script recompile_status"
             if ($status -is [string]) {
                 $status = $status | ConvertFrom-Json
             }

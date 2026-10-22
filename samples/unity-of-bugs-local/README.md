@@ -1,8 +1,10 @@
 # Unity of Bugs (Local)
 
-Unity 6 development project. Its `Assets` directory is a relative symlink to
-`../unity-of-bugs/Assets`, so sample scenes and scripts stay shared with the
-Unity 2021 compatibility project.
+Unity 6 development project. The entries in its `Assets` directory are relative
+symlinks into `../unity-of-bugs/Assets`, so sample scenes and scripts stay shared
+with the Unity 2021 compatibility project. `Assets` itself is a real directory
+because Unity Hub rejects projects whose `Assets` is a symlink. Add a symlink here
+when adding a top-level folder to `unity-of-bugs/Assets`.
 
 `Packages` and `ProjectSettings` are local to this project. Unity can upgrade
 them without changing `unity-of-bugs`.
