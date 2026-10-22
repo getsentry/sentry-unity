@@ -58,7 +58,8 @@ public static class SentryNativeCocoa
             if (isExternal)
             {
                 UseAppReleaseAndEnvironment(options);
-                NativePropagationContext.Use(options, SentryCocoaBridgeProxy.GetTraceHeader);
+                NativePropagationContext.Use(options, SentryCocoaBridgeProxy.GetTraceHeader,
+                    SentryCocoaBridgeProxy.GetBaggageHeader);
 
                 if (options.AutoSessionTracking)
                 {

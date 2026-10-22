@@ -36,6 +36,8 @@ char *_Nullable SentryNativeBridgeGetOption(const char *name) { return NULL; }
 
 char *_Nullable SentryNativeBridgeGetTraceHeader() { return NULL; }
 
+char *_Nullable SentryNativeBridgeGetBaggageHeader() { return NULL; }
+
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId) { }
 
 void SentryNativeBridgeSetEnvironment(const char *environment) { }

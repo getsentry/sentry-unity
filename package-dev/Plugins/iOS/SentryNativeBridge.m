@@ -411,23 +411,47 @@ char *SentryNativeBridgeGetOption(const char *name)
     }
 }
 
-// The `sentry-trace` header of the app's own SDK: its active span, otherwise its propagation context.
+static id SentryActiveSpan(id scope)
+{
+    return [scope respondsToSelector:@selector(span)] ? [scope performSelector:@selector(span)] : nil;
+}
+
+// The `sentry-trace` header of the app's own SDK: its active span, otherwise its propagation context. The
+// propagation context has no sampling decision, so its sampled flag is left out (deferred sampling).
 char *SentryNativeBridgeGetTraceHeader()
 {
     __block NSString *traceHeader = nil;
     SentryConfigureScope(^(id scope) {
-        id header = nil;
-        id span = [scope respondsToSelector:@selector(span)] ? [scope performSelector:@selector(span)] : nil;
+        id span = SentryActiveSpan(scope);
         if (span != nil && [span respondsToSelector:@selector(toTraceHeader)]) {
-            header = [span performSelector:@selector(toTraceHeader)];
+            id header = [span performSelector:@selector(toTraceHeader)];
+            if ([header respondsToSelector:@selector(value)]) {
+                traceHeader = [header performSelector:@selector(value)];
+            }
         } else if ([scope respondsToSelector:@selector(propagationContextTraceHeader)]) {
-            header = [scope performSelector:@selector(propagationContextTraceHeader)];
-        }
-        if ([header respondsToSelector:@selector(value)]) {
-            traceHeader = [header performSelector:@selector(value)];
+            id header = [scope performSelector:@selector(propagationContextTraceHeader)];
+            if ([header respondsToSelector:@selector(value)]) {
+                NSArray *parts = [[header performSelector:@selector(value)] componentsSeparatedByString:@"-"];
+                if (parts.count >= 2) {
+                    traceHeader = [NSString stringWithFormat:@"%@-%@", parts[0], parts[1]];
+                }
+            }
         }
     });
     return SentryCopyString(traceHeader);
+}
+
+// The `baggage` header of the app's own SDK's active span, if any.
+char *SentryNativeBridgeGetBaggageHeader()
+{
+    __block NSString *baggageHeader = nil;
+    SentryConfigureScope(^(id scope) {
+        id span = SentryActiveSpan(scope);
+        if (span != nil && [span respondsToSelector:@selector(baggageHttpHeader)]) {
+            baggageHeader = [span performSelector:@selector(baggageHttpHeader)];
+        }
+    });
+    return SentryCopyString(baggageHeader);
 }
 
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)

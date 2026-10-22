@@ -12,10 +12,12 @@ internal sealed class TestHub : IHub
     private readonly List<SentryEvent> _capturedEvents = new();
     private readonly List<SentryTransaction> _capturedTransactions = new();
     private readonly List<Action<Scope>> _configureScopeCalls = new();
+    private readonly List<ITransactionContext> _startedTransactions = new();
 
     public IReadOnlyList<SentryEvent> CapturedEvents => _capturedEvents;
     public IReadOnlyList<SentryTransaction> CapturedTransactions => _capturedTransactions;
     public IReadOnlyList<Action<Scope>> ConfigureScopeCalls => _configureScopeCalls;
+    public IReadOnlyList<ITransactionContext> StartedTransactions => _startedTransactions;
 
     public TestHub(bool isEnabled = true, SentryStructuredLogger? logger = null)
     {
@@ -127,8 +129,11 @@ internal sealed class TestHub : IHub
 
     public SentryMetricEmitter Metrics => DisabledSentryMetricEmitter.Instance;
 
-    public ITransactionTracer StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext) =>
-        new TransactionTracer(this, context);
+    public ITransactionTracer StartTransaction(ITransactionContext context, IReadOnlyDictionary<string, object?> customSamplingContext)
+    {
+        _startedTransactions.Add(context);
+        return new TransactionTracer(this, context);
+    }
 
     public void BindException(Exception exception, ISpan span)
     {

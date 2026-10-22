@@ -19,7 +19,7 @@
 - App-hang tracking disables the C# ANR watchdog on iOS and macOS when the Cocoa backend is active.
 - macOS Cocoa screenshots are disabled because UIKit is unavailable.
 - Cocoa attachment synchronization is not implemented.
-- iOS external initialization: C# never initializes or closes Cocoa, attaches only if the host app already initialized it, keeps the host's SDK name, and disables the C# ANR watchdog. It doesn't sync user, environment, or trace to the host's scope, turns off C# session tracking, uses the host's release and environment unless set, continues the host's trace (`NativePropagationContext`, read through the bridge on every use).
+- iOS external initialization: C# never initializes or closes Cocoa, attaches only if the host app already initialized it, keeps the host's SDK name, and disables the C# ANR watchdog. It doesn't sync user, environment, or trace to the host's scope, turns off C# session tracking, uses the host's release and environment unless set, continues the host's trace (`NativePropagationContext`, read through the bridge on every use) unless a sampled C# span is active. Transactions started through `Sentry.Unity.SentrySdk.StartTransaction(name, operation)` join the host's trace: as a child of the host's active span, inheriting its sampling decision and DSC, otherwise as a root with sampling deferred to the game.
 
 ## iOS Export
 
