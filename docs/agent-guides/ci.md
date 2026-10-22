@@ -11,8 +11,8 @@
 
 | Trigger | Integration Unity versions |
 | --- | --- |
-| Pull request | `2021.3`, `6000.5` |
-| Main or non-PR | `2021.3`, `2022.3`, `6000.0`, `6000.3`, `6000.5` |
+| Pull request | `2021.3`, `6000.6` |
+| Main or non-PR | `2021.3`, `2022.3`, `6000.0`, `6000.3`, `6000.6` |
 | `chore/unity-<major.minor>.*` PR | Matching version only |
 
 Exact Unity editor versions and changesets live in `scripts/unity-versions.json`. The package build itself currently uses Unity `2021.3`.
