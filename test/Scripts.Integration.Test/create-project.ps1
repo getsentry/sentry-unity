@@ -24,7 +24,7 @@ New-Item -Path "$(ProjectRoot)/samples" -Name $(GetNewProjectName) -ItemType "di
 Write-Detail "Directory created"
 
 Write-Log "Creating integration project..."
-RunUnity $UnityPath @("-batchmode", "-createProject", "$(GetNewProjectPath)", "-quit")
+RunUnityCustom $UnityPath @("-batchmode", "-createProject", "$(GetNewProjectPath)", "-quit")
 
 Write-Log "Copying Editor scripts to integration project..."
 New-Item -Path "$(GetNewProjectAssetsPath)" -Name "Editor" -ItemType "directory" | Out-Null

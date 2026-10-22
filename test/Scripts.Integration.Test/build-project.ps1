@@ -26,7 +26,7 @@ if ($Platform -eq "Switch")
     $unityArgs += @("-buildTarget", "Switch")
 }
 
-RunUnity $unityPath $unityArgs
+RunUnityCustom $unityPath $unityArgs
 
 if ($Platform -eq "Android-Export")
 {

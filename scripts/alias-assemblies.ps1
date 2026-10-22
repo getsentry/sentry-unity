@@ -1,12 +1,13 @@
 # Single source of truth for the assembly-aliasing invocation. Used by the local
-# release script (repack.ps1) and by CI (build.yml).
+# release script (repack.ps1) and by CI (build.yml, which runs it inside the Unity
+# docker container).
 #
 param(
     # Pass an empty string to skip either target.
     [string]$RuntimeDir = "package-dev/Runtime",
     [string]$EditorDir = "package-dev/Editor",
     # assemblyalias is on PATH for local host builds; CI runs it from the dotnet
-    # global tools path (~/.dotnet/tools/assemblyalias).
+    # global tools path inside the container (/home/gh/.dotnet/tools/assemblyalias).
     [string]$AssemblyAlias = "assemblyalias"
 )
 
