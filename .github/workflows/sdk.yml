@@ -8,11 +8,16 @@ on:
       target:
         required: true
         type: string
+      arch:
+        required: false
+        type: string
+        default: ""
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_NOLOGO: 1
   TARGET: ${{ inputs.target }}
+  ARTIFACT: ${{ inputs.target }}${{ inputs.arch }}
 
 jobs:
   build:
@@ -63,7 +68,7 @@ jobs:
           # hash of package/package.json for cache busting on release builds (version bump)
           path: |
             package-dev/Plugins
-          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1') }}
+          key: sdk=${{ env.ARTIFACT }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1') }}
 
       - name: Installing Linux Dependencies
         if: ${{ (env.TARGET == 'Linux' || env.TARGET == 'LinuxNative') && steps.cache.outputs.cache-hit != 'true' }}
@@ -138,7 +143,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ env.TARGET == 'Linux' }}
         with:
-          name: ${{ env.TARGET }}-sdk
+          name: ${{ env.ARTIFACT }}-sdk
           path: package-dev/Plugins/Linux/Sentry~
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
@@ -146,7 +151,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ env.TARGET == 'LinuxNative' }}
         with:
-          name: ${{ env.TARGET }}-sdk
+          name: ${{ env.ARTIFACT }}-sdk
           path: package-dev/Plugins/Linux/SentryNative~
           # Lower retention period - we only need this to retry CI.
           retention-days: 14

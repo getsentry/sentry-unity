@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- The SDK now supports Linux ARM64 dedicated servers (Unity 6000.3 and newer, IL2CPP). The native SDK for both backends ships for `x86_64` and `arm64`, and the build picks the one matching the player. ([#2466](https://github.com/getsentry/sentry-unity/issues/2466))
+
 ## 4.11.0
 
 ### Fixes
