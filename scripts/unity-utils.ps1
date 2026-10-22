@@ -81,6 +81,13 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
                 Throw $msg
             }
         }
+        ElseIf ($process.ExitCode -eq 137 -and -not $retriedKilled)
+        {
+            # Unity 6.6 on Linux intermittently SIGKILLs itself during startup.
+            Write-Host "::warning::Unity was killed (exit code 137). Retrying once."
+            $retriedKilled = $true
+            $try = $try + 1
+        }
         else
         {
             break
