@@ -56,9 +56,15 @@ $unityPath = @($location, "$location/Contents/MacOS/Unity", "$location/Unity.exe
 if (-not $unityPath) { throw "Unity executable not found at $location" }
 Write-Host "Unity $($unity.version) installed at $unityPath"
 
-# Unity 2021's bee_backend deadlocks on exit on Ubuntu 24.04: its --stdin-canary thread holds the stdin
-# lock while exit() waits for it. Batchmode never cancels builds, so drop the canary.
 if ($IsLinux -and $unity.version.StartsWith('2021.')) {
+    # Unity 2021 compiles scripts on a bundled .NET 5 that only loads OpenSSL 1.x; Ubuntu 24.04 ships OpenSSL 3.
+    $libssl = Join-Path $cliDir 'libssl1.1.deb'
+    Invoke-WebRequest -Uri 'https://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.24_amd64.deb' -OutFile $libssl
+    if ((Get-FileHash $libssl -Algorithm SHA256).Hash -ne '7cf39d70a639017d1dd7c8d36daa2258063608688e449fddf40ffdd46f992a78') { throw 'libssl1.1 checksum mismatch' }
+    sudo dpkg -i $libssl
+
+    # Unity 2021's bee_backend deadlocks on exit on Ubuntu 24.04: its --stdin-canary thread holds the stdin
+    # lock while exit() waits for it. Batchmode never cancels builds, so drop the canary.
     $bee = Join-Path (Split-Path $unityPath) 'Data/bee_backend'
     Move-Item $bee "$bee.real"
     Set-Content -Path $bee -Value @'
