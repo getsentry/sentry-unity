@@ -144,11 +144,11 @@ else {
 }
 
 $localAssets = Join-Path $repoRoot "samples/unity-of-bugs-local/Assets"
-if ((Test-Path $localAssets) -and (Get-Item $localAssets).LinkType -eq "SymbolicLink") {
-    Add-Result -Status "PASS" -Name "Local sample assets" -Detail "Assets symlink is available."
+if ((Test-Path (Join-Path $localAssets "Scripts")) -and (Get-Item (Join-Path $localAssets "Scripts")).LinkType -eq "SymbolicLink") {
+    Add-Result -Status "PASS" -Name "Local sample assets" -Detail "Assets symlinks are available."
 }
 else {
-    Add-Result -Status "WARN" -Name "Local sample assets" -Detail "Assets symlink is unavailable." -Fix "Enable Git symlink support and restore samples/unity-of-bugs-local/Assets."
+    Add-Result -Status "WARN" -Name "Local sample assets" -Detail "Assets symlinks are unavailable." -Fix "Enable Git symlink support and restore samples/unity-of-bugs-local/Assets."
 }
 
 Write-Host ""

@@ -36,6 +36,7 @@ set -x
 docker run -td --name $container \
     --hostname $uniqueHostname \
     --user $uid:$gid \
+    --shm-size=2g \
     -v "$cwd":/sentry-unity \
     -v $ANDROID_HOME:$ANDROID_HOME \
     -v $JAVA_HOME_11_X64:$JAVA_HOME_11_X64 \

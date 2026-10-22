@@ -37,7 +37,7 @@ dotnet msbuild /t:UnityEditModeTest test/Sentry.Unity.Editor.Tests
 
 ```pwsh
 pwsh ./test/Scripts.Integration.Test/dev-integration-test.ps1 `
-  -UnityVersion "6000.5.0f1" `
+  -UnityVersion "6000.6.6f1" `
   -Platform "MacOS" `
   -Repack
 ```
