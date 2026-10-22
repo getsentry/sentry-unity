@@ -22,7 +22,7 @@ defaults:
 jobs:
   build:
     name: Build - ${{ inputs.unity-version }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       actions: read
       checks: write

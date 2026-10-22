@@ -14,7 +14,7 @@ function Wait-ForPlayModeTests([string] $projectPath, [int] $timeoutSeconds) {
     $lastError = $null
     while ((Get-Date) -lt $deadline) {
         try {
-            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "test_status"
+            $status = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "test status"
             if ($status -is [string]) {
                 $status = $status | ConvertFrom-Json
             }
@@ -109,14 +109,14 @@ function Invoke-UnityPipelineTests(
         }
 
         if ($testPlatform -eq "playmode") {
-            $started = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "run_tests" -CommandArguments ($commandArguments + @("--async_tests", "true")) -TimeoutSeconds ($timeoutSeconds + 30)
+            $started = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "test run" -CommandArguments ($commandArguments + @("--async_tests", "true")) -TimeoutSeconds ($timeoutSeconds + 30)
             if (-not $started.success) {
                 throw "Unity PlayMode tests could not start: $($started.error)"
             }
             $result = Wait-ForPlayModeTests -ProjectPath $projectPath -TimeoutSeconds $timeoutSeconds
         }
         else {
-            $result = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "run_tests" -CommandArguments $commandArguments -TimeoutSeconds ($timeoutSeconds + 30)
+            $result = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "test run" -CommandArguments $commandArguments -TimeoutSeconds ($timeoutSeconds + 30)
         }
 
         $runs += Get-TestSummary -RequestedMode $testPlatform -Result $result
