@@ -43,6 +43,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stdout = ""
     $try = 1
+    $retriedKilled = $false
     do
     {
         $stopwatch.Restart()
