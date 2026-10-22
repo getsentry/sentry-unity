@@ -56,6 +56,22 @@ $unityPath = @($location, "$location/Contents/MacOS/Unity", "$location/Unity.exe
 if (-not $unityPath) { throw "Unity executable not found at $location" }
 Write-Host "Unity $($unity.version) installed at $unityPath"
 
+# Unity 2021's bee_backend deadlocks on exit on Ubuntu 24.04: its --stdin-canary thread holds the stdin
+# lock while exit() waits for it. Batchmode never cancels builds, so drop the canary.
+if ($IsLinux -and $unity.version.StartsWith('2021.')) {
+    $bee = Join-Path (Split-Path $unityPath) 'Data/bee_backend'
+    Move-Item $bee "$bee.real"
+    Set-Content -Path $bee -Value @'
+#!/bin/sh
+for arg; do
+  shift
+  [ "$arg" = --stdin-canary ] || set -- "$@" "$arg"
+done
+exec "$0.real" "$@"
+'@
+    chmod +x $bee
+}
+
 if ($env:UNITY_LICENSE_SERVER_CONFIG) {
     if ($IsWindows) {
         New-Item -ItemType Directory -Force -Path 'C:/ProgramData/Unity/config' | Out-Null
