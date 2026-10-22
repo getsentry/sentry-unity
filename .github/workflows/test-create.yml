@@ -41,7 +41,41 @@ jobs:
 
     - name: Create new Project
       if: steps.cache-project.outputs.cache-hit != 'true'
+      timeout-minutes: 20
       run: ./test/Scripts.Integration.Test/create-project.ps1 -UnityPath "$env:UNITY_PATH"
+
+    - name: "Temporary: diagnose bee_backend hang"
+      if: failure()
+      shell: bash
+      run: |
+        sudo apt-get install -y -q strace >/dev/null
+        echo "=== process tree"
+        ps -eo pid,ppid,pgid,stat,wchan:32,etime,args --forest | grep -vE '\[.*\]$' | cut -c1-300
+        for name in Unity bee_backend; do
+          for pid in $(pgrep -x "$name"); do
+            echo "=== $name $pid"
+            echo "--- fds"; sudo ls -l /proc/$pid/fd | cut -c40-
+            echo "--- threads (comm wchan)"
+            for t in /proc/$pid/task/*; do echo "$(basename $t) $(cat $t/comm) $(sudo cat $t/wchan)"; done
+            echo "--- kernel stacks"
+            for t in /proc/$pid/task/*; do echo "# $(basename $t)"; sudo cat $t/stack; done
+          done
+        done
+        for pid in $(pgrep -x bee_backend); do
+          echo "=== strace bee_backend $pid (15s)"
+          sudo timeout 15 strace -f -tt -p $pid 2>&1 | head -200
+        done
+        echo "=== Library/Bee"
+        ls -la samples/IntegrationTest/Library/Bee 2>&1 | head -40
+        tail -c 4000 samples/IntegrationTest/Library/Bee/backend_profiler*.traceevents 2>&1
+
+        echo "=== retry with stdin from /dev/null"
+        pkill -9 -x bee_backend; pkill -9 -x Unity; pkill -9 -f Xvfb; sleep 5
+        set +e
+        timeout 1200 xvfb-run -ae /dev/stdout "$UNITY_PATH" -batchmode -createProject "$RUNNER_TEMP/StdinTest" -quit -logFile - < /dev/null > stdin-test.log 2>&1
+        echo "retry exit code: $? (124 = timed out)"
+        grep -nE 'bee_backend|ExitCode|Exiting|Application will terminate' stdin-test.log | tail -20
+      continue-on-error: true
 
     - name: Save IntegrationTest Project cache
       if: github.ref == 'refs/heads/main' && steps.cache-project.outputs.cache-hit != 'true'
