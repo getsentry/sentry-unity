@@ -32,6 +32,12 @@ void SentryNativeBridgeUnsetUser() { }
 
 char *SentryNativeBridgeGetInstallationId() { return NULL; }
 
+void SentryNativeBridgeGetConnection(char **type, char **effectiveType)
+{
+    *type = NULL;
+    *effectiveType = NULL;
+}
+
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId) { }
 
 void SentryNativeBridgeSetEnvironment(const char *environment) { }

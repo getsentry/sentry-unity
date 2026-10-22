@@ -495,6 +495,11 @@ public sealed class SentryUnityOptions : SentryOptions
     internal INativeDebugImageProvider? NativeDebugImageProvider { get; set; } = null;
 
     /// <summary>
+    /// Reads the connection type and the cellular network generation from the native SDK. Called on the main thread.
+    /// </summary>
+    internal Func<(string? Type, string? EffectiveType)>? NativeConnection { get; set; } = null;
+
+    /// <summary>
     /// Used to close down the native SDK
     /// </summary>
     internal Action? NativeSupportCloseCallback { get; set; } = null;

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- On Android, iOS, and macOS, C# events now report the connection type in `device.connection_type` and the cellular network generation in `device.connection_effective_type`, for example `4g` or `5g`. On Android 11 and earlier, the generation requires the `READ_PHONE_STATE` permission. ([#2889](https://github.com/getsentry/sentry-unity/pull/2889))
+
 ## 4.11.0
 
 ### Fixes
@@ -11,6 +17,7 @@
 
 ### Features
 
+- On Android, iOS, and macOS, C# events now report the connection type in `device.connection_type` and the cellular network generation in `device.connection_effective_type`, for example `4g` or `5g`. On Android 11 and earlier, the generation requires the `READ_PHONE_STATE` permission. ([#2889](https://github.com/getsentry/sentry-unity/pull/2889))
 - Added the `NativeHandlerPath` option. It sets `handler_path` on the native SDK, so the out-of-process crash handler can be placed somewhere other than next to the player executable. Left unset, sentry-native keeps looking for the handler next to the executable as before. ([#2881](https://github.com/getsentry/sentry-unity/pull/2881))
 
 ### Dependencies

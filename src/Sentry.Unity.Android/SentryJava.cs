@@ -13,6 +13,7 @@ internal interface ISentryJava
     public void Init(SentryUnityOptions options);
     public string? GetInstallationId();
     public bool? CrashedLastRun();
+    public (string? Type, string? EffectiveType) GetConnection();
     public void Close();
     public void WriteScope(
         string? AppStartTime,
@@ -229,6 +230,31 @@ internal class SentryJava : ISentryJava
         }
 
         return null;
+    }
+
+    public (string? Type, string? EffectiveType) GetConnection()
+    {
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling GetConnection() on Android SDK requires running on MainThread");
+            return (null, null);
+        }
+
+        try
+        {
+            using var sentry = GetSentryJava();
+            using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
+            using var options = hub?.Call<AndroidJavaObject>("getOptions");
+            using var provider = options?.Call<AndroidJavaObject>("getConnectionStatusProvider");
+            using var connection = provider?.Call<AndroidJavaObject>("getConnection");
+            return (connection?.Get<string>("type"), connection?.Get<string>("effectiveType"));
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.GetConnection' failed.");
+        }
+
+        return (null, null);
     }
 
     public void WriteScope(
