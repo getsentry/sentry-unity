@@ -35,25 +35,45 @@ public static class SentryNativeAndroid
 
         Logger?.LogDebug("Checking whether the Android SDK is present.");
 
+        var isExternal = options.AndroidNativeInitializationType is NativeInitializationType.External;
+
         // If it's not been set (in a test)
         SentryJava ??= new SentryJava(Logger);
         if (!SentryJava.IsSentryJavaPresent())
         {
-            Logger?.LogError("Android Native Support has been enabled but the " +
-                                               "Android SDK is missing. This could have been caused by a mismatching" +
-                                               "build time / runtime configuration. Please make sure you have " +
-                                               "Android Native Support enabled during build time.");
+            if (isExternal)
+            {
+                Logger?.LogError("The Android SDK is missing. With external initialization, the app has to depend on " +
+                                 "'io.sentry:sentry-android'.");
+            }
+            else
+            {
+                Logger?.LogError("Android Native Support has been enabled but the " +
+                                 "Android SDK is missing. This could have been caused by a mismatching" +
+                                 "build time / runtime configuration. Please make sure you have " +
+                                 "Android Native Support enabled during build time.");
+            }
             return;
         }
 
         Logger?.LogDebug("Checking whether the Android SDK has already been initialized");
 
+        var isAttached = false;
+
         if (SentryJava.IsEnabled() is true)
         {
             Logger?.LogDebug("The Android SDK is already initialized");
+            isAttached = isExternal;
+        }
+        else if (isExternal && SentryJava.IsMainProcess() is not false)
+        {
+            Logger?.LogWarning("The native SDK is expected to be initialized by the app but it is not. " +
+                               "Make sure the app initializes Sentry before the game starts. Skipping native support.");
+            return;
         }
         else
         {
+            // With external initialization, the game runs in its own process, where the app has not initialized the SDK.
             Logger?.LogInfo("Initializing the Android SDK");
 
             SentryJava.Init(options);
@@ -70,11 +90,34 @@ public static class SentryNativeAndroid
         Logger?.LogDebug("Configuring scope sync");
 
         options.NativeContextWriter = new NativeContextWriter(SentryJava);
-        options.ScopeObserver = new AndroidJavaScopeObserver(options, SentryJava);
+        options.ScopeObserver = isExternal
+            ? new ExternalAndroidJavaScopeObserver(options, SentryJava, isAttached)
+            : new AndroidJavaScopeObserver(options, SentryJava);
         options.EnableScopeSync = true;
         options.NativeDebugImageProvider = new Native.NativeDebugImageProvider();
 
-        if (options.NativeAppHangTrackingEnabled && options.NdkIntegrationEnabled)
+        if (isExternal)
+        {
+            UseAppReleaseAndEnvironment(options, SentryJava);
+
+            if (isAttached)
+            {
+                NativePropagationContext.Use(options, SentryJava.GetTraceHeader, SentryJava.GetBaggageHeader);
+            }
+            else
+            {
+                UseMainProcessTrace(options, SentryJava);
+            }
+
+            if (options.AutoSessionTracking)
+            {
+                Logger?.LogDebug("Disabling session tracking - the app tracks sessions.");
+                options.AutoSessionTracking = false;
+            }
+        }
+
+        // When attached, the app's native SDK decides on app hang tracking.
+        if (!isAttached && options.NativeAppHangTrackingEnabled && options.NdkIntegrationEnabled)
         {
             Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
             SentryMonoBehaviour.Instance.StartAppHangHeartbeat(
@@ -119,7 +162,11 @@ public static class SentryNativeAndroid
                 e, "Failed to reinstall backend. Captured native crashes will miss scope data and tag.");
         }
 
-        options.NativeSupportCloseCallback = () => Close(options);
+        // When attached, the app owns the SDK's lifetime.
+        if (!isAttached)
+        {
+            options.NativeSupportCloseCallback = () => Close(options);
+        }
 
         Logger?.LogDebug("Fetching installation ID");
 
@@ -134,6 +181,43 @@ public static class SentryNativeAndroid
         }
 
         Logger?.LogInfo("Successfully configured the Android SDK");
+    }
+
+    // The game runs in its own process and continues the trace the app was in when it showed the game.
+    private static void UseMainProcessTrace(SentryUnityOptions options, ISentryJava sentryJava)
+    {
+        string? traceHeader = null;
+
+        void Refresh()
+        {
+            traceHeader = sentryJava.GetMainProcessTraceHeader();
+            if (traceHeader is not null && SentryTraceHeader.Parse(traceHeader) is { } header)
+            {
+                Logger?.LogDebug("Continuing the app's trace: {0}", traceHeader);
+                sentryJava.SetTrace(header.TraceId, header.SpanId);
+            }
+        }
+
+        Refresh();
+        SentryMonoBehaviour.Instance.ApplicationResuming += Refresh;
+        NativePropagationContext.Use(options, () => traceHeader, () => null);
+    }
+
+    // Events from the game belong to the app's release and environment, unless they were set in the options.
+    private static void UseAppReleaseAndEnvironment(SentryUnityOptions options, ISentryJava sentryJava)
+    {
+        if (options.Release == options.DefaultRelease && sentryJava.GetOption("getRelease") is { } release)
+        {
+            Logger?.LogDebug("Using the app's release: {0}", release);
+            options.Release = release;
+            options.Distribution ??= sentryJava.GetOption("getDist");
+        }
+
+        if (options.Environment == options.DefaultEnvironment && sentryJava.GetOption("getEnvironment") is { } environment)
+        {
+            Logger?.LogDebug("Using the app's environment: {0}", environment);
+            options.Environment = environment;
+        }
     }
 
     /// <summary>

@@ -231,4 +231,102 @@ public class SentryNativeAndroidTests
 
         Assert.Null(options.ScopeObserver);
     }
+    [Test]
+    public void Configure_ExternalAppInitialized_AttachesWithoutOwningIdentity()
+    {
+        var options = new SentryUnityOptions { AndroidNativeInitializationType = NativeInitializationType.External };
+        _testSentryJava.Enabled = true;
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.False(_testSentryJava.InitCalled);
+        Assert.IsInstanceOf<ExternalAndroidJavaScopeObserver>(options.ScopeObserver);
+        Assert.IsNull(options.NativeSupportCloseCallback);
+        Assert.False(options.AutoSessionTracking);
+    }
+
+    [Test]
+    public void Configure_ExternalNotInitializedInMainProcess_SkipsNativeSupport()
+    {
+        var options = new SentryUnityOptions { AndroidNativeInitializationType = NativeInitializationType.External };
+        _testSentryJava.Enabled = false;
+        _testSentryJava.MainProcess = true;
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.False(_testSentryJava.InitCalled);
+        Assert.Null(options.ScopeObserver);
+    }
+
+    [Test]
+    public void Configure_ExternalNotInitializedInGameProcess_InitializesAndOwnsSdk()
+    {
+        var options = new SentryUnityOptions { AndroidNativeInitializationType = NativeInitializationType.External };
+        _testSentryJava.Enabled = false;
+        _testSentryJava.MainProcess = false;
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.True(_testSentryJava.InitCalled);
+        Assert.IsInstanceOf<ExternalAndroidJavaScopeObserver>(options.ScopeObserver);
+        Assert.NotNull(options.NativeSupportCloseCallback);
+        Assert.False(options.AutoSessionTracking);
+    }
+
+    [Test]
+    public void Configure_ExternalNotInitializedInGameProcess_ContinuesMainProcessTrace()
+    {
+        var options = new SentryUnityOptions { AndroidNativeInitializationType = NativeInitializationType.External };
+        _testSentryJava.Enabled = false;
+        _testSentryJava.MainProcess = false;
+        _testSentryJava.MainProcessTraceHeader = "75302ac48a024bde9a3b3734a82e36c8-1000000000000000";
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.AreEqual("75302ac48a024bde9a3b3734a82e36c8", _testSentryJava.Trace?.TraceId.ToString());
+        Assert.AreEqual("1000000000000000", _testSentryJava.Trace?.SpanId.ToString());
+    }
+
+    [Test]
+    public void Configure_External_UsesAppReleaseAndEnvironment()
+    {
+        var options = new SentryUnityOptions { AndroidNativeInitializationType = NativeInitializationType.External };
+        _testSentryJava.Options["getRelease"] = "io.sentry.host@1.0+1";
+        _testSentryJava.Options["getEnvironment"] = "staging";
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.AreEqual("io.sentry.host@1.0+1", options.Release);
+        Assert.AreEqual("staging", options.Environment);
+    }
+
+    [Test]
+    public void Configure_ExternalReleaseAndEnvironmentSet_KeepsThem()
+    {
+        var options = new SentryUnityOptions
+        {
+            AndroidNativeInitializationType = NativeInitializationType.External,
+            Release = "game@2.0",
+            Environment = "game-env"
+        };
+        _testSentryJava.Options["getRelease"] = "io.sentry.host@1.0+1";
+        _testSentryJava.Options["getEnvironment"] = "staging";
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.AreEqual("game@2.0", options.Release);
+        Assert.AreEqual("game-env", options.Environment);
+    }
+
+    [Test]
+    public void Configure_RuntimeAlreadyInitialized_KeepsOwnership()
+    {
+        var options = new SentryUnityOptions();
+        _testSentryJava.Enabled = true;
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.IsNotInstanceOf<ExternalAndroidJavaScopeObserver>(options.ScopeObserver);
+        Assert.NotNull(options.NativeSupportCloseCallback);
+    }
 }
