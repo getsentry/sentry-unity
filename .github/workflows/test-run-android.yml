@@ -122,15 +122,20 @@ jobs:
           $PSNativeCommandUseErrorActionPreference = $true
           $kernel = uname -r
           sudo apt-get update
-          sudo apt-get install -y adb aapt "linux-modules-extra-$kernel"
-          sudo modprobe binder_linux devices="binder,hwbinder,vndbinder"
+          sudo apt-get install -y adb aapt
+          # Not every runner kernel has a published modules-extra package, and newer kernels may ship binder
+          # elsewhere, so let the binder check below decide.
           $PSNativeCommandUseErrorActionPreference = $false
+          sudo apt-get install -y "linux-modules-extra-$kernel"
+          sudo modprobe binder_linux devices="binder,hwbinder,vndbinder"
           sudo modprobe ashmem_linux  # built into the kernel on newer releases; ignore if absent
           $PSNativeCommandUseErrorActionPreference = $true
           $hasBinder = (Test-Path /dev/binderfs) -or
                        (Select-String -Path /proc/filesystems -Pattern '\bbinder\b' -Quiet) -or
                        (Test-Path /dev/binder)
           if (-not $hasBinder) {
+            $PSNativeCommandUseErrorActionPreference = $false
+            modinfo binder_linux 2>&1 | Write-Host
             Write-Error "binder is unavailable on this kernel ($kernel); Redroid cannot run."
             exit 1
           }
