@@ -20,7 +20,7 @@ defaults:
 jobs:
   build:
     name: ${{ inputs.unity-version }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest-4-cores
     env:
       GITHUB_ACTOR: ${{ github.actor }}
       UNITY_PATH: docker exec unity unity-editor
@@ -29,16 +29,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Free Disk Space
-        uses: jlumbroso/free-disk-space@f68fdb76e2ea636224182cfb7377ff9a1708f9b8 # v1.3.0
-        with:
-          android: true
-          dotnet: false
-          haskell: true
-          large-packages: false
-          docker-images: false
-          swap-storage: true
 
       - name: Docker Login
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0

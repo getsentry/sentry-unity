@@ -37,7 +37,7 @@ defaults:
 jobs:
   run:
     name: ${{ inputs.platform }}${{ inputs.architecture && format(' {0}', inputs.architecture) || '' }}${{ inputs.scripting && format(' {0}', inputs.scripting) || '' }}${{ inputs.backend && format(' ({0})', inputs.backend) || '' }} ${{ inputs.unity-version }}
-    runs-on: ${{ inputs.platform == 'linux' && 'ubuntu-24.04' || inputs.platform == 'macos' && 'macos-latest' || 'windows-latest' }}
+    runs-on: ${{ inputs.platform == 'linux' && 'ubuntu-latest' || inputs.platform == 'macos' && 'macos-latest' || 'windows-latest' }}
     env:
       SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
