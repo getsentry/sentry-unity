@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using UnityEngine;
@@ -15,6 +16,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
     private readonly object _lock = new();
     private TaskCompletionSource<byte[]?>? _pending;
     private DateTime _pendingSince;
+    private List<SentryEvent> _pendingEvents = new();
 
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
 
@@ -55,8 +57,11 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             {
                 _pending = new TaskCompletionSource<byte[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _pendingSince = DateTime.UtcNow;
-                _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(_pending, @event));
+                _pendingEvents = new List<SentryEvent>();
+                _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(_pending, _pendingEvents));
             }
+
+            _pendingEvents.Add(@event);
 
             screenshot = _pending.Task;
         }
@@ -71,10 +76,26 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
         return @event;
     }
 
-    private IEnumerator CaptureScreenshotCoroutine(TaskCompletionSource<byte[]?> screenshot, SentryEvent @event)
+    private IEnumerator CaptureScreenshotCoroutine(TaskCompletionSource<byte[]?> screenshot, List<SentryEvent> events)
     {
         // Capturing mid-frame yields an incomplete image
         yield return WaitForEndOfFrame();
+
+        // Event processors run before BeforeSend and sampling, which may have dropped the events
+        SentryEvent @event;
+        bool anyCaptured;
+        lock (_lock)
+        {
+            @event = events[0];
+            anyCaptured = events.Exists(e => e.IsCaptured);
+        }
+
+        if (!anyCaptured)
+        {
+            _options.LogDebug("Skipping the screenshot. None of its events got captured.");
+            Complete(screenshot, null);
+            yield break;
+        }
 
         try
         {
