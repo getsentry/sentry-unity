@@ -18,6 +18,8 @@ internal class TestSentryJava : ISentryJava
     public string? TraceHeader { get; set; }
     public string? BaggageHeader { get; set; }
     public string? MainProcessTraceHeader { get; set; }
+    public SentryUser? User { get; set; }
+    public SentryUser? MainProcessUser { get; set; }
     public (SentryId TraceId, SpanId SpanId)? Trace { get; private set; }
 
     public bool? IsEnabled() => Enabled;
@@ -37,6 +39,10 @@ internal class TestSentryJava : ISentryJava
     public string? GetBaggageHeader() => BaggageHeader;
 
     public string? GetMainProcessTraceHeader() => MainProcessTraceHeader;
+
+    public SentryUser? GetUser() => User;
+
+    public SentryUser? GetMainProcessUser() => MainProcessUser;
 
     public string? GetInstallationId() => InstallationId;
 

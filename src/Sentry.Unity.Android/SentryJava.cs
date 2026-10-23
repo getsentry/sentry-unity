@@ -17,6 +17,8 @@ internal interface ISentryJava
     public string? GetTraceHeader();
     public string? GetBaggageHeader();
     public string? GetMainProcessTraceHeader();
+    public SentryUser? GetUser();
+    public SentryUser? GetMainProcessUser();
     public string? GetInstallationId();
     public bool? CrashedLastRun();
     public void Close();
@@ -331,6 +333,41 @@ internal class SentryJava : ISentryJava
         return null;
     }
 
+    // The user the app's SDK in the main process persisted.
+    public SentryUser? GetMainProcessUser()
+    {
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling GetMainProcessUser() on Android SDK requires running on MainThread");
+            return null;
+        }
+
+        try
+        {
+            using var sentry = GetSentryJava();
+            using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
+            using var options = hub.Call<AndroidJavaObject>("getOptions");
+            using var user = ReadMainProcessFile(options, ".scope-cache/user.json", "io.sentry.protocol.User");
+            return ToSentryUser(user);
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.GetMainProcessUser' failed.");
+        }
+
+        return null;
+    }
+
+    private static SentryUser? ToSentryUser(AndroidJavaObject? user) => user is null
+        ? null
+        : new SentryUser
+        {
+            Id = user.Call<string>("getId"),
+            Username = user.Call<string>("getUsername"),
+            Email = user.Call<string>("getEmail"),
+            IpAddress = user.Call<string>("getIpAddress")
+        };
+
     private string? ReadMainProcessOption(AndroidJavaObject options, string fileName)
     {
         using var value = ReadMainProcessFile(options, $".options-cache/{fileName}", "java.lang.String");
@@ -381,6 +418,15 @@ internal class SentryJava : ISentryJava
         using var sentry = GetSentryJava();
         using var header = sentry.CallStatic<AndroidJavaObject>("getTraceparent");
         return header?.Call<string>("getValue");
+    });
+
+    // The user on the native SDK's scope.
+    public SentryUser? GetUser() => RunJniSafeAndWait(() =>
+    {
+        using var sentry = GetInternalSentryJava();
+        using var scope = sentry.CallStatic<AndroidJavaObject>("getCurrentScope");
+        using var user = scope?.Call<AndroidJavaObject>("getUser");
+        return ToSentryUser(user);
     });
 
     public string? GetBaggageHeader() => RunJniSafeAndWait(() =>

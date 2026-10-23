@@ -105,10 +105,11 @@ public static class SentryNativeAndroid
             if (isAttached)
             {
                 NativePropagationContext.Use(options, SentryJava.GetTraceHeader, SentryJava.GetBaggageHeader);
+                NativeAppUser.Use(options, SentryJava.GetUser);
             }
             else
             {
-                UseMainProcessTrace(options, SentryJava);
+                UseMainProcessScope(options, SentryJava);
             }
 
             if (options.AutoSessionTracking)
@@ -185,10 +186,11 @@ public static class SentryNativeAndroid
         Logger?.LogInfo("Successfully configured the Android SDK");
     }
 
-    // The game runs in its own process and continues the trace the app was in when it showed the game.
-    private static void UseMainProcessTrace(SentryUnityOptions options, ISentryJava sentryJava)
+    // The game runs in its own process and continues the trace the app was in when it showed the game, with its user.
+    private static void UseMainProcessScope(SentryUnityOptions options, ISentryJava sentryJava)
     {
         string? traceHeader = null;
+        SentryUser? appUser = null;
 
         void Refresh()
         {
@@ -199,6 +201,8 @@ public static class SentryNativeAndroid
                 traceHeader = refreshed;
                 sentryJava.SetTrace(header.TraceId, header.SpanId);
             }
+
+            appUser = sentryJava.GetMainProcessUser();
         }
 
         Refresh();
@@ -206,6 +210,7 @@ public static class SentryNativeAndroid
         monoBehaviour.ApplicationResuming += Refresh;
         options.NativeSupportCloseCallback += () => monoBehaviour.ApplicationResuming -= Refresh;
         NativePropagationContext.Use(options, () => traceHeader, () => null);
+        NativeAppUser.Use(options, () => appUser);
     }
 
     /// <summary>
