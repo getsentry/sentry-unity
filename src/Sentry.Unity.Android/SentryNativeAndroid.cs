@@ -204,6 +204,7 @@ public static class SentryNativeAndroid
     }
 
     // Events from the game belong to the app's release and environment, unless they were set in the options.
+    // In its own process, the game's SDK took them from the app's SDK when it initialized.
     private static void UseAppReleaseAndEnvironment(SentryUnityOptions options, ISentryJava sentryJava)
     {
         if (options.Release == options.DefaultRelease && sentryJava.GetOption("getRelease") is { } release)

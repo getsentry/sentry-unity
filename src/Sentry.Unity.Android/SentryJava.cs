@@ -76,6 +76,12 @@ internal class SentryJava : ISentryJava
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
 
+    private static AndroidJavaObject GetCurrentActivity()
+    {
+        using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        return unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+    }
+
     public SentryJava(IDiagnosticLogger? logger, IAndroidJNI? androidJNI = null)
     {
         _logger = logger;
@@ -124,8 +130,7 @@ internal class SentryJava : ISentryJava
                 return null;
             }
 
-            using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            using var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            using var activity = GetCurrentActivity();
             return processName == activity.Call<string>("getPackageName");
         }
         catch (Exception e)
@@ -160,8 +165,7 @@ internal class SentryJava : ISentryJava
         try
         {
             using var sentry = new AndroidJavaClass("io.sentry.android.core.SentryAndroid");
-            using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            using var context = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            using var context = GetCurrentActivity();
 
             sentry.CallStatic("init", context, new AndroidOptionsConfiguration(androidOptions =>
             {
@@ -212,6 +216,20 @@ internal class SentryJava : ISentryJava
                 // process. Its own cache directory keeps it from taking over the app's session and persisted scope.
                 if (isExternal && GetProcessName() is { } processName)
                 {
+                    // Its events belong to the app's release and environment, persisted by the app's SDK.
+                    if (options.Release == options.DefaultRelease && ReadMainProcessOption(androidOptions, "release.json") is { } release)
+                    {
+                        androidOptions.Call("setRelease", release);
+                        if (options.Distribution is null)
+                        {
+                            androidOptions.Call("setDist", ReadMainProcessOption(androidOptions, "dist.json"));
+                        }
+                    }
+                    if (options.Environment == options.DefaultEnvironment && ReadMainProcessOption(androidOptions, "environment.json") is { } environment)
+                    {
+                        androidOptions.Call("setEnvironment", environment);
+                    }
+
                     using var cacheDir = context.Call<AndroidJavaObject>("getCacheDir");
                     var processSuffix = processName.Substring(processName.IndexOf(':') + 1);
                     androidOptions.Call("setCacheDirPath", $"{cacheDir.Call<string>("getAbsolutePath")}/sentry-{processSuffix}");
@@ -270,9 +288,7 @@ internal class SentryJava : ISentryJava
         return null;
     }
 
-    // The `sentry-trace` header of the native SDK: its active span, otherwise its propagation context.
-    // The app's SDK in the main process persists its trace to its cache directory, next to ours: same DSN hash,
-    // default 'sentry' directory.
+    // The `sentry-trace` header of the app's SDK in the main process: its active span, otherwise its propagation context.
     public string? GetMainProcessTraceHeader()
     {
         if (!MainThreadData.IsMainThread())
@@ -286,25 +302,7 @@ internal class SentryJava : ISentryJava
             using var sentry = GetSentryJava();
             using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
             using var options = hub.Call<AndroidJavaObject>("getOptions");
-            using var cacheDir = new AndroidJavaObject("java.io.File", options.Call<string>("getCacheDirPath"));
-            using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            using var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            using var appCacheDir = activity.Call<AndroidJavaObject>("getCacheDir");
-            var tracePath = $"{appCacheDir.Call<string>("getAbsolutePath")}/sentry/{cacheDir.Call<string>("getName")}/.scope-cache/trace.json";
-            using var traceFile = new AndroidJavaObject("java.io.File", tracePath);
-            if (!traceFile.Call<bool>("exists"))
-            {
-                _logger?.LogDebug("No trace persisted by the main process at '{0}'.", tracePath);
-                return null;
-            }
-
-            using var fileReader = new AndroidJavaObject("java.io.FileReader", traceFile);
-            using var reader = new AndroidJavaObject("java.io.BufferedReader", fileReader);
-            using var serializer = options.Call<AndroidJavaObject>("getSerializer");
-            using var javaClass = new AndroidJavaClass("java.lang.Class");
-            using var spanContextClass = javaClass.CallStatic<AndroidJavaObject>("forName", "io.sentry.SpanContext");
-            using var spanContext = serializer.Call<AndroidJavaObject>("deserialize", reader, spanContextClass);
-            reader.Call("close");
+            using var spanContext = ReadMainProcessFile(options, ".scope-cache/trace.json", "io.sentry.SpanContext");
             if (spanContext is null)
             {
                 return null;
@@ -324,6 +322,46 @@ internal class SentryJava : ISentryJava
         return null;
     }
 
+    private string? ReadMainProcessOption(AndroidJavaObject options, string fileName)
+    {
+        using var value = ReadMainProcessFile(options, $".options-cache/{fileName}", "java.lang.String");
+        return value?.Call<string>("toString");
+    }
+
+    // A file that the app's SDK in the main process persisted to its cache directory, next to ours: same DSN hash,
+    // default 'sentry' directory.
+    private AndroidJavaObject? ReadMainProcessFile(AndroidJavaObject options, string path, string className)
+    {
+        try
+        {
+            using var cacheDir = new AndroidJavaObject("java.io.File", options.Call<string>("getCacheDirPath"));
+            using var activity = GetCurrentActivity();
+            using var appCacheDir = activity.Call<AndroidJavaObject>("getCacheDir");
+            var filePath = $"{appCacheDir.Call<string>("getAbsolutePath")}/sentry/{cacheDir.Call<string>("getName")}/{path}";
+            using var file = new AndroidJavaObject("java.io.File", filePath);
+            if (!file.Call<bool>("exists"))
+            {
+                _logger?.LogDebug("Nothing persisted by the main process at '{0}'.", filePath);
+                return null;
+            }
+
+            using var fileReader = new AndroidJavaObject("java.io.FileReader", file);
+            using var reader = new AndroidJavaObject("java.io.BufferedReader", fileReader);
+            using var serializer = options.Call<AndroidJavaObject>("getSerializer");
+            using var javaClass = new AndroidJavaClass("java.lang.Class");
+            using var type = javaClass.CallStatic<AndroidJavaObject>("forName", className);
+            var result = serializer.Call<AndroidJavaObject>("deserialize", reader, type);
+            reader.Call("close");
+            return result;
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Reading '{0}' persisted by the main process failed.", path);
+        }
+
+        return null;
+    }
+
     public string? GetTraceHeader() => RunJniSafeAndWait(() =>
     {
         using var sentry = GetSentryJava();
@@ -338,28 +376,7 @@ internal class SentryJava : ISentryJava
         return header?.Call<string>("getValue");
     });
 
-    public string? GetInstallationId()
-    {
-        if (!MainThreadData.IsMainThread())
-        {
-            _logger?.LogError("Calling GetInstallationId() on Android SDK requires running on MainThread");
-            return null;
-        }
-
-        try
-        {
-            using var sentry = GetSentryJava();
-            using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
-            using var options = hub?.Call<AndroidJavaObject>("getOptions");
-            return options?.Call<string>("getDistinctId");
-        }
-        catch (Exception e)
-        {
-            _logger?.LogError(e, "Calling 'SentryJava.GetInstallationId' failed.");
-        }
-
-        return null;
-    }
+    public string? GetInstallationId() => GetOption("getDistinctId");
 
     /// <summary>
     /// Returns whether the last run resulted in a crash.
