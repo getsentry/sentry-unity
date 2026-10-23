@@ -82,15 +82,13 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
         yield return WaitForEndOfFrame();
 
         // Event processors run before BeforeSend and sampling, which may have dropped the events
-        SentryEvent @event;
-        bool anyCaptured;
+        SentryEvent? @event;
         lock (_lock)
         {
-            @event = events[0];
-            anyCaptured = events.Exists(e => e.IsCaptured);
+            @event = events.Find(e => e.IsCaptured);
         }
 
-        if (!anyCaptured)
+        if (@event is null)
         {
             _options.LogDebug("Skipping the screenshot. None of its events got captured.");
             Complete(screenshot, null);

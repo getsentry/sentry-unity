@@ -187,6 +187,31 @@ public class ScreenshotEventProcessorTests
     }
 
     [UnityTest]
+    public IEnumerator Process_BeforeSendScreenshot_ReceivesFirstCapturedEvent()
+    {
+        var options = new SentryUnityOptions();
+        SentryEvent? receivedEvent = null;
+        options.SetBeforeSendScreenshot((screenshot, @event) =>
+        {
+            receivedEvent = @event;
+            return screenshot;
+        });
+        var processor = GetSut(options);
+        var dropped = new SentryEvent();
+        var captured = new SentryEvent { IsCaptured = true };
+        var droppedHint = new SentryHint();
+        var capturedHint = new SentryHint();
+
+        processor.Process(dropped, droppedHint);
+        processor.Process(captured, capturedHint);
+
+        var read = ReadOnWorker(capturedHint.Attachments.Single());
+        yield return new WaitUntil(() => read.IsCompleted);
+
+        Assert.AreSame(captured, receivedEvent);
+    }
+
+    [UnityTest]
     public IEnumerator Process_BeforeSendScreenshotReturnsNull_AttachmentIsEmpty()
     {
         var options = new SentryUnityOptions();
