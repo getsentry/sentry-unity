@@ -352,12 +352,17 @@ internal class SentryJava : ISentryJava
 
             using var fileReader = new AndroidJavaObject("java.io.FileReader", file);
             using var reader = new AndroidJavaObject("java.io.BufferedReader", fileReader);
-            using var serializer = options.Call<AndroidJavaObject>("getSerializer");
-            using var javaClass = new AndroidJavaClass("java.lang.Class");
-            using var type = javaClass.CallStatic<AndroidJavaObject>("forName", className);
-            var result = serializer.Call<AndroidJavaObject>("deserialize", reader, type);
-            reader.Call("close");
-            return result;
+            try
+            {
+                using var serializer = options.Call<AndroidJavaObject>("getSerializer");
+                using var javaClass = new AndroidJavaClass("java.lang.Class");
+                using var type = javaClass.CallStatic<AndroidJavaObject>("forName", className);
+                return serializer.Call<AndroidJavaObject>("deserialize", reader, type);
+            }
+            finally
+            {
+                reader.Call("close");
+            }
         }
         catch (Exception e)
         {

@@ -190,10 +190,11 @@ public static class SentryNativeAndroid
 
         void Refresh()
         {
-            traceHeader = sentryJava.GetMainProcessTraceHeader();
-            if (traceHeader is not null && SentryTraceHeader.Parse(traceHeader) is { } header)
+            // The app's SDK rewrites the file, so a read can come up empty. The previous trace still applies.
+            if (sentryJava.GetMainProcessTraceHeader() is { } refreshed && SentryTraceHeader.Parse(refreshed) is { } header)
             {
-                Logger?.LogDebug("Continuing the app's trace: {0}", traceHeader);
+                Logger?.LogDebug("Continuing the app's trace: {0}", refreshed);
+                traceHeader = refreshed;
                 sentryJava.SetTrace(header.TraceId, header.SpanId);
             }
         }
