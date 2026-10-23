@@ -14,7 +14,9 @@ internal sealed class NativeAppUser : ISentryEventProcessor, ISdkIntegration
 {
     private readonly SentryUnityOptions _options;
     private readonly Func<SentryUser?> _getAppUser;
-    // The app's user as last put on the scope, to tell it apart from a user the game set.
+    // The SDK's default user on the scope, and the app's user as last put there, to tell them apart from a user the
+    // game set.
+    private volatile SentryUser? _default;
     private volatile SentryUser? _applied;
 
     internal NativeAppUser(SentryUnityOptions options, Func<SentryUser?> getAppUser)
@@ -32,7 +34,7 @@ internal sealed class NativeAppUser : ISentryEventProcessor, ISdkIntegration
 
     public void Register(IHub hub, SentryOptions options)
     {
-        hub.ConfigureScope(Apply);
+        hub.ConfigureScope(Initialize);
         SentryMonoBehaviour.Instance.ApplicationResuming += () =>
         {
             if (hub.IsEnabled)
@@ -46,10 +48,18 @@ internal sealed class NativeAppUser : ISentryEventProcessor, ISdkIntegration
     {
         if (IsOwnedByApp(@event.User))
         {
-            @event.User = GetUser().Clone();
+            var user = GetUser().Clone();
+            user.IpAddress ??= @event.User.IpAddress;
+            @event.User = user;
         }
 
         return @event;
+    }
+
+    internal void Initialize(Scope scope)
+    {
+        _default = scope.User.Clone();
+        Apply(scope);
     }
 
     internal void Apply(Scope scope)
@@ -62,7 +72,7 @@ internal sealed class NativeAppUser : ISentryEventProcessor, ISdkIntegration
         }
     }
 
-    // The app's user, or the installation ID while the app has none.
+    // The app's user, or the SDK's default user while the app has none.
     private SentryUser GetUser()
     {
         SentryUser? appUser = null;
@@ -75,15 +85,18 @@ internal sealed class NativeAppUser : ISentryEventProcessor, ISdkIntegration
             _options.DiagnosticLogger?.LogWarning("Failed to get the app's user.", e);
         }
 
-        return appUser is { } && HasData(appUser) ? appUser : new SentryUser { Id = _options.DefaultUserId };
+        return appUser is { } && HasData(appUser)
+            ? appUser
+            : _default ?? new SentryUser { Id = _options.DefaultUserId };
     }
 
-    // Not set by the game: empty, the installation ID, or the app's user set here before.
+    // Not set by the game: no ID and email of its own. The SDK's defaults fill in username and IP address.
     private bool IsOwnedByApp(SentryUser user) =>
-        !HasData(user)
-        || (user.Id == _options.DefaultUserId && user.Username is null && user.Email is null && user.IpAddress is null)
-        || (_applied is { } applied && user.Id == applied.Id && user.Username == applied.Username
-            && user.Email == applied.Email && user.IpAddress == applied.IpAddress);
+        IsOwnedByApp(user.Id, _options.DefaultUserId, _default?.Id, _applied?.Id)
+        && IsOwnedByApp(user.Email, null, _default?.Email, _applied?.Email);
+
+    private static bool IsOwnedByApp(string? value, string? defaultUserId, string? defaultValue, string? appliedValue) =>
+        value is null || value == defaultUserId || value == defaultValue || value == appliedValue;
 
     private static bool HasData(SentryUser user) =>
         user.Id is not null || user.Username is not null || user.Email is not null || user.IpAddress is not null;
