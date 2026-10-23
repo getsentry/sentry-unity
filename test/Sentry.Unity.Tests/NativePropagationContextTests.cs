@@ -113,6 +113,39 @@ public class NativePropagationContextTests
     }
 
     [Test]
+    public void Snapshot_NativeBaggageOfSameTrace_UsesNativeDsc()
+    {
+        _traceHeader = $"{TraceId}-{SpanId}";
+        _baggageHeader = $"sentry-trace_id={TraceId},sentry-public_key=native,sentry-sample_rate=0.5,sentry-sample_rand=0.25";
+
+        var context = GetOptions().ExternalPropagationContext!.Snapshot();
+
+        var dsc = context.GetDynamicSamplingContext(new SentryOptions(), null!);
+        Assert.AreSame(context.DynamicSamplingContext, dsc);
+        Assert.AreEqual("native", dsc!.Items["public_key"]);
+        Assert.AreEqual("0.25", dsc.Items["sample_rand"]);
+        var baggage = context.GetBaggageHeader().ToString();
+        StringAssert.Contains("sentry-public_key=native", baggage);
+        StringAssert.Contains("sentry-sample_rand=0.25", baggage);
+        StringAssert.DoesNotContain("sentry-sampled", baggage);
+    }
+
+    [Test]
+    public void Snapshot_NativeBaggageOfOtherTrace_FallsBackToOwnDsc()
+    {
+        _traceHeader = $"{TraceId}-{SpanId}-1";
+        _baggageHeader = $"sentry-trace_id={SentryId.Create()},sentry-public_key=native,sentry-sample_rand=0.25";
+
+        var context = GetOptions().ExternalPropagationContext!.Snapshot();
+
+        Assert.IsNull(context.DynamicSamplingContext);
+        var baggage = context.GetBaggageHeader().ToString();
+        StringAssert.Contains($"sentry-trace_id={TraceId}", baggage);
+        StringAssert.Contains("sentry-public_key=key", baggage);
+        StringAssert.DoesNotContain("sentry-sample_rand=0.25", baggage);
+    }
+
+    [Test]
     [TestCase(true)]
     [TestCase(false)]
     public void StartTransactionInNativeTrace_NativeSpan_ChildInheritsSamplingDecision(bool isSampled)
