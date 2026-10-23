@@ -244,6 +244,24 @@ public class BuildPostProcessorTests
     }
 
     [Test]
+    public void AddSentryToXcodeProject_AppendBuildsAndSwitchToExternal_ThrowsBuildFailedException()
+    {
+        using (var xcodeProject = SentryXcodeProject.Open(_outputProjectPath))
+        {
+            xcodeProject.AddSentryFramework();
+        }
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeSupportEnabled = true,
+            IosNativeInitializationType = NativeInitializationType.External
+        };
+
+        Assert.Throws<BuildFailedException>(() =>
+            BuildPostProcess.AddSentryToXcodeProject(options, null, new TestLogger(), _outputProjectPath));
+    }
+
+    [Test]
     public void CopyFrameworkToXcodeProject_CopyFramework_DirectoryExists()
     {
         var targetPath = Path.Combine(_outputProjectPath, "SomeDirectory", "Test.framework");

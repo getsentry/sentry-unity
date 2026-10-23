@@ -91,6 +91,18 @@ public static class BuildPostProcess
                 }
             }
         }
+
+        // The app that embeds the game doesn't embed the framework a previous build linked into `UnityFramework`.
+        if (options.IosNativeInitializationType is NativeInitializationType.External)
+        {
+            using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
+            if (sentryXcodeProject.ContainsSentryFramework())
+            {
+                throw new BuildFailedException(
+                    "The iOS native initialization type is 'External' but a previous build added the Sentry framework " +
+                    "to the exported project. Select 'Replace' when exporting the project to create a clean project.");
+            }
+        }
     }
 
     internal static void SetupNoOpBridge(IDiagnosticLogger logger, string pathToProject)

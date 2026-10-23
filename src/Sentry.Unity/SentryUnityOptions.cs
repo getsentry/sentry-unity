@@ -497,6 +497,24 @@ public sealed class SentryUnityOptions : SentryOptions
     internal string? DefaultRelease { get; }
     internal string DefaultEnvironment { get; }
 
+    // Events from the game belong to the app's release and environment, unless they were set in the options.
+    internal void UseAppReleaseAndEnvironment(Func<string?> getRelease, Func<string?> getDistribution,
+        Func<string?> getEnvironment)
+    {
+        if (Release == DefaultRelease && getRelease() is { } release)
+        {
+            DiagnosticLogger?.LogDebug("Using the app's release: {0}", release);
+            Release = release;
+            Distribution ??= getDistribution();
+        }
+
+        if (Environment == DefaultEnvironment && getEnvironment() is { } environment)
+        {
+            DiagnosticLogger?.LogDebug("Using the app's environment: {0}", environment);
+            Environment = environment;
+        }
+    }
+
     /// <summary>
     /// Provides debug images from the native SDK for IL2CPP line number support.
     /// </summary>
