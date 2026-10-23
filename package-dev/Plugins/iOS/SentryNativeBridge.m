@@ -454,6 +454,27 @@ char *SentryNativeBridgeGetBaggageHeader()
     return SentryCopyString(baggageHeader);
 }
 
+// The user on the app's own SDK's scope, serialized to JSON.
+char *SentryNativeBridgeGetUser()
+{
+    __block NSString *userJson = nil;
+    SentryConfigureScope(^(id scope) {
+        id user = [scope respondsToSelector:@selector(userObject)]
+            ? [scope performSelector:@selector(userObject)]
+            : nil;
+        if (user == nil || ![user respondsToSelector:@selector(serialize)]) {
+            return;
+        }
+        NSDictionary *serialized = [user performSelector:@selector(serialize)];
+        if (![NSJSONSerialization isValidJSONObject:serialized]) {
+            return;
+        }
+        NSData *data = [NSJSONSerialization dataWithJSONObject:serialized options:0 error:nil];
+        userJson = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    });
+    return SentryCopyString(userJson);
+}
+
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
     if (traceId == NULL || spanId == NULL) {

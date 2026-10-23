@@ -364,6 +364,8 @@ char *SentryNativeBridgeGetTraceHeader() { return NULL; }
 
 char *SentryNativeBridgeGetBaggageHeader() { return NULL; }
 
+char *SentryNativeBridgeGetUser() { return NULL; }
+
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
     if (traceId == NULL || spanId == NULL) {
