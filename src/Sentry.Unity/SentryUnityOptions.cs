@@ -403,8 +403,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Configures a callback function to be invoked before capturing and attaching a screenshot to an event.
     /// </summary>
     /// <remarks>
-    /// This callback will get invoked right before a screenshot gets taken. If the screenshot should not
-    /// be taken return `false`.
+    /// This callback will get invoked when the event gets captured, possibly off the main thread, so don't use the Unity
+    /// API in it. If the screenshot should not be taken return `false`.
     /// </remarks>
     public void SetBeforeCaptureScreenshot(Func<SentryEvent, bool> beforeAttachScreenshot)
     {
