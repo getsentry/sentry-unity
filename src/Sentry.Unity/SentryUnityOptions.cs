@@ -409,8 +409,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Configures a callback function to be invoked before capturing and attaching a screenshot to an event.
     /// </summary>
     /// <remarks>
-    /// This callback will get invoked right before a screenshot gets taken. If the screenshot should not
-    /// be taken return `false`.
+    /// This callback will get invoked when the event gets captured, possibly off the main thread, so don't use the Unity
+    /// API in it. If the screenshot should not be taken return `false`.
     /// </remarks>
     public void SetBeforeCaptureScreenshot(Func<SentryEvent, bool> beforeAttachScreenshot)
     {
@@ -425,6 +425,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// <remarks>
     /// This callback receives the captured screenshot as a Texture2D before JPEG compression.
     /// You can modify the texture (blur areas, redact PII, etc.) and return it, or return null to discard.
+    /// It runs once per screenshot. Events captured together share one, and the callback receives the first of them
+    /// that didn't get dropped.
     /// </remarks>
     /// <param name="beforeSendScreenshot">The callback function to invoke before sending screenshots.</param>
     public void SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?> beforeSendScreenshot)
