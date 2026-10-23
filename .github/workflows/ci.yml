@@ -39,10 +39,17 @@ jobs:
         include:
           - target: Android
             host: ubuntu-latest
+          # 22.04 keeps the required glibc version low.
           - target: Linux
-            host: ubuntu-latest
+            host: ubuntu-22.04
           - target: LinuxNative
-            host: ubuntu-latest
+            host: ubuntu-22.04
+          - target: Linux
+            arch: Arm64
+            host: ubuntu-22.04-arm
+          - target: LinuxNative
+            arch: Arm64
+            host: ubuntu-22.04-arm
           - target: Windows
             host: windows-latest
           - target: WindowsNative
@@ -54,6 +61,7 @@ jobs:
     uses: ./.github/workflows/sdk.yml
     with:
       target: ${{ matrix.target }}
+      arch: ${{ matrix.arch }}
       runsOn: ${{ matrix.host }}
 
   build-unity-sdk:
