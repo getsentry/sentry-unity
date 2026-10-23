@@ -330,6 +330,21 @@
     <Error Condition="!Exists('$(SentryNativeNdkLocalAar)')" Text="sentry-native-ndk-release.aar not produced at $(SentryNativeNdkLocalAar). PublishNativeNdkLocal may have failed." />
     <Copy SourceFiles="$(SentryNativeNdkLocalAar)" DestinationFiles="$(SentryAndroidArtifactsDestination)sentry-native-ndk-release.aar" />
 
+    <!-- sentry-android-core parses tombstones with epitaph, a Maven dependency that local AARs don't
+         pull in. Ship the jar resolved by the Gradle build above; Unity picks up `libs/*.jar`.
+         CI starts with an empty Gradle cache, so the only cached version is the one sentry-java resolved. -->
+    <PropertyGroup>
+      <GradleUserHome>$(GRADLE_USER_HOME)</GradleUserHome>
+      <GradleUserHome Condition="'$(GradleUserHome)' == ''">$([System.Environment]::GetFolderPath(SpecialFolder.UserProfile))/.gradle</GradleUserHome>
+      <EpitaphCacheDir>$(GradleUserHome)/caches/modules-2/files-2.1/com.abovevacant/epitaph/</EpitaphCacheDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <EpitaphJar Include="$(EpitaphCacheDir)*/*/epitaph-*.jar" Exclude="$(EpitaphCacheDir)**/*-sources.jar" />
+    </ItemGroup>
+    <Error Condition="@(EpitaphJar->Count()) == 0" Text="epitaph jar not found in the Gradle cache at $(EpitaphCacheDir). The Gradle build likely failed." />
+    <Error Condition="@(EpitaphJar->Count()) &gt; 1" Text="Multiple epitaph jars cached in $(EpitaphCacheDir). Delete that directory and rebuild." />
+    <Copy SourceFiles="@(EpitaphJar)" DestinationFiles="$(SentryAndroidArtifactsDestination)epitaph.jar" />
+
     <Error Condition="!Exists('$(SentryAndroidArtifactsDestination)')" Text="Failed to set up the Android SDK." />
   </Target>
 

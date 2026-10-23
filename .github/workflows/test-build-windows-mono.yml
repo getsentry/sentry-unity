@@ -29,24 +29,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Load env
-        id: env
-        run: |
-          $u = (Get-Content scripts/unity-versions.json -Raw | ConvertFrom-Json).'${{ env.UNITY_VERSION }}'
-          "unityVersion=$($u.version)"     >> $env:GITHUB_OUTPUT
-          "unityChangeset=$($u.changeset)" >> $env:GITHUB_OUTPUT
-
       - name: Setup Unity
-        uses: getsentry/setup-unity@61c0c0944851685b6c1225e940d1b1ab349e3aa3
-        with:
-          unity-version: ${{ steps.env.outputs.unityVersion }}
-          unity-version-changeset: ${{ steps.env.outputs.unityChangeset }}
-          unity-modules: windows-il2cpp
-
-      - name: Create Unity license config
-        run: |
-          New-Item -Path "C:/ProgramData/Unity/config/" -ItemType Directory -Force
-          Set-Content -Path "C:/ProgramData/Unity/config/services-config.json" -Value "$env:UNITY_LICENSE_SERVER_CONFIG"
+        run: ./scripts/setup-unity.ps1 -UnityVersion "${{ inputs.unity-version }}" -Modules windows-il2cpp
         env:
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
@@ -77,14 +61,9 @@ jobs:
       - name: Add Sentry to the project
         run: ./test/Scripts.Integration.Test/add-sentry.ps1 -UnityPath "$env:UNITY_PATH" -PackagePath "test-package-release"
 
-      - name: Download DependencyConflict package
-        uses: ./.github/actions/wait-for-artifact
-        with:
-          name: dependency-conflict-package
-          path: dependency-conflict-package
-
-      - name: Add DependencyConflict to the project
-        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
+      # The package's unaliased System.Text.Json throws a FieldAccessException on Mono with High stripping.
+      - name: Disable DependencyConflict
+        run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -Disable
 
       - name: Configure Sentry
         run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows

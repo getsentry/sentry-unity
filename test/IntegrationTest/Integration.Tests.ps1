@@ -12,7 +12,7 @@
 #   SENTRY_TEST_SCRIPTING_BACKEND: set to "mono" for a Mono player; empty means IL2CPP
 #
 # Platform-specific environment variables:
-#   iOS:     SENTRY_IOS_VERSION - iOS simulator version (e.g. "17.0" or "latest")
+#   iOS:     SENTRY_IOS_VERSION - iOS simulator version (e.g. "18.5" or "latest")
 #   Xbox:    XBCONNECT_TARGET - Xbox devkit IP address
 
 Set-StrictMode -Version latest
@@ -322,7 +322,7 @@ BeforeAll {
             $script:ExecutablePath = "com.DefaultCompany.IntegrationTest"
 
             $target = $env:SENTRY_IOS_VERSION
-            # Convert bare version numbers (e.g. "17.0") to "iOS 17.0" format expected by iOSSimulatorProvider
+            # Convert bare version numbers (e.g. "18.5") to "iOS 18.5" format expected by iOSSimulatorProvider
             if ($target -match '^\d+\.\d+$') {
                 $target = "iOS $target"
             }

@@ -10,17 +10,30 @@
 
 - Attaching a screenshot no longer stalls the main thread. Unless `SetBeforeSendScreenshot` is set, the frame gets read back from the GPU asynchronously and encoded on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
+## 4.11.0
+
+### Fixes
+
+- Android tombstone parsing via `AndroidTombstoneEnabled` no longer fails with `NoClassDefFoundError`. The SDK now ships with its `epitaph` dependency. If you added `com.abovevacant:epitaph` to your Gradle template as a workaround, remove it to avoid duplicate classes. ([#2879](https://github.com/getsentry/sentry-unity/pull/2879))
+- The SDK no longer fails to compile in projects without `com.unity.ugui`, such as headless dedicated servers. The `SentryUserFeedback` component is only compiled when uGUI is installed. ([#2888](https://github.com/getsentry/sentry-unity/issues/2888))
+- The SDK now preserves the types Mono's HTTP stack needs, even with high stripping level. ([#2858](https://github.com/getsentry/sentry-unity/pull/2858))
+- When targeting a dedicated server, the SDK now relies on the actual scripting backend to set up IL2CPP line number and native support and to set up the automatic debug symbol upload ([#2882](https://github.com/getsentry/sentry-unity/pull/2882))
+
+### Features
+
+- Added the `NativeHandlerPath` option. It sets `handler_path` on the native SDK, so the out-of-process crash handler can be placed somewhere other than next to the player executable. Left unset, sentry-native keeps looking for the handler next to the executable as before. ([#2881](https://github.com/getsentry/sentry-unity/pull/2881))
+
 ### Dependencies
 
 - Bump .NET SDK from v6.11.0 to v6.12.0 ([#2870](https://github.com/getsentry/sentry-unity/pull/2870))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6120)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.11.0...6.12.0)
-- Bump Native SDK from v0.17.0 to v0.17.3 ([#2874](https://github.com/getsentry/sentry-unity/pull/2874), [#2880](https://github.com/getsentry/sentry-unity/pull/2880))
-  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0173)
-  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.0...0.17.3)
-- Bump Java SDK from v8.57.0 to v8.60.0 ([#2876](https://github.com/getsentry/sentry-unity/pull/2876))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8600)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.57.0...8.60.0)
+- Bump Native SDK from v0.17.0 to v0.17.4 ([#2874](https://github.com/getsentry/sentry-unity/pull/2874), [#2880](https://github.com/getsentry/sentry-unity/pull/2880), [#2886](https://github.com/getsentry/sentry-unity/pull/2886))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0174)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.0...0.17.4)
+- Bump Java SDK from v8.57.0 to v8.61.0 ([#2876](https://github.com/getsentry/sentry-unity/pull/2876), [#2883](https://github.com/getsentry/sentry-unity/pull/2883))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8610)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.57.0...8.61.0)
  - Bump Cocoa SDK from v9.29.0 to v9.30.1 ([#2875](https://github.com/getsentry/sentry-unity/pull/2875))
   - [changelog](https://github.com/getsentry/sentry-cocoa/blob/main/CHANGELOG.md#9301)
   - [diff](https://github.com/getsentry/sentry-cocoa/compare/9.29.0...9.30.1)

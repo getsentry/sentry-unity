@@ -343,6 +343,12 @@ public sealed class SentryUnityOptions : SentryOptions
     public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
 
     /// <summary>
+    /// Path to the native crash handler executable. Defaults to next to the player executable.
+    /// Applies to Windows, Linux, and macOS with <see cref="MacosBackend.Native"/>.
+    /// </summary>
+    public string? NativeHandlerPath { get; set; }
+
+    /// <summary>
     /// Whether the SDK should add native support for Windows
     /// </summary>
     public bool WindowsNativeSupportEnabled { get; set; } = true;

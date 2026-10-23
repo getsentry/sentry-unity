@@ -1,3 +1,4 @@
+#if SENTRY_UGUI
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -128,3 +129,4 @@ namespace Sentry.Unity
         }
     }
 }
+#endif

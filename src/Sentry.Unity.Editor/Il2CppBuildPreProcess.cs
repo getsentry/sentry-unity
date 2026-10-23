@@ -17,8 +17,7 @@ internal class Il2CppBuildPreProcess : IPreprocessBuildWithReport
 
     public void OnPreprocessBuild(BuildReport report)
     {
-        var namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(report.summary.platformGroup);
-        if (PlayerSettings.GetScriptingBackend(namedBuildTarget) != ScriptingImplementation.IL2CPP)
+        if (PlayerSettings.GetScriptingBackend(NamedBuildTargets.FromBuildReport(report)) != ScriptingImplementation.IL2CPP)
         {
             return;
         }
