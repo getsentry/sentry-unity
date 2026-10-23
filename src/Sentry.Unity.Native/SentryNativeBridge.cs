@@ -18,17 +18,17 @@ internal static class SentryNativeBridge
 
     private static IDiagnosticLogger? Logger; // This is also the logger we're forwarding native messages to.
     private static bool UseLibC;
+    private static bool IsLinuxArm64;
     private static bool IsWindows;
 
     public static bool Init(SentryUnityOptions options)
     {
         Logger = options.DiagnosticLogger;
 
-        // Only x86-64 System V platforms need the `VaListLinux64` copy in `nativeLogImpl`. There
-        // `va_list` is `__va_list_tag[1]` - an array that decays to a pointer - so `vsnprintf`
-        // consumes the caller's list and it cannot be handed over twice. On AArch64 (Android, iOS,
-        // Switch, Switch 2, Apple silicon, Linux arm64) `va_list` is a struct that is copied by
-        // value at every call, so the pointer can be reused as-is.
+        // `nativeLogImpl` hands the `va_list` to `vsnprintf` twice. On x86-64 System V it is
+        // `__va_list_tag[1]` and on Linux AArch64 a 32-byte struct passed by reference, so `vsnprintf`
+        // may consume the caller's list and each call needs a fresh copy. On Windows and Apple
+        // silicon it is a plain pointer, and Switch copies it through `vsnprintf_sentry`.
         UseLibC = Application.platform is RuntimePlatform.PS5;
         if ((Application.platform
             is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer
@@ -37,6 +37,9 @@ internal static class SentryNativeBridge
         {
             UseLibC = true;
         }
+
+        IsLinuxArm64 = (Application.platform is RuntimePlatform.LinuxPlayer or RuntimePlatform.LinuxServer)
+            && RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
 
         IsWindows = Application.platform
             is RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsServer
@@ -278,20 +281,11 @@ internal static class SentryNativeBridge
             // For Linux and PlayStation, we must make a copy of the VaList to be able to pass it back...
             if (UseLibC)
             {
-                var argsStruct = Marshal.PtrToStructure<VaListLinux64>(args);
-                var formattedLength = 0;
-
-                WithMarshalledStruct(argsStruct, argsPtr =>
-                {
-                    formattedLength = 1 + vsnprintf(IntPtr.Zero, UIntPtr.Zero, format, argsPtr);
-                });
-
-                WithAllocatedPtr(formattedLength, buffer =>
-                    WithMarshalledStruct(argsStruct, argsPtr =>
-                    {
-                        vsnprintf(buffer, (UIntPtr)formattedLength, format, argsPtr);
-                        message = Marshal.PtrToStringAnsi(buffer);
-                    }));
+                message = FormatWithCopiedVaList<VaListLinux64>(format, args);
+            }
+            else if (IsLinuxArm64)
+            {
+                message = FormatWithCopiedVaList<VaListAarch64>(format, args);
             }
             else
             {
@@ -351,6 +345,38 @@ internal static class SentryNativeBridge
         uint fp_offset;
         IntPtr overflow_arg_area;
         IntPtr reg_save_area;
+    }
+
+    // AAPCS64 `va_list`
+    [StructLayout(LayoutKind.Sequential)]
+    private struct VaListAarch64
+    {
+        IntPtr stack;
+        IntPtr gr_top;
+        IntPtr vr_top;
+        int gr_offs;
+        int vr_offs;
+    }
+
+    private static string? FormatWithCopiedVaList<T>(IntPtr format, IntPtr args) where T : struct
+    {
+        var argsStruct = Marshal.PtrToStructure<T>(args);
+        var formattedLength = 0;
+        string? message = null;
+
+        WithMarshalledStruct(argsStruct, argsPtr =>
+        {
+            formattedLength = 1 + vsnprintf(IntPtr.Zero, UIntPtr.Zero, format, argsPtr);
+        });
+
+        WithAllocatedPtr(formattedLength, buffer =>
+            WithMarshalledStruct(argsStruct, argsPtr =>
+            {
+                vsnprintf(buffer, (UIntPtr)formattedLength, format, argsPtr);
+                message = Marshal.PtrToStringAnsi(buffer);
+            }));
+
+        return message;
     }
 
     private static void WithAllocatedPtr(int size, Action<IntPtr> action)
