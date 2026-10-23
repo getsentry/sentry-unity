@@ -165,7 +165,7 @@ public static class SentryNativeAndroid
         // When attached, the app owns the SDK's lifetime.
         if (!isAttached)
         {
-            options.NativeSupportCloseCallback = () => Close(options);
+            options.NativeSupportCloseCallback += () => Close(options);
         }
 
         Logger?.LogDebug("Fetching installation ID");
@@ -199,7 +199,9 @@ public static class SentryNativeAndroid
         }
 
         Refresh();
-        SentryMonoBehaviour.Instance.ApplicationResuming += Refresh;
+        var monoBehaviour = SentryMonoBehaviour.Instance;
+        monoBehaviour.ApplicationResuming += Refresh;
+        options.NativeSupportCloseCallback += () => monoBehaviour.ApplicationResuming -= Refresh;
         NativePropagationContext.Use(options, () => traceHeader, () => null);
     }
 
