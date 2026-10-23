@@ -111,18 +111,13 @@ fi";
         _logger?.LogInfo("Adding the build properties and flags.");
         AddBuildProperties();
 
-        var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
-
-        var hasFileMethod = _pbxProjectType.GetMethod("ContainsFileByProjectPath", new[] { typeof(string) });
-        if (hasFileMethod != null)
+        if (ContainsSentryFramework())
         {
-            var hasAddedFramework = (bool)hasFileMethod.Invoke(_project, new object[] { relativeFrameworkPath });
-            if (hasAddedFramework)
-            {
-                _logger?.LogDebug("Skipping. The Sentry framework has already been added to the project.");
-                return;
-            }
+            _logger?.LogDebug("Skipping. The Sentry framework has already been added to the project.");
+            return;
         }
+
+        var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
 
         _logger?.LogInfo("Adding the Sentry framework.");
 
@@ -144,6 +139,13 @@ fi";
         addFileToBuildSectionMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, unityFrameworkBuildPhaseGuid, frameworkGuid });
 
         _logger?.LogDebug("Successfully added the Sentry framework.");
+    }
+
+    internal bool ContainsSentryFramework()
+    {
+        var hasFileMethod = _pbxProjectType.GetMethod("ContainsFileByProjectPath", new[] { typeof(string) });
+        return hasFileMethod != null
+               && (bool)hasFileMethod.Invoke(_project, new object[] { Path.Combine("Frameworks", FrameworkName) });
     }
 
     private void AddBuildProperties()

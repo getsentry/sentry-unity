@@ -77,6 +77,18 @@ public class SentryXcodeProjectTests
     }
 
     [Test]
+    public void ContainsSentryFramework_FrameworkAdded_ReturnsTrue()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+        Assert.IsFalse(xcodeProject.ContainsSentryFramework());
+
+        xcodeProject.AddSentryFramework();
+
+        Assert.IsTrue(xcodeProject.ContainsSentryFramework());
+    }
+
+    [Test]
     public void AddSentryFramework_EmbedsFramework()
     {
         var xcodeProject = _fixture.GetSut();
