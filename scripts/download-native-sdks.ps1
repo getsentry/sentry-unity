@@ -211,11 +211,11 @@ if ($currentBranch -and $currentBranch -ne 'main' -and $currentBranch -ne 'HEAD'
 $failed = @()
 foreach ($sdk in $sdksToDownload) {
     Write-Host "Downloading $($sdk.Name) SDK..." -ForegroundColor Yellow
-    if (Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $mainRunId) {
+    if ((Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $mainRunId) -and (Test-SDKPresent $sdk)) {
         Write-Host "  Downloaded from main run $mainRunId" -ForegroundColor Green
         continue
     }
-    if ($branchRunId -and (Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $branchRunId)) {
+    if ($branchRunId -and (Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $branchRunId) -and (Test-SDKPresent $sdk)) {
         Write-Host "  Not on main; downloaded from branch '$currentBranch' run $branchRunId" -ForegroundColor Yellow
         continue
     }
