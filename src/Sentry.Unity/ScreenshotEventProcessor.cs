@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using UnityEngine;
@@ -15,7 +16,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
     // Events share a screenshot until it's done, so frames can't pile up behind a slow encoder
     private readonly object _lock = new();
     private TaskCompletionSource<byte[]?>? _pending;
-    private DateTime _pendingSince;
+    private readonly Stopwatch _pendingSince = new();
     private List<SentryEvent> _pendingEvents = new();
 
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
@@ -53,12 +54,12 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
         lock (_lock)
         {
             // A capture that never completes, e.g. while the main thread hangs, must not hold up later events
-            if (_pending is null || DateTime.UtcNow - _pendingSince > SentryScreenshotAttachmentContent.CaptureTimeout)
+            if (_pending is null || _pendingSince.Elapsed > SentryScreenshotAttachmentContent.CaptureTimeout)
             {
                 // Its envelopes are past their deadline, so it doesn't need taking anymore
                 _pending?.TrySetResult(null);
                 _pending = new TaskCompletionSource<byte[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
-                _pendingSince = DateTime.UtcNow;
+                _pendingSince.Restart();
                 _pendingEvents = new List<SentryEvent>();
                 _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(_pending, _pendingEvents));
             }

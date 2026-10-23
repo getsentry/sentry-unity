@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,13 +22,12 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
 
     private readonly Task<byte[]?> _screenshot;
     private readonly SentryUnityOptions _options;
-    private readonly DateTime _deadline;
+    private readonly Stopwatch _sinceCreated = Stopwatch.StartNew();
 
     internal SentryScreenshotAttachmentContent(Task<byte[]?> screenshot, SentryUnityOptions options)
     {
         _screenshot = screenshot;
         _options = options;
-        _deadline = DateTime.UtcNow + CaptureTimeout;
     }
 
     public Stream GetStream() => new WaitOnReadStream(this);
@@ -44,7 +44,7 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
             }
 
             // A deadline, so envelopes sharing a screenshot that never comes don't each wait the full timeout
-            var remaining = _deadline - DateTime.UtcNow;
+            var remaining = CaptureTimeout - _sinceCreated.Elapsed;
             if (remaining < TimeSpan.Zero)
             {
                 remaining = TimeSpan.Zero;
