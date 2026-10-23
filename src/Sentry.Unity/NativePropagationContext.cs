@@ -17,7 +17,8 @@ internal sealed class NativePropagationContext : IExternalPropagationContext
     private readonly Func<string?> _getBaggageHeader;
     private readonly Func<ISpan?> _getSpan;
     private readonly SentryTraceHeader? _traceHeader;
-    private readonly DynamicSamplingContext? _dynamicSamplingContext;
+    private DynamicSamplingContext? _dynamicSamplingContext;
+    private bool _dynamicSamplingContextRead;
 
     private NativePropagationContext(SentryOptions options, Func<string?> getTraceHeader,
         Func<string?> getBaggageHeader, Func<ISpan?> getSpan, SentryTraceHeader? traceHeader)
@@ -27,7 +28,6 @@ internal sealed class NativePropagationContext : IExternalPropagationContext
         _getBaggageHeader = getBaggageHeader;
         _getSpan = getSpan;
         _traceHeader = traceHeader;
-        _dynamicSamplingContext = traceHeader is null ? null : GetNativeDynamicSamplingContext(traceHeader.TraceId);
     }
 
     internal static void Use(SentryOptions options, Func<string?> getTraceHeader, Func<string?> getBaggageHeader,
@@ -71,14 +71,27 @@ internal sealed class NativePropagationContext : IExternalPropagationContext
     public bool IsSampled => _traceHeader?.IsSampled ?? false;
     public double? SampleRate => null;
     public double? SampleRand => null;
-    public DynamicSamplingContext? DynamicSamplingContext => _dynamicSamplingContext;
+    // Read on first use, as most snapshots only need the trace and span IDs.
+    public DynamicSamplingContext? DynamicSamplingContext
+    {
+        get
+        {
+            if (!_dynamicSamplingContextRead)
+            {
+                _dynamicSamplingContext = _traceHeader is null ? null : GetNativeDynamicSamplingContext(_traceHeader.TraceId);
+                _dynamicSamplingContextRead = true;
+            }
+
+            return _dynamicSamplingContext;
+        }
+    }
 
     public BaggageHeader GetBaggageHeader() =>
         GetDynamicSamplingContext(_options, null)?.ToBaggageHeader()
         ?? BaggageHeader.Create(new List<KeyValuePair<string, string>>());
 
     public DynamicSamplingContext? GetDynamicSamplingContext(SentryOptions options, IReplaySession? replaySession) =>
-        _dynamicSamplingContext ?? this.CreateDynamicSamplingContext(options, replaySession);
+        DynamicSamplingContext ?? this.CreateDynamicSamplingContext(options, replaySession);
 
     // Header and baggage are read separately, so the baggage is dropped if the native SDK moved to another trace.
     internal DynamicSamplingContext? GetNativeDynamicSamplingContext(SentryId traceId)

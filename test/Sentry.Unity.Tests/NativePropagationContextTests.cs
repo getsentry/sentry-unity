@@ -14,12 +14,20 @@ public class NativePropagationContextTests
     private readonly TestLogger _logger = new();
     private string? _traceHeader;
     private string? _baggageHeader;
+    private int _baggageHeaderReads;
     private ISpan? _span;
+
+    [SetUp]
+    public void SetUp() => _baggageHeaderReads = 0;
 
     private SentryUnityOptions GetOptions()
     {
         var options = new SentryUnityOptions { Dsn = "https://key@sentry.io/1", DiagnosticLogger = _logger, Debug = true };
-        NativePropagationContext.Use(options, () => _traceHeader, () => _baggageHeader, () => _span);
+        NativePropagationContext.Use(options, () => _traceHeader, () =>
+        {
+            _baggageHeaderReads++;
+            return _baggageHeader;
+        }, () => _span);
         return options;
     }
 
@@ -128,6 +136,32 @@ public class NativePropagationContextTests
         StringAssert.Contains("sentry-public_key=native", baggage);
         StringAssert.Contains("sentry-sample_rand=0.25", baggage);
         StringAssert.DoesNotContain("sentry-sampled", baggage);
+    }
+
+    [Test]
+    public void Snapshot_OnlyTraceAndSpanIdRead_DoesNotReadNativeBaggage()
+    {
+        _traceHeader = $"{TraceId}-{SpanId}-1";
+        _baggageHeader = $"sentry-trace_id={TraceId},sentry-public_key=native";
+
+        var context = GetOptions().ExternalPropagationContext!.Snapshot();
+        _ = context.TraceId;
+        _ = context.SpanId;
+
+        Assert.AreEqual(0, _baggageHeaderReads);
+    }
+
+    [Test]
+    public void Snapshot_NativeDscReadTwice_ReadsNativeBaggageOnce()
+    {
+        _traceHeader = $"{TraceId}-{SpanId}-1";
+        _baggageHeader = $"sentry-trace_id={TraceId},sentry-public_key=native";
+
+        var context = GetOptions().ExternalPropagationContext!.Snapshot();
+        _ = context.DynamicSamplingContext;
+        _ = context.GetBaggageHeader();
+
+        Assert.AreEqual(1, _baggageHeaderReads);
     }
 
     [Test]
