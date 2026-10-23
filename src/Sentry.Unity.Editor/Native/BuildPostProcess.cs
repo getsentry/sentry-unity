@@ -84,7 +84,9 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
             _ => string.Empty
         };
 
-        UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
+        var linuxArch = target == BuildTarget.StandaloneLinux64 ? GetLinuxArchitecture(executablePath) : string.Empty;
+
+        UploadDebugSymbols(logger, target, buildOutputDir, executableName, linuxArch, options, cliOptions, isMono);
 
         if (!IsEnabledForPlatform(target, options))
         {
@@ -108,10 +110,10 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
             else if (target == BuildTarget.StandaloneLinux64)
             {
                 // Since the backend can change between iterative builds we need to clean up after ourselves
-                CleanupStaleLinuxArtifacts(logger, buildOutputDir, GetLinuxArchitecture(executablePath));
+                CleanupStaleLinuxArtifacts(logger, buildOutputDir, linuxArch);
             }
 
-            foreach (var artifact in GetNativePluginArtifact(target, options, executablePath, buildOutputDir))
+            foreach (var artifact in GetNativePluginArtifact(target, options, executablePath, buildOutputDir, linuxArch))
             {
                 _ = Directory.CreateDirectory(Path.GetDirectoryName(artifact.Destination));
                 logger.LogDebug("Copying '{0}' to '{1}'", artifact.Source, artifact.Destination);
@@ -196,7 +198,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
     }
 
     private static IEnumerable<NativePluginArtifact> GetNativePluginArtifact(
-        BuildTarget target, SentryUnityOptions options, string executablePath, string buildOutputDir)
+        BuildTarget target, SentryUnityOptions options, string executablePath, string buildOutputDir, string linuxArch)
     {
         var pluginsPath = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins");
 
@@ -245,7 +247,6 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
                 break;
 
             case BuildTarget.StandaloneLinux64:
-                var linuxArch = GetLinuxArchitecture(executablePath);
                 var linuxBackendSourcePath = GetLinuxBackendDir(options, linuxArch);
                 if (!Directory.Exists(linuxBackendSourcePath))
                 {
@@ -394,7 +395,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
     }
 
     private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir,
-        string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
+        string executableName, string linuxArch, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
     {
         var projectDir = Directory.GetParent(Application.dataPath)?.FullName ?? "";
         if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
@@ -484,8 +485,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
                 // Sentry native SDK symbols from package.
                 // Glob the debug sidecars (libsentry.dbg.so, and sentry-crash.dbg for the native backend)
                 // from whichever backend's source dir is in use.
-                var linuxSymbolDir = GetLinuxBackendDir(options,
-                    GetLinuxArchitecture(Path.Combine(buildOutputDir, executableName)));
+                var linuxSymbolDir = GetLinuxBackendDir(options, linuxArch);
                 if (Directory.Exists(linuxSymbolDir))
                 {
                     foreach (var file in Directory.GetFiles(linuxSymbolDir))
