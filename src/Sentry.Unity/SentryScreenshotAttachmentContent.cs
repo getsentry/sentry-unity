@@ -21,11 +21,13 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
 
     private readonly Task<byte[]?> _screenshot;
     private readonly SentryUnityOptions _options;
+    private readonly DateTime _deadline;
 
     internal SentryScreenshotAttachmentContent(Task<byte[]?> screenshot, SentryUnityOptions options)
     {
         _screenshot = screenshot;
         _options = options;
+        _deadline = DateTime.UtcNow + CaptureTimeout;
     }
 
     public Stream GetStream() => new WaitOnReadStream(this);
@@ -41,7 +43,14 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
                 return Array.Empty<byte>();
             }
 
-            if (await Task.WhenAny(_screenshot, Task.Delay(CaptureTimeout)).ConfigureAwait(false) != _screenshot)
+            // A deadline, so envelopes sharing a screenshot that never comes don't each wait the full timeout
+            var remaining = _deadline - DateTime.UtcNow;
+            if (remaining < TimeSpan.Zero)
+            {
+                remaining = TimeSpan.Zero;
+            }
+
+            if (await Task.WhenAny(_screenshot, Task.Delay(remaining)).ConfigureAwait(false) != _screenshot)
             {
                 _options.LogWarning("Screenshot was not taken in time. Skipping.");
                 return Array.Empty<byte>();

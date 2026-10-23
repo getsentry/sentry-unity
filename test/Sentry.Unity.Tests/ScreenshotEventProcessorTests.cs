@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ public class ScreenshotEventProcessorTests
     private class TestScreenshotEventProcessor : ScreenshotEventProcessor
     {
         public Func<SentryUnityOptions, Texture2D> CreateScreenshotFunc { get; set; }
+        public YieldInstruction? EndOfFrame { get; set; }
 
         public TestScreenshotEventProcessor(SentryUnityOptions options, ISentryMonoBehaviour sentryMonoBehaviour)
             : base(options, sentryMonoBehaviour)
@@ -28,7 +30,7 @@ public class ScreenshotEventProcessorTests
             => CreateScreenshotFunc.Invoke(options);
 
         // WaitForEndOfFrame never resumes in batch mode
-        internal override YieldInstruction? WaitForEndOfFrame() => null;
+        internal override YieldInstruction? WaitForEndOfFrame() => EndOfFrame;
     }
 
     private static TestScreenshotEventProcessor GetSut(SentryUnityOptions? options = null)
@@ -193,6 +195,45 @@ public class ScreenshotEventProcessorTests
         yield return new WaitUntil(() => read.IsCompleted);
 
         Assert.AreEqual(newTextureBytes.Length, read.Result.Length);
+    }
+
+    [UnityTest]
+    public IEnumerator Process_PendingCaptureTimedOut_StartsNewCapture()
+    {
+        var processor = GetSut();
+        // Keeps the first capture from completing, as if the main thread stopped rendering
+        processor.EndOfFrame = new WaitForSeconds(60);
+        var staleHint = new SentryHint();
+        processor.Process(new SentryEvent(), staleHint);
+
+        yield return new WaitForSecondsRealtime((float)SentryScreenshotAttachmentContent.CaptureTimeout.TotalSeconds + 0.1f);
+
+        processor.EndOfFrame = null;
+        var hint = new SentryHint();
+        processor.Process(new SentryEvent(), hint);
+
+        var stale = ReadOnWorker(staleHint.Attachments.Single());
+        var read = ReadOnWorker(hint.Attachments.Single());
+        yield return new WaitUntil(() => stale.IsCompleted && read.IsCompleted);
+
+        Assert.IsEmpty(stale.Result);
+        Assert.IsNotEmpty(read.Result);
+    }
+
+    [UnityTest]
+    public IEnumerator GetStream_ReadAfterTheCaptureTimeout_DoesNotWaitAgain()
+    {
+        var content = new SentryScreenshotAttachmentContent(new TaskCompletionSource<byte[]?>().Task, new SentryUnityOptions());
+        var attachment = new SentryAttachment(AttachmentType.Default, content, "screenshot.jpg", "image/jpeg");
+
+        yield return new WaitForSecondsRealtime((float)SentryScreenshotAttachmentContent.CaptureTimeout.TotalSeconds + 0.1f);
+
+        var stopwatch = Stopwatch.StartNew();
+        var read = ReadOnWorker(attachment);
+        yield return new WaitUntil(() => read.IsCompleted);
+
+        Assert.Less(stopwatch.ElapsedMilliseconds, 500);
+        Assert.IsEmpty(read.Result);
     }
 
     [UnityTest]
