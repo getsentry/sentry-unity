@@ -180,17 +180,6 @@ internal class SentryJava : ISentryJava
                     androidOptions.Call("setEnvironment", options.Environment);
                 }
 
-                // With external initialization, the game runs in its own process, next to the app's SDK in the main
-                // process. Its own cache directory keeps it from taking over the app's session and persisted scope.
-                if (isExternal && GetProcessName() is { } processName)
-                {
-                    using var cacheDir = context.Call<AndroidJavaObject>("getCacheDir");
-                    var processSuffix = processName.Substring(processName.IndexOf(':') + 1);
-                    androidOptions.Call("setCacheDirPath", $"{cacheDir.Call<string>("getAbsolutePath")}/sentry-{processSuffix}");
-                    // The game continues the app's trace instead of starting new ones on its own screens and taps.
-                    androidOptions.Call("setEnableAutoTraceIdGeneration", false);
-                }
-
                 using var sentryLevelClass = new AndroidJavaClass("io.sentry.SentryLevel");
                 var levelString = GetLevelString(options.DiagnosticLevel);
                 using var sentryLevel = sentryLevelClass.GetStatic<AndroidJavaObject>(levelString);
@@ -218,6 +207,20 @@ internal class SentryJava : ISentryJava
 
                 androidOptions.Call("setTombstoneEnabled", options.AndroidTombstoneEnabled);
                 androidOptions.Call("setReportHistoricalTombstones", options.AndroidReportHistoricalTombstones);
+
+                // With external initialization, the game runs in its own process, next to the app's SDK in the main
+                // process. Its own cache directory keeps it from taking over the app's session and persisted scope.
+                if (isExternal && GetProcessName() is { } processName)
+                {
+                    using var cacheDir = context.Call<AndroidJavaObject>("getCacheDir");
+                    var processSuffix = processName.Substring(processName.IndexOf(':') + 1);
+                    androidOptions.Call("setCacheDirPath", $"{cacheDir.Call<string>("getAbsolutePath")}/sentry-{processSuffix}");
+                    // The game continues the app's trace instead of starting new ones on its own screens and taps.
+                    androidOptions.Call("setEnableAutoTraceIdGeneration", false);
+                    // The app's SDK reports the exits of all of the app's processes, including this one.
+                    androidOptions.Call("setAnrEnabled", false);
+                    androidOptions.Call("setTombstoneEnabled", false);
+                }
 
                 using (var logsOptions = androidOptions.Call<AndroidJavaObject>("getLogs"))
                 {
