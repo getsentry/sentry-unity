@@ -98,7 +98,9 @@ public static class SentryNativeAndroid
 
         if (isExternal)
         {
-            UseAppReleaseAndEnvironment(options, SentryJava);
+            // In its own process, the game's SDK took them from the app's SDK when it initialized.
+            options.UseAppReleaseAndEnvironment(() => SentryJava.GetOption("getRelease"),
+                () => SentryJava.GetOption("getDist"), () => SentryJava.GetOption("getEnvironment"));
 
             if (isAttached)
             {
@@ -204,24 +206,6 @@ public static class SentryNativeAndroid
         monoBehaviour.ApplicationResuming += Refresh;
         options.NativeSupportCloseCallback += () => monoBehaviour.ApplicationResuming -= Refresh;
         NativePropagationContext.Use(options, () => traceHeader, () => null);
-    }
-
-    // Events from the game belong to the app's release and environment, unless they were set in the options.
-    // In its own process, the game's SDK took them from the app's SDK when it initialized.
-    private static void UseAppReleaseAndEnvironment(SentryUnityOptions options, ISentryJava sentryJava)
-    {
-        if (options.Release == options.DefaultRelease && sentryJava.GetOption("getRelease") is { } release)
-        {
-            Logger?.LogDebug("Using the app's release: {0}", release);
-            options.Release = release;
-            options.Distribution ??= sentryJava.GetOption("getDist");
-        }
-
-        if (options.Environment == options.DefaultEnvironment && sentryJava.GetOption("getEnvironment") is { } environment)
-        {
-            Logger?.LogDebug("Using the app's environment: {0}", environment);
-            options.Environment = environment;
-        }
     }
 
     /// <summary>
