@@ -11,24 +11,24 @@ namespace Sentry.Unity;
 /// </summary>
 /// <remarks>
 /// The SDK reads attachment content when serializing the envelope on its background worker. Waiting for the screenshot
-/// and encoding it only then keeps both off the thread that captured the event, while the screenshot still goes out in
-/// the same envelope as the event.
+/// only then keeps it off the thread that captured the event, while the screenshot still goes out in the same envelope
+/// as the event.
 /// </remarks>
 internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
 {
     // How long the worker waits for the main thread to take the screenshot, e.g. while it's hanging or paused
     internal static readonly TimeSpan CaptureTimeout = TimeSpan.FromSeconds(1);
 
-    private readonly Task<Lazy<byte[]?>?> _screenshot;
+    private readonly Task<byte[]?> _screenshot;
     private readonly SentryUnityOptions _options;
 
-    internal SentryScreenshotAttachmentContent(Task<Lazy<byte[]?>?> screenshot, SentryUnityOptions options)
+    internal SentryScreenshotAttachmentContent(Task<byte[]?> screenshot, SentryUnityOptions options)
     {
         _screenshot = screenshot;
         _options = options;
     }
 
-    public Stream GetStream() => new EncodeOnReadStream(this);
+    public Stream GetStream() => new WaitOnReadStream(this);
 
     internal async Task<byte[]> GetEncodedAsync()
     {
@@ -48,26 +48,18 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
             }
         }
 
-        try
-        {
-            var bytes = (await _screenshot.ConfigureAwait(false))?.Value;
-            return bytes is { Length: > 0 } ? bytes : Array.Empty<byte>();
-        }
-        catch (Exception e)
-        {
-            _options.LogError(e, "Failed to encode the screenshot.");
-            return Array.Empty<byte>();
-        }
+        var bytes = await _screenshot.ConfigureAwait(false);
+        return bytes is { Length: > 0 } ? bytes : Array.Empty<byte>();
     }
 
     // Deliberately not seekable: the SDK checks the length of attachment streams when building the envelope, on the
-    // capturing thread. Reporting no length keeps the wait and the encode from happening right there.
-    private sealed class EncodeOnReadStream : Stream
+    // capturing thread. Reporting no length keeps the wait from happening right there.
+    private sealed class WaitOnReadStream : Stream
     {
         private readonly SentryScreenshotAttachmentContent _content;
         private MemoryStream? _encoded;
 
-        public EncodeOnReadStream(SentryScreenshotAttachmentContent content) => _content = content;
+        public WaitOnReadStream(SentryScreenshotAttachmentContent content) => _content = content;
 
         public override bool CanRead => true;
         public override bool CanSeek => false;

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Sentry.Extensibility;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -48,10 +49,10 @@ internal static class SentryScreenshot
     }
 
     /// <summary>
-    /// Reads the current screenshot back from the GPU without stalling the main thread. The result gets encoded to JPG
-    /// on first access, on the accessing thread.
+    /// Reads the current screenshot back from the GPU and encodes it to JPG on a background thread, without stalling
+    /// the main thread.
     /// </summary>
-    internal static void CaptureAsync(SentryUnityOptions options, Action<Lazy<byte[]?>?> onCaptured)
+    internal static void CaptureAsync(SentryUnityOptions options, Action<byte[]?> onCaptured)
     {
         var renderTexture = CaptureIntoRenderTexture(options, Screen.width, Screen.height);
         var (width, height) = ((uint)renderTexture.width, (uint)renderTexture.height);
@@ -69,9 +70,21 @@ internal static class SentryScreenshot
                 }
 
                 var pixels = readback.GetData<byte>().ToArray();
-                onCaptured(new Lazy<byte[]?>(() =>
-                    ImageConversion.EncodeArrayToJPG(pixels, GraphicsFormat.R8G8B8A8_UNorm, width, height, 0,
-                        options.ScreenshotCompression)));
+                Task.Run(() =>
+                {
+                    byte[]? bytes = null;
+                    try
+                    {
+                        bytes = ImageConversion.EncodeArrayToJPG(pixels, GraphicsFormat.R8G8B8A8_UNorm, width, height,
+                            0, options.ScreenshotCompression);
+                    }
+                    catch (Exception e)
+                    {
+                        options.LogError(e, "Failed to encode the screenshot.");
+                    }
+
+                    onCaptured(bytes);
+                });
             });
         }
         finally

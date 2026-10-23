@@ -11,9 +11,9 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
     private readonly SentryUnityOptions _options;
     private readonly ISentryMonoBehaviour _sentryMonoBehaviour;
 
-    // Events in the same frame share a screenshot
+    // Events share a screenshot until it's done, so frames can't pile up behind a slow encoder
     private readonly object _lock = new();
-    private TaskCompletionSource<Lazy<byte[]?>?>? _pending;
+    private TaskCompletionSource<byte[]?>? _pending;
 
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
 
@@ -46,19 +46,19 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        Task<Lazy<byte[]?>?> screenshot;
+        Task<byte[]?> screenshot;
         lock (_lock)
         {
             if (_pending is null)
             {
-                _pending = new TaskCompletionSource<Lazy<byte[]?>?>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _pending = new TaskCompletionSource<byte[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(_pending, @event));
             }
 
             screenshot = _pending.Task;
         }
 
-        // The screenshot gets read, and encoded, when the SDK serializes the event's envelope on its worker
+        // The screenshot gets read when the SDK serializes the event's envelope on its worker
         hint.Attachments.Add(new SentryAttachment(
             AttachmentType.Default,
             new SentryScreenshotAttachmentContent(screenshot, _options),
@@ -68,36 +68,44 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
         return @event;
     }
 
-    private IEnumerator CaptureScreenshotCoroutine(TaskCompletionSource<Lazy<byte[]?>?> screenshot, SentryEvent @event)
+    private IEnumerator CaptureScreenshotCoroutine(TaskCompletionSource<byte[]?> screenshot, SentryEvent @event)
     {
         // Capturing mid-frame yields an incomplete image
         yield return WaitForEndOfFrame();
-
-        lock (_lock)
-        {
-            _pending = null;
-        }
 
         try
         {
             // The Texture2D callback and the main thread worker need the screenshot right away
             if (_options.BeforeSendScreenshotInternal is null && CanReadBackAsync())
             {
-                SentryScreenshot.CaptureAsync(_options, result => screenshot.TrySetResult(result));
+                SentryScreenshot.CaptureAsync(_options, result => Complete(screenshot, result));
             }
             else
             {
-                screenshot.TrySetResult(CaptureScreenshot(@event));
+                Complete(screenshot, CaptureScreenshot(@event));
             }
         }
         catch (Exception e)
         {
             _options.LogError(e, "Failed to capture screenshot.");
-            screenshot.TrySetResult(null);
+            Complete(screenshot, null);
         }
     }
 
-    private Lazy<byte[]?>? CaptureScreenshot(SentryEvent @event)
+    private void Complete(TaskCompletionSource<byte[]?> screenshot, byte[]? result)
+    {
+        lock (_lock)
+        {
+            if (_pending == screenshot)
+            {
+                _pending = null;
+            }
+        }
+
+        screenshot.TrySetResult(result);
+    }
+
+    private byte[]? CaptureScreenshot(SentryEvent @event)
     {
         Texture2D? screenshot = null;
         try
@@ -123,8 +131,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
                 }
             }
 
-            var screenshotBytes = screenshot.EncodeToJPG(_options.ScreenshotCompression);
-            return new Lazy<byte[]?>(() => screenshotBytes);
+            return screenshot.EncodeToJPG(_options.ScreenshotCompression);
         }
         finally
         {
