@@ -39,11 +39,11 @@ jobs:
         include:
           - target: Android
             host: ubuntu-latest
-          - target: Linux
-            host: ubuntu-latest
-          - target: LinuxNative
-            host: ubuntu-latest
           # 22.04 keeps the glibc floor low for server distros.
+          - target: Linux
+            host: ubuntu-22.04
+          - target: LinuxNative
+            host: ubuntu-22.04
           - target: Linux
             arch: Arm64
             host: ubuntu-22.04-arm
