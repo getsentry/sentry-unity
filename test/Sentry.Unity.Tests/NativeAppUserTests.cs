@@ -55,6 +55,28 @@ public class NativeAppUserTests
     }
 
     [Test]
+    public void Process_UsernameSetByGame_KeepsIt()
+    {
+        _appUser = new SentryUser { Id = "app-user" };
+
+        var @event = GetSut().Process(GetEvent(new SentryUser { Username = "player1" }));
+
+        Assert.AreEqual("player1", @event.User.Username);
+        Assert.IsNull(@event.User.Id);
+    }
+
+    [Test]
+    public void Process_UsernameAddedByGameToInstallationId_KeepsIt()
+    {
+        _appUser = new SentryUser { Id = "app-user" };
+
+        var @event = GetSut().Process(GetEvent(new SentryUser { Id = InstallationId, Username = "player1" }));
+
+        Assert.AreEqual(InstallationId, @event.User.Id);
+        Assert.AreEqual("player1", @event.User.Username);
+    }
+
+    [Test]
     public void Apply_AppUserChanges_FollowsApp()
     {
         var sut = GetSut();
@@ -115,9 +137,13 @@ public class NativeAppUserTests
     [Test]
     public void Process_SendDefaultPiiDefaults_UsesAppUserAndKeepsIpAddress()
     {
+        var sut = GetSut();
+        var scope = new Scope(new SentryOptions());
+        scope.User = new SentryUser { Id = InstallationId, Username = "device-user" };
+        sut.Initialize(scope);
         _appUser = new SentryUser { Id = "app-user" };
 
-        var @event = GetSut().Process(GetEvent(
+        var @event = sut.Process(GetEvent(
             new SentryUser { Id = InstallationId, Username = "device-user", IpAddress = "{{auto}}" }));
 
         Assert.AreEqual("app-user", @event.User.Id);
