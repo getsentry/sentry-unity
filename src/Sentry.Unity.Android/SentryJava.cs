@@ -753,6 +753,11 @@ internal class SentryJava : ISentryJava
 
     public void Close()
     {
+        if (_closed)
+        {
+            return;
+        }
+
         _closed = true;
 
         _scopeSyncShutdownSource.Cancel();
