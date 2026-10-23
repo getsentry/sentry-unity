@@ -4,7 +4,7 @@
 
 ### Features
 
-- Added support for Unity as a Library on iOS. With `IosNativeInitializationType` set to `NativeInitializationType.External`, the game attaches to the sentry-cocoa SDK that the app already started instead of bundling and starting its own. Native crashes carry the game's context and breadcrumbs, C# events and logs use the app's release, environment, and trace, the game's transactions join the app's trace, and debug symbols upload from the `UnityFramework` target. ([#2885](https://github.com/getsentry/sentry-unity/pull/2885))
+- Added support for Unity as a Library on iOS. With `IosNativeInitializationType` set to `NativeInitializationType.External`, the game attaches to the sentry-cocoa SDK that the app already started instead of bundling and starting its own. Native crashes carry the game's context and breadcrumbs, C# events and logs use the app's release, environment, user, and trace, the game's transactions join the app's trace, and debug symbols upload from the `UnityFramework` target. ([#2885](https://github.com/getsentry/sentry-unity/pull/2885))
 
 ## 4.11.0
 

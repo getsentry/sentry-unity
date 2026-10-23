@@ -61,6 +61,7 @@ public static class SentryNativeCocoa
                     () => SentryCocoaBridgeProxy.GetOption("dist"), () => SentryCocoaBridgeProxy.GetOption("environment"));
                 NativePropagationContext.Use(options, SentryCocoaBridgeProxy.GetTraceHeader,
                     SentryCocoaBridgeProxy.GetBaggageHeader);
+                NativeAppUser.Use(options, () => NativeAppUser.FromJson(SentryCocoaBridgeProxy.GetUser()));
 
                 if (options.AutoSessionTracking)
                 {
