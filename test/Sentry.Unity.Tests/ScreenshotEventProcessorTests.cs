@@ -247,8 +247,14 @@ public class ScreenshotEventProcessorTests
     public IEnumerator Process_PendingCaptureTimedOut_StartsNewCapture()
     {
         var processor = GetSut();
-        // Keeps the first capture from completing, as if the main thread stopped rendering
-        processor.EndOfFrame = new WaitForSeconds(60);
+        var captureCount = 0;
+        processor.CreateScreenshotFunc = _ =>
+        {
+            captureCount++;
+            return new Texture2D(1, 1);
+        };
+        // Holds the first capture past the timeout, as if the main thread stopped rendering
+        processor.EndOfFrame = new WaitForSeconds((float)SentryScreenshotAttachmentContent.CaptureTimeout.TotalSeconds + 0.5f);
         var staleHint = new SentryHint();
         processor.Process(new SentryEvent { IsCaptured = true }, staleHint);
 
@@ -261,9 +267,12 @@ public class ScreenshotEventProcessorTests
         var stale = ReadOnWorker(staleHint.Attachments.Single());
         var read = ReadOnWorker(hint.Attachments.Single());
         yield return new WaitUntil(() => stale.IsCompleted && read.IsCompleted);
+        // Lets the replaced capture reach its end of frame
+        yield return new WaitForSecondsRealtime(0.5f);
 
         Assert.IsEmpty(stale.Result);
         Assert.IsNotEmpty(read.Result);
+        Assert.AreEqual(1, captureCount);
     }
 
     [UnityTest]

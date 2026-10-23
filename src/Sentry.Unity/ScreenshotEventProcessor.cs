@@ -55,6 +55,8 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             // A capture that never completes, e.g. while the main thread hangs, must not hold up later events
             if (_pending is null || DateTime.UtcNow - _pendingSince > SentryScreenshotAttachmentContent.CaptureTimeout)
             {
+                // Its envelopes are past their deadline, so it doesn't need taking anymore
+                _pending?.TrySetResult(null);
                 _pending = new TaskCompletionSource<byte[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _pendingSince = DateTime.UtcNow;
                 _pendingEvents = new List<SentryEvent>();
@@ -80,6 +82,11 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
     {
         // Capturing mid-frame yields an incomplete image
         yield return WaitForEndOfFrame();
+
+        if (screenshot.Task.IsCompleted)
+        {
+            yield break;
+        }
 
         // Event processors run before BeforeSend and sampling, which may have dropped the events
         SentryEvent? @event;
