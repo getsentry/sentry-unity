@@ -12,6 +12,9 @@ namespace Sentry.Unity;
 /// </summary>
 internal sealed class NativeAppUser : ISentryEventProcessor, ISdkIntegration
 {
+    // Set on events by the SDK with `SendDefaultPii`.
+    private const string AutoIpAddress = "{{auto}}";
+
     private readonly SentryUnityOptions _options;
     private readonly Func<SentryUser?> _getAppUser;
     // The SDK's default user on the scope, and the app's user as last put there, to tell them apart from a user the
@@ -90,13 +93,15 @@ internal sealed class NativeAppUser : ISentryEventProcessor, ISdkIntegration
             : _default ?? new SentryUser { Id = _options.DefaultUserId };
     }
 
-    // Not set by the game: no ID and email of its own. The SDK's defaults fill in username and IP address.
+    // Not set by the game: each field is unset, the SDK's default, or the app's user's.
     private bool IsOwnedByApp(SentryUser user) =>
         IsOwnedByApp(user.Id, _options.DefaultUserId, _default?.Id, _applied?.Id)
-        && IsOwnedByApp(user.Email, null, _default?.Email, _applied?.Email);
+        && IsOwnedByApp(user.Username, null, _default?.Username, _applied?.Username)
+        && IsOwnedByApp(user.Email, null, _default?.Email, _applied?.Email)
+        && IsOwnedByApp(user.IpAddress, AutoIpAddress, _default?.IpAddress, _applied?.IpAddress);
 
-    private static bool IsOwnedByApp(string? value, string? defaultUserId, string? defaultValue, string? appliedValue) =>
-        value is null || value == defaultUserId || value == defaultValue || value == appliedValue;
+    private static bool IsOwnedByApp(string? value, string? sdkValue, string? defaultValue, string? appliedValue) =>
+        value is null || value == sdkValue || value == defaultValue || value == appliedValue;
 
     private static bool HasData(SentryUser user) =>
         user.Id is not null || user.Username is not null || user.Email is not null || user.IpAddress is not null;
