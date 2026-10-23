@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Sentry.Extensibility;
@@ -141,13 +142,17 @@ internal class SentryJava : ISentryJava
         return null;
     }
 
-    // `Application.getProcessName` requires API 28.
+    // `Application.getProcessName` requires API 28. Below, the process name is the NUL-terminated `/proc/self/cmdline`.
     private static string? GetProcessName()
     {
         using var version = new AndroidJavaClass("android.os.Build$VERSION");
         if (version.GetStatic<int>("SDK_INT") < 28)
         {
-            return null;
+#pragma warning disable SN0001
+            var cmdline = File.ReadAllText("/proc/self/cmdline");
+#pragma warning restore SN0001
+            var end = cmdline.IndexOf('\0');
+            return end < 0 ? cmdline : cmdline.Substring(0, end);
         }
 
         using var application = new AndroidJavaClass("android.app.Application");
