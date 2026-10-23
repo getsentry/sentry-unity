@@ -57,7 +57,8 @@ public static class SentryNativeCocoa
 
             if (isExternal)
             {
-                UseAppReleaseAndEnvironment(options);
+                options.UseAppReleaseAndEnvironment(() => SentryCocoaBridgeProxy.GetOption("releaseName"),
+                    () => SentryCocoaBridgeProxy.GetOption("dist"), () => SentryCocoaBridgeProxy.GetOption("environment"));
                 NativePropagationContext.Use(options, SentryCocoaBridgeProxy.GetTraceHeader,
                     SentryCocoaBridgeProxy.GetBaggageHeader);
 
@@ -124,23 +125,6 @@ public static class SentryNativeCocoa
         }
 
         Logger?.LogInfo("Successfully configured the native SDK");
-    }
-
-    // Events from the game belong to the app's release and environment, unless they were set in the options.
-    private static void UseAppReleaseAndEnvironment(SentryUnityOptions options)
-    {
-        if (options.Release == options.DefaultRelease && SentryCocoaBridgeProxy.GetOption("releaseName") is { } release)
-        {
-            Logger?.LogDebug("Using the app's release: {0}", release);
-            options.Release = release;
-            options.Distribution ??= SentryCocoaBridgeProxy.GetOption("dist");
-        }
-
-        if (options.Environment == options.DefaultEnvironment && SentryCocoaBridgeProxy.GetOption("environment") is { } environment)
-        {
-            Logger?.LogDebug("Using the app's environment: {0}", environment);
-            options.Environment = environment;
-        }
     }
 
     /// <summary>
