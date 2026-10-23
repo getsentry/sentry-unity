@@ -39,9 +39,7 @@ jobs:
         include:
           - target: Android
             host: ubuntu-latest
-          # Pinned to 22.04: the Linux libs link against the build host's glibc. From 2.38 on,
-          # its headers redirect strtol & co. to `__isoc23_*` symbols, so building on newer hosts
-          # requires glibc 2.38 at runtime and breaks Ubuntu 22.04, Debian 12 and RHEL 9 servers.
+          # 22.04 keeps the required glibc version low.
           - target: Linux
             host: ubuntu-22.04
           - target: LinuxNative
