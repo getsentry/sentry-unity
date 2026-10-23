@@ -240,9 +240,13 @@ internal class SentryJava : ISentryJava
                     androidOptions.Call("setCacheDirPath", $"{cacheDir.Call<string>("getAbsolutePath")}/sentry-{processSuffix}");
                     // The game continues the app's trace instead of starting new ones on its own screens and taps.
                     androidOptions.Call("setEnableAutoTraceIdGeneration", false);
-                    // The app's SDK reports the exits of all of the app's processes, including this one.
-                    androidOptions.Call("setAnrEnabled", false);
-                    androidOptions.Call("setTombstoneEnabled", false);
+                    // From API 30, the app's SDK reports the exits of all of the app's processes, including this one.
+                    using var version = new AndroidJavaClass("android.os.Build$VERSION");
+                    if (version.GetStatic<int>("SDK_INT") >= 30)
+                    {
+                        androidOptions.Call("setAnrEnabled", false);
+                        androidOptions.Call("setTombstoneEnabled", false);
+                    }
                 }
 
                 using (var logsOptions = androidOptions.Call<AndroidJavaObject>("getLogs"))
