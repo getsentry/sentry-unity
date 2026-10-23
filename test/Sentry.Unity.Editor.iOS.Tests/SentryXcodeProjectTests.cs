@@ -77,6 +77,18 @@ public class SentryXcodeProjectTests
     }
 
     [Test]
+    public void ContainsSentryFramework_FrameworkAdded_ReturnsTrue()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+        Assert.IsFalse(xcodeProject.ContainsSentryFramework());
+
+        xcodeProject.AddSentryFramework();
+
+        Assert.IsTrue(xcodeProject.ContainsSentryFramework());
+    }
+
+    [Test]
     public void AddSentryFramework_EmbedsFramework()
     {
         var xcodeProject = _fixture.GetSut();
@@ -145,6 +157,30 @@ public class SentryXcodeProjectTests
 
         Assert.IsFalse(didContainUploadPhase);
         Assert.IsTrue(doesContainUploadPhase);
+    }
+
+    [Test]
+    public void AddBuildPhaseSymbolUpload_UploadFromUnityFramework_BuildPhaseAddedToUnityFramework()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+
+        xcodeProject.AddBuildPhaseSymbolUpload(new SentryCliOptions(), uploadFromUnityFramework: true);
+
+        Assert.IsTrue(xcodeProject.UnityFrameworkTargetContainsSymbolUploadBuildPhase());
+        Assert.IsFalse(xcodeProject.MainTargetContainsSymbolUploadBuildPhase());
+        StringAssert.Contains("${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}", xcodeProject.ProjectToString());
+    }
+
+    [Test]
+    public void AddSentryNativeBridge_CompilesBridgeWithObjectiveCExceptions()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+
+        xcodeProject.AddSentryNativeBridge();
+
+        StringAssert.Contains("-fobjc-exceptions", xcodeProject.ProjectToString());
     }
 
     [Test]

@@ -285,15 +285,15 @@ Plugins/Windows/Sentry~/
 Plugins/Windows/SentryNative~/
 Plugins/Windows/SentryNative~/x64/sentry-crash.exe
 Plugins/Windows/SentryNative~/x64/sentry-crash.pdb
+Plugins/Windows/SentryNative~/x64/sentry-native.dll
 Plugins/Windows/SentryNative~/x64/sentry-wer.dll
 Plugins/Windows/SentryNative~/x64/sentry-wer.pdb
-Plugins/Windows/SentryNative~/x64/sentry-native.dll
 Plugins/Windows/SentryNative~/x64/sentry.pdb
 Plugins/Windows/SentryNative~/x86/sentry-crash.exe
 Plugins/Windows/SentryNative~/x86/sentry-crash.pdb
+Plugins/Windows/SentryNative~/x86/sentry-native.dll
 Plugins/Windows/SentryNative~/x86/sentry-wer.dll
 Plugins/Windows/SentryNative~/x86/sentry-wer.pdb
-Plugins/Windows/SentryNative~/x86/sentry-native.dll
 Plugins/Windows/SentryNative~/x86/sentry.pdb
 Plugins/Windows/Sentry~/x64/crashpad_handler.exe
 Plugins/Windows/Sentry~/x64/crashpad_wer.dll

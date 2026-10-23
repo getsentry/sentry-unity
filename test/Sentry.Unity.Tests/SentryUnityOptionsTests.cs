@@ -113,6 +113,47 @@ public sealed class SentryUnityOptionsTests
             _fixture.GetSut().Release);
 
     [Test]
+    public void UseAppReleaseAndEnvironment_DefaultsKept_UsesAppValues()
+    {
+        var options = _fixture.GetSut();
+
+        options.UseAppReleaseAndEnvironment(() => "app@1.0", () => "42", () => "staging");
+
+        Assert.AreEqual("app@1.0", options.Release);
+        Assert.AreEqual("42", options.Distribution);
+        Assert.AreEqual("staging", options.Environment);
+    }
+
+    [Test]
+    public void UseAppReleaseAndEnvironment_SetInOptions_KeepsOptions()
+    {
+        var options = _fixture.GetSut();
+        options.Release = "game@2.0";
+        options.Distribution = "7";
+        options.Environment = "game";
+
+        options.UseAppReleaseAndEnvironment(() => "app@1.0", () => "42", () => "staging");
+
+        Assert.AreEqual("game@2.0", options.Release);
+        Assert.AreEqual("7", options.Distribution);
+        Assert.AreEqual("game", options.Environment);
+    }
+
+    [Test]
+    public void UseAppReleaseAndEnvironment_AppHasNoValues_KeepsDefaults()
+    {
+        var options = _fixture.GetSut();
+        var release = options.Release;
+        var environment = options.Environment;
+
+        options.UseAppReleaseAndEnvironment(() => null, () => "42", () => null);
+
+        Assert.AreEqual(release, options.Release);
+        Assert.IsNull(options.Distribution);
+        Assert.AreEqual(environment, options.Environment);
+    }
+
+    [Test]
     [TestCase("\n")]
     [TestCase("\t")]
     [TestCase("/")]

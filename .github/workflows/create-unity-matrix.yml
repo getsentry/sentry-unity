@@ -25,7 +25,7 @@ env:
 
 jobs:
   create-unity-matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       unity-matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
