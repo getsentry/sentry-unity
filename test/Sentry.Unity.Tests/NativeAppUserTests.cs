@@ -113,6 +113,46 @@ public class NativeAppUserTests
     }
 
     [Test]
+    public void Process_SendDefaultPiiDefaults_UsesAppUserAndKeepsIpAddress()
+    {
+        _appUser = new SentryUser { Id = "app-user" };
+
+        var @event = GetSut().Process(GetEvent(
+            new SentryUser { Id = InstallationId, Username = "device-user", IpAddress = "{{auto}}" }));
+
+        Assert.AreEqual("app-user", @event.User.Id);
+        Assert.AreEqual("{{auto}}", @event.User.IpAddress);
+    }
+
+    [Test]
+    public void Initialize_DefaultUserWithoutNativeInstallationId_UsesAppUser()
+    {
+        var sut = new NativeAppUser(new SentryUnityOptions(), () => _appUser);
+        var scope = new Scope(new SentryOptions());
+        scope.User = new SentryUser { Id = "dotnet-installation-id", Username = "device-user" };
+        _appUser = new SentryUser { Id = "app-user" };
+
+        sut.Initialize(scope);
+
+        Assert.AreEqual("app-user", scope.User.Id);
+    }
+
+    [Test]
+    public void Initialize_NoAppUser_KeepsDefaultUser()
+    {
+        var sut = new NativeAppUser(new SentryUnityOptions(), () => _appUser);
+        var scope = new Scope(new SentryOptions());
+        scope.User = new SentryUser { Id = "dotnet-installation-id", Username = "device-user" };
+        _appUser = null;
+
+        sut.Initialize(scope);
+        var @event = sut.Process(GetEvent(scope.User.Clone()));
+
+        Assert.AreEqual("dotnet-installation-id", @event.User.Id);
+        Assert.AreEqual("device-user", @event.User.Username);
+    }
+
+    [Test]
     public void FromJson_SerializedCocoaUser_ParsesFields()
     {
         var user = NativeAppUser.FromJson(
