@@ -74,6 +74,7 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
     
   package-validation:
+    needs: build-unity-sdk
     name: UPM Package validation
     runs-on: ubuntu-latest
     steps:
@@ -84,7 +85,7 @@ jobs:
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
       - name: Download UPM package
-        uses: ./.github/actions/wait-for-artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: package-release
 
@@ -217,6 +218,7 @@ jobs:
         uses: ./.github/actions/wait-for-artifact
         with:
           name: package-release
+          producer: Build Unity SDK
 
       - name: Extract UPM package
         run: ./test/Scripts.Integration.Test/extract-package.ps1
@@ -229,6 +231,7 @@ jobs:
         with:
           name: dependency-conflict-package
           path: dependency-conflict-package
+          producer: Build Unity SDK
 
       - name: Add DependencyConflict to the project
         if: ${{ !startsWith(matrix.unity-version, '2021') }}
