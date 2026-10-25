@@ -142,6 +142,11 @@ BeforeAll {
             return $null
         }
 
+        # Nested event data comes from ConvertFrom-Json -AsHashtable
+        if ($Object -is [System.Collections.IDictionary]) {
+            return $Object[$Name]
+        }
+
         $property = $Object.PSObject.Properties[$Name]
         if ($null -eq $property) {
             return $null
@@ -483,7 +488,12 @@ if ($env:SENTRY_TEST_PLATFORM -ne "WebGL") {
                 $eventId = Get-EventIds -AppOutput $script:runResult.Output -ExpectedCount 1
                 if ($eventId) {
                     Write-Host "::group::Getting event content"
-                    $script:runEvent = Get-SentryTestEvent -TagName "test.crash_id" -TagValue "$eventId" -TimeoutSeconds 300
+                    # A slow simulator can trip the 2s app-hang watchdog while the crash tag is already set.
+                    $notAppHang = {
+                        $exception = Get-EventList (Get-EventProperty $_ 'exception') 'values' | Select-Object -First 1
+                        (Get-EventProperty (Get-EventProperty $exception 'mechanism') 'type') -ne 'AppHang'
+                    }
+                    $script:runEvent = Get-SentryTestEvent -TagName "test.crash_id" -TagValue "$eventId" -Filter $notAppHang -TimeoutSeconds 300
                     Write-Host "::endgroup::"
                 }
 
