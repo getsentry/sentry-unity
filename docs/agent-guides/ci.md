@@ -45,5 +45,5 @@ Exact Unity editor versions and changesets live in `scripts/unity-versions.json`
 | Native SDKs | `sdk.yml` |
 | Integration project creation | `test-create.yml` |
 | Android build/run | `test-build-android.yml`, `test-run-android.yml` |
-| iOS build/compile/run | `test-build-ios.yml`, `test-compile-ios.yml`, `test-run-ios.yml` |
+| iOS build/compile/run | `test-build-ios.yml`, `test-compile-ios.yml`, `test-build-size-ios.yml`, `test-run-ios.yml` |
 | Release preparation | `release.yml` |
