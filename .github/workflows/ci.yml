@@ -564,12 +564,24 @@ jobs:
       platform: macos
       backend: ${{ matrix.backend }}
 
+  test-build-size-ios:
+    name: Measure iOS ${{ matrix.unity-version }} Build Size
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [test-compile-ios, create-unity-matrix]
+    strategy:
+      fail-fast: false
+      matrix:
+        unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
+    uses: ./.github/workflows/test-build-size-ios.yml
+    with:
+      unity-version: ${{ matrix.unity-version }}
+
   build-size-summary:
     timeout-minutes: 5
     name: Build Size
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-build-webgl, test-build-android, test-compile-ios, test-build-linux, test-build-windows, test-build-macos]
+    needs: [test-build-webgl, test-build-android, test-build-size-ios, test-build-linux, test-build-windows, test-build-macos]
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
