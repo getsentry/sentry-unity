@@ -200,7 +200,7 @@ jobs:
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Build-NoSentry
-          key: build-nosentry-${{ matrix.build_platform }}-${{ matrix.unity-version }}
+          key: build-nosentry-${{ matrix.build_platform }}-${{ matrix.unity-version }}-${{ hashFiles('samples/IntegrationTest/ProjectSettings/ProjectVersion.txt') }}
 
       - name: Build without Sentry SDK
         if: steps.cache-build-nosentry.outputs.cache-hit != 'true'
@@ -213,7 +213,7 @@ jobs:
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Build-NoSentry
-          key: build-nosentry-${{ matrix.build_platform }}-${{ matrix.unity-version }}
+          key: ${{ steps.cache-build-nosentry.outputs.cache-primary-key }}
 
       - name: Download UPM package
         uses: ./.github/actions/wait-for-artifact
