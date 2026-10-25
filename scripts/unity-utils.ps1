@@ -2,6 +2,53 @@ $RunUnityLicenseRetryTimeoutSeconds = 1800
 $RunUnityLicenseRetryIntervalMinSeconds = 20
 $RunUnityLicenseRetryIntervalMaxSeconds = 90
 $ClearUnityLogTimeoutSeconds = 30
+$RunUnityRateLimitRetrySleepSeconds = 90
+
+# Returns the name of a known infra failure worth one retry, or $null.
+function GetUnityRetrySignature([string] $unityPath, [string[]] $arguments, [int] $exitCode, [string[]] $stdout)
+{
+    if ($exitCode -eq 0)
+    {
+        return $null
+    }
+
+    # Unity 6.6 on Linux intermittently gets SIGKILLed during startup.
+    if ($exitCode -eq 137)
+    {
+        return 'killed'
+    }
+
+    # xvfb-run exits 5 instead of 137 when it fails to clean up after the kill. Unity never got to log its exit.
+    if ($exitCode -eq 5 -and $unityPath -in @('docker', 'xvfb-run') `
+            -and -not ($stdout -match 'Cleanup mono|Exiting batchmode|Aborting batchmode|Application will (exit|terminate) with return code|Caught fatal signal'))
+    {
+        return 'killed'
+    }
+
+    # A crash while running tests may be an SDK bug.
+    if ($arguments -contains '-runTests')
+    {
+        return $null
+    }
+
+    if ($stdout -match 'Received status code 429 from server')
+    {
+        return 'gradle-429'
+    }
+
+    # Bee reports a segfaulting build tool, e.g. il2cpp, as its exit code.
+    if ($stdout -match '\| 139 \(Segmentation fault\)')
+    {
+        return 'tool-segfault'
+    }
+
+    if (($stdout -match 'Batchmode quit successfully invoked') -and ($stdout -match 'Caught fatal signal'))
+    {
+        return 'shutdown-crash'
+    }
+
+    return $null
+}
 
 function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
 {
@@ -44,7 +91,8 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
     $stopwatch = [System.Diagnostics.Stopwatch]::new()
     $stdout = ""
     $try = 1
-    $retriedKilled = $false
+    $licenseTry = 1
+    $retried = @{}
     do
     {
         $stopwatch.Restart()
@@ -77,19 +125,23 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
                 Write-Host -ForegroundColor Yellow "$msg Sleeping for $timeToSleep seconds before retrying. Total time remaining: $timeRemaining seconds."
                 Start-Sleep -Seconds $timeToSleep
                 $try = $try + 1
+                $licenseTry = $licenseTry + 1
             }
             else
             {
-                $msg = "Unity couldn't acquire a license after $try tries in $RunUnityLicenseRetryTimeoutSeconds seconds. The floating license entitlements are likely exhausted (no free Unity license seat)."
+                $msg = "Unity couldn't acquire a license after $licenseTry tries in $RunUnityLicenseRetryTimeoutSeconds seconds. The floating license entitlements are likely exhausted (no free Unity license seat)."
                 Write-Host "::error::$msg"
                 Throw $msg
             }
         }
-        ElseIf ($process.ExitCode -eq 137 -and -not $retriedKilled)
+        ElseIf (($signature = GetUnityRetrySignature $unityPath $arguments $process.ExitCode $stdout) -and -not $retried[$signature])
         {
-            # Unity 6.6 on Linux intermittently SIGKILLs itself during startup.
-            Write-Host "::warning::Unity was killed (exit code 137). Retrying once."
-            $retriedKilled = $true
+            Write-Host "::warning::Unity failed with exit code $($process.ExitCode) (signature: $signature). Retrying once."
+            $retried[$signature] = $true
+            if ($signature -eq 'gradle-429')
+            {
+                Start-Sleep -Seconds $RunUnityRateLimitRetrySleepSeconds
+            }
             $try = $try + 1
         }
         else
@@ -105,9 +157,9 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
 
     $timeTaken = "Time taken: $($stopwatch.Elapsed.ToString('hh\:mm\:ss\.fff'))"
     Write-Host -ForegroundColor Green "Unity finished successfully. $timeTaken"
-    if ($try -gt 3)
+    if ($licenseTry -gt 3)
     {
-        Write-Host "::$($try -gt 10 ? 'warning' : 'notice')::It took $try tries to successfully acquire a Unity license. Total time taken: $($stopwatchTotal.Elapsed.ToString('hh\:mm\:ss\.fff'))"
+        Write-Host "::$($licenseTry -gt 10 ? 'warning' : 'notice')::It took $licenseTry tries to successfully acquire a Unity license. Total time taken: $($stopwatchTotal.Elapsed.ToString('hh\:mm\:ss\.fff'))"
     }
     return $ReturnLogOutput ? $stdout : $null
 }
