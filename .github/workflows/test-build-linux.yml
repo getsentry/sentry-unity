@@ -112,13 +112,10 @@ jobs:
       - name: Add DependencyConflict to the project
         run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
 
-      - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux
+      - name: Build with Sentry SDK (Breakpad backend)
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION" -ConfigureSentry
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
-
-      - name: Build with Sentry SDK (Breakpad backend)
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
 
       - name: Assert symbols and sources were uploaded (Breakpad backend)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log

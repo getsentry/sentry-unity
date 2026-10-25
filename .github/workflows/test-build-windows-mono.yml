@@ -67,19 +67,15 @@ jobs:
       - name: Disable DependencyConflict
         run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -Disable
 
-      - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows
-        env:
-          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
-
       # Crashpad backend only. The point of this job is that a Mono player resolves the
       # P/Invokes to `sentry-native` instead of the managed `Sentry.dll` at all; both Windows
       # backends bind against the same library, and the IL2CPP matrix already covers the
       # backend spread. Crashpad is what players ship with by default.
       - name: Build with Sentry SDK
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows-Mono -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform Windows-Mono -UnityVersion "$env:UNITY_VERSION" -ConfigureSentry
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Assert symbols and sources were uploaded
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log

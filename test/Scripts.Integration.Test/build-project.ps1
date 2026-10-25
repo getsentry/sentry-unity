@@ -2,7 +2,8 @@ param(
     [string] $UnityPath,
     [string] $Platform = "",
     [string] $UnityVersion = "",
-    [string] $BuildDirName = "Build"
+    [string] $BuildDirName = "Build",
+    [switch] $ConfigureSentry
 )
 
 if (-not $Global:NewProjectPathCache)
@@ -26,7 +27,29 @@ if ($Platform -eq "Switch")
     $unityArgs += @("-buildTarget", "Switch")
 }
 
-RunUnityCustom $unityPath $unityArgs
+if ($ConfigureSentry)
+{
+    Write-Log "Configuring Sentry options..."
+    $unityArgs += @("-optionsScript", "IntegrationOptionsConfiguration", "-cliOptionsScript", "CliConfiguration")
+    if ($env:SENTRY_DSN)
+    {
+        $unityArgs += @("-dsn", $env:SENTRY_DSN)
+    }
+
+    RunUnityAndExpect $unityPath "ConfigureSentryOptions" "ConfigureOptions: SUCCESS" $unityArgs
+
+    foreach ($path in @("$(GetNewProjectAssetsPath)/Plugins/Sentry/SentryCliOptions.asset", "$(GetNewProjectAssetsPath)/Resources/Sentry/SentryOptions.asset"))
+    {
+        if (!(Test-Path $path))
+        {
+            Write-Error "Path is expected to exist but it doesn't: '$path'"
+        }
+    }
+}
+else
+{
+    RunUnityCustom $unityPath $unityArgs
+}
 
 if ($Platform -eq "Android-Export")
 {

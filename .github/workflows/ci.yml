@@ -242,17 +242,12 @@ jobs:
         if: ${{ startsWith(matrix.unity-version, '2021') }}
         run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -Disable
 
-      - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM"
-        env:
-          BUILD_PLATFORM: ${{ matrix.build_platform }}
-          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
-
       - name: Build Project
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION" -ConfigureSentry
         env:
           BUILD_PLATFORM: ${{ matrix.build_platform }}
           UNITY_VERSION: ${{ matrix.unity-version }}
+          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Compare build sizes
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform "$env:BUILD_PLATFORM" -UnityVersion "$env:UNITY_VERSION"
