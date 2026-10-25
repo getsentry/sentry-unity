@@ -13,6 +13,12 @@ public class CliConfiguration : SentryCliOptionsConfiguration
         cliOptions.UploadSources = cliOptions.UploadSymbols;
         cliOptions.Auth = authToken;
 
+        // sentry-cli's default 5 retries give up within ~30s of sentry.io answering 503/504. Reaches the uploads the Editor spawns; iOS sets it on xcodebuild.
+        if (Environment.GetEnvironmentVariable("SENTRY_HTTP_MAX_RETRIES") is null)
+        {
+            Environment.SetEnvironmentVariable("SENTRY_HTTP_MAX_RETRIES", "20");
+        }
+
         cliOptions.Organization = "sentry-sdks";
         cliOptions.Project = "sentry-unity-integration-tests";
 
