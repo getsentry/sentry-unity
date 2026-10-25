@@ -18,13 +18,16 @@
   <Target Name="FindUnity">
     <Message Text="Unity Version: $(UnityVersion)" Importance="Normal" />
 
-    <Exec
-      Command="pwsh -NoProfile -File &quot;$(RepoRoot)scripts/find-unity.ps1&quot; -UnityVersion &quot;$(UnityVersion)&quot; -HubInstallDir &quot;$(HubInstallDir)&quot; -HubDefaultEditor &quot;$(HubDefaultEditor)&quot;"
-      ConsoleToMSBuild="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="_FindUnityOutput" />
-    </Exec>
+    <MSBuild
+      Projects="$(RepoRoot)build/find-unity.proj"
+      Targets="FindUnity"
+      Properties="UnityVersion=$(UnityVersion);HubInstallDir=$(HubInstallDir);HubDefaultEditor=$(HubDefaultEditor)"
+      RemoveProperties="TargetFramework;RuntimeIdentifier">
+      <Output TaskParameter="TargetOutputs" ItemName="_FindUnityOutputLines" />
+    </MSBuild>
 
     <PropertyGroup>
+      <_FindUnityOutput>@(_FindUnityOutputLines)</_FindUnityOutput>
       <UnityRoot>$([System.Text.RegularExpressions.Regex]::Match($(_FindUnityOutput), 'UnityRoot=([^;\r\n]+)').Groups[1].Value)</UnityRoot>
       <UnityDataPath>$([System.Text.RegularExpressions.Regex]::Match($(_FindUnityOutput), 'UnityDataPath=([^;\r\n]+)').Groups[1].Value)</UnityDataPath>
       <UnityManagedPath>$([System.Text.RegularExpressions.Regex]::Match($(_FindUnityOutput), 'UnityManagedPath=([^;\r\n]+)').Groups[1].Value)</UnityManagedPath>
