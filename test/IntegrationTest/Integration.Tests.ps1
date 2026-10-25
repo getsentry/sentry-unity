@@ -280,21 +280,38 @@ BeforeAll {
         # Save result to JSON file
         $runResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "${Action}-result.json")
 
-        # Launch app again to ensure crash report is sent
-        if ($Action -eq "crash-capture") {
-            Write-Host "Running crash-send to ensure crash report is sent..."
+        # A shutdown flush that times out leaves the event in the offline cache until the next launch.
+        # Relaunch once per job; a second timeout points at the SDK rather than a slow first request.
+        $flushTimedOut = $Action -ne "crash-capture" -and [bool]($runResult.Output -match "Timeout when trying to flush queue")
+        if ($flushTimedOut -and $script:FlushTimeoutRelaunched) {
+            Write-Host "::warning::$Action quit before the SDK flushed its queue again (signature: shutdown-flush-timeout). Not relaunching a second time, its event may stay in the offline cache."
+            $flushTimedOut = $false
+        }
+        elseif ($flushTimedOut) {
+            $script:FlushTimeoutRelaunched = $true
+            Write-Host "::warning::$Action quit before the SDK flushed its queue (signature: shutdown-flush-timeout). Relaunching to send the cached envelopes."
+        }
 
+        # crash-send starts the SDK, which sends the cached crash report and envelopes, and flushes before quitting
+        if ($Action -eq "crash-capture" -or $flushTimedOut) {
+            $sendName = if ($flushTimedOut) { "crash-send-after-$Action" } else { "crash-send" }
+            Write-Host "Running crash-send to ensure cached envelopes are sent..."
+
+            $androidLaunches = $script:AndroidUninitialisedLaunches
             $sendResult = Invoke-App -Action "crash-send"
+            if ($flushTimedOut) {
+                $script:AndroidUninitialisedLaunches = $androidLaunches
+            }
 
             if ($script:Platform -eq "Xbox") {
                 $sendResult = Get-XboxLogOutput -RunResult $sendResult -Action "crash-send"
             }
 
             # Save crash-send result to JSON for debugging
-            $sendResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "crash-send-result.json")
+            $sendResult | ConvertTo-Json -Depth 5 | Out-File -FilePath (Get-OutputFilePath "$sendName-result.json")
 
             # Print crash-send output
-            Write-Host "::group::App output (crash-send)"
+            Write-Host "::group::App output ($sendName)"
             $sendResult.Output | ForEach-Object { Write-Host $_ }
             Write-Host "::endgroup::"
 
@@ -311,6 +328,7 @@ BeforeAll {
     }
 
     $script:AndroidUninitialisedLaunches = 0
+    $script:FlushTimeoutRelaunched = $false
 
     $script:Platform = $env:SENTRY_TEST_PLATFORM
     if ([string]::IsNullOrEmpty($script:Platform)) {
