@@ -1,0 +1,10 @@
+<Project>
+  <!-- Invoked through the MSBuild task so that MSBuild caches the result and runs find-unity.ps1 once per build, not once per project. -->
+  <Target Name="FindUnity" Returns="@(_FindUnityOutput)">
+    <Exec
+      Command="pwsh -NoProfile -File &quot;$(MSBuildThisFileDirectory)../scripts/find-unity.ps1&quot; -UnityVersion &quot;$(UnityVersion)&quot; -HubInstallDir &quot;$(HubInstallDir)&quot; -HubDefaultEditor &quot;$(HubDefaultEditor)&quot;"
+      ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" ItemName="_FindUnityOutput" />
+    </Exec>
+  </Target>
+</Project>
