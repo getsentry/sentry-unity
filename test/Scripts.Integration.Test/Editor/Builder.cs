@@ -288,10 +288,6 @@ public class Builder
         instrumentation.GetMethod("ConfigureOptions", Type.EmptyTypes).Invoke(null, null);
 
         // Persist the options for later builds of this project
-        foreach (var path in new[] { "Assets/Resources/Sentry/SentryOptions.asset", "Assets/Plugins/Sentry/SentryCliOptions.asset" })
-        {
-            EditorUtility.SetDirty(AssetDatabase.LoadMainAssetAtPath(path));
-        }
         AssetDatabase.SaveAssets();
     }
 

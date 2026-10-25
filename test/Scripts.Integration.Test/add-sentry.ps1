@@ -10,20 +10,11 @@ if (-not $Global:NewProjectPathCache)
 
 . $PSScriptRoot/common.ps1
 
-if (-not [System.IO.Path]::IsPathRooted($PackagePath))
-{
-    $PackagePath = "$(ProjectRoot)/$PackagePath"
-}
-
-# The path has to resolve for the editor, which in Docker sees the project root at /sentry-unity
-If ($UnityPath.StartsWith("docker "))
-{
-    $PackagePath = $PackagePath.Replace("$(ProjectRoot)", "/sentry-unity")
-}
-
 # The next editor launch resolves and imports the package
 Write-Log "Adding Sentry package to the project manifest..."
 $manifestPath = "$(GetNewProjectPath)/Packages/manifest.json"
+# Relative to Packages/, so the path resolves on the host and in Docker alike
+$PackagePath = [System.IO.Path]::GetRelativePath("$(GetNewProjectPath)/Packages", [System.IO.Path]::GetFullPath($PackagePath, "$(ProjectRoot)")).Replace("\", "/")
 $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
 $manifest.dependencies | Add-Member -NotePropertyName "io.sentry.unity" -NotePropertyValue "file:$PackagePath" -Force
 $manifest | ConvertTo-Json -Depth 10 | Set-Content $manifestPath
