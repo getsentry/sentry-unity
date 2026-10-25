@@ -43,10 +43,11 @@ jobs:
         run: tar -xvzf test-project.tar.gz
 
       - name: Restore Unity Library cache
+        id: cache-library
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
-          key: it-library-windows-${{ env.UNITY_VERSION }}-${{ github.run_id }}
+          key: it-library-windows-${{ env.UNITY_VERSION }}-${{ hashFiles('samples/IntegrationTest/ProjectSettings/ProjectVersion.txt', 'samples/IntegrationTest/Packages/manifest.json', 'test/Scripts.Integration.Test/**') }}
           restore-keys: |
             it-library-windows-${{ env.UNITY_VERSION }}-
 
@@ -159,11 +160,11 @@ jobs:
           retention-days: 14
 
       - name: Save Unity Library cache
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.cache-library.outputs.cache-hit != 'true'
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
-          key: it-library-windows-${{ env.UNITY_VERSION }}-${{ github.run_id }}
+          key: ${{ steps.cache-library.outputs.cache-primary-key }}
 
       - name: Upload IntegrationTest project on failure
         if: ${{ failure() }}
