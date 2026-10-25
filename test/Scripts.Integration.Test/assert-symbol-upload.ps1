@@ -69,4 +69,11 @@ if (-not $uploadSucceeded)
         "Expected 'Uploaded N missing debug information files' or 'Nothing to upload'."
 }
 
+$retries = [regex]::Matches($log, "retry number \d+ failed due to request failed with retryable status code (\d+)")
+if ($retries.Count -gt 0)
+{
+    $codes = ($retries | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique) -join ', '
+    Write-Host "::warning::sentry-cli retried $($retries.Count) upload request(s) after HTTP $codes (signature: sentry-cli-http-retry)."
+}
+
 Write-Host "Symbol-upload assertion passed: sentry-cli uploaded debug symbols and sources ('$LogPath')." -ForegroundColor Green
