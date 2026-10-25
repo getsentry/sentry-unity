@@ -34,7 +34,7 @@ jobs:
             submodules="modules/sentry-native"
           fi
           echo "submodulesPath=$submodules" >> $GITHUB_OUTPUT
-          echo "submodules=src/sentry-dotnet $submodules" >> $GITHUB_OUTPUT
+          echo "submodules=$submodules" >> $GITHUB_OUTPUT
       
       - name: Get submodule status
         run: git submodule status --cached $SUBMODULES | tee submodules-status
@@ -56,11 +56,10 @@ jobs:
         id: cache
         with:
           # Note: native SDKs are cached and only built if the respective 'package-dev/Plugins/' directories are empty.
-          # Output changes only depending on the git sha of the submodules
-          # hash of package/package.json for cache busting on release builds (version bump)
+          # Output changes only with the target's submodules, its build recipe and the runner/workflow that builds it.
           path: |
             package-dev/Plugins
-          key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1') }}
+          key: sdk=${{ env.TARGET }}-${{ inputs.runsOn }}-${{ hashFiles('submodules-status', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1', '.github/workflows/sdk.yml') }}
 
       - name: Update submodules
         if: steps.cache.outputs.cache-hit != 'true'
@@ -81,10 +80,6 @@ jobs:
         with:
           global-json-file: global.json
           
-      - name: Restore .NET Workload
-        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-        run: dotnet workload restore
-
       # javac 25 (default on ubuntu-26.04) warns on generated sources and sentry-native's ndk builds with -Werror.
       - name: Setup Java
         if: ${{ env.TARGET == 'Android' && steps.cache.outputs.cache-hit != 'true' }}
@@ -96,6 +91,9 @@ jobs:
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
         run: dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        env:
+          # The native targets need no workloads; skip resolving the workload set global.json pins
+          MSBuildEnableWorkloadResolver: 'false'
 
       - name: Upload build logs on failure
         if: ${{ failure() }}
