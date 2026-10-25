@@ -23,6 +23,7 @@ defaults:
 
 jobs:
   run:
+    timeout-minutes: 35
     name: ${{ inputs.unity-version }} ${{ inputs.api-level }} ${{ inputs.init-type }}
     # Unity 6000.x builds ARM64 so we run Redroid (containerized arm64 Android) on an 
     # arm64 Linux runner.
