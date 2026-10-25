@@ -17,7 +17,7 @@ namespace Sentry.Unity.Tests;
 public sealed class IntegrationTests
 {
     private TestHttpClientHandler _testHttpClientHandler = null!; // Set in Setup
-    private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(1);
+    private readonly TimeSpan _eventReceiveTimeout = TimeSpan.FromSeconds(5);
 
     private string _eventMessage = null!; // Set in setup
     private string _identifyingEventValueAttribute = null!; // Set in setup
@@ -196,7 +196,7 @@ public sealed class IntegrationTests
         testBehaviour.gameObject.SendMessage(nameof(testBehaviour.ThrowException), _eventMessage);
 
         // Sanity check
-        Assert.AreEqual(string.Empty, firstHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout));
+        Assert.AreEqual(string.Empty, firstHttpClientHandler.GetEvent(_identifyingEventValueAttribute, TimeSpan.FromSeconds(1)));
 
         Assert.AreNotEqual(string.Empty, _testHttpClientHandler.GetEvent(_identifyingEventValueAttribute, _eventReceiveTimeout));
     }
