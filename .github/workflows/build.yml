@@ -21,6 +21,7 @@ defaults:
 
 jobs:
   build:
+    timeout-minutes: 90
     name: Build - ${{ inputs.unity-version }}
     runs-on: ubuntu-latest
     permissions:

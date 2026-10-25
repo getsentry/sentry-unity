@@ -36,6 +36,7 @@ defaults:
 
 jobs:
   run:
+    timeout-minutes: 25
     name: ${{ inputs.platform }}${{ inputs.architecture && format(' {0}', inputs.architecture) || '' }}${{ inputs.scripting && format(' {0}', inputs.scripting) || '' }}${{ inputs.backend && format(' ({0})', inputs.backend) || '' }} ${{ inputs.unity-version }}
     runs-on: ${{ inputs.platform == 'linux' && 'ubuntu-latest' || inputs.platform == 'macos' && 'macos-latest' || 'windows-latest' }}
     env:

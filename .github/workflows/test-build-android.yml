@@ -19,6 +19,7 @@ defaults:
 
 jobs:
   build:
+    timeout-minutes: 120
     name: ${{ inputs.unity-version }}
     runs-on: ubuntu-latest-4-cores
     env:

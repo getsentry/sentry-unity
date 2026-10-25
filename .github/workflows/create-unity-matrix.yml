@@ -25,6 +25,7 @@ env:
 
 jobs:
   create-unity-matrix:
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     outputs:
       unity-matrix: ${{ steps.set-matrix.outputs.matrix }}
