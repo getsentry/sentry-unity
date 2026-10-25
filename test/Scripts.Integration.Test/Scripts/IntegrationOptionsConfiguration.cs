@@ -12,7 +12,7 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
     {
         Debug.Log("Sentry: IntegrationOptionsConfig::Configure() called");
 
-        // DSN is baked into SentryOptions.asset at build time by configure-sentry.ps1
+        // DSN is baked into SentryOptions.asset at build time by build-project.ps1 -ConfigureSentry
         // which passes the SENTRY_DSN env var to ConfigureOptions via the -dsn argument.
         // At test-run time, Integration.Tests.ps1 also reads SENTRY_DSN to verify events.
 

@@ -16,6 +16,7 @@ public class Builder
         Debug.Log("Builder: Parsing command line arguments");
         var args = CommandLineArguments.Parse();
         ValidateArguments(args, defaultBuildPath);
+        ConfigureSentryOptions(args);
 
         Debug.Log($"Builder: Starting build. Output will be '{args["buildPath"]}'.");
 
@@ -271,6 +272,27 @@ public class Builder
             args["buildPath"] = defaultBuildPath;
             Debug.Log($"Builder: No '-buildPath' provided, defaulting to '{defaultBuildPath}'");
         }
+    }
+
+    // Same as `-executeMethod ...SentryEditorWindowInstrumentation.ConfigureOptions`. Called by reflection because
+    // the project is also built without the Sentry package.
+    private static void ConfigureSentryOptions(Dictionary<string, string> args)
+    {
+        if (!args.ContainsKey("optionsScript"))
+        {
+            return;
+        }
+
+        Debug.Log("Builder: Configuring Sentry options");
+        var instrumentation = Type.GetType("Sentry.Unity.Editor.ConfigurationWindow.SentryEditorWindowInstrumentation, Sentry.Unity.Editor", throwOnError: true);
+        instrumentation.GetMethod("ConfigureOptions", Type.EmptyTypes).Invoke(null, null);
+
+        // Persist the options for later builds of this project
+        foreach (var path in new[] { "Assets/Resources/Sentry/SentryOptions.asset", "Assets/Plugins/Sentry/SentryCliOptions.asset" })
+        {
+            EditorUtility.SetDirty(AssetDatabase.LoadMainAssetAtPath(path));
+        }
+        AssetDatabase.SaveAssets();
     }
 
     // Audio created issues, especially for iOS simulator so we disable it.
