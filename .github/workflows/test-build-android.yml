@@ -56,7 +56,7 @@ jobs:
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/IntegrationTest/Library
-          key: it-library-ubuntu-${{ env.UNITY_VERSION }}-${{ hashFiles('samples/IntegrationTest/ProjectSettings/ProjectVersion.txt', 'samples/IntegrationTest/Packages/manifest.json', 'test/Scripts.Integration.Test/**') }}
+          key: it-library-ubuntu-${{ env.UNITY_VERSION }}-${{ hashFiles('samples/IntegrationTest/ProjectSettings/ProjectVersion.txt', 'samples/IntegrationTest/Packages/manifest.json', 'test/Scripts.Integration.Test/Editor/**', 'test/Scripts.Integration.Test/Scenes/**', 'test/Scripts.Integration.Test/Scripts/**', 'test/Scripts.Integration.Test/DependencyConflictPackage/**', 'test/Scripts.Integration.Test/create-project.ps1', 'test/Scripts.Integration.Test/add-sentry.ps1') }}
           restore-keys: |
             it-library-ubuntu-${{ env.UNITY_VERSION }}-
 
