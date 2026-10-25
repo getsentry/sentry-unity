@@ -50,8 +50,9 @@ jobs:
           $v = (Get-Content scripts/unity-versions.json -Raw | ConvertFrom-Json).'${{ env.UNITY_VERSION }}'.version
           "unityVersion=$v" >> $env:GITHUB_OUTPUT
 
-      - name: Cache Unity Library
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - name: Restore Unity Library cache
+        id: cache-library
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: samples/unity-of-bugs/Library
           key: Library-unity-of-bugs-${{ steps.env.outputs.unityVersion }}-v1
@@ -190,3 +191,10 @@ jobs:
         with:
           name: Test results (editmode) - ${{ env.UNITY_VERSION }}
           path: artifacts/test/editmode
+
+      - name: Save Unity Library cache
+        if: github.ref == 'refs/heads/main' && steps.cache-library.outputs.cache-hit != 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: samples/unity-of-bugs/Library
+          key: ${{ steps.cache-library.outputs.cache-primary-key }}
