@@ -345,6 +345,7 @@ jobs:
   test-compile-ios:
     name: Compile iOS ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
+    # Starts with Compile iOS and waits for its app, so the simulator boots off the critical path.
     needs: [test-build-ios, create-unity-matrix]
     strategy:
       fail-fast: false
@@ -355,6 +356,8 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
       init-type: ${{ matrix.init-type }}
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
   test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Integration Test

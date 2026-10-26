@@ -80,6 +80,8 @@ jobs:
 
       - name: Assert symbols and sources were uploaded
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       # We create tar explicitly because upload-artifact is slow for many files.
       - name: Create archive

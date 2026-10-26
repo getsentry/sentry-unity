@@ -77,3 +77,74 @@ if ($retries.Count -gt 0)
 }
 
 Write-Host "Symbol-upload assertion passed: sentry-cli uploaded debug symbols and sources ('$LogPath')." -ForegroundColor Green
+
+# sentry-cli returns before sentry.io has processed the upload, and a large debug companion can take
+# minutes. An event that arrives earlier is symbolicated without it and never reprocessed, so wait
+# until the server lists each uploaded debug companion, IL2CPP mapping and source bundle.
+$pending = [regex]::Matches($log, "UPLOADED (\S+) \([^;)]+;\s*(?:\w+ )?(debug companion|il2cpp|sources)\)") |
+    ForEach-Object { "$($_.Groups[1].Value) $($_.Groups[2].Value)" } | Sort-Object -Unique
+function Test-ProcessedFile($files, [string] $kind)
+{
+    foreach ($file in $files)
+    {
+        $processed = switch ($kind)
+        {
+            'debug companion' { ($file.data | Select-Object -ExpandProperty features -ErrorAction Ignore) -contains 'debug' }
+            'il2cpp' { $file.symbolType -eq 'il2cpp' }
+            # A portable PDB embeds its sources instead of getting a source bundle.
+            'sources' { $file.symbolType -eq 'sourcebundle' -or ($file.data | Select-Object -ExpandProperty features -ErrorAction Ignore) -contains 'sources' }
+        }
+        if ($processed) { return $true }
+    }
+    return $false
+}
+
+if ($pending -and -not $env:SENTRY_AUTH_TOKEN)
+{
+    Write-Host "::warning::Not waiting for sentry.io to process the debug files: SENTRY_AUTH_TOKEN is not set (signature: symbols-processing-skipped)."
+}
+elseif ($pending)
+{
+    # The project CliConfiguration.cs uploads to.
+    $uriBase = "https://sentry.io/api/0/projects/sentry-sdks/sentry-unity-integration-tests/files/dsyms/"
+    $timeoutSeconds = 300
+    $headers = @{ Authorization = "Bearer $env:SENTRY_AUTH_TOKEN" }
+    # Deterministic builds reuse debug IDs, so only a file the server processed for this build counts.
+    $since = [DateTime]::UtcNow.AddMinutes(-30)
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    foreach ($debugId in ($pending | ForEach-Object { $_.Split(' ')[0] } | Sort-Object -Unique))
+    {
+        $kinds = $pending | Where-Object { $_.StartsWith("$debugId ") } | ForEach-Object { $_.Substring($debugId.Length + 1) }
+        while ($true)
+        {
+            try
+            {
+                $files = Invoke-RestMethod -Uri "$uriBase`?debug_id=$debugId" -Headers $headers -TimeoutSec 30
+            }
+            catch
+            {
+                $status = if ($_.Exception -is [Microsoft.PowerShell.Commands.HttpResponseException]) { [int]$_.Exception.Response.StatusCode } else { 0 }
+                if ($status -in 401, 403)
+                {
+                    Write-Host "::warning::Not waiting for sentry.io to process the debug files: the token can't list them (HTTP $status, signature: symbols-processing-skipped)."
+                    return
+                }
+                Write-Host "Querying debug files of $debugId failed: $_"
+                $files = @()
+            }
+            $files = @($files | Where-Object { ([DateTime]$_.dateCreated).ToUniversalTime() -ge $since })
+            $missing = $kinds | Where-Object { -not (Test-ProcessedFile $files $_) }
+            if (-not $missing)
+            {
+                break
+            }
+            if ($stopwatch.Elapsed.TotalSeconds -gt $timeoutSeconds)
+            {
+                Write-Host "::warning::sentry.io has not processed $($missing -join ', ') of $debugId after $timeoutSeconds s (signature: symbols-processing-timeout). Events may stay unsymbolicated."
+                return
+            }
+            Start-Sleep -Seconds 10
+        }
+    }
+    Write-Host "sentry.io processed the uploaded debug files after $([int]$stopwatch.Elapsed.TotalSeconds) s."
+}
