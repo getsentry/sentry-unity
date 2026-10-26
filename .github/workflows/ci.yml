@@ -345,7 +345,6 @@ jobs:
   test-compile-ios:
     name: Compile iOS ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    # Starts with Compile iOS and waits for its app, so the simulator boots off the critical path.
     needs: [test-build-ios, create-unity-matrix]
     strategy:
       fail-fast: false
@@ -362,7 +361,7 @@ jobs:
   test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-compile-ios, create-unity-matrix]
+    needs: [test-build-ios, create-unity-matrix]
     uses: ./.github/workflows/test-run-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}
