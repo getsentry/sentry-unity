@@ -48,7 +48,8 @@ function GetUnityRetrySignature([string] $unityPath, [string[]] $arguments, [int
         return 'tool-segfault'
     }
 
-    if (($stdout -match 'Batchmode quit successfully invoked') -and ($stdout -match 'Caught fatal signal'))
+    # A trap after a long shutdown stall (exit 133, SIGTRAP) can kill Unity before it logs the signal.
+    if (($stdout -match 'Batchmode quit successfully invoked') -and (($stdout -match 'Caught fatal signal') -or $exitCode -eq 133))
     {
         return 'shutdown-crash'
     }
