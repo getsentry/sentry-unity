@@ -60,13 +60,20 @@ if ($log -notmatch "--include-sources")
 
 # Confirm the upload reached a terminal success state rather than erroring out.
 # "Uploaded N missing debug information files" on first upload; "Nothing to upload"
-# when the artifacts are already on the server (idempotent re-run / cache hit).
+# when the artifacts are already on the server (idempotent re-run / cache hit);
+# only "File upload/processing complete" when a rebuild's chunks are all on the server already.
 $uploadSucceeded = $log -match "Uploaded \d+ missing debug information file" `
-    -or $log -match "Nothing to upload"
+    -or $log -match "Nothing to upload" `
+    -or $log -match "File (upload|processing) complete"
 if (-not $uploadSucceeded)
 {
     throw "Symbol-upload assertion failed: sentry-cli upload did not reach a success state in '$LogPath'. " +
-        "Expected 'Uploaded N missing debug information files' or 'Nothing to upload'."
+        "Expected 'Uploaded N missing debug information files', 'Nothing to upload' or 'File upload/processing complete'."
+}
+
+if ($log -match "some symbols did not process correctly")
+{
+    throw "Symbol-upload assertion failed: sentry.io failed to process a debug file in '$LogPath'."
 }
 
 $retries = [regex]::Matches($log, "retry number \d+ failed due to request failed with retryable status code (\d+)")
