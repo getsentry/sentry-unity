@@ -12,7 +12,7 @@ function GetUnityRetrySignature([string] $unityPath, [string[]] $arguments, [int
         return $null
     }
 
-    # Unity 6.6 on Linux intermittently gets SIGKILLed during startup.
+    # Unity 6.6 kills the PID in a stale Library/burst.pid at startup, which in a fresh container can be its own xvfb-run.
     if ($exitCode -eq 137)
     {
         return 'killed'
