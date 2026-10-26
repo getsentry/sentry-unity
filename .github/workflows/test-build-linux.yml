@@ -120,6 +120,8 @@ jobs:
 
       - name: Assert symbols and sources were uploaded (Breakpad backend)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Compare build sizes
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform Linux -UnityVersion "$env:UNITY_VERSION"
@@ -158,6 +160,8 @@ jobs:
 
       - name: Assert symbols and sources were uploaded (Native backend)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Create archive (Native backend)
         run: |
