@@ -31,9 +31,10 @@ $ExpectedPluginScopes = @{
     # the same symbol from its own stubs or from sentry-switch, and Xbox goes through msvcrt.
     "Plugins/PS5/sentry_utils.c"                  = "PS5"
     "Plugins/iOS/SentryCxaThrowHook.cpp"          = "iOS"
-    # The two bridge sources target nothing on purpose. BuildPostProcess copies whichever one applies
+    # The bridge sources target nothing on purpose. BuildPostProcess copies whichever one applies
     # into the generated Xcode project, so enabling a platform here would collide with that copy.
     "Plugins/iOS/SentryNativeBridge.m"            = ""
+    "Plugins/iOS/SentryNativeBridgeExternal.m"    = ""
     "Plugins/iOS/SentryNativeBridgeNoOp.m"        = ""
     "Plugins/macOS/SentryNativeBridge.m"          = "OSXUniversal"
     "Runtime/Sentry.dll"                          = "Any"
