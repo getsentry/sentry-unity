@@ -181,12 +181,12 @@ internal class SentryJava : ISentryJava
 
                 // With external initialization, the native SDK keeps the app's release and environment unless they were set.
                 var isExternal = options.AndroidNativeInitializationType is NativeInitializationType.External;
-                if (!isExternal || options.Release != options.DefaultRelease)
+                if (!isExternal || options.ReleaseOverridden || options.Release != options.DefaultRelease)
                 {
                     androidOptions.Call("setRelease", options.Release);
                 }
                 androidOptions.Call("setDist", options.Distribution);
-                if (!isExternal || options.Environment != options.DefaultEnvironment)
+                if (!isExternal || options.EnvironmentOverridden || options.Environment != options.DefaultEnvironment)
                 {
                     androidOptions.Call("setEnvironment", options.Environment);
                 }
