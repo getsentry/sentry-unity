@@ -159,7 +159,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
         return Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/{backend}/{arch}");
     }
 
-    // Linux ships x86_64 and arm64, each in a subfolder of the same name. Both build for `StandaloneLinux64`,
+    // Linux ships x86_64 and ARM64, each in a subfolder named like the player's plugin folder. Both build for `StandaloneLinux64`,
     // so the architecture is read from the built player's ELF header.
     internal static string GetLinuxBackendDir(SentryUnityOptions options, string arch)
     {
@@ -187,7 +187,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
         }
 
         var machine = header[18] | (header[19] << 8);
-        return machine == ElfMachineAarch64 ? "arm64" : "x86_64";
+        return machine == ElfMachineAarch64 ? "ARM64" : "x86_64";
     }
 
     private readonly struct NativePluginArtifact(string source, string destination, bool isExecutable = false)
@@ -340,8 +340,8 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
         }
     }
 
-    // Unity places Linux native plugins under <PlayerName>_Data/Plugins/<arch>, which the player adds
-    // to its dlopen search path. We resolve the data dir by globbing (the player name isn't known here).
+    // Unity places Linux native plugins under <PlayerName>_Data/Plugins/<CPU>, using the plugin importer's
+    // CPU names (`x86_64`, `ARM64`). We resolve the data dir by globbing (the player name isn't known here).
     private static string GetLinuxPluginDir(string buildOutputDir, string arch)
     {
         var dataDir = Directory.GetDirectories(buildOutputDir, "*_Data").FirstOrDefault();

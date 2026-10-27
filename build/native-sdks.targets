@@ -15,7 +15,7 @@
     <!-- Native (Windows / Linux) -->
     <SentryNativeRoot>$(RepoRoot)modules/sentry-native/</SentryNativeRoot>
     <!-- Linux builds for the host architecture; CI runs one job per architecture. -->
-    <SentryLinuxArch Condition="'$(SentryLinuxArch)' == '' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">arm64</SentryLinuxArch>
+    <SentryLinuxArch Condition="'$(SentryLinuxArch)' == '' And '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">ARM64</SentryLinuxArch>
     <SentryLinuxArch Condition="'$(SentryLinuxArch)' == ''">x86_64</SentryLinuxArch>
     <SentryLinuxArtifactsDestination>$(SentryArtifactsDestination)Linux/Sentry~/$(SentryLinuxArch)/</SentryLinuxArtifactsDestination>
     <SentryLinuxNativeArtifactsDestination>$(SentryArtifactsDestination)Linux/SentryNative~/$(SentryLinuxArch)/</SentryLinuxNativeArtifactsDestination>
@@ -49,7 +49,7 @@
   <!--
     Build the Sentry Native SDK for Linux:
         dotnet msbuild /t:BuildLinuxSDK src/Sentry.Unity
-    Always wipes prior outputs and rebuilds. Artifacts land in an `x86_64/` or `arm64/` subfolder
+    Always wipes prior outputs and rebuilds. Artifacts land in an `x86_64/` or `ARM64/` subfolder
     for the host architecture and the post-build step picks one based on the built player.
   -->
   <Target Name="BuildLinuxSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">

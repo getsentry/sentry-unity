@@ -18,7 +18,7 @@ on:
         required: false
         type: string
         default: ""
-        description: "Only set for non-default architectures, e.g. x86 for the 32-bit Windows player."
+        description: "Only set for non-default architectures, e.g. x86 for the 32-bit Windows player or arm64 for the Linux server."
       scripting:
         required: false
         type: string
@@ -37,7 +37,7 @@ defaults:
 jobs:
   run:
     name: ${{ inputs.platform }}${{ inputs.architecture && format(' {0}', inputs.architecture) || '' }}${{ inputs.scripting && format(' {0}', inputs.scripting) || '' }}${{ inputs.backend && format(' ({0})', inputs.backend) || '' }} ${{ inputs.unity-version }}
-    runs-on: ${{ inputs.platform == 'linux' && 'ubuntu-latest' || inputs.platform == 'macos' && 'macos-latest' || 'windows-latest' }}
+    runs-on: ${{ inputs.platform == 'linux' && (inputs.architecture == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest') || inputs.platform == 'macos' && 'macos-latest' || 'windows-latest' }}
     env:
       SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -71,8 +71,9 @@ jobs:
       - name: Run Integration Tests (Linux)
         if: inputs.platform == 'linux'
         timeout-minutes: 20
+        # The arm64 player is a headless dedicated server and needs no display.
         run: |
-          xvfb-run pwsh -Command '
+          ${{ inputs.architecture != 'arm64' && 'xvfb-run' || '' }} pwsh -Command '
             $env:SENTRY_TEST_PLATFORM = "Desktop";
             $env:SENTRY_TEST_APP = "samples/IntegrationTest/Build/test";
             Invoke-Pester -Path test/IntegrationTest/Integration.Tests.ps1 -CI'

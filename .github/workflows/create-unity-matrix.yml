@@ -16,6 +16,9 @@ on:
       unity-matrix:
         description: 'Unity version matrix'
         value: ${{ jobs.create-unity-matrix.outputs.unity-matrix }}
+      unity-latest:
+        description: 'Newest Unity version in the matrix'
+        value: ${{ jobs.create-unity-matrix.outputs.unity-latest }}
 
 env:
   # Unity versions used in PRs
@@ -28,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       unity-matrix: ${{ steps.set-matrix.outputs.matrix }}
+      unity-latest: ${{ steps.set-matrix.outputs.latest }}
     steps:
       - name: Set Unity version matrices based on event type
         id: set-matrix
@@ -50,3 +54,4 @@ jobs:
 
           # Unity version matrix
           echo "matrix={\"unity-version\":$versions}" >> $GITHUB_OUTPUT
+          echo "latest=$(jq -r '.[-1]' <<< "$versions")" >> $GITHUB_OUTPUT

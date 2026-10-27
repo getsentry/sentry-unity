@@ -99,9 +99,9 @@ public class BuildPostProcessTests
     }
 
     [TestCase(LinuxBackend.Breakpad, "Sentry~", "x86_64")]
-    [TestCase(LinuxBackend.Breakpad, "Sentry~", "arm64")]
+    [TestCase(LinuxBackend.Breakpad, "Sentry~", "ARM64")]
     [TestCase(LinuxBackend.Native, "SentryNative~", "x86_64")]
-    [TestCase(LinuxBackend.Native, "SentryNative~", "arm64")]
+    [TestCase(LinuxBackend.Native, "SentryNative~", "ARM64")]
     public void GetLinuxBackendDir_ResolvesBackendAndArchitecture(
         LinuxBackend backend, string expectedBackendDir, string arch)
     {
@@ -115,7 +115,7 @@ public class BuildPostProcessTests
     }
 
     [TestCase((byte)0x3E, "x86_64")]
-    [TestCase((byte)0xB7, "arm64")]
+    [TestCase((byte)0xB7, "ARM64")]
     public void GetLinuxArchitecture_ReadsElfMachine(byte machine, string expectedArch)
     {
         var executable = Path.Combine(_testDir, "player");
