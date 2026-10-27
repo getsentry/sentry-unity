@@ -138,12 +138,12 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
 
-  # A Linux, docker-based build to prepare a WebGL player. The tests run in `test-run-webgl`.
+  # A Linux build to prepare a WebGL player. The tests run in `test-run-webgl`.
   test-build-webgl:
     name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
-    runs-on: ubuntu-latest
+    runs-on: ${{ startsWith(matrix.unity-version, '6000') && 'ubuntu-24.04' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
@@ -152,8 +152,6 @@ jobs:
         include:
           - platform: WebGL
             build_platform: WebGL
-    env:
-      UNITY_PATH: docker exec unity unity-editor
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -169,6 +167,7 @@ jobs:
           swap-storage: true
 
       - name: Docker Login
+        if: ${{ !startsWith(matrix.unity-version, '6000') }}
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ghcr.io
@@ -176,6 +175,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }} 
 
       - name: Start the Unity docker container
+        if: ${{ !startsWith(matrix.unity-version, '6000') }}
         run: ./scripts/ci-docker.sh "$UNITY_VERSION" "$PLATFORM_WITH_SUFFIX" "$UNITY_LICENSE_SERVER_CONFIG"
         shell: bash
         env:
@@ -183,6 +183,12 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
           IMAGE_SUFFIX: ${{ matrix.image-suffix }}
           PLATFORM_WITH_SUFFIX: ${{ matrix.platform }}${{ matrix.image-suffix }}
+          UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+
+      - name: Setup Unity
+        if: ${{ startsWith(matrix.unity-version, '6000') }}
+        run: ./scripts/setup-unity.ps1 -UnityVersion "${{ matrix.unity-version }}" -Modules webgl
+        env:
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
 
       - name: Download IntegrationTest project
