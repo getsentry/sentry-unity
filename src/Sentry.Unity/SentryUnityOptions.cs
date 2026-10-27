@@ -287,7 +287,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Gradle project during the build process. This means that the options cannot be changed at runtime, as they are
     /// embedded into the project itself.
     /// When set to <see cref="NativeInitializationType.External"/>, the app that embeds the game provides the native
-    /// SDK, e.g. when using Unity as a Library.
+    /// SDK, e.g. when using Unity as a Library. This is experimental.
     /// </remarks>
     public NativeInitializationType AndroidNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
