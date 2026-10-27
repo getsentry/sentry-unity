@@ -20,7 +20,8 @@ defaults:
 jobs:
   build:
     name: ${{ inputs.unity-version }}
-    runs-on: ${{ startsWith(inputs.unity-version, '6000') && 'ubuntu-24.04' || 'ubuntu-latest' }}
+    # Unity 6 runs on the Unity CLI, on 24.04: the newest Ubuntu Unity supports (26.04 lacks libxml2.so.2 for IL2CPP).
+    runs-on: ${{ fromJSON(inputs.unity-version) >= 6000 && 'ubuntu-24.04' || 'ubuntu-latest' }}
     strategy:
       matrix:
         include:
@@ -36,7 +37,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Docker Login
-        if: ${{ !startsWith(inputs.unity-version, '6000') }}
+        if: ${{ fromJSON(inputs.unity-version) < 6000 }}
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ghcr.io
@@ -44,7 +45,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Start the Unity docker container
-        if: ${{ !startsWith(inputs.unity-version, '6000') }}
+        if: ${{ fromJSON(inputs.unity-version) < 6000 }}
         run: ./scripts/ci-docker.sh "$UNITY_VERSION" "iOS" "$UNITY_LICENSE_SERVER_CONFIG"
         shell: bash
         env:
@@ -52,7 +53,7 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Setup Unity
-        if: ${{ startsWith(inputs.unity-version, '6000') }}
+        if: ${{ fromJSON(inputs.unity-version) >= 6000 }}
         run: ./scripts/setup-unity.ps1 -UnityVersion "$env:UNITY_VERSION" -Modules ios
         env:
           UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
