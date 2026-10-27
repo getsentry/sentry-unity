@@ -114,6 +114,8 @@ internal static class SentryScreenshot
             }
         }
 
+        // Blit changes the active render target
+        var previousRenderTexture = RenderTexture.active;
         var renderTextureFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
         try
         {
@@ -137,6 +139,7 @@ internal static class SentryScreenshot
         }
         finally
         {
+            RenderTexture.active = previousRenderTexture;
             RenderTexture.ReleaseTemporary(renderTextureFull);
         }
     }
