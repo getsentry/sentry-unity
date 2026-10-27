@@ -87,13 +87,13 @@ jobs:
         if: ${{ steps.cache.outputs.cache-hit != 'true' }}
         run: dotnet workload restore
 
-      # javac 25 (default on ubuntu-26.04) warns on generated sources and sentry-native's ndk builds with -Werror.
+      # sentry-java requires JDK 21+; javac 25 (default on ubuntu-26.04) warns on generated sources and sentry-native's ndk builds with -Werror.
       - name: Setup Java
         if: ${{ env.TARGET == 'Android' && steps.cache.outputs.cache-hit != 'true' }}
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
       
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
