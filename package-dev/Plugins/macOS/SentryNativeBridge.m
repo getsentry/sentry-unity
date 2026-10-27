@@ -176,8 +176,8 @@ void SentryConfigureScope(void (^callback)(id))
 }
 
 /*******************************************************************************/
-/* The remaining code mirrors iOS/SentryNativeBridge.m. Both work with classes */
-/* that are only known at runtime. Mainly:                                     */
+/* The remaining code is a copy of iOS/SentryNativeBridge.m with changes to    */
+/* make it work with dynamically loaded classes. Mainly:                       */
 /*   - call: [class performSelector:@selector(arg1:arg2:)                      */
 /*                  withObject:arg1Value withObject:arg2Value];                */
 /*     or xCode warns of class/instance method not found                       */

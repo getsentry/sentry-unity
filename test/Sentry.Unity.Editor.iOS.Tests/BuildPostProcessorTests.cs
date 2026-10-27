@@ -117,6 +117,8 @@ public class BuildPostProcessorTests
         var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName);
 
         Assert.IsTrue(File.Exists(bridgePath));
+        StringAssert.Contains("SentrySDKInternal", File.ReadAllText(bridgePath)); // The bridge to the app's own SDK
+        StringAssert.DoesNotContain("SentryObjC", File.ReadAllText(bridgePath));
         Assert.IsFalse(NativeMain.ContainsSentry(mainFile, null)); // The main.mm must not contain Sentry
     }
 
