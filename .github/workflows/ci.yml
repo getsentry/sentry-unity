@@ -20,7 +20,7 @@ defaults:
 
 jobs:
   cancel-previous-workflow:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@d07a454dad7609a92316b57b23c9ccfd4f59af66 # 0.13.1
@@ -38,11 +38,11 @@ jobs:
       matrix:
         include:
           - target: Android
-            host: ubuntu-24.04
+            host: ubuntu-latest
           - target: Linux
-            host: ubuntu-24.04
+            host: ubuntu-latest
           - target: LinuxNative
-            host: ubuntu-24.04
+            host: ubuntu-latest
           - target: Windows
             host: windows-latest
           - target: WindowsNative
@@ -75,7 +75,7 @@ jobs:
     
   package-validation:
     name: UPM Package validation
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -135,7 +135,7 @@ jobs:
     name: Build ${{ matrix.platform }} ${{ matrix.unity-version }} Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-create, create-unity-matrix]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -565,7 +565,7 @@ jobs:
 
   build-size-summary:
     name: Build Size
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
     needs: [test-build-webgl, test-build-android, test-compile-ios, test-build-linux, test-build-windows, test-build-macos]
     steps:

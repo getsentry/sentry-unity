@@ -27,7 +27,7 @@ jobs:
             post-update-script: scripts/sync-dotnet-global-json.ps1
           - name: CLI
             path: modules/sentry-cli.properties
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: getsentry/github-workflows/updater@959162c159b866489d3fabe93327f48f9b8cb7ee # 3.4.1
         with:
@@ -40,7 +40,7 @@ jobs:
     name: Unity ${{ matrix.unity-prefix }} PR
     # Note: we're using the negative check here so this runs also for workflow_dispatch.
     if: github.event.schedule != '0 3 * * *'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: pwsh

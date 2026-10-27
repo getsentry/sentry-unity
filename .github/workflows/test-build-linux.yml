@@ -20,7 +20,7 @@ defaults:
 jobs:
   build:
     name: Linux ${{ inputs.unity-version }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     env:
       GITHUB_ACTOR: ${{ github.actor }}
       UNITY_PATH: docker exec unity unity-editor
