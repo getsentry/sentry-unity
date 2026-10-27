@@ -108,6 +108,11 @@ jobs:
           path: test-app-desktop.tar.gz
           retention-days: 14
 
+      # A reused PDB keeps its GUID, so builds from the same cache would upload symbols under colliding debug IDs.
+      - name: Remove GameAssembly link outputs before caching
+        if: github.ref == 'refs/heads/main'
+        run: Get-ChildItem samples/IntegrationTest/Library/Bee -Recurse -Include GameAssembly.dll,GameAssembly.pdb,GameAssembly.ilk -ErrorAction SilentlyContinue | Remove-Item -Force
+
       - name: Save Unity Library cache
         if: github.ref == 'refs/heads/main'
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5

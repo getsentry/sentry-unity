@@ -10,6 +10,12 @@
 
 - Attaching a screenshot no longer stalls the main thread. Unless `SetBeforeSendScreenshot` is set, the frame gets read back from the GPU asynchronously and encoded on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
+### Dependencies
+
+- Bump CLI from v3.8.0 to v3.8.2 ([#2893](https://github.com/getsentry/sentry-unity/pull/2893))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#382)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.8.0...3.8.2)
+
 ## 4.11.0
 
 ### Fixes
