@@ -2,13 +2,19 @@
 
 ## Unreleased
 
+### Fixes
+
+- The Linux native SDK now loads on distros with older glibc versions, such as Ubuntu 22.04 and Debian 12. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
+
 ### Features
 
 - The SDK now supports Linux ARM64 dedicated servers (Unity 6000.3 and newer, IL2CPP). The native SDK for both backends ships for `x86_64` and `arm64`, and the build picks the one matching the player. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
 
-### Fixes
+### Dependencies
 
-- The Linux native SDK now loads on distros with older glibc versions, such as Ubuntu 22.04 and Debian 12. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
+- Bump CLI from v3.8.0 to v3.8.2 ([#2893](https://github.com/getsentry/sentry-unity/pull/2893))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#382)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.8.0...3.8.2)
 
 ## 4.11.0
 
