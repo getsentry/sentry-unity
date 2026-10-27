@@ -268,7 +268,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Xcode project during the build process. This means that the options cannot be changed at runtime, as they are
     /// embedded into the project itself.
     /// When set to <see cref="NativeInitializationType.External"/>, the app that embeds the game initializes the native
-    /// SDK, e.g. when using Unity as a Library.
+    /// SDK, e.g. when using Unity as a Library. This is experimental.
     /// </remarks>
     public NativeInitializationType IosNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
@@ -781,7 +781,8 @@ public enum NativeInitializationType
     /// The app that embeds the game owns the native SDK, e.g. when using Unity as a Library. The SDK does not initialize
     /// or close the native SDK. It attaches to it if the app has initialized it before the game starts. Options that
     /// you set in Unity do not apply to the native SDK. Events from the game use the app's release, environment, and
-    /// trace, unless the release and environment are set in the options. Currently supported on iOS and Android.
+    /// trace, unless the release and environment are set in the options. Currently supported on Android and iOS.
+    /// Experimental: the behavior may change between releases.
     /// On Android, when the game runs in its own process, where the app did not initialize the native SDK, the SDK
     /// initializes it there with the options set in Unity and owns it in that process.
     /// </summary>
