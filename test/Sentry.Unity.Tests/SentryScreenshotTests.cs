@@ -41,4 +41,24 @@ public class SentryScreenshotTests
         Assert.IsTrue(texture.width == testScreenSize && texture.height == testScreenSize);
         Object.Destroy(texture);
     }
+
+    [Test]
+    public void CaptureScreenshot_RestoresActiveRenderTexture()
+    {
+        var gameTarget = new RenderTexture(16, 16, 0);
+        RenderTexture.active = gameTarget;
+
+        try
+        {
+            var texture = SentryScreenshot.CreateNewScreenshotTexture2D(new SentryUnityOptions(), 100, 100);
+            Object.Destroy(texture);
+
+            Assert.AreSame(gameTarget, RenderTexture.active);
+        }
+        finally
+        {
+            RenderTexture.active = null;
+            Object.Destroy(gameTarget);
+        }
+    }
 }
