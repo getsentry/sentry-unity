@@ -224,7 +224,7 @@ internal class SentryJava : ISentryJava
                 if (isExternal && GetProcessName() is { } processName)
                 {
                     // Its events belong to the app's release and environment, persisted by the app's SDK.
-                    if (options.Release == options.DefaultRelease && ReadMainProcessOption(androidOptions, "release.json") is { } release)
+                    if (!options.ReleaseOverridden && options.Release == options.DefaultRelease && ReadMainProcessOption(androidOptions, "release.json") is { } release)
                     {
                         androidOptions.Call("setRelease", release);
                         if (options.Distribution is null)
@@ -232,7 +232,7 @@ internal class SentryJava : ISentryJava
                             androidOptions.Call("setDist", ReadMainProcessOption(androidOptions, "dist.json"));
                         }
                     }
-                    if (options.Environment == options.DefaultEnvironment && ReadMainProcessOption(androidOptions, "environment.json") is { } environment)
+                    if (!options.EnvironmentOverridden && options.Environment == options.DefaultEnvironment && ReadMainProcessOption(androidOptions, "environment.json") is { } environment)
                     {
                         androidOptions.Call("setEnvironment", environment);
                     }
