@@ -18,6 +18,7 @@ internal class SentryXcodeProject : IDisposable
     internal const string FrameworkName = "SentryObjC.xcframework";
     internal const string BridgeName = "SentryNativeBridge.m";
     internal const string NoOpBridgeName = "SentryNativeBridgeNoOp.m";
+    internal const string ExternalBridgeName = "SentryNativeBridgeExternal.m";
     internal const string OptionsName = "SentryOptions.m";
     internal const string SymbolUploadPhaseName = "SymbolUpload";
 
@@ -174,9 +175,8 @@ fi";
         var bridgeGuid = (string)_pbxProjectType.GetMethod("AddFile", BindingFlags.Public | BindingFlags.Instance)
             .Invoke(_project, new object[] { relativeBridgePath, relativeBridgePath, 1 }); // 1 is PBXSourceTree.Source
 
-        // The bridge guards its runtime lookups with @try, but Unity turns Objective-C exceptions off.
-        _pbxProjectType.GetMethod("AddFileToBuildWithFlags", new[] { typeof(string), typeof(string), typeof(string) })
-            .Invoke(_project, new object[] { _unityFrameworkTargetGuid, bridgeGuid, "-fobjc-exceptions" });
+        _pbxProjectType.GetMethod("AddFileToBuild", BindingFlags.Public | BindingFlags.Instance)
+            .Invoke(_project, new[] { _unityFrameworkTargetGuid, bridgeGuid });
 
         _logger?.LogDebug("Successfully added the Sentry Native Bridge.");
     }

@@ -26,7 +26,7 @@
 - iOS editor code is in `src/Sentry.Unity.Editor.iOS/`.
 - It copies `Sentry.xcframework~` and bridge source, mutates the PBX project through reflection, embeds/links the framework, adds `-ObjC`, and can write build-time options into `main.mm`.
 - Reflection avoids requiring iOS editor modules on Windows or Linux.
-- The iOS bridge looks up sentry-cocoa classes at runtime: the `SentryObjC*` classes when the export bundles the framework, otherwise the core classes of the app's own SDK (`SentrySDKInternal`, `SentryScope`, `SentryBreadcrumb`, `SentryUser`). It is compiled with `-fobjc-exceptions`.
+- External exports copy `SentryNativeBridgeExternal.m` as the bridge instead: it looks up the core classes of the app's own SDK (`SentrySDKInternal`, `SentryScope`, `SentryBreadcrumb`) at runtime and checks every selector with `respondsToSelector:`, as Unity builds without Objective-C exceptions. Keep its entry points in sync with the other bridges.
 - External exports copy no framework and add the symbol upload build phase to `UnityFramework`, which an embedding app builds.
 - Disabled/unconfigured iOS still installs a no-op bridge so P/Invoke symbols resolve.
 - Changing an append build from build-time to runtime/disabled requires a Replace export; postprocessing fails rather than preserve stale `main.mm` initialization.

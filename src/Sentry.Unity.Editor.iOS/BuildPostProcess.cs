@@ -143,7 +143,8 @@ public static class BuildPostProcess
                 CopyFramework(frameworkPath, Path.Combine(pathToProject, "Frameworks", SentryXcodeProject.FrameworkName), logger);
             }
 
-            var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", SentryXcodeProject.BridgeName));
+            var bridgeName = bundlesSdk ? SentryXcodeProject.BridgeName : SentryXcodeProject.ExternalBridgeName;
+            var nativeBridgePath = Path.GetFullPath(Path.Combine("Packages", SentryPackageInfo.GetName(), "Plugins", "iOS", bridgeName));
             CopyFile(nativeBridgePath, Path.Combine(pathToProject, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName), logger);
 
             using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);

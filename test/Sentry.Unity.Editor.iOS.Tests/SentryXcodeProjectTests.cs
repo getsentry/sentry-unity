@@ -173,17 +173,6 @@ public class SentryXcodeProjectTests
     }
 
     [Test]
-    public void AddSentryNativeBridge_CompilesBridgeWithObjectiveCExceptions()
-    {
-        var xcodeProject = _fixture.GetSut();
-        xcodeProject.ReadFromProjectFile();
-
-        xcodeProject.AddSentryNativeBridge();
-
-        StringAssert.Contains("-fobjc-exceptions", xcodeProject.ProjectToString());
-    }
-
-    [Test]
     public void AddBuildPhaseSymbolUpload_PhaseAlreadyAdded_LogsAndDoesNotAddAgain()
     {
         const int expectedBuildPhaseOccurence = 1;
