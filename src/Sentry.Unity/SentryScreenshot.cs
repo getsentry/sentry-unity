@@ -59,9 +59,11 @@ internal static class SentryScreenshot
 
         try
         {
-            // The readback copies the texture as of now, so it can go back to the pool right away
+            // The texture has to stay out of the pool until the readback is done with it
             AsyncGPUReadback.Request(renderTexture, 0, TextureFormat.RGBA32, readback =>
             {
+                RenderTexture.ReleaseTemporary(renderTexture);
+
                 if (readback.hasError)
                 {
                     options.LogError("Failed to read back the screenshot.");
@@ -87,9 +89,10 @@ internal static class SentryScreenshot
                 });
             });
         }
-        finally
+        catch
         {
             RenderTexture.ReleaseTemporary(renderTexture);
+            throw;
         }
     }
 
