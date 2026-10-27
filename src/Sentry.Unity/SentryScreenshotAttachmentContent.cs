@@ -47,7 +47,7 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
     {
         if (!_screenshot.IsCompleted)
         {
-            // Taking the screenshot needs the main thread to reach the end of the frame. Waiting on it there would deadlock.
+            // Taking the screenshot needs the main thread to reach the end of the frame. Waiting on it there would block the frame it needs.
             if (MainThreadData.IsMainThread())
             {
                 _options.LogWarning("Screenshot not taken yet and the attachment is read on the main thread. Skipping.");
