@@ -23,14 +23,25 @@ internal sealed class SentryScreenshotAttachmentContent : IAttachmentContent
     private readonly Task<byte[]?> _screenshot;
     private readonly SentryUnityOptions _options;
     private readonly Stopwatch _sinceCreated = Stopwatch.StartNew();
+    private volatile bool _isClaimed;
 
-    internal SentryScreenshotAttachmentContent(Task<byte[]?> screenshot, SentryUnityOptions options)
+    internal SentryScreenshotAttachmentContent(Task<byte[]?> screenshot, SentryEvent @event, SentryUnityOptions options)
     {
         _screenshot = screenshot;
+        Event = @event;
         _options = options;
     }
 
-    public Stream GetStream() => new WaitOnReadStream(this);
+    internal SentryEvent Event { get; }
+
+    // Whether the event made it past BeforeSend and sampling, i.e. the SDK built its envelope
+    internal bool IsClaimed => _isClaimed;
+
+    public Stream GetStream()
+    {
+        _isClaimed = true;
+        return new WaitOnReadStream(this);
+    }
 
     internal async Task<byte[]> GetEncodedAsync()
     {

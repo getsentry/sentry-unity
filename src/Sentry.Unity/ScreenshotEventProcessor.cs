@@ -17,7 +17,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
     private readonly object _lock = new();
     private TaskCompletionSource<byte[]?>? _pending;
     private readonly Stopwatch _pendingSince = new();
-    private List<SentryEvent> _pendingEvents = new();
+    private List<SentryScreenshotAttachmentContent> _pendingContents = new();
 
     public ScreenshotEventProcessor(SentryUnityOptions sentryOptions) : this(sentryOptions, SentryMonoBehaviour.Instance) { }
 
@@ -50,7 +50,7 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             return @event;
         }
 
-        Task<byte[]?> screenshot;
+        SentryScreenshotAttachmentContent content;
         lock (_lock)
         {
             // A capture that never completes, e.g. while the main thread hangs, must not hold up later events
@@ -60,26 +60,26 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
                 _pending?.TrySetResult(null);
                 _pending = new TaskCompletionSource<byte[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _pendingSince.Restart();
-                _pendingEvents = new List<SentryEvent>();
-                _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(_pending, _pendingEvents));
+                _pendingContents = new List<SentryScreenshotAttachmentContent>();
+                _sentryMonoBehaviour.QueueCoroutine(CaptureScreenshotCoroutine(_pending, _pendingContents));
             }
 
-            _pendingEvents.Add(@event);
-
-            screenshot = _pending.Task;
+            content = new SentryScreenshotAttachmentContent(_pending.Task, @event, _options);
+            _pendingContents.Add(content);
         }
 
         // The screenshot gets read when the SDK serializes the event's envelope on its worker
         hint.Attachments.Add(new SentryAttachment(
             AttachmentType.Default,
-            new SentryScreenshotAttachmentContent(screenshot, _options),
+            content,
             "screenshot.jpg",
             "image/jpeg"));
 
         return @event;
     }
 
-    private IEnumerator CaptureScreenshotCoroutine(TaskCompletionSource<byte[]?> screenshot, List<SentryEvent> events)
+    private IEnumerator CaptureScreenshotCoroutine(TaskCompletionSource<byte[]?> screenshot,
+        List<SentryScreenshotAttachmentContent> contents)
     {
         // Capturing mid-frame yields an incomplete image
         yield return WaitForEndOfFrame();
@@ -89,11 +89,12 @@ public class ScreenshotEventProcessor : ISentryEventProcessorWithHint
             yield break;
         }
 
-        // Event processors run before BeforeSend and sampling, which may have dropped the events
+        // Event processors run before BeforeSend and sampling. The SDK only gets the attachment's stream for events that
+        // made it past them.
         SentryEvent? @event;
         lock (_lock)
         {
-            @event = events.Find(e => e.IsCaptured);
+            @event = contents.Find(c => c.IsClaimed)?.Event;
         }
 
         if (@event is null)

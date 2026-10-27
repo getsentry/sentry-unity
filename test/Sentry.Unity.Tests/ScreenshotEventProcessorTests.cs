@@ -40,14 +40,20 @@ public class ScreenshotEventProcessorTests
         return new TestScreenshotEventProcessor(options ?? new SentryUnityOptions(), behaviour);
     }
 
-    // The SDK reads attachments on its worker, where reading waits for the screenshot
-    private static Task<byte[]> ReadOnWorker(SentryAttachment attachment) => Task.Run(() =>
+    // The SDK gets the stream when building the envelope and reads it on its worker, where reading waits for the screenshot
+    private static Task<byte[]> ReadOnWorker(SentryAttachment attachment)
     {
-        using var stream = attachment.Content.GetStream();
-        using var memoryStream = new MemoryStream();
-        stream.CopyTo(memoryStream);
-        return memoryStream.ToArray();
-    });
+        var stream = attachment.Content.GetStream();
+        return Task.Run(() =>
+        {
+            using (stream)
+            using (var memoryStream = new MemoryStream())
+            {
+                stream.CopyTo(memoryStream);
+                return memoryStream.ToArray();
+            }
+        });
+    }
 
     [Test]
     public void Process_AttachesScreenshotToHint()
@@ -75,8 +81,8 @@ public class ScreenshotEventProcessorTests
         var firstHint = new SentryHint();
         var secondHint = new SentryHint();
 
-        processor.Process(new SentryEvent { IsCaptured = true }, firstHint);
-        processor.Process(new SentryEvent { IsCaptured = true }, secondHint);
+        processor.Process(new SentryEvent(), firstHint);
+        processor.Process(new SentryEvent(), secondHint);
 
         var first = ReadOnWorker(firstHint.Attachments.Single());
         var second = ReadOnWorker(secondHint.Attachments.Single());
@@ -88,7 +94,7 @@ public class ScreenshotEventProcessorTests
     }
 
     [UnityTest]
-    public IEnumerator Process_NoEventCaptured_SkipsScreenshot()
+    public IEnumerator Process_NoEnvelopeBuilt_SkipsScreenshot()
     {
         var processor = GetSut();
         var captureCount = 0;
@@ -100,6 +106,10 @@ public class ScreenshotEventProcessorTests
         var hint = new SentryHint();
 
         processor.Process(new SentryEvent(), hint);
+
+        // Dropped by BeforeSend or sampling, so nothing gets the stream before the frame ends
+        yield return null;
+        yield return null;
 
         var read = ReadOnWorker(hint.Attachments.Single());
         yield return new WaitUntil(() => read.IsCompleted);
@@ -115,7 +125,7 @@ public class ScreenshotEventProcessorTests
         options.SetBeforeCaptureScreenshot(_ => false);
         var hint = new SentryHint();
 
-        GetSut(options).Process(new SentryEvent { IsCaptured = true }, hint);
+        GetSut(options).Process(new SentryEvent(), hint);
 
         Assert.IsEmpty(hint.Attachments);
     }
@@ -153,7 +163,7 @@ public class ScreenshotEventProcessorTests
         processor.CreateScreenshotFunc = _ => throw new Exception("Screenshot capture failed");
         var hint = new SentryHint();
 
-        processor.Process(new SentryEvent { IsCaptured = true }, hint);
+        processor.Process(new SentryEvent(), hint);
 
         var read = ReadOnWorker(hint.Attachments.Single());
         yield return new WaitUntil(() => read.IsCompleted);
@@ -176,7 +186,7 @@ public class ScreenshotEventProcessorTests
         var hint = new SentryHint();
         var eventId = SentryId.Create();
 
-        GetSut(options).Process(new SentryEvent(eventId: eventId) { IsCaptured = true }, hint);
+        GetSut(options).Process(new SentryEvent(eventId: eventId), hint);
 
         var read = ReadOnWorker(hint.Attachments.Single());
         yield return new WaitUntil(() => read.IsCompleted);
@@ -198,7 +208,7 @@ public class ScreenshotEventProcessorTests
         });
         var processor = GetSut(options);
         var dropped = new SentryEvent();
-        var captured = new SentryEvent { IsCaptured = true };
+        var captured = new SentryEvent();
         var droppedHint = new SentryHint();
         var capturedHint = new SentryHint();
 
@@ -218,7 +228,7 @@ public class ScreenshotEventProcessorTests
         options.SetBeforeSendScreenshot((_, _) => null);
         var hint = new SentryHint();
 
-        GetSut(options).Process(new SentryEvent { IsCaptured = true }, hint);
+        GetSut(options).Process(new SentryEvent(), hint);
 
         var read = ReadOnWorker(hint.Attachments.Single());
         yield return new WaitUntil(() => read.IsCompleted);
@@ -235,7 +245,7 @@ public class ScreenshotEventProcessorTests
         options.SetBeforeSendScreenshot((_, _) => newTexture);
         var hint = new SentryHint();
 
-        GetSut(options).Process(new SentryEvent { IsCaptured = true }, hint);
+        GetSut(options).Process(new SentryEvent(), hint);
 
         var read = ReadOnWorker(hint.Attachments.Single());
         yield return new WaitUntil(() => read.IsCompleted);
@@ -256,13 +266,13 @@ public class ScreenshotEventProcessorTests
         // Holds the first capture past the timeout, as if the main thread stopped rendering
         processor.EndOfFrame = new WaitForSeconds((float)SentryScreenshotAttachmentContent.CaptureTimeout.TotalSeconds + 0.5f);
         var staleHint = new SentryHint();
-        processor.Process(new SentryEvent { IsCaptured = true }, staleHint);
+        processor.Process(new SentryEvent(), staleHint);
 
         yield return new WaitForSecondsRealtime((float)SentryScreenshotAttachmentContent.CaptureTimeout.TotalSeconds + 0.1f);
 
         processor.EndOfFrame = null;
         var hint = new SentryHint();
-        processor.Process(new SentryEvent { IsCaptured = true }, hint);
+        processor.Process(new SentryEvent(), hint);
 
         var stale = ReadOnWorker(staleHint.Attachments.Single());
         var read = ReadOnWorker(hint.Attachments.Single());
@@ -278,7 +288,8 @@ public class ScreenshotEventProcessorTests
     [UnityTest]
     public IEnumerator GetStream_ReadAfterTheCaptureTimeout_DoesNotWaitAgain()
     {
-        var content = new SentryScreenshotAttachmentContent(new TaskCompletionSource<byte[]?>().Task, new SentryUnityOptions());
+        var content = new SentryScreenshotAttachmentContent(new TaskCompletionSource<byte[]?>().Task, new SentryEvent(),
+            new SentryUnityOptions());
         var attachment = new SentryAttachment(AttachmentType.Default, content, "screenshot.jpg", "image/jpeg");
 
         yield return new WaitForSecondsRealtime((float)SentryScreenshotAttachmentContent.CaptureTimeout.TotalSeconds + 0.1f);
