@@ -140,6 +140,22 @@ public sealed class SentryUnityOptionsTests
     }
 
     [Test]
+    public void UseAppReleaseAndEnvironment_DefaultsSetAsOverrides_KeepsOptions()
+    {
+        var options = _fixture.GetSut();
+        options.ReleaseOverridden = true;
+        options.EnvironmentOverridden = true;
+        var release = options.Release;
+        var environment = options.Environment;
+
+        options.UseAppReleaseAndEnvironment(() => "app@1.0", () => "42", () => "staging");
+
+        Assert.AreEqual(release, options.Release);
+        Assert.IsNull(options.Distribution);
+        Assert.AreEqual(environment, options.Environment);
+    }
+
+    [Test]
     public void UseAppReleaseAndEnvironment_AppHasNoValues_KeepsDefaults()
     {
         var options = _fixture.GetSut();

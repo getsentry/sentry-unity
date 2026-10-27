@@ -494,19 +494,22 @@ public sealed class SentryUnityOptions : SentryOptions
     // Lets the native SDK of an app that embeds the game provide release and environment, unless they were set.
     internal string? DefaultRelease { get; }
     internal string DefaultEnvironment { get; }
+    // Set through the Editor's overrides, which may match the defaults.
+    internal bool ReleaseOverridden { get; set; }
+    internal bool EnvironmentOverridden { get; set; }
 
     // Events from the game belong to the app's release and environment, unless they were set in the options.
     internal void UseAppReleaseAndEnvironment(Func<string?> getRelease, Func<string?> getDistribution,
         Func<string?> getEnvironment)
     {
-        if (Release == DefaultRelease && getRelease() is { } release)
+        if (!ReleaseOverridden && Release == DefaultRelease && getRelease() is { } release)
         {
             DiagnosticLogger?.LogDebug("Using the app's release: {0}", release);
             Release = release;
             Distribution ??= getDistribution();
         }
 
-        if (Environment == DefaultEnvironment && getEnvironment() is { } environment)
+        if (!EnvironmentOverridden && Environment == DefaultEnvironment && getEnvironment() is { } environment)
         {
             DiagnosticLogger?.LogDebug("Using the app's environment: {0}", environment);
             Environment = environment;
