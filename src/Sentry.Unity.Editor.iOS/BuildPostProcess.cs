@@ -241,10 +241,12 @@ public static class BuildPostProcess
             throw new FileNotFoundException($"Failed to find '{sourcePath}'");
         }
 
+        // An appended export keeps the bridge of the previous build, which may not match the current options.
         if (File.Exists(targetPath))
         {
-            logger?.LogDebug("'{0}' has already been copied to '{1}'", Path.GetFileName(targetPath), targetPath);
-            return;
+            logger?.LogDebug("Replacing '{0}' copied by a previous build.", targetPath);
+            File.SetAttributes(targetPath, FileAttributes.Normal);
+            File.Delete(targetPath);
         }
 
         if (File.Exists(sourcePath))
