@@ -2,10 +2,6 @@
 
 ## Unreleased
 
-### Features
-
-- Added experimental support for Unity as a Library on iOS. With `IosNativeInitializationType` set to `NativeInitializationType.External`, the game attaches to the sentry-cocoa SDK that the app already started instead of bundling and starting its own. Native crashes carry the game's context and breadcrumbs, C# events and logs use the app's release, environment, user, and trace, the game's transactions join the app's trace, and debug symbols upload from the `UnityFramework` target. ([#2885](https://github.com/getsentry/sentry-unity/pull/2885))
-
 ### Behavioral Changes
 
 - Screenshots are now sent in the same envelope as their event instead of separately, so they no longer get orphaned when the event gets dropped, e.g. by sampling or rate limiting. Events captured on background threads now get a screenshot as well, and events captured while a screenshot is still being taken share it. Screenshots are no longer attached in batch mode, nor to user feedback unless requested via `addScreenshot`. `SetBeforeCaptureScreenshot` can now get invoked on a background thread. `SetBeforeSendScreenshot` now runs once per screenshot, receiving the first of the events sharing it that didn't get dropped. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
@@ -13,6 +9,10 @@
 ### Fixes
 
 - Attaching a screenshot no longer stalls the main thread. Unless `SetBeforeSendScreenshot` is set, the frame gets read back from the GPU asynchronously and encoded on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+
+### Features
+
+- Added experimental support for Unity as a Library on iOS. With `IosNativeInitializationType` set to `NativeInitializationType.External`, the game attaches to the sentry-cocoa SDK that the app already started instead of bundling and starting its own. Native crashes carry the game's context and breadcrumbs, C# events and logs use the app's release, environment, user, and trace, the game's transactions join the app's trace, and debug symbols upload from the `UnityFramework` target. ([#2885](https://github.com/getsentry/sentry-unity/pull/2885))
 
 ### Dependencies
 
