@@ -64,5 +64,9 @@ $suexec $container chown -R $uid /usr/share/unity3d/config/
 # Unity 2021+ tries to write to this directory during asset import...
 $suexec $container chmod -R 755 /opt/unity/Editor/Data/UnityReferenceAssemblies/
 
+if [[ -n "${GITHUB_ENV:-}" ]]; then
+    echo "UNITY_PATH=docker exec $container unity-editor" >> "$GITHUB_ENV"
+fi
+
 echo "Container started successfully: "
 docker ps --filter "name=^/$container$"
