@@ -10,6 +10,7 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace Sentry.Unity.Editor.Native;
 
@@ -84,7 +85,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
             _ => string.Empty
         };
 
-        var linuxArch = target == BuildTarget.StandaloneLinux64 ? GetLinuxArchitecture(executablePath) : string.Empty;
+        var linuxArch = target == BuildTarget.StandaloneLinux64 ? GetLinuxArchitecture() : string.Empty;
 
         UploadDebugSymbols(logger, target, buildOutputDir, executableName, linuxArch, options, cliOptions, isMono);
 
@@ -160,34 +161,21 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
     }
 
     // Linux ships x86_64 and ARM64, each in a subfolder named like the player's plugin folder. Both build for `StandaloneLinux64`,
-    // so the architecture is read from the built player's ELF header.
+    // so the architecture comes from the Linux build settings.
     internal static string GetLinuxBackendDir(SentryUnityOptions options, string arch)
     {
         var backend = options.Experimental.LinuxBackend == LinuxBackend.Native ? "SentryNative~" : "Sentry~";
         return Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/{backend}/{arch}");
     }
 
-    private const ushort ElfMachineAarch64 = 0xB7;
-
-    internal static string GetLinuxArchitecture(string executablePath)
+    // Unity's Linux build picks the player from `UnityEditor.LinuxStandalone.UserBuildSettings.architecture`.
+    // It lives in the Linux module's assembly and is missing on versions without ARM64 support.
+    internal static string GetLinuxArchitecture()
     {
-        if (!File.Exists(executablePath))
-        {
-            return "x86_64";
-        }
-
-        // `e_machine` is the 16-bit little-endian field at offset 18 of the ELF header.
-        var header = new byte[20];
-        using (var stream = File.OpenRead(executablePath))
-        {
-            if (stream.Read(header, 0, header.Length) != header.Length)
-            {
-                return "x86_64";
-            }
-        }
-
-        var machine = header[18] | (header[19] << 8);
-        return machine == ElfMachineAarch64 ? "ARM64" : "x86_64";
+        var architecture = Type.GetType("UnityEditor.LinuxStandalone.UserBuildSettings, UnityEditor.LinuxStandalone.Extensions")
+            ?.GetProperty("architecture", BindingFlags.Public | BindingFlags.Static)
+            ?.GetValue(null);
+        return architecture?.ToString() == "ARM64" ? "ARM64" : "x86_64";
     }
 
     private readonly struct NativePluginArtifact(string source, string destination, bool isExecutable = false)

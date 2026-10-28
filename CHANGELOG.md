@@ -2,13 +2,18 @@
 
 ## Unreleased
 
+### Behavioral Changes
+
+- Screenshots are now sent in the same envelope as their event instead of separately, so they no longer get orphaned when the event gets dropped, e.g. by sampling or rate limiting. Events captured on background threads now get a screenshot as well, and events captured while a screenshot is still being taken share it. Screenshots are no longer attached in batch mode, nor to user feedback unless requested via `addScreenshot`. `SetBeforeCaptureScreenshot` can now get invoked on a background thread. `SetBeforeSendScreenshot` now runs once per screenshot, receiving the first of the events sharing it that didn't get dropped. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+
 ### Fixes
 
 - The Linux native SDK now loads on distros with older glibc versions, such as Ubuntu 22.04 and Debian 12. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
+- Attaching a screenshot no longer stalls the main thread. Unless `SetBeforeSendScreenshot` is set, the frame gets read back from the GPU asynchronously and encoded on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Features
 
-- The SDK now supports Linux ARM64 dedicated servers (Unity 6000.3 and newer, IL2CPP). The native SDK for both backends ships for `x86_64` and `arm64`, and the build picks the one matching the player. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
+- The SDK now supports Linux ARM64 dedicated servers (Unity 6000.3 and newer, IL2CPP). The native SDK for both backends ships for `x86_64` and `ARM64`, and the build picks the one matching the player. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
 
 ### Dependencies
 
