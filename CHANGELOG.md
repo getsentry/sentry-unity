@@ -8,7 +8,12 @@
 
 ### Fixes
 
+- The Linux native SDK now loads on distros with older glibc versions, such as Ubuntu 22.04 and Debian 12. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
 - Attaching a screenshot no longer stalls the main thread. Unless `SetBeforeSendScreenshot` is set, the frame gets read back from the GPU asynchronously and encoded on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+
+### Features
+
+- The SDK now supports Linux ARM64 dedicated servers (Unity 6000.3 and newer, IL2CPP). The native SDK for both backends ships for `x86_64` and `ARM64`, and the build picks the one matching the player. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
 
 ### Dependencies
 

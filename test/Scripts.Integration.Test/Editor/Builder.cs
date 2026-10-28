@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -9,7 +10,8 @@ using UnityEngine;
 public class Builder
 {
     public static void BuildIl2CPPPlayer(BuildTarget target, BuildTargetGroup group, BuildOptions buildOptions,
-        string defaultBuildPath = "./Builds/", ScriptingImplementation scripting = ScriptingImplementation.IL2CPP)
+        string defaultBuildPath = "./Builds/", ScriptingImplementation scripting = ScriptingImplementation.IL2CPP,
+        StandaloneBuildSubtarget subtarget = StandaloneBuildSubtarget.Player)
     {
         Debug.Log("Builder: Starting to build");
 
@@ -21,9 +23,12 @@ public class Builder
 
         // Make sure the configuration is right.
         EditorUserBuildSettings.selectedBuildTargetGroup = group;
+        var namedTarget = subtarget == StandaloneBuildSubtarget.Server
+            ? NamedBuildTarget.Server
+            : NamedBuildTarget.FromBuildTargetGroup(group);
         EditorUserBuildSettings.development = false;
         EditorUserBuildSettings.allowDebugging = false;
-        PlayerSettings.SetScriptingBackend(NamedBuildTarget.FromBuildTargetGroup(group), scripting);
+        PlayerSettings.SetScriptingBackend(namedTarget, scripting);
         // Making sure that the app keeps on running in the background. Linux CI is very unhappy with coroutines otherwise.
         PlayerSettings.runInBackground = true;
 
@@ -34,7 +39,7 @@ public class Builder
         {
             Debug.Log("Builder: Setting IL2CPP generation to OptimizeSpeed");
 #if UNITY_2022_1_OR_NEWER
-            PlayerSettings.SetIl2CppCodeGeneration(NamedBuildTarget.FromBuildTargetGroup(group), UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed);
+            PlayerSettings.SetIl2CppCodeGeneration(namedTarget, UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed);
 #elif UNITY_2021_2_OR_NEWER
             EditorUserBuildSettings.il2CppCodeGeneration = UnityEditor.Build.Il2CppCodeGeneration.OptimizeSpeed;
 #endif
@@ -42,9 +47,9 @@ public class Builder
 
         Debug.Log("Builder: Configuring code stripping level");
 #if UNITY_6000_0_OR_NEWER
-        PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.High);
+        PlayerSettings.SetManagedStrippingLevel(namedTarget, ManagedStrippingLevel.High);
 #else
-        PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.FromBuildTargetGroup(group), ManagedStrippingLevel.Low);
+        PlayerSettings.SetManagedStrippingLevel(namedTarget, ManagedStrippingLevel.Low);
 #endif
 
         Debug.Log("Builder: Updating BuildPlayerOptions");
@@ -56,11 +61,16 @@ public class Builder
             options = buildOptions
         };
 
+        if (subtarget == StandaloneBuildSubtarget.Server)
+        {
+            buildPlayerOptions.subtarget = (int)subtarget;
+        }
+
         Debug.Log("Builder: Disabling optimizations to reduce build time");
         // TODO Linux fails with `free(): invalid pointer` in the test, after everything seems to have shut down.
         if (scripting == ScriptingImplementation.IL2CPP && target != BuildTarget.StandaloneLinux64)
         {
-            PlayerSettings.SetIl2CppCompilerConfiguration(NamedBuildTarget.FromBuildTargetGroup(group), Il2CppCompilerConfiguration.Debug);
+            PlayerSettings.SetIl2CppCompilerConfiguration(namedTarget, Il2CppCompilerConfiguration.Debug);
         }
 
         if (target == BuildTarget.Android)
@@ -170,6 +180,30 @@ public class Builder
         BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
             defaultBuildPath: "./Builds/Linux/test");
     }
+
+#if UNITY_6000_3_OR_NEWER
+    // Unity only ships an arm64 Linux player as a dedicated server (6000.3+, IL2CPP). The architecture
+    // setting lives in the Linux module's extension assembly, which only exists with that module installed.
+    [MenuItem("Tools/Builder/Linux Server arm64")]
+    public static void BuildLinuxServerArm64Il2CPPPlayer()
+    {
+        Debug.Log("Builder: Building Linux Server arm64 IL2CPP Player");
+        // `UserBuildSettings.architecture` writes to the settings of the subtarget selected in the build window.
+        typeof(EditorUserBuildSettings).GetProperty("selectedStandaloneBuildSubtarget", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, StandaloneBuildSubtarget.Server);
+
+        var architecture = Type.GetType("UnityEditor.LinuxStandalone.UserBuildSettings, UnityEditor.LinuxStandalone.Extensions")
+            ?.GetProperty("architecture") ?? throw new Exception("Linux build support is not installed.");
+        architecture.SetValue(null, OSArchitecture.ARM64);
+        if (!Equals(architecture.GetValue(null), OSArchitecture.ARM64))
+        {
+            throw new Exception($"Failed to set the Linux architecture to ARM64, got '{architecture.GetValue(null)}'.");
+        }
+
+        BuildIl2CPPPlayer(BuildTarget.StandaloneLinux64, BuildTargetGroup.Standalone, BuildOptions.StrictMode,
+            defaultBuildPath: "./Builds/Linux/test", subtarget: StandaloneBuildSubtarget.Server);
+    }
+#endif
 
     [MenuItem("Tools/Builder/Android")]
     public static void BuildAndroidIl2CPPPlayer()

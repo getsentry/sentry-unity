@@ -39,10 +39,17 @@ jobs:
         include:
           - target: Android
             host: ubuntu-latest
+          # 22.04 keeps the required glibc version low.
           - target: Linux
-            host: ubuntu-latest
+            host: ubuntu-22.04
           - target: LinuxNative
-            host: ubuntu-latest
+            host: ubuntu-22.04
+          - target: Linux
+            arch: Arm64
+            host: ubuntu-22.04-arm
+          - target: LinuxNative
+            arch: Arm64
+            host: ubuntu-22.04-arm
           - target: Windows
             host: windows-latest
           - target: WindowsNative
@@ -54,6 +61,7 @@ jobs:
     uses: ./.github/workflows/sdk.yml
     with:
       target: ${{ matrix.target }}
+      arch: ${{ matrix.arch }}
       runsOn: ${{ matrix.host }}
 
   build-unity-sdk:
@@ -448,6 +456,21 @@ jobs:
     with:
       unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }}
 
+  test-build-linux-arm64:
+    # Unity ships an arm64 Linux player only as an IL2CPP dedicated server, from 6000.3 on. One version,
+    # Native backend only: the x86_64 matrix already covers the version spread and Breakpad.
+    # The version is the newest matrix entry, so Unity-bump PRs for older versions skip it.
+    name: Build Linux Server arm64 ${{ needs.create-unity-matrix.outputs.unity-latest }} Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') && fromJSON(needs.create-unity-matrix.outputs.unity-latest) >= 6000.3 }}
+    needs: [test-create, create-unity-matrix]
+    secrets:
+      UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+    uses: ./.github/workflows/test-build-linux-arm64.yml
+    with:
+      unity-version: ${{ needs.create-unity-matrix.outputs.unity-latest }}
+
   test-build-windows-mono:
     # The Mono scripting backend resolves P/Invokes differently than IL2CPP, so it needs its own
     # player. One version, default (Crashpad) backend only: the IL2CPP matrix already covers the
@@ -516,6 +539,20 @@ jobs:
       unity-version: ${{ matrix.unity-version }}
       platform: windows
       backend: ${{ matrix.backend }}
+
+  test-run-linux-arm64:
+    name: Run Linux arm64 native ${{ needs.create-unity-matrix.outputs.unity-latest }} Integration Test
+    if: ${{ !startsWith(github.ref, 'refs/heads/release/') && fromJSON(needs.create-unity-matrix.outputs.unity-latest) >= 6000.3 }}
+    needs: [test-build-linux-arm64, create-unity-matrix]
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_TEST_DSN: ${{ secrets.SENTRY_TEST_DSN }}
+    uses: ./.github/workflows/test-run-desktop.yml
+    with:
+      unity-version: ${{ needs.create-unity-matrix.outputs.unity-latest }}
+      platform: linux
+      architecture: arm64
+      backend: native
 
   test-run-windows-x86:
     name: Run Windows x86 native ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }} Integration Test
