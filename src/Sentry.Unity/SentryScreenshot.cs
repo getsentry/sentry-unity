@@ -1,5 +1,9 @@
+using System;
+using System.Threading.Tasks;
 using Sentry.Extensibility;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
+using UnityEngine.Rendering;
 
 namespace Sentry.Unity;
 
@@ -22,6 +26,79 @@ internal static class SentryScreenshot
     // For testing
     internal static Texture2D CreateNewScreenshotTexture2D(SentryUnityOptions options, int width, int height)
     {
+        var renderTexture = CaptureIntoRenderTexture(options, width, height);
+        var previousRenderTexture = RenderTexture.active;
+
+        try
+        {
+            // Captures the current screenshot synchronously.
+            var screenshot = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
+            RenderTexture.active = renderTexture;
+            screenshot.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+            screenshot.Apply();
+
+            options.LogDebug("Screenshot captured at {0}x{1}.", renderTexture.width, renderTexture.height);
+
+            return screenshot;
+        }
+        finally
+        {
+            RenderTexture.active = previousRenderTexture;
+            RenderTexture.ReleaseTemporary(renderTexture);
+        }
+    }
+
+    /// <summary>
+    /// Reads the current screenshot back from the GPU and encodes it to JPG on a background thread, without stalling
+    /// the main thread.
+    /// </summary>
+    internal static void CaptureAsync(SentryUnityOptions options, Action<byte[]?> onCaptured)
+    {
+        var renderTexture = CaptureIntoRenderTexture(options, Screen.width, Screen.height);
+        var (width, height) = ((uint)renderTexture.width, (uint)renderTexture.height);
+
+        try
+        {
+            // The texture has to stay out of the pool until the readback is done with it
+            AsyncGPUReadback.Request(renderTexture, 0, TextureFormat.RGBA32, readback =>
+            {
+                RenderTexture.ReleaseTemporary(renderTexture);
+
+                if (readback.hasError)
+                {
+                    options.LogError("Failed to read back the screenshot.");
+                    onCaptured(null);
+                    return;
+                }
+
+                var pixels = readback.GetData<byte>().ToArray();
+                Task.Run(() =>
+                {
+                    byte[]? bytes = null;
+                    try
+                    {
+                        bytes = ImageConversion.EncodeArrayToJPG(pixels, GraphicsFormat.R8G8B8A8_UNorm, width, height,
+                            0, options.ScreenshotCompression);
+                    }
+                    catch (Exception e)
+                    {
+                        options.LogError(e, "Failed to encode the screenshot.");
+                    }
+
+                    onCaptured(bytes);
+                });
+            });
+        }
+        catch
+        {
+            RenderTexture.ReleaseTemporary(renderTexture);
+            throw;
+        }
+    }
+
+    // Returns a temporary render texture holding the screenshot, scaled down to the configured quality
+    private static RenderTexture CaptureIntoRenderTexture(SentryUnityOptions options, int width, int height)
+    {
         // Make sure the screenshot size does not exceed the target size by scaling the image while conserving the
         // original ratio based on which, width or height, is the smaller
         if (options.ScreenshotQuality is not ScreenshotQuality.Full)
@@ -37,17 +114,13 @@ internal static class SentryScreenshot
             }
         }
 
-        RenderTexture? renderTextureFull = null;
-        RenderTexture? renderTextureResized = null;
+        // Blit changes the active render target
         var previousRenderTexture = RenderTexture.active;
-
+        var renderTextureFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
         try
         {
-            // Captures the current screenshot synchronously.
-            var screenshot = new Texture2D(width, height, TextureFormat.RGB24, false);
-            renderTextureFull = RenderTexture.GetTemporary(Screen.width, Screen.height);
             ScreenCapture.CaptureScreenshotIntoRenderTexture(renderTextureFull);
-            renderTextureResized = RenderTexture.GetTemporary(width, height);
+            var renderTextureResized = RenderTexture.GetTemporary(width, height);
 
             // The image may be mirrored on some platforms - mirror it back.
             // See https://docs.unity3d.com/2019.4/Documentation/Manual/SL-PlatformDifferences.html for more info.
@@ -62,27 +135,12 @@ internal static class SentryScreenshot
                 Graphics.Blit(renderTextureFull, renderTextureResized);
             }
 
-            RenderTexture.active = renderTextureResized;
-            screenshot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-            screenshot.Apply();
-
-            options.LogDebug("Screenshot captured at {0}x{1}.", width, height);
-
-            return screenshot;
+            return renderTextureResized;
         }
         finally
         {
             RenderTexture.active = previousRenderTexture;
-
-            if (renderTextureFull)
-            {
-                RenderTexture.ReleaseTemporary(renderTextureFull);
-            }
-
-            if (renderTextureResized)
-            {
-                RenderTexture.ReleaseTemporary(renderTextureResized);
-            }
+            RenderTexture.ReleaseTemporary(renderTextureFull);
         }
     }
 }
