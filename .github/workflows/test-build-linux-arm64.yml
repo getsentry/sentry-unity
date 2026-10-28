@@ -20,9 +20,10 @@ defaults:
 jobs:
   build:
     name: Linux Server arm64 ${{ inputs.unity-version }}
-    # The GameCI images are x86_64-only and lack the arm64 server player, so this cross-compiles
-    # on macOS with the Unity CLI install instead.
-    runs-on: macos-latest
+    # Unity has no arm64 Linux editor and the GameCI images lack the arm64 server player, so this
+    # cross-compiles on x86_64 with the Unity CLI install instead. Pinned to 24.04: Unity's bundled
+    # IL2CPP linker needs libxml2.so.2, which 26.04 no longer ships.
+    runs-on: ubuntu-24.04
     env:
       UNITY_VERSION: ${{ inputs.unity-version }}
       BUILD_PLATFORM: Linux-Server-arm64
