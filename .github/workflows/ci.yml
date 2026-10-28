@@ -458,7 +458,7 @@ jobs:
 
   test-build-linux-arm64:
     # Unity ships an arm64 Linux player only as an IL2CPP dedicated server, from 6000.3 on. One version,
-    # Breakpad backend only: the x86_64 matrix already covers the version spread and the native backend.
+    # Native backend only: the x86_64 matrix already covers the version spread and Breakpad.
     # The version is the newest matrix entry, so Unity-bump PRs for older versions skip it.
     name: Build Linux Server arm64 ${{ needs.create-unity-matrix.outputs.unity-latest }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') && fromJSON(needs.create-unity-matrix.outputs.unity-latest) >= 6000.3 }}
@@ -541,7 +541,7 @@ jobs:
       backend: ${{ matrix.backend }}
 
   test-run-linux-arm64:
-    name: Run Linux arm64 breakpad ${{ needs.create-unity-matrix.outputs.unity-latest }} Integration Test
+    name: Run Linux arm64 native ${{ needs.create-unity-matrix.outputs.unity-latest }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') && fromJSON(needs.create-unity-matrix.outputs.unity-latest) >= 6000.3 }}
     needs: [test-build-linux-arm64, create-unity-matrix]
     secrets:
@@ -552,7 +552,7 @@ jobs:
       unity-version: ${{ needs.create-unity-matrix.outputs.unity-latest }}
       platform: linux
       architecture: arm64
-      backend: breakpad
+      backend: native
 
   test-run-windows-x86:
     name: Run Windows x86 native ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version[0] }} Integration Test

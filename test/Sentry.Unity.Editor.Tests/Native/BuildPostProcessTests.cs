@@ -113,26 +113,4 @@ public class BuildPostProcessTests
         Assert.AreEqual(arch, Path.GetFileName(actual));
         Assert.AreEqual(expectedBackendDir, Path.GetFileName(Path.GetDirectoryName(actual)));
     }
-
-    [TestCase((byte)0x3E, "x86_64")]
-    [TestCase((byte)0xB7, "ARM64")]
-    public void GetLinuxArchitecture_ReadsElfMachine(byte machine, string expectedArch)
-    {
-        var executable = Path.Combine(_testDir, "player");
-        var header = new byte[64];
-        header[0] = 0x7F;
-        header[1] = (byte)'E';
-        header[2] = (byte)'L';
-        header[3] = (byte)'F';
-        header[18] = machine;
-        File.WriteAllBytes(executable, header);
-
-        Assert.AreEqual(expectedArch, BuildPostProcess.GetLinuxArchitecture(executable));
-    }
-
-    [Test]
-    public void GetLinuxArchitecture_MissingExecutable_DefaultsToX86_64()
-    {
-        Assert.AreEqual("x86_64", BuildPostProcess.GetLinuxArchitecture(Path.Combine(_testDir, "missing")));
-    }
 }

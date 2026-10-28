@@ -27,7 +27,7 @@ Experimental native modes raise minimum shutdown timeout to 10 seconds.
 - Windows: runtime files beside player `.exe`; the library lands as `sentry-native.dll`. Both
   architectures ship, under `x86/` and `x64/` inside each backend folder, because Unity still
   builds a 32-bit standalone player. `BuildTarget.StandaloneWindows` picks `x86/`.
-- Linux: `libsentry-native.so` under `<Player>_Data/Plugins/<arch>` (`x86_64` or `ARM64`, read from the player's ELF header); native daemon beside executable.
+- Linux: `libsentry-native.so` under `<Player>_Data/Plugins/<arch>` (`x86_64` or `ARM64`, from the Linux build settings' architecture); native daemon beside executable.
 - macOS: `libsentry-native.dylib` in `.app/Contents/PlugIns`; handler in `.app/Contents/MacOS`. Cocoa's `Sentry.dylib` keeps its name, it is dlopened not P/Invoked.
 - Post-build copies names through unchanged; stale cleanup wipes pre-rename names.
 - Placement is what sentry-native probes by default. `SentryUnityOptions.NativeHandlerPath` overrides it via `handler_path`, for handlers staged somewhere else; sidecars the handler resolves relative to itself, such as `crashpad_wer.dll`, move with it.
