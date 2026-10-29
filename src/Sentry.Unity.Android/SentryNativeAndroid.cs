@@ -202,7 +202,11 @@ public static class SentryNativeAndroid
                 sentryJava.SetTrace(header.TraceId, header.SpanId);
             }
 
-            appUser = sentryJava.GetMainProcessUser();
+            // A file that can't be read is being rewritten, so the previous user still applies.
+            if (sentryJava.TryGetMainProcessUser(out var user))
+            {
+                appUser = user;
+            }
         }
 
         Refresh();

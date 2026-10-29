@@ -305,6 +305,41 @@ public class SentryNativeAndroidTests
     }
 
     [Test]
+    public void Configure_ExternalNotInitializedInGameProcess_KeepsUserWhenReadFailsOnResume()
+    {
+        var options = new SentryUnityOptions { AndroidNativeInitializationType = NativeInitializationType.External };
+        _testSentryJava.Enabled = false;
+        _testSentryJava.MainProcess = false;
+        _testSentryJava.MainProcessUser = new SentryUser { Id = "app-user" };
+
+        SentryNativeAndroid.Configure(options);
+        _testSentryJava.MainProcessUserReadable = false;
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(true);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(false);
+
+        Assert.AreEqual("app-user", ProcessEvent(options).User.Id);
+    }
+
+    [Test]
+    public void Configure_ExternalNotInitializedInGameProcess_DropsUserWhenAppLoggedOut()
+    {
+        var options = new SentryUnityOptions { AndroidNativeInitializationType = NativeInitializationType.External };
+        _testSentryJava.Enabled = false;
+        _testSentryJava.MainProcess = false;
+        _testSentryJava.MainProcessUser = new SentryUser { Id = "app-user" };
+
+        SentryNativeAndroid.Configure(options);
+        _testSentryJava.MainProcessUser = null;
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(true);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(false);
+
+        Assert.AreNotEqual("app-user", ProcessEvent(options).User.Id);
+    }
+
+    private static SentryEvent ProcessEvent(SentryUnityOptions options) =>
+        options.GetAllEventProcessors().OfType<NativeAppUser>().Single().Process(new SentryEvent { User = new SentryUser() });
+
+    [Test]
     public void Configure_External_UsesAppReleaseAndEnvironment()
     {
         var options = new SentryUnityOptions { AndroidNativeInitializationType = NativeInitializationType.External };

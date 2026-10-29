@@ -20,6 +20,7 @@ internal class TestSentryJava : ISentryJava
     public string? MainProcessTraceHeader { get; set; }
     public SentryUser? User { get; set; }
     public SentryUser? MainProcessUser { get; set; }
+    public bool MainProcessUserReadable { get; set; } = true;
     public (SentryId TraceId, SpanId SpanId)? Trace { get; private set; }
 
     public bool? IsEnabled() => Enabled;
@@ -42,7 +43,11 @@ internal class TestSentryJava : ISentryJava
 
     public SentryUser? GetUser() => User;
 
-    public SentryUser? GetMainProcessUser() => MainProcessUser;
+    public bool TryGetMainProcessUser(out SentryUser? user)
+    {
+        user = MainProcessUserReadable ? MainProcessUser : null;
+        return MainProcessUserReadable;
+    }
 
     public string? GetInstallationId() => InstallationId;
 

@@ -18,7 +18,7 @@ internal interface ISentryJava
     public string? GetBaggageHeader();
     public string? GetMainProcessTraceHeader();
     public SentryUser? GetUser();
-    public SentryUser? GetMainProcessUser();
+    public bool TryGetMainProcessUser(out SentryUser? user);
     public string? GetInstallationId();
     public bool? CrashedLastRun();
     public void Close();
@@ -333,13 +333,15 @@ internal class SentryJava : ISentryJava
         return null;
     }
 
-    // The user the app's SDK in the main process persisted.
-    public SentryUser? GetMainProcessUser()
+    // The user the app's SDK in the main process persisted, null when it has none. False when the file can't be read,
+    // e.g. while the app's SDK rewrites it.
+    public bool TryGetMainProcessUser(out SentryUser? user)
     {
+        user = null;
         if (!MainThreadData.IsMainThread())
         {
-            _logger?.LogError("Calling GetMainProcessUser() on Android SDK requires running on MainThread");
-            return null;
+            _logger?.LogError("Calling TryGetMainProcessUser() on Android SDK requires running on MainThread");
+            return false;
         }
 
         try
@@ -347,15 +349,21 @@ internal class SentryJava : ISentryJava
             using var sentry = GetSentryJava();
             using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
             using var options = hub.Call<AndroidJavaObject>("getOptions");
-            using var user = ReadMainProcessFile(options, ".scope-cache/user.json", "io.sentry.protocol.User");
-            return ToSentryUser(user);
+            using var javaUser = ReadMainProcessFile(options, ".scope-cache/user.json", "io.sentry.protocol.User", out var failed);
+            if (failed)
+            {
+                return false;
+            }
+
+            user = ToSentryUser(javaUser);
+            return true;
         }
         catch (Exception e)
         {
-            _logger?.LogError(e, "Calling 'SentryJava.GetMainProcessUser' failed.");
+            _logger?.LogError(e, "Calling 'SentryJava.TryGetMainProcessUser' failed.");
         }
 
-        return null;
+        return false;
     }
 
     private static SentryUser? ToSentryUser(AndroidJavaObject? user) => user is null
@@ -376,8 +384,13 @@ internal class SentryJava : ISentryJava
 
     // A file that the app's SDK in the main process persisted to its cache directory, next to ours: same DSN hash,
     // default 'sentry' directory.
-    private AndroidJavaObject? ReadMainProcessFile(AndroidJavaObject options, string path, string className)
+    private AndroidJavaObject? ReadMainProcessFile(AndroidJavaObject options, string path, string className) =>
+        ReadMainProcessFile(options, path, className, out _);
+
+    // Failed when the file is there but can't be read, e.g. empty or partly written.
+    private AndroidJavaObject? ReadMainProcessFile(AndroidJavaObject options, string path, string className, out bool failed)
     {
+        failed = false;
         try
         {
             using var cacheDir = new AndroidJavaObject("java.io.File", options.Call<string>("getCacheDirPath"));
@@ -398,7 +411,9 @@ internal class SentryJava : ISentryJava
                 using var serializer = options.Call<AndroidJavaObject>("getSerializer");
                 using var javaClass = new AndroidJavaClass("java.lang.Class");
                 using var type = javaClass.CallStatic<AndroidJavaObject>("forName", className);
-                return serializer.Call<AndroidJavaObject>("deserialize", reader, type);
+                var value = serializer.Call<AndroidJavaObject>("deserialize", reader, type);
+                failed = value is null;
+                return value;
             }
             finally
             {
@@ -410,6 +425,7 @@ internal class SentryJava : ISentryJava
             _logger?.LogError(e, "Reading '{0}' persisted by the main process failed.", path);
         }
 
+        failed = true;
         return null;
     }
 
