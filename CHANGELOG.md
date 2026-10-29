@@ -8,12 +8,13 @@
 
 ### Fixes
 
+- App hang detection no longer reports a false app hang after the game moves to the background. It now stays paused while the game is in the background or out of focus. ([#2895](https://github.com/getsentry/sentry-unity/pull/2895))
 - The Linux native SDK now loads on distros with older glibc versions, such as Ubuntu 22.04 and Debian 12. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
 - Attaching a screenshot no longer stalls the main thread. Unless `SetBeforeSendScreenshot` is set, the frame gets read back from the GPU asynchronously and encoded on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
 ### Features
 
-- Added experimental support for Unity as a Library on iOS. With `IosNativeInitializationType` set to `NativeInitializationType.External`, the game attaches to the sentry-cocoa SDK that the app already started instead of bundling and starting its own. Native crashes carry the game's context and breadcrumbs, C# events and logs use the app's release, environment, user, and trace, the game's transactions join the app's trace, and the game's debug symbols are still uploaded automatically. ([#2885](https://github.com/getsentry/sentry-unity/pull/2885))
+- Added experimental support for Unity as a Library on Android and iOS. With `AndroidNativeInitializationType` or `IosNativeInitializationType` set to `NativeInitializationType.External`, the game attaches to the sentry-android or sentry-cocoa SDK that the app already started instead of bundling and starting its own. On Android, when the game runs in its own process, it starts sentry-android there and continues the app's trace. Native crashes carry the game's context and breadcrumbs, C# events and logs use the app's release, environment, user, and trace, the game's transactions join the app's trace, and the game's debug symbols are still uploaded automatically. ([#2885](https://github.com/getsentry/sentry-unity/pull/2885), [#2895](https://github.com/getsentry/sentry-unity/pull/2895))
 - The SDK now supports Linux ARM64 dedicated servers (Unity 6000.3 and newer, IL2CPP). The native SDK for both backends ships for `x86_64` and `ARM64`, and the build picks the one matching the player. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
 
 ### Dependencies

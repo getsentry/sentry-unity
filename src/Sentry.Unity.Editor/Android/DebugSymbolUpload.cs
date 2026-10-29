@@ -26,6 +26,7 @@ internal class DebugSymbolUpload
     private readonly string _gradleScriptPath;
     private readonly bool _isExporting;
     private readonly bool _isMinifyEnabled;
+    private readonly bool _isExternal;
 
     private readonly SentryCliOptions? _cliOptions;
     private readonly List<string> _symbolUploadPaths;
@@ -77,10 +78,18 @@ internal class DebugSymbolUpload
             }
             stringBuilder.AppendLine("    }");
 
-            stringBuilder.AppendLine("    tasks.named('assembleDebug').configure { finalizedBy 'sentryUploadSymbols' }");
-            stringBuilder.AppendLine("    tasks.named('assembleRelease').configure { finalizedBy 'sentryUploadSymbols' }");
-            stringBuilder.AppendLine("    tasks.named('bundleDebug').configure { finalizedBy 'sentryUploadSymbols' }");
-            stringBuilder.AppendLine("    tasks.named('bundleRelease').configure { finalizedBy 'sentryUploadSymbols' }");
+            if (_isExternal)
+            {
+                // The app builds the library but never assembles it. IL2CPP builds before the native libraries merge.
+                stringBuilder.AppendLine("    tasks.matching { it.name ==~ /merge\\w+JniLibFolders/ }.configureEach { finalizedBy 'sentryUploadSymbols' }");
+            }
+            else
+            {
+                stringBuilder.AppendLine("    tasks.named('assembleDebug').configure { finalizedBy 'sentryUploadSymbols' }");
+                stringBuilder.AppendLine("    tasks.named('assembleRelease').configure { finalizedBy 'sentryUploadSymbols' }");
+                stringBuilder.AppendLine("    tasks.named('bundleDebug').configure { finalizedBy 'sentryUploadSymbols' }");
+                stringBuilder.AppendLine("    tasks.named('bundleRelease').configure { finalizedBy 'sentryUploadSymbols' }");
+            }
 
             stringBuilder.AppendLine("}");
             return stringBuilder.ToString();
@@ -93,20 +102,26 @@ internal class DebugSymbolUpload
         string gradleProjectPath,
         bool isExporting = false,
         bool minifyEnabled = false,
-        IApplication? application = null)
+        IApplication? application = null,
+        bool isExternal = false)
     {
         _logger = logger;
 
         _unityProjectPath = unityProjectPath;
         _gradleProjectPath = gradleProjectPath;
-        _gradleScriptPath = Path.Combine(_gradleProjectPath, "launcher/build.gradle");
+        _isExternal = isExternal;
+        _gradleScriptPath = Path.Combine(_gradleProjectPath, ModuleName, "build.gradle");
         _isExporting = isExporting;
-        _isMinifyEnabled = minifyEnabled;
+        // The app minifies, so it uploads the mapping.
+        _isMinifyEnabled = minifyEnabled && !isExternal;
 
         _cliOptions = cliOptions;
         _symbolUploadPaths = GetSymbolUploadPaths(application);
         _mappingFilePath = GetMappingFilePath(application);
     }
+
+    // With external initialization, the app embeds 'unityLibrary' and never builds 'launcher'.
+    internal string ModuleName => _isExternal ? "unityLibrary" : "launcher";
 
     public void AppendUploadToGradleFile(string sentryCliPath)
     {
@@ -131,9 +146,10 @@ internal class DebugSymbolUpload
 
         if (_isExporting)
         {
-            _logger.LogInfo("Project is exporting. Setting upload-dif to 'project.rootDir'");
+            _logger.LogInfo("Project is exporting. Setting upload-dif to the exported project.");
 
-            uploadDifArguments += ", project.rootDir";
+            // The exported project is the root unless an app includes 'unityLibrary' in its own build.
+            uploadDifArguments += _isExternal ? ", project.projectDir.parentFile" : ", project.rootDir";
             sentryCliPath = $"./{Path.GetFileName(sentryCliPath)}";
         }
         else if (_symbolUploadPaths.Count > 0)
@@ -168,7 +184,7 @@ internal class DebugSymbolUpload
         symbolUploadText = symbolUploadText.Replace(UploadArgsMarker, uploadDifArguments);
         symbolUploadText = symbolUploadText.Replace(ProguardArgsMarker, uploadProguardArguments);
 
-        var gradleBuildFile = LoadGradleScript();
+        var gradleBuildFile = LoadGradleScript(_gradleScriptPath);
         if (gradleBuildFile.Contains(SymbolUploadTaskStartComment) || gradleBuildFile.Contains("sentryUploadSymbols"))
         {
             throw new InvalidOperationException($"Failed to create Debug Symbol Upload Task. Task already exists in gradle file. A clean build should resolve this.{RaiseIssuePrompt}");
@@ -181,20 +197,33 @@ internal class DebugSymbolUpload
         File.WriteAllText(_gradleScriptPath, stringBuilder.ToString());
     }
 
-    private string LoadGradleScript()
+    private static string LoadGradleScript(string gradleScriptPath)
     {
-        if (!File.Exists(_gradleScriptPath))
+        if (!File.Exists(gradleScriptPath))
         {
-            throw new FileNotFoundException($"Failed to find the gradle config.{RaiseIssuePrompt}", _gradleScriptPath);
+            throw new FileNotFoundException($"Failed to find the gradle config.{RaiseIssuePrompt}", gradleScriptPath);
         }
 
-        return File.ReadAllText(_gradleScriptPath);
+        return File.ReadAllText(gradleScriptPath);
     }
 
     public void RemoveUploadFromGradleFile()
     {
         _logger.LogDebug("Attempting to remove the previous upload task from the gradle project.");
-        var gradleBuildFile = LoadGradleScript();
+        // The task may have been added to the other module by a build with a different initialization type.
+        foreach (var moduleName in new[] { "launcher", "unityLibrary" })
+        {
+            var gradleScriptPath = Path.Combine(_gradleProjectPath, moduleName, "build.gradle");
+            if (gradleScriptPath == _gradleScriptPath || File.Exists(gradleScriptPath))
+            {
+                RemoveUploadFromGradleFile(gradleScriptPath);
+            }
+        }
+    }
+
+    private void RemoveUploadFromGradleFile(string gradleScriptPath)
+    {
+        var gradleBuildFile = LoadGradleScript(gradleScriptPath);
         if (!gradleBuildFile.Contains(SymbolUploadTaskStartComment))
         {
             _logger.LogDebug("No previous upload task found.");
@@ -212,7 +241,7 @@ internal class DebugSymbolUpload
             throw new InvalidOperationException($"Failed to remove Debug Symbol Upload Task from gradle file. A clean build should resolve this.{RaiseIssuePrompt}");
         }
 
-        using var streamWriter = File.CreateText(_gradleScriptPath);
+        using var streamWriter = File.CreateText(gradleScriptPath);
         streamWriter.Write(gradleBuildFile);
     }
 

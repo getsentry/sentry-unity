@@ -120,6 +120,13 @@ public class AndroidManifestConfiguration
     /// </summary>
     private bool AndroidSdkEnabled => _androidSdkEnabled ??= EvaluateAndroidSdkEnabled();
 
+    /// <summary>
+    /// With external initialization, the app that embeds the game (Unity as a Library) brings the Android SDK.
+    /// </summary>
+    private bool IsExternal => _options?.AndroidNativeInitializationType is NativeInitializationType.External;
+
+    private bool ShipsAndroidSdk => AndroidSdkEnabled && !IsExternal;
+
     private bool EvaluateAndroidSdkEnabled()
     {
         if (_options is null)
@@ -155,6 +162,16 @@ public class AndroidManifestConfiguration
 
         var androidManifest = new AndroidManifest(manifestPath, _logger);
         androidManifest.RemovePreviousConfigurations();
+
+        if (IsExternal)
+        {
+            // The manifest merges into the app's. Its Sentry configuration is the app's.
+            _logger.LogDebug("Leaving the Android SDK's configuration to the app that embeds the game.");
+            _ = androidManifest.Save();
+
+            return;
+        }
+
         androidManifest.AddDisclaimerComment();
 
         if (!AndroidSdkEnabled)
@@ -258,7 +275,7 @@ public class AndroidManifestConfiguration
         var androidSdkPath = Path.Combine(unityProjectPath, "Packages", SentryPackageInfo.GetName(), "Plugins", "Android", "Sentry~");
         var targetPath = Path.Combine(gradlePath, "unityLibrary", "libs");
 
-        if (AndroidSdkEnabled)
+        if (ShipsAndroidSdk)
         {
             if (!Directory.Exists(androidSdkPath))
             {
@@ -301,7 +318,7 @@ public class AndroidManifestConfiguration
     internal void AddAndroidSdkDependencies(string gradleProjectPath)
     {
         var tool = new GradleSetup(_logger, gradleProjectPath);
-        var nativeSupportEnabled = AndroidSdkEnabled;
+        var nativeSupportEnabled = ShipsAndroidSdk;
 
         try
         {
@@ -326,7 +343,7 @@ public class AndroidManifestConfiguration
         var isExporting = EditorUserBuildSettings.exportAsGoogleAndroidProject;
         _logger.LogInfo("The project is exporting: '{0}'", isExporting);
 
-        var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath, isExporting, AndroidUtils.ShouldUploadMapping());
+        var symbolsUpload = new DebugSymbolUpload(_logger, _sentryCliOptions, unityProjectPath, gradleProjectPath, isExporting, AndroidUtils.ShouldUploadMapping(), isExternal: IsExternal);
 
         if (_options is not { Enabled: true, AndroidNativeSupportEnabled: true })
         {
@@ -364,10 +381,10 @@ public class AndroidManifestConfiguration
             // In practice, users should be able to build the project on any platform, regardless of where Unity
             // ran. In that case, we would either need to include all CLI binaries and switch in Gradle, or let
             // gradle download CLI on demand (relevant code could be taken from sentry-java repo?).
-            var launcherDirectory = Path.Combine(gradleProjectPath, "launcher");
-            var sentryCliPath = SentryCli.SetupSentryCli(isExporting ? launcherDirectory : null);
+            var moduleDirectory = Path.Combine(gradleProjectPath, symbolsUpload.ModuleName);
+            var sentryCliPath = SentryCli.SetupSentryCli(isExporting ? moduleDirectory : null);
 
-            SentryCli.CreateSentryProperties(launcherDirectory, _sentryCliOptions!, _options!);
+            SentryCli.CreateSentryProperties(moduleDirectory, _sentryCliOptions!, _options!);
 
             symbolsUpload.TryCopySymbolsToGradleProject();
             // We need to remove the old upload task first as the project persists across consecutive builds and the
