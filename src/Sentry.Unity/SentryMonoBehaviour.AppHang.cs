@@ -15,6 +15,8 @@ public partial class SentryMonoBehaviour
 
     private Coroutine? _appHangHeartbeat;
     private Action? _appHangPause;
+    private Action? _appHangResume;
+    private bool _appHangArmed;
 
     /// <summary>
     /// Starts the app-hang heartbeat on the main thread at a fixed 1-second interval. Arming is
@@ -31,8 +33,22 @@ public partial class SentryMonoBehaviour
             ApplicationPausing -= _appHangPause;
         }
 
+        if (_appHangResume is not null)
+        {
+            ApplicationResuming -= _appHangResume;
+        }
+
         _appHangPause = pause;
         ApplicationPausing += pause;
+        // Re-arms right away instead of on the next tick, so a hang right after resuming is caught.
+        _appHangResume = () =>
+        {
+            if (_appHangArmed)
+            {
+                heartbeat();
+            }
+        };
+        ApplicationResuming += _appHangResume;
         return StartAppHangHeartbeat(heartbeat, AppHangHeartbeatInterval);
     }
 
@@ -44,6 +60,7 @@ public partial class SentryMonoBehaviour
             StopCoroutine(_appHangHeartbeat);
         }
 
+        _appHangArmed = false;
         _appHangHeartbeat = StartCoroutine(AppHangHeartbeatCoroutine(heartbeat, interval));
         return _appHangHeartbeat;
     }
@@ -57,6 +74,7 @@ public partial class SentryMonoBehaviour
         // This also works in batchmode/headless (e.g. LinuxServer), unlike WaitForEndOfFrame.
         yield return null;
         heartbeat();
+        _appHangArmed = true;
 
         var wait = new WaitForSecondsRealtime((float)interval.TotalSeconds);
         while (true)

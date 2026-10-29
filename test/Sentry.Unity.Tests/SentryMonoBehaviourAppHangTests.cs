@@ -78,6 +78,35 @@ public class SentryMonoBehaviourAppHangTests
         Assert.Greater(count, countWhilePaused);
     }
 
+    [UnityTest]
+    public IEnumerator StartAppHangHeartbeat_BeatsRightAwayOnResume()
+    {
+        var sut = GetSut();
+        var count = 0;
+
+        sut.StartAppHangHeartbeat(() => count++, () => { });
+        yield return null;
+
+        sut.UpdatePauseStatus(true);
+        var countWhilePaused = count;
+        sut.UpdatePauseStatus(false);
+
+        Assert.AreEqual(countWhilePaused + 1, count);
+    }
+
+    [Test]
+    public void StartAppHangHeartbeat_DoesNotArmOnResumeBeforeFirstHeartbeat()
+    {
+        var sut = GetSut();
+        var count = 0;
+
+        sut.StartAppHangHeartbeat(() => count++, () => { });
+        sut.UpdatePauseStatus(true);
+        sut.UpdatePauseStatus(false);
+
+        Assert.AreEqual(0, count);
+    }
+
     [Test]
     public void StartAppHangHeartbeat_PausesNativeDetectorWhenApplicationPauses()
     {
