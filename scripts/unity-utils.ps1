@@ -25,6 +25,12 @@ function GetUnityRetrySignature([string] $unityPath, [string[]] $arguments, [int
         return 'killed'
     }
 
+    # Unity gives the LicensingClient it just launched 5s to open its IPC channel. The next launch finds it running.
+    if ($exitCode -eq 199 -and ($stdout -match "IPC channel to LicensingClient doesn't exist; aborting"))
+    {
+        return 'licensing-ipc'
+    }
+
     # A crash while running tests may be an SDK bug.
     if ($arguments -contains '-runTests')
     {
