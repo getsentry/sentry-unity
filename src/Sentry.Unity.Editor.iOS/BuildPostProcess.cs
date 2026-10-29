@@ -103,6 +103,17 @@ public static class BuildPostProcess
                     "to the exported project. Select 'Replace' when exporting the project to create a clean project.");
             }
         }
+        else
+        {
+            // The upload phase a previous build added to `UnityFramework` would keep running with its old settings.
+            using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
+            if (sentryXcodeProject.UnityFrameworkTargetContainsSymbolUploadBuildPhase())
+            {
+                throw new BuildFailedException(
+                    "A previous build with the iOS native initialization type 'External' added the debug symbol upload " +
+                    "to 'UnityFramework'. Select 'Replace' when exporting the project to create a clean project.");
+            }
+        }
     }
 
     internal static void SetupNoOpBridge(IDiagnosticLogger logger, string pathToProject)
@@ -241,10 +252,12 @@ public static class BuildPostProcess
             throw new FileNotFoundException($"Failed to find '{sourcePath}'");
         }
 
+        // An appended export keeps the bridge of the previous build, which may not match the current options.
         if (File.Exists(targetPath))
         {
-            logger?.LogDebug("'{0}' has already been copied to '{1}'", Path.GetFileName(targetPath), targetPath);
-            return;
+            logger?.LogDebug("Replacing '{0}' copied by a previous build.", targetPath);
+            File.SetAttributes(targetPath, FileAttributes.Normal);
+            File.Delete(targetPath);
         }
 
         if (File.Exists(sourcePath))

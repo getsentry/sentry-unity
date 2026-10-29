@@ -51,7 +51,7 @@ static Class SentryBreadcrumbClass;
 // SentryLastRunStatus.didCrash
 static const NSInteger SentryLastRunStatusDidCrash = 2;
 
-// The selectors are getters and setters, which don't return owned objects.
+// The selectors are getters, which don't return owned objects.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 static id SentryCall(id target, SEL selector)
@@ -64,14 +64,22 @@ static id SentryCallWith(id target, SEL selector, id argument)
     return [target respondsToSelector:selector] ? [target performSelector:selector withObject:argument] : nil;
 }
 
-static void SentryCallWith2(id target, SEL selector, id argument1, id argument2)
+#pragma clang diagnostic pop
+
+// performSelector: is only for methods that return an object, so setters go through a typed objc_msgSend.
+static void SentryCallVoid(id target, SEL selector, id argument)
 {
     if ([target respondsToSelector:selector]) {
-        [target performSelector:selector withObject:argument1 withObject:argument2];
+        ((void (*)(id, SEL, id))objc_msgSend)(target, selector, argument);
     }
 }
 
-#pragma clang diagnostic pop
+static void SentryCallVoid2(id target, SEL selector, id argument1, id argument2)
+{
+    if ([target respondsToSelector:selector]) {
+        ((void (*)(id, SEL, id, id))objc_msgSend)(target, selector, argument1, argument2);
+    }
+}
 
 static id SentryGetValue(id object, NSString *key)
 {
@@ -140,7 +148,7 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId) { }
 
 static void SentryConfigureScope(void (^callback)(id))
 {
-    SentryCallWith(SentrySDKClass, @selector(configureScope:), callback);
+    SentryCallVoid(SentrySDKClass, @selector(configureScope:), callback);
 }
 
 int SentryNativeBridgeCrashedLastRun()
@@ -197,7 +205,7 @@ void SentryNativeBridgeAddBreadcrumb(const char *timestamp, const char *message,
             SentrySetValue(breadcrumb, @"data", data);
         }
 
-        SentryCallWith(scope, @selector(addBreadcrumb:), breadcrumb);
+        SentryCallVoid(scope, @selector(addBreadcrumb:), breadcrumb);
     });
 }
 
@@ -211,7 +219,7 @@ void SentryNativeBridgeSetExtra(const char *key, const char *value)
     NSString *valueString = _NSStringOrNil(value);
 
     SentryConfigureScope(^(id scope) {
-        SentryCallWith2(scope, @selector(setExtraValue:forKey:), valueString, keyString);
+        SentryCallVoid2(scope, @selector(setExtraValue:forKey:), valueString, keyString);
     });
 }
 
@@ -225,7 +233,7 @@ void SentryNativeBridgeSetTag(const char *key, const char *value)
     NSString *valueString = _NSStringOrNil(value);
 
     SentryConfigureScope(^(id scope) {
-        SentryCallWith2(scope, @selector(setTagValue:forKey:), valueString, keyString);
+        SentryCallVoid2(scope, @selector(setTagValue:forKey:), valueString, keyString);
     });
 }
 
@@ -238,7 +246,7 @@ void SentryNativeBridgeUnsetTag(const char *key)
     NSString *keyString = [NSString stringWithUTF8String:key];
 
     SentryConfigureScope(^(id scope) {
-        SentryCallWith(scope, @selector(removeTagForKey:), keyString);
+        SentryCallVoid(scope, @selector(removeTagForKey:), keyString);
     });
 }
 
@@ -370,7 +378,7 @@ void SentryNativeBridgeWriteScope( // clang-format off
         gpu[@"vendor_id"] = _NSStringOrNil(GpuVendorId);
         gpu[@"multi_threaded_rendering"] = _NSBoolOrNil(GpuMultiThreadedRendering);
         gpu[@"graphics_shader_level"] = _NSStringOrNil(GpuGraphicsShaderLevel);
-        SentryCallWith2(scope, @selector(setContextValue:forKey:), gpu, @"gpu");
+        SentryCallVoid2(scope, @selector(setContextValue:forKey:), gpu, @"gpu");
 
         NSMutableDictionary *unity = [[NSMutableDictionary alloc] init];
         unity[@"editor_version"] = _NSStringOrNil(EditorVersion);
@@ -378,6 +386,6 @@ void SentryNativeBridgeWriteScope( // clang-format off
         unity[@"target_frame_rate"] = _NSStringOrNil(UnityTargetFrameRate);
         unity[@"copy_texture_support"] = _NSStringOrNil(UnityCopyTextureSupport);
         unity[@"rendering_threading_mode"] = _NSStringOrNil(UnityRenderingThreadingMode);
-        SentryCallWith2(scope, @selector(setContextValue:forKey:), unity, @"unity");
+        SentryCallVoid2(scope, @selector(setContextValue:forKey:), unity, @"unity");
     });
 }
