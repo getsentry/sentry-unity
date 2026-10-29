@@ -218,6 +218,39 @@ BeforeAll {
         }
     }
 
+    # A launch that hangs before the Unity engine starts logs no Unity line, and app-runner force-stops it
+    # after the run timeout. Relaunch once per run. After a second such launch, stop launching: each one
+    # costs the full run timeout and the job would time out instead of reporting the failure.
+    function Invoke-App {
+        param([string]$Action)
+
+        if ($script:AndroidUninitialisedLaunches -ge 2) {
+            throw "Not launching ${Action}: the Android app already failed to initialise twice."
+        }
+
+        $runResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments (Get-AppArguments -Action $Action)
+
+        if ($script:Platform -eq "Android" -and -not (Test-AndroidAppInitialised $runResult)) {
+            $script:AndroidUninitialisedLaunches++
+            Write-Host "::group::App output ($Action, never initialised)"
+            $runResult.Output | ForEach-Object { Write-Host $_ }
+            Write-Host "::endgroup::"
+
+            if ($script:AndroidUninitialisedLaunches -eq 1) {
+                Write-Host "::warning::Android app never initialised, relaunching (1/1)"
+                return Invoke-App -Action $Action
+            }
+        }
+
+        return $runResult
+    }
+
+    function Test-AndroidAppInitialised {
+        param($RunResult)
+
+        return [bool]($RunResult.Output | Where-Object { $_ -match 'EVENT_CAPTURED:|\s[VDIWEF] Unity\s*:' })
+    }
+
     # Run integration test action
     function Invoke-TestAction {
         param (
@@ -231,8 +264,7 @@ BeforeAll {
             return Invoke-WebGLTestAction -Action $Action
         }
 
-        $appArgs = Get-AppArguments -Action $Action
-        $runResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $appArgs
+        $runResult = Invoke-App -Action $Action
 
         # On Xbox, console output is not available in non-development builds.
         # Retrieve the log file the app writes directly to disk.
@@ -247,8 +279,7 @@ BeforeAll {
         if ($Action -eq "crash-capture") {
             Write-Host "Running crash-send to ensure crash report is sent..."
 
-            $sendArgs = Get-AppArguments -Action "crash-send"
-            $sendResult = Invoke-DeviceApp -ExecutablePath $script:ExecutablePath -Arguments $sendArgs
+            $sendResult = Invoke-App -Action "crash-send"
 
             if ($script:Platform -eq "Xbox") {
                 $sendResult = Get-XboxLogOutput -RunResult $sendResult -Action "crash-send"
@@ -273,6 +304,8 @@ BeforeAll {
 
         return $runResult
     }
+
+    $script:AndroidUninitialisedLaunches = 0
 
     $script:Platform = $env:SENTRY_TEST_PLATFORM
     if ([string]::IsNullOrEmpty($script:Platform)) {
