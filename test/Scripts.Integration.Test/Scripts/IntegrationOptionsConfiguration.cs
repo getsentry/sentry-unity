@@ -45,8 +45,8 @@ public class IntegrationOptionsConfiguration : SentryOptionsConfiguration
         options.DisableAnrIntegration();
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        // App Hang tracking
-        options.EnableAppHangTracking = true;
+        // Only for the app hang test: on a slow device the 2s watchdog fires in the other tests too, and the hang event carries their tags.
+        options.EnableAppHangTracking = IntegrationTester.GetTestArg() == "app-hang-capture";
         options.AppHangTimeout = TimeSpan.FromSeconds(2);
 
         // Runtime initialization for integration tests
