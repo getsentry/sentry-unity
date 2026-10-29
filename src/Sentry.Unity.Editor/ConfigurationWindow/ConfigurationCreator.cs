@@ -97,23 +97,39 @@ internal static class OptionsConfigurationItem
 
     internal static void SetScript(string scriptNameWithoutExtension)
     {
-        var optionsConfigurationObject = ScriptableObject.CreateInstance(scriptNameWithoutExtension);
+        var window = EditorWindow.GetWindow<SentryWindow>();
+        SetScript(scriptNameWithoutExtension, window.Options, window.CliOptions);
+    }
 
-        var options = EditorWindow.GetWindow<SentryWindow>().Options;
-        var cliOptions = EditorWindow.GetWindow<SentryWindow>().CliOptions;
+    internal static void SetScript(string scriptNameWithoutExtension, ScriptableSentryUnityOptions options, SentryCliOptions cliOptions)
+    {
+        var optionsConfigurationObject = ScriptableObject.CreateInstance(scriptNameWithoutExtension);
 
         switch (optionsConfigurationObject)
         {
             case SentryOptionsConfiguration configuration:
-                AssetDatabase.CreateAsset(optionsConfigurationObject, SentryOptionsConfiguration.GetAssetPath(scriptNameWithoutExtension));
-                AssetDatabase.Refresh();
+                configuration = LoadOrCreateAsset(configuration, SentryOptionsConfiguration.GetAssetPath(scriptNameWithoutExtension));
                 options.OptionsConfiguration ??= configuration; // Don't overwrite if already set
                 break;
             case SentryCliOptionsConfiguration cliConfiguration:
-                AssetDatabase.CreateAsset(optionsConfigurationObject, SentryCliOptionsConfiguration.GetAssetPath(scriptNameWithoutExtension));
-                AssetDatabase.Refresh();
+                cliConfiguration = LoadOrCreateAsset(cliConfiguration, SentryCliOptionsConfiguration.GetAssetPath(scriptNameWithoutExtension));
                 cliOptions.CliOptionsConfiguration ??= cliConfiguration; // Don't overwrite if already set
                 break;
         }
+    }
+
+    // Recreating the asset would leave the options referencing an object that is no longer it.
+    private static T LoadOrCreateAsset<T>(T instance, string path) where T : ScriptableObject
+    {
+        var existing = AssetDatabase.LoadAssetAtPath<T>(path);
+        if (existing != null)
+        {
+            UnityEngine.Object.DestroyImmediate(instance);
+            return existing;
+        }
+
+        AssetDatabase.CreateAsset(instance, path);
+        AssetDatabase.Refresh();
+        return instance;
     }
 }

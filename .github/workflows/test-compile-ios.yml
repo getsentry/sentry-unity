@@ -8,6 +8,9 @@ on:
       init-type:
         required: true
         type: string
+    secrets:
+      SENTRY_AUTH_TOKEN:
+        required: true
 
 defaults:
   run:
@@ -42,6 +45,8 @@ jobs:
 
       - name: Assert symbols and sources were uploaded
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath samples/IntegrationTest/Build/sentry-symbols-upload.log
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
       - name: Upload integration-test project on failure
         if: ${{ failure() }}

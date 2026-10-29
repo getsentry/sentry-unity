@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Running `SentryEditorWindowInstrumentation.ConfigureOptions` again on a configured project no longer clears the options and CLI options configuration ([#2911](https://github.com/getsentry/sentry-unity/pull/2911))
+
 ## 4.11.0
 
 ### Fixes

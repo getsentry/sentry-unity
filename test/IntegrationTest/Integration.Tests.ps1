@@ -265,6 +265,7 @@ BeforeAll {
         }
 
         $runResult = Invoke-App -Action $Action
+        $sendResult = $null
 
         # On Xbox, console output is not available in non-development builds.
         # Retrieve the log file the app writes directly to disk.
@@ -319,11 +320,23 @@ BeforeAll {
         $runResult.Output | ForEach-Object { Write-Host $_ }
         Write-Host "::endgroup::"
 
+        # sentry-cocoa sends the crash report on crash-send and deletes the envelope if sentry.io answers with a 5xx. Rerun once per job.
+        $ingest5xx = $Action -eq "crash-capture" -and [bool]($sendResult.Output -match "Received response status code: 5\d\d")
+        if ($ingest5xx -and $script:Ingest5xxRetried) {
+            Write-Host "::warning::sentry.io answered the crash report with a 5xx again (signature: ingest-5xx). Not running $Action a third time."
+        }
+        elseif ($ingest5xx) {
+            $script:Ingest5xxRetried = $true
+            Write-Host "::warning::sentry.io answered the crash report with a 5xx and the SDK dropped it (signature: ingest-5xx). Running $Action again."
+            return Invoke-TestAction -Action $Action
+        }
+
         return $runResult
     }
 
     $script:AndroidUninitialisedLaunches = 0
     $script:FlushTimeoutRelaunched = $false
+    $script:Ingest5xxRetried = $false
 
     $script:Platform = $env:SENTRY_TEST_PLATFORM
     if ([string]::IsNullOrEmpty($script:Platform)) {

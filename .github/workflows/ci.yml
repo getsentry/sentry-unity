@@ -355,11 +355,13 @@ jobs:
     with:
       unity-version: ${{ matrix.unity-version }}
       init-type: ${{ matrix.init-type }}
+    secrets:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
   test-run-ios:
     name: Run iOS ${{ matrix.unity-version }} Integration Test
     if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [test-compile-ios, create-unity-matrix]
+    needs: [test-build-ios, create-unity-matrix]
     uses: ./.github/workflows/test-run-ios.yml
     with:
       unity-version: ${{ matrix.unity-version }}

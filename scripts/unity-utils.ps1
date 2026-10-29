@@ -12,7 +12,7 @@ function GetUnityRetrySignature([string] $unityPath, [string[]] $arguments, [int
         return $null
     }
 
-    # Unity 6.6 on Linux intermittently gets SIGKILLed during startup.
+    # Unity 6.6 kills the PID in a stale Library/burst.pid at startup, which in a fresh container can be its own xvfb-run.
     if ($exitCode -eq 137)
     {
         return 'killed'
@@ -48,7 +48,8 @@ function GetUnityRetrySignature([string] $unityPath, [string[]] $arguments, [int
         return 'tool-segfault'
     }
 
-    if (($stdout -match 'Batchmode quit successfully invoked') -and ($stdout -match 'Caught fatal signal'))
+    # A trap after a long shutdown stall (exit 133, SIGTRAP) can kill Unity before it logs the signal.
+    if (($stdout -match 'Batchmode quit successfully invoked') -and (($stdout -match 'Caught fatal signal') -or $exitCode -eq 133))
     {
         return 'shutdown-crash'
     }

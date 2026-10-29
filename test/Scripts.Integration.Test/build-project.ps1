@@ -22,6 +22,10 @@ Write-Log "Build method: $buildMethod"
 Write-Detail "Output path: $outputPath"
 $unityArgs = @("-batchmode", "-projectPath ", "$(GetNewProjectPath)", "-executeMethod", $buildMethod , "-buildPath", $outputPath, "-quit")
 
+# Unity kills the process in Library/burst.pid at startup. In a project made in another container that PID names
+# an unrelated process here, typically the xvfb-run wrapping the editor.
+Remove-Item "$(GetNewProjectPath)/Library/*.pid" -ErrorAction SilentlyContinue
+
 if ($Platform -eq "Switch")
 {
     $unityArgs += @("-buildTarget", "Switch")
