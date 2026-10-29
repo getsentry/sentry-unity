@@ -62,7 +62,11 @@ public partial class SentryMonoBehaviour
         while (true)
         {
             yield return wait;
-            heartbeat();
+            // Unity still renders a few frames after losing focus, and a heartbeat there would re-arm the paused detector.
+            if (_isRunning)
+            {
+                heartbeat();
+            }
         }
     }
 }

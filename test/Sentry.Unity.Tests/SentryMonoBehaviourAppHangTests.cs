@@ -59,6 +59,25 @@ public class SentryMonoBehaviourAppHangTests
         Assert.AreEqual(countAfterDestroy, count);
     }
 
+    [UnityTest]
+    public IEnumerator StartAppHangHeartbeat_SkipsHeartbeatsWhilePaused()
+    {
+        var sut = GetSut();
+        var count = 0;
+
+        sut.StartAppHangHeartbeat(() => count++, TimeSpan.FromSeconds(0.05));
+        yield return null;
+
+        sut.UpdatePauseStatus(true);
+        var countWhilePaused = count;
+        yield return new WaitForSecondsRealtime(0.12f);
+        Assert.AreEqual(countWhilePaused, count);
+
+        sut.UpdatePauseStatus(false);
+        yield return new WaitForSecondsRealtime(0.12f);
+        Assert.Greater(count, countWhilePaused);
+    }
+
     [Test]
     public void StartAppHangHeartbeat_PausesNativeDetectorWhenApplicationPauses()
     {

@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- App hang detection no longer reports a false app hang after the game moves to the background. It now stays paused while the game is in the background or out of focus. ([#2895](https://github.com/getsentry/sentry-unity/pull/2895))
 - The Linux native SDK now loads on distros with older glibc versions, such as Ubuntu 22.04 and Debian 12. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
 - Attaching a screenshot no longer stalls the main thread. Unless `SetBeforeSendScreenshot` is set, the frame gets read back from the GPU asynchronously and encoded on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
 
