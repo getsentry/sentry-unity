@@ -42,9 +42,6 @@ jobs:
         env:
           SUBMODULES: ${{ steps.env.outputs.submodules }}
 
-      - name: Update submobules
-        run: git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
-
       - run: |
           if [[ "${{ env.TARGET }}" == "Cocoa" ]]; then
             cp -r package-dev/Plugins/iOS sdk-static/ || echo "never mind, no iOS files checked in..."
@@ -64,6 +61,10 @@ jobs:
           path: |
             package-dev/Plugins
           key: sdk=${{ env.TARGET }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1') }}
+
+      - name: Update submodules
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
 
       - name: Installing Linux Dependencies
         if: ${{ (env.TARGET == 'Linux' || env.TARGET == 'LinuxNative') && steps.cache.outputs.cache-hit != 'true' }}
