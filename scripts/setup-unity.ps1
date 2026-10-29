@@ -9,6 +9,7 @@ $PSNativeCommandUseErrorActionPreference = $true
 $CliVersion = '1.0.0-beta.14'
 $CliBinaries = @{
     'darwin-arm64' = @('unity-darwin-arm64', '367ea124c61e91dc22409699cb40d2e65d23952f3220e911ccea1f6d8a1ff37f')
+    'linux-x64'    = @('unity-linux-x64', 'd9a2c1716ce723b970898f7f40adc09cceee04e84ce2f1f1638f07ac3e9898aa')
     'win32-x64'    = @('unity-windows-x64.exe', '78761a0547cd4a9bc212e27a217c66e6a621bf48c753ba440e4b2327ee7ff8ac')
 }
 
@@ -20,7 +21,7 @@ $env:UNITY_NON_INTERACTIVE = '1'
 $env:UNITY_NO_BANNER = '1'
 $env:UNITY_NO_PAGER = '1'
 
-# Unity CLI, pinned by version and checksum. Linux CI uses the GameCI Docker images instead (scripts/ci-docker.sh).
+# Unity CLI, pinned by version and checksum.
 $os = $IsWindows ? 'win32' : $IsMacOS ? 'darwin' : 'linux'
 $arch = "$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)".ToLower()
 $cliFile, $cliSha = $CliBinaries["$os-$arch"]
@@ -51,7 +52,7 @@ if ($env:UNITY_LICENSE_SERVER_CONFIG) {
         New-Item -ItemType Directory -Force -Path 'C:/ProgramData/Unity/config' | Out-Null
         Set-Content -Path 'C:/ProgramData/Unity/config/services-config.json' -Value $env:UNITY_LICENSE_SERVER_CONFIG
     } else {
-        $unityDataDir = '/Library/Application Support/Unity'
+        $unityDataDir = $IsMacOS ? '/Library/Application Support/Unity' : '/usr/share/unity3d'
         $configFile = Join-Path $cliDir 'services-config.json'
         Set-Content -Path $configFile -Value $env:UNITY_LICENSE_SERVER_CONFIG
         sudo mkdir -p "$unityDataDir/config"
