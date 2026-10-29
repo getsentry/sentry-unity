@@ -15,6 +15,7 @@ defaults:
 
 jobs:
   create:
+    timeout-minutes: 40
     name: ${{ inputs.unity-version }}
     runs-on: ubuntu-latest
     env:

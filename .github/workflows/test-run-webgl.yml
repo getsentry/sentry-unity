@@ -17,6 +17,7 @@ defaults:
 
 jobs:
   run:
+    timeout-minutes: 25
     name: WebGL ${{ inputs.unity-version }}
     runs-on: ubuntu-latest
     env:
