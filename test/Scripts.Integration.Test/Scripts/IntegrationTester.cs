@@ -85,9 +85,9 @@ public class IntegrationTester : MonoBehaviour
 #if UNITY_IOS && !UNITY_EDITOR
     // .NET `Environment.GetCommandLineArgs()` doesn't seem to work on iOS so we get the test arg in Objective-C
     [DllImport("__Internal", EntryPoint="getTestArgObjectiveC")]
-    private static extern string GetTestArg();
+    internal static extern string GetTestArg();
 #else
-    private static string GetTestArg()
+    internal static string GetTestArg()
     {
         string arg = null;
 #if UNITY_EDITOR
