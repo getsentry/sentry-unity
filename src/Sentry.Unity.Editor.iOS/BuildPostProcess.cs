@@ -103,6 +103,17 @@ public static class BuildPostProcess
                     "to the exported project. Select 'Replace' when exporting the project to create a clean project.");
             }
         }
+        else
+        {
+            // The upload phase a previous build added to `UnityFramework` would keep running with its old settings.
+            using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
+            if (sentryXcodeProject.UnityFrameworkTargetContainsSymbolUploadBuildPhase())
+            {
+                throw new BuildFailedException(
+                    "A previous build with the iOS native initialization type 'External' added the debug symbol upload " +
+                    "to 'UnityFramework'. Select 'Replace' when exporting the project to create a clean project.");
+            }
+        }
     }
 
     internal static void SetupNoOpBridge(IDiagnosticLogger logger, string pathToProject)

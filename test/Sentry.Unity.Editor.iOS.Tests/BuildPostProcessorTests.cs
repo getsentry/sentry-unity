@@ -264,6 +264,23 @@ public class BuildPostProcessorTests
     }
 
     [Test]
+    public void AddSentryToXcodeProject_AppendBuildsAndSwitchFromExternal_ThrowsBuildFailedException()
+    {
+        using (var xcodeProject = SentryXcodeProject.Open(_outputProjectPath))
+        {
+            xcodeProject.AddBuildPhaseSymbolUpload(new SentryCliOptions(), uploadFromUnityFramework: true);
+        }
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeInitializationType = NativeInitializationType.Runtime
+        };
+
+        Assert.Throws<BuildFailedException>(() =>
+            BuildPostProcess.AddSentryToXcodeProject(options, null, new TestLogger(), _outputProjectPath));
+    }
+
+    [Test]
     public void AddSentryToXcodeProject_AppendBuildsAndSwitchFromDisabledToExternal_ReplacesNoOpBridge()
     {
         var disabled = new SentryUnityOptions { Dsn = "https://k@h/p", IosNativeSupportEnabled = false };
