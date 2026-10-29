@@ -63,6 +63,8 @@ Plugins/iOS/SentryCxaThrowHook.cpp
 Plugins/iOS/SentryCxaThrowHook.cpp.meta
 Plugins/iOS/SentryNativeBridge.m
 Plugins/iOS/SentryNativeBridge.m.meta
+Plugins/iOS/SentryNativeBridgeExternal.m
+Plugins/iOS/SentryNativeBridgeExternal.m.meta
 Plugins/iOS/SentryNativeBridgeNoOp.m
 Plugins/iOS/SentryNativeBridgeNoOp.m.meta
 Plugins/iOS/SentryObjC.xcframework~/ios-arm64/
