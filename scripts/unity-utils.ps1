@@ -1,5 +1,6 @@
-$RunUnityLicenseRetryTimeoutSeconds = 3600
-$RunUnityLicenseRetryIntervalSeconds = 60
+$RunUnityLicenseRetryTimeoutSeconds = 1800
+$RunUnityLicenseRetryIntervalMinSeconds = 20
+$RunUnityLicenseRetryIntervalMaxSeconds = 90
 $ClearUnityLogTimeoutSeconds = 30
 
 function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLogOutput)
@@ -69,7 +70,8 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         {
             $msg = "Unity failed because it couldn't acquire a license."
             $timeRemaining = $RunUnityLicenseRetryTimeoutSeconds - $stopwatchTotal.Elapsed.TotalSeconds
-            $timeToSleep = $timeRemaining -gt $RunUnityLicenseRetryIntervalSeconds ? $RunUnityLicenseRetryIntervalSeconds : $timeRemaining - 1
+            $interval = Get-Random -Minimum $RunUnityLicenseRetryIntervalMinSeconds -Maximum ($RunUnityLicenseRetryIntervalMaxSeconds + 1)
+            $timeToSleep = $timeRemaining -gt $interval ? $interval : $timeRemaining - 1
             if ($timeToSleep -gt 0)
             {
                 Write-Host -ForegroundColor Yellow "$msg Sleeping for $timeToSleep seconds before retrying. Total time remaining: $timeRemaining seconds."
@@ -78,6 +80,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
             }
             else
             {
+                $msg = "Unity couldn't acquire a license after $try tries in $RunUnityLicenseRetryTimeoutSeconds seconds. The floating license entitlements are likely exhausted (no free Unity license seat)."
                 Write-Host "::error::$msg"
                 Throw $msg
             }
@@ -93,7 +96,7 @@ function RunUnity([string] $unityPath, [string[]] $arguments, [switch] $ReturnLo
         {
             break
         }
-    } while ($stopwatchTotal.Elapsed.TotalSeconds -lt $RunUnityLicenseRetryTimeoutSeconds)
+    } while ($true)
 
     if ($process.ExitCode -ne 0 -and $env:IgnoreExitCode -ne "true")
     {
