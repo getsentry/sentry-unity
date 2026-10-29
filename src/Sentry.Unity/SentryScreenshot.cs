@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Sentry.Extensibility;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 namespace Sentry.Unity;
@@ -56,11 +55,13 @@ internal static class SentryScreenshot
     {
         var renderTexture = CaptureIntoRenderTexture(options, Screen.width, Screen.height);
         var (width, height) = ((uint)renderTexture.width, (uint)renderTexture.height);
+        var format = renderTexture.graphicsFormat;
 
         try
         {
-            // The texture has to stay out of the pool until the readback is done with it
-            AsyncGPUReadback.Request(renderTexture, 0, TextureFormat.RGBA32, readback =>
+            // The texture has to stay out of the pool until the readback is done with it. Reading it back in its own
+            // format, as converting fails for formats the platform can't ReadPixels from, e.g. BGRA on Metal.
+            AsyncGPUReadback.Request(renderTexture, 0, readback =>
             {
                 RenderTexture.ReleaseTemporary(renderTexture);
 
@@ -77,7 +78,7 @@ internal static class SentryScreenshot
                     byte[]? bytes = null;
                     try
                     {
-                        bytes = ImageConversion.EncodeArrayToJPG(pixels, GraphicsFormat.R8G8B8A8_UNorm, width, height,
+                        bytes = ImageConversion.EncodeArrayToJPG(pixels, format, width, height,
                             0, options.ScreenshotCompression);
                     }
                     catch (Exception e)

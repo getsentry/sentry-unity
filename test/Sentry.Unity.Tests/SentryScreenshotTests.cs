@@ -1,5 +1,8 @@
+using System.Collections;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace Sentry.Unity.Tests;
 
@@ -60,5 +63,22 @@ public class SentryScreenshotTests
             RenderTexture.active = null;
             Object.Destroy(gameTarget);
         }
+    }
+
+    // Unity logs an error when the readback has to convert from a format it can't ReadPixels from, e.g. BGRA on Metal
+    [UnityTest]
+    public IEnumerator CaptureAsync_ReadsBackScreenshot()
+    {
+        if (!SystemInfo.supportsAsyncGPUReadback)
+        {
+            Assert.Ignore("Async GPU readback is not supported.");
+        }
+
+        var screenshot = new TaskCompletionSource<byte[]?>();
+
+        SentryScreenshot.CaptureAsync(new SentryUnityOptions(), bytes => screenshot.SetResult(bytes));
+        yield return new WaitUntil(() => screenshot.Task.IsCompleted);
+
+        Assert.IsNotEmpty(screenshot.Task.Result);
     }
 }
