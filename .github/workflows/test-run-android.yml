@@ -32,6 +32,10 @@ jobs:
       HOMEBREW_NO_INSTALL_CLEANUP: 1
       SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      EMULATOR_TARGET: google_apis
+      EMULATOR_CHANNEL: stable
+      REDROID_IMAGE: redroid/redroid:13.0.0_64only-latest
+      REDROID_BOOT_ARGS: androidboot.redroid_gpu_mode=guest
 
     steps:
       - name: Checkout
@@ -84,6 +88,29 @@ jobs:
           mkdir -p $HOME/.android/avd
           touch $HOME/.android/repositories.cfg
 
+      # android-emulator-runner calls sdkmanager once, without retrying a corrupt download.
+      - name: Install Android emulator and system image
+        if: ${{ steps.device.outputs.device == 'emulator' }}
+        shell: bash
+        run: |
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          packages=(emulator "system-images;android-${{ inputs.api-level }};$EMULATOR_TARGET;${{ steps.device.outputs.arch }}")
+          channel=$(case "$EMULATOR_CHANNEL" in (stable) echo 0;; (beta) echo 1;; (dev) echo 2;; (canary) echo 3;; (*) exit 1;; esac)
+          yes | "$sdkmanager" --licenses > /dev/null || true
+          for try in 1 2 3; do
+            status=0
+            "$sdkmanager" --install "${packages[@]}" --channel="$channel" > sdkmanager.log 2>&1 || status=$?
+            if ! grep -q 'Error on ZipFile' sdkmanager.log; then
+              [ "$status" -eq 0 ] || { cat sdkmanager.log; exit "$status"; }
+              exit 0
+            fi
+            grep 'Error on ZipFile' sdkmanager.log
+            [ "$try" -lt 3 ] || exit 1
+            echo "::warning::sdkmanager download was corrupt, retrying ($try/2) (signature: sdkmanager-corrupt-zip)"
+            rm -rf "$ANDROID_HOME/.temp" "$ANDROID_HOME/.downloadIntermediates"
+            sleep $((try * 20))
+          done
+
       - name: Run Android Integration Tests (emulator)
         if: ${{ steps.device.outputs.device == 'emulator' }}
         uses: reactivecircus/android-emulator-runner@0a638108440efd5c7f980e6ba145dbcdd8f32009 # v2.37.0
@@ -91,8 +118,8 @@ jobs:
         timeout-minutes: 30
         with:
           api-level: ${{ inputs.api-level }}
-          target: 'google_apis'
-          channel: 'stable'
+          target: ${{ env.EMULATOR_TARGET }}
+          channel: ${{ env.EMULATOR_CHANNEL }}
           force-avd-creation: true
           disable-animations: true
           disable-spellchecker: true
@@ -144,8 +171,8 @@ jobs:
           docker run -d --rm --privileged `
             --name redroid `
             -p 5555:5555 `
-            redroid/redroid:13.0.0_64only-latest `
-            androidboot.redroid_gpu_mode=guest
+            $env:REDROID_IMAGE `
+            $env:REDROID_BOOT_ARGS
 
       - name: Run Android Integration Tests (redroid)
         if: ${{ steps.device.outputs.device == 'redroid' }}
@@ -165,6 +192,14 @@ jobs:
             adb connect localhost:5555 *> $null
             $booted = (adb -s localhost:5555 shell getprop sys.boot_completed 2>$null | Out-String).Trim()
             if ($booted -eq "1") { Write-Host "Redroid booted after $($i * 5)s"; break }
+            if ($i -eq 30) {
+              Write-Host "::warning::Redroid did not boot in 150s, restarting the container once (signature: redroid-boot-timeout)"
+              docker logs redroid 2>&1 | Select-Object -Last 40
+              docker rm -f redroid
+              docker run -d --rm --privileged --name redroid -p 5555:5555 $env:REDROID_IMAGE $env:REDROID_BOOT_ARGS
+              if ($LASTEXITCODE -ne 0) { exit 1 }
+              adb disconnect localhost:5555 *> $null
+            }
             if ($i -eq 60) {
               Write-Host "Redroid did not boot in time"
               adb devices -l

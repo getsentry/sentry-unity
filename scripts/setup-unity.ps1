@@ -29,13 +29,24 @@ if (-not $cliFile) { throw "No Unity CLI binary pinned for $os-$arch" }
 $cliDir = Join-Path ($env:RUNNER_TEMP ?? [System.IO.Path]::GetTempPath()) 'unity-cli'
 New-Item -ItemType Directory -Force -Path $cliDir | Out-Null
 $cli = Join-Path $cliDir ($IsWindows ? 'unity.exe' : 'unity')
-Invoke-WebRequest -Uri "https://public-cdn.cloud.unity3d.com/hub/prod/cli/$CliVersion/$cliFile" -OutFile $cli
+Invoke-WebRequest -Uri "https://public-cdn.cloud.unity3d.com/hub/prod/cli/$CliVersion/$cliFile" -OutFile $cli -MaximumRetryCount 3 -RetryIntervalSec 10
 if ((Get-FileHash $cli -Algorithm SHA256).Hash -ne $cliSha) { throw "Unity CLI checksum mismatch for $cliFile" }
 if (-not $IsWindows) { chmod +x $cli }
 
 $installArgs = @('install', $unity.version, '--changeset', $unity.changeset, '--child-modules', '--accept-eula', '--yes')
 if ($moduleList) { $installArgs += @('--module') + $moduleList }
-& $cli @installArgs
+$retryDelays = @(30, 90)
+for ($try = 1; ; $try++) {
+    $PSNativeCommandUseErrorActionPreference = $false
+    & $cli @installArgs
+    $installExitCode = $LASTEXITCODE
+    $PSNativeCommandUseErrorActionPreference = $true
+    if ($installExitCode -eq 0) { break }
+    if ($try -gt $retryDelays.Count) { throw "unity install failed with exit code $installExitCode after $try tries" }
+    $delay = $retryDelays[$try - 1]
+    Write-Host "::warning::unity install failed with exit code $installExitCode, retrying in $delay s ($try/$($retryDelays.Count)) (signature: editor-install-failed)"
+    Start-Sleep -Seconds $delay
+}
 
 $editor = (& $cli editors --installed --verbose --json | ConvertFrom-Json).data | Where-Object version -EQ $unity.version | Select-Object -First 1
 if (-not $editor) { throw "Unity $($unity.version) not listed after install" }
