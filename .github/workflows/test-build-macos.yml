@@ -91,15 +91,11 @@ jobs:
       - name: Add DependencyConflict to the project
         run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
 
-      - name: Configure Sentry
-        run: ./test/Scripts.Integration.Test/configure-sentry.ps1 -UnityPath "$env:UNITY_PATH" -Platform MacOS
-        env:
-          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
-
       - name: Build with Sentry SDK (Cocoa backend)
-        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform MacOS -UnityVersion "$env:UNITY_VERSION"
+        run: ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$env:UNITY_PATH" -Platform MacOS -UnityVersion "$env:UNITY_VERSION" -ConfigureSentry
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_DSN: ${{ secrets.SENTRY_TEST_DSN }}
 
       - name: Assert symbols and sources were uploaded (Cocoa backend)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log

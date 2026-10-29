@@ -34,6 +34,7 @@ if ($Recreate -and (Test-Path -Path $(GetNewProjectPath))) {
     Remove-Item -Path $(GetNewProjectPath) -Recurse -Force -Confirm:$false
 }
 
+$configureSentry = $false
 If (-not(Test-Path -Path "$(GetNewProjectPath)")) {
     Write-PhaseHeader "Creating Project"
     Write-Log "Project path: $(GetNewProjectPath)"
@@ -62,9 +63,8 @@ If (-not(Test-Path -Path "$(GetNewProjectPath)")) {
         Write-PhaseSuccess "DependencyConflict added"
     }
 
-    Write-PhaseHeader "Configuring Sentry"
-    ./test/Scripts.Integration.Test/configure-sentry.ps1 "$UnityPath" -Platform $Platform
-    Write-PhaseSuccess "Sentry configured"
+    # Sentry options get configured by the first build
+    $configureSentry = $true
 }
 
 # Copying the native SDK over to the expected directory.
@@ -86,11 +86,11 @@ If ($Rebuild -or -not(Test-Path -Path $(GetNewProjectBuildPath))) {
 
     If ("iOS" -eq $Platform) {
         # We're exporting an Xcode project and building that in a separate step.
-        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
+        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform -ConfigureSentry:$configureSentry
         & (Join-Path $PSScriptRoot "../../scripts/compile-xcode-project.ps1")
     }
     Else {
-        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform
+        ./test/Scripts.Integration.Test/build-project.ps1 -UnityPath "$UnityPath" -UnityVersion $UnityVersion -Platform $Platform -ConfigureSentry:$configureSentry
     }
     Write-PhaseSuccess "Project built"
 }
