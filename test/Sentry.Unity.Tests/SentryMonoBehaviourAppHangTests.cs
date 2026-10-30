@@ -94,6 +94,25 @@ public class SentryMonoBehaviourAppHangTests
         Assert.AreEqual(countWhilePaused + 1, count);
     }
 
+    [UnityTest]
+    public IEnumerator StartAppHangHeartbeat_RestartsHeartbeatsOnResume()
+    {
+        var sut = GetSut();
+        var count = 0;
+
+        var heartbeat = sut.StartAppHangHeartbeat(() => count++, () => { }, TimeSpan.FromSeconds(0.05));
+        yield return null;
+
+        // Like a reload of the player, which leaves the suspended coroutine stalled.
+        sut.UpdatePauseStatus(true);
+        sut.StopCoroutine(heartbeat);
+        sut.UpdatePauseStatus(false);
+        var countAfterResume = count;
+        yield return new WaitForSecondsRealtime(0.12f);
+
+        Assert.Greater(count, countAfterResume);
+    }
+
     [Test]
     public void StartAppHangHeartbeat_DoesNotArmOnResumeBeforeFirstHeartbeat()
     {

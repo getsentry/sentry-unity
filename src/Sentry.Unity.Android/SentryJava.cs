@@ -14,6 +14,7 @@ internal interface ISentryJava
     public bool? IsMainProcess();
     public void Init(SentryUnityOptions options);
     public string? GetOption(string getter);
+    public bool? IsNdkAppHangTrackingEnabled();
     public string? GetTraceHeader();
     public string? GetBaggageHeader();
     public string? GetMainProcessTraceHeader();
@@ -276,12 +277,20 @@ internal class SentryJava : ISentryJava
     }
 
     // A string option of the native SDK, e.g. `getRelease` or `getEnvironment`.
-    public string? GetOption(string getter)
+    public string? GetOption(string getter) =>
+        ReadOptions(nameof(GetOption), options => options.Call<string>(getter));
+
+    // Whether the app's native SDK runs app hang detection. It only watches a thread that sends heartbeats.
+    public bool? IsNdkAppHangTrackingEnabled() =>
+        ReadOptions(nameof(IsNdkAppHangTrackingEnabled), options =>
+            (bool?)(options.Call<bool>("isEnableNdk") && options.Call<bool>("isEnableNdkAppHangTracking")));
+
+    private T? ReadOptions<T>(string caller, Func<AndroidJavaObject, T?> read)
     {
         if (!MainThreadData.IsMainThread())
         {
-            _logger?.LogError("Calling GetOption() on Android SDK requires running on MainThread");
-            return null;
+            _logger?.LogError("Calling {0}() on Android SDK requires running on MainThread", caller);
+            return default;
         }
 
         try
@@ -289,14 +298,14 @@ internal class SentryJava : ISentryJava
             using var sentry = GetSentryJava();
             using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
             using var options = hub?.Call<AndroidJavaObject>("getOptions");
-            return options?.Call<string>(getter);
+            return options is null ? default : read(options);
         }
         catch (Exception e)
         {
-            _logger?.LogError(e, "Calling 'SentryJava.GetOption' failed.");
+            _logger?.LogError(e, "Calling 'SentryJava.{0}' failed.", caller);
         }
 
-        return null;
+        return default;
     }
 
     // The `sentry-trace` header of the app's SDK in the main process: its active span, otherwise its propagation context.
