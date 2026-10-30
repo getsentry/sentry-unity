@@ -283,6 +283,16 @@ char *SentryNativeBridgeGetInstallationId()
     return SentryCopyString(SentryCallWith(installation, @selector(idWithCacheDirectoryPath:), cacheDirectoryPath));
 }
 
+// The connection the app's SDK reports in its device context.
+void SentryNativeBridgeGetConnection(char **type, char **effectiveType)
+{
+    id container = SentryCall(NSClassFromString(@"Sentry.SentryDependencyContainer"), @selector(sharedInstance));
+    NSDictionary *extraContext = SentryCall(SentryCall(container, @selector(extraContextProvider)), @selector(getExtraContext));
+    NSDictionary *device = [extraContext isKindOfClass:[NSDictionary class]] ? extraContext[@"device"] : nil;
+    *type = SentryCopyString(device[@"connection_type"]);
+    *effectiveType = SentryCopyString(device[@"connection_effective_type"]);
+}
+
 // A string option of the app's SDK, e.g. `releaseName`, `environment`, or `dist`.
 char *SentryNativeBridgeGetOption(const char *name)
 {
