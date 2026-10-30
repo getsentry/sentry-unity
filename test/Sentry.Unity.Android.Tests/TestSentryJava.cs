@@ -12,6 +12,7 @@ internal class TestSentryJava : ISentryJava
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
     public bool? MainProcess { get; set; } = true;
+    public bool? NdkAppHangTracking { get; set; }
     public bool InitCalled { get; private set; }
     public bool CloseCalled { get; private set; }
     public Dictionary<string, string?> Options { get; } = new();
@@ -34,6 +35,8 @@ internal class TestSentryJava : ISentryJava
     }
 
     public string? GetOption(string getter) => Options.TryGetValue(getter, out var value) ? value : null;
+
+    public bool? IsNdkAppHangTrackingEnabled() => NdkAppHangTracking;
 
     public string? GetTraceHeader() => TraceHeader;
 

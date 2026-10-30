@@ -119,8 +119,11 @@ public static class SentryNativeAndroid
             }
         }
 
-        // When attached, the app's native SDK decides on app hang tracking.
-        if (!isAttached && options.NativeAppHangTrackingEnabled && options.NdkIntegrationEnabled)
+        // When attached, the app's native SDK decides on app hang tracking. It doesn't send heartbeats, so the game does.
+        var appHangTracking = isAttached
+            ? SentryJava.IsNdkAppHangTrackingEnabled() is true
+            : options.NativeAppHangTrackingEnabled && options.NdkIntegrationEnabled;
+        if (appHangTracking)
         {
             Logger?.LogDebug("Starting the app-hang heartbeat coroutine.");
             SentryMonoBehaviour.Instance.StartAppHangHeartbeat(

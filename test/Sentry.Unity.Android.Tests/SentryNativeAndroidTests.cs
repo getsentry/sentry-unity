@@ -246,6 +246,36 @@ public class SentryNativeAndroidTests
     }
 
     [Test]
+    [TestCase(true, true)]
+    [TestCase(false, false)]
+    [TestCase(null, false)]
+    public void Configure_ExternalAppInitialized_StartsHeartbeatWhenAppTracksAppHangs(bool? appTracksAppHangs, bool expected)
+    {
+        var logger = new TestLogger();
+        var options = new SentryUnityOptions
+        {
+            AndroidNativeInitializationType = NativeInitializationType.External,
+            Debug = true,
+            DiagnosticLevel = SentryLevel.Debug,
+            DiagnosticLogger = logger
+        };
+        _testSentryJava.Enabled = true;
+        _testSentryJava.NdkAppHangTracking = appTracksAppHangs;
+
+        try
+        {
+            SentryNativeAndroid.Configure(options);
+
+            Assert.AreEqual(expected, logger.Logs.Any(log => log.message.Contains("Starting the app-hang heartbeat")));
+        }
+        finally
+        {
+            // The heartbeat's pause handler would call into the native SDK when other tests pause the shared instance.
+            UnityEngine.Object.DestroyImmediate(SentryMonoBehaviour.Instance.gameObject);
+        }
+    }
+
+    [Test]
     public void Configure_ExternalNotInitializedInMainProcess_SkipsNativeSupport()
     {
         var options = new SentryUnityOptions { AndroidNativeInitializationType = NativeInitializationType.External };

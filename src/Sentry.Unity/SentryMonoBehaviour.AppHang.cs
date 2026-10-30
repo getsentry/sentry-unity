@@ -26,7 +26,10 @@ public partial class SentryMonoBehaviour
     public Coroutine StartAppHangHeartbeat(Action heartbeat) =>
         StartAppHangHeartbeat(heartbeat, AppHangHeartbeatInterval);
 
-    internal Coroutine StartAppHangHeartbeat(Action heartbeat, Action pause)
+    internal Coroutine StartAppHangHeartbeat(Action heartbeat, Action pause) =>
+        StartAppHangHeartbeat(heartbeat, pause, AppHangHeartbeatInterval);
+
+    internal Coroutine StartAppHangHeartbeat(Action heartbeat, Action pause, TimeSpan interval)
     {
         if (_appHangPause is not null)
         {
@@ -46,10 +49,14 @@ public partial class SentryMonoBehaviour
             if (_appHangArmed)
             {
                 heartbeat();
+                // Unloading and reloading the player (Unity as a Library) resets the frame count and time, and a
+                // coroutine suspended across it stalls for as long as the game ran before. A new one starts on the new clock.
+                StopCoroutine(_appHangHeartbeat);
+                _appHangHeartbeat = StartCoroutine(AppHangHeartbeatCoroutine(heartbeat, interval, arm: false));
             }
         };
         ApplicationResuming += _appHangResume;
-        return StartAppHangHeartbeat(heartbeat, AppHangHeartbeatInterval);
+        return StartAppHangHeartbeat(heartbeat, interval);
     }
 
     // Internal overload so tests can use a short interval.
@@ -65,16 +72,19 @@ public partial class SentryMonoBehaviour
         return _appHangHeartbeat;
     }
 
-    private IEnumerator AppHangHeartbeatCoroutine(Action heartbeat, TimeSpan interval)
+    private IEnumerator AppHangHeartbeatCoroutine(Action heartbeat, TimeSpan interval, bool arm = true)
     {
-        // Skipping the first frame. The first heartbeat both latches the main thread as the
-        // monitored target and arms detection. The monitor no-op without having received a 
-        // heartbeat. During startup, splash screen plus the first scene load routinely block the 
-        // main thread longer than the hang timeout and would cause false positives.
-        // This also works in batchmode/headless (e.g. LinuxServer), unlike WaitForEndOfFrame.
-        yield return null;
-        heartbeat();
-        _appHangArmed = true;
+        if (arm)
+        {
+            // Skipping the first frame. The first heartbeat both latches the main thread as the
+            // monitored target and arms detection. The monitor no-op without having received a 
+            // heartbeat. During startup, splash screen plus the first scene load routinely block the 
+            // main thread longer than the hang timeout and would cause false positives.
+            // This also works in batchmode/headless (e.g. LinuxServer), unlike WaitForEndOfFrame.
+            yield return null;
+            heartbeat();
+            _appHangArmed = true;
+        }
 
         var wait = new WaitForSecondsRealtime((float)interval.TotalSeconds);
         while (true)
