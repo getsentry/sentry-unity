@@ -171,6 +171,18 @@ public class SentryNativeAndroidTests
     }
 
     [Test]
+    public void Configure_DefaultConfiguration_SetsNativeConnection()
+    {
+        var options = new SentryUnityOptions();
+        _testSentryJava.Connection = ("cellular", "5g");
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.IsNotNull(options.NativeConnection);
+        Assert.AreEqual(("cellular", "5g"), options.NativeConnection!());
+    }
+
+    [Test]
     public void Configure_DefaultConfigurationSentryJavaNotPresent_LogsErrorAndReturns()
     {
         var options = new SentryUnityOptions

@@ -11,6 +11,7 @@ internal class TestSentryJava : ISentryJava
     public bool SentryPresent { get; set; } = true;
     public string? InstallationId { get; set; }
     public bool? IsCrashedLastRun { get; set; }
+    public (string? Type, string? EffectiveType) Connection { get; set; }
     public bool? MainProcess { get; set; } = true;
     public bool? NdkAppHangTracking { get; set; }
     public bool InitCalled { get; private set; }
@@ -55,6 +56,8 @@ internal class TestSentryJava : ISentryJava
     public string? GetInstallationId() => InstallationId;
 
     public bool? CrashedLastRun() => IsCrashedLastRun;
+
+    public (string? Type, string? EffectiveType) GetConnection() => Connection;
 
     public void Close() => CloseCalled = true;
 

@@ -16,6 +16,7 @@
 
 - Added experimental support for Unity as a Library on Android and iOS. With `AndroidNativeInitializationType` or `IosNativeInitializationType` set to `NativeInitializationType.External`, the game attaches to the sentry-android or sentry-cocoa SDK that the app already started instead of bundling and starting its own. On Android, when the game runs in its own process, it starts sentry-android there and continues the app's trace. Native crashes carry the game's context and breadcrumbs, C# events and logs use the app's release, environment, user, and trace, the game's transactions join the app's trace, and the game's debug symbols are still uploaded automatically. ([#2885](https://github.com/getsentry/sentry-unity/pull/2885), [#2895](https://github.com/getsentry/sentry-unity/pull/2895))
 - The SDK now supports Linux ARM64 dedicated servers (Unity 6000.3 and newer, IL2CPP). The native SDK for both backends ships for `x86_64` and `ARM64`, and the build picks the one matching the player. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
+- On Android, iOS, and macOS, C# events now report the connection type in `device.connection_type` and the cellular network generation in `device.connection_effective_type`, for example `4g` or `5g`. On Android 11 and earlier, the generation requires the `READ_PHONE_STATE` permission. ([#2889](https://github.com/getsentry/sentry-unity/pull/2889))
 
 ### Dependencies
 

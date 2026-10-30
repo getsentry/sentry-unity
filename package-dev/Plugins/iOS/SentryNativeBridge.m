@@ -241,6 +241,19 @@ char *SentryNativeBridgeGetInstallationId()
     return cString;
 }
 
+static char *_Nullable _CStringCopyOrNull(id _Nullable value)
+{
+    return [value isKindOfClass:[NSString class]] ? strdup([value UTF8String]) : NULL;
+}
+
+void SentryNativeBridgeGetConnection(
+    char *_Nullable *_Nonnull type, char *_Nullable *_Nonnull effectiveType)
+{
+    NSDictionary *device = [SentryObjCSDK internal].sdk.extraContext[@"device"];
+    *type = _CStringCopyOrNull(device[@"connection_type"]);
+    *effectiveType = _CStringCopyOrNull(device[@"connection_effective_type"]);
+}
+
 // Only the app's own SDK provides these, see SentryNativeBridgeExternal.m.
 char *_Nullable SentryNativeBridgeGetOption(const char *name) { return NULL; }
 

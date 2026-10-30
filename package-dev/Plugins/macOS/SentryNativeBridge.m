@@ -357,6 +357,19 @@ char *SentryNativeBridgeGetInstallationId()
     return cString;
 }
 
+static char *_CStringCopyOrNull(id value)
+{
+    return [value isKindOfClass:[NSString class]] ? strdup([value UTF8String]) : NULL;
+}
+
+void SentryNativeBridgeGetConnection(char **type, char **effectiveType)
+{
+    id sdkApi = [SentryInternalApi() performSelector:@selector(sdk)];
+    NSDictionary *device = [sdkApi performSelector:@selector(extraContext)][@"device"];
+    *type = _CStringCopyOrNull(device[@"connection_type"]);
+    *effectiveType = _CStringCopyOrNull(device[@"connection_effective_type"]);
+}
+
 // External initialization is iOS only.
 char *SentryNativeBridgeGetOption(const char *name) { return NULL; }
 

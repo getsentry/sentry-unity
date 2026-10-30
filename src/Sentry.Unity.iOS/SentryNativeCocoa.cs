@@ -95,6 +95,7 @@ public static class SentryNativeCocoa
         }
 
         options.NativeContextWriter = new NativeContextWriter();
+        options.NativeConnection = SentryCocoaBridgeProxy.GetConnection;
         options.EnableScopeSync = true;
         options.CrashedLastRun = () =>
         {

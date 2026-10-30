@@ -95,6 +95,7 @@ public static class SentryNativeAndroid
             : new AndroidJavaScopeObserver(options, SentryJava);
         options.EnableScopeSync = true;
         options.NativeDebugImageProvider = new Native.NativeDebugImageProvider();
+        options.NativeConnection = SentryJava.GetConnection;
 
         if (isExternal)
         {
