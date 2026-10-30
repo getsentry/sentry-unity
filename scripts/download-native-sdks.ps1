@@ -32,12 +32,22 @@ $SDKs = @(
     @{
         Name = "Linux"
         Destination = Join-Path $ArtifactsDestination "Linux/Sentry~"
-        CheckFile = "libsentry-native.so"
+        CheckFile = "x86_64/libsentry-native.so"
+    },
+    @{
+        Name = "LinuxArm64"
+        Destination = Join-Path $ArtifactsDestination "Linux/Sentry~"
+        CheckFile = "ARM64/libsentry-native.so"
     },
     @{
         Name = "LinuxNative"
         Destination = Join-Path $ArtifactsDestination "Linux/SentryNative~"
-        CheckFile = "libsentry-native.so"
+        CheckFile = "x86_64/libsentry-native.so"
+    },
+    @{
+        Name = "LinuxNativeArm64"
+        Destination = Join-Path $ArtifactsDestination "Linux/SentryNative~"
+        CheckFile = "ARM64/libsentry-native.so"
     },
     @{
         Name = "Android"
@@ -201,11 +211,11 @@ if ($currentBranch -and $currentBranch -ne 'main' -and $currentBranch -ne 'HEAD'
 $failed = @()
 foreach ($sdk in $sdksToDownload) {
     Write-Host "Downloading $($sdk.Name) SDK..." -ForegroundColor Yellow
-    if (Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $mainRunId) {
+    if ((Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $mainRunId) -and (Test-SDKPresent $sdk)) {
         Write-Host "  Downloaded from main run $mainRunId" -ForegroundColor Green
         continue
     }
-    if ($branchRunId -and (Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $branchRunId)) {
+    if ($branchRunId -and (Try-DownloadSDK -Name $sdk.Name -Destination $sdk.Destination -RunId $branchRunId) -and (Test-SDKPresent $sdk)) {
         Write-Host "  Not on main; downloaded from branch '$currentBranch' run $branchRunId" -ForegroundColor Yellow
         continue
     }

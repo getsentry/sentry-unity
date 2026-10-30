@@ -101,6 +101,28 @@ public class BuildPostProcessorTests
     }
 
     [Test]
+    public void AddSentryToXcodeProject_NativeSupportEnabledAndInitializationTypeExternal_SetsUpSdkButDoesNotInitialize()
+    {
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeSupportEnabled = true,
+            IosNativeInitializationType = NativeInitializationType.External
+        };
+        var testLogger = new TestLogger();
+
+        BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath);
+
+        var mainFile = File.ReadAllText(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
+        var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName);
+
+        Assert.IsTrue(File.Exists(bridgePath));
+        StringAssert.Contains("SentrySDKInternal", File.ReadAllText(bridgePath)); // The bridge to the app's own SDK
+        StringAssert.DoesNotContain("SentryObjC", File.ReadAllText(bridgePath));
+        Assert.IsFalse(NativeMain.ContainsSentry(mainFile, null)); // The main.mm must not contain Sentry
+    }
+
+    [Test]
     public void AddSentryToXcodeProject_NativeSupportEnabledAndInitializationTypeBuildTime_SetsUpSdkAndAddsAutoInitialize()
     {
         var options = new SentryUnityOptions
@@ -187,6 +209,24 @@ public class BuildPostProcessorTests
     }
 
     [Test]
+    public void SetupSentry_InitializationTypeExternal_CopiesBridgeButNotFramework()
+    {
+        var options = new SentryUnityOptions { IosNativeInitializationType = NativeInitializationType.External };
+        var testLogger = new TestLogger();
+
+        BuildPostProcess.SetupSentry(options, testLogger, _outputProjectPath);
+
+        var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(),
+            SentryXcodeProject.BridgeName);
+        var frameworkPath = Path.Combine(_outputProjectPath, "Frameworks", SentryXcodeProject.FrameworkName);
+
+        Assert.IsTrue(File.Exists(bridgePath));
+        Assert.IsFalse(Directory.Exists(frameworkPath));
+        StringAssert.DoesNotContain(SentryXcodeProject.FrameworkName,
+            File.ReadAllText(Path.Combine(_outputProjectPath, "Unity-iPhone.xcodeproj", "project.pbxproj")));
+    }
+
+    [Test]
     public void AddSentryToXcodeProject_AppendBuildsAndToggleNativeSupport_ThrowsBuildFailedException()
     {
         var file = new FileInfo(Path.Combine(_outputProjectPath, SentryXcodeProject.MainPath));
@@ -203,6 +243,68 @@ public class BuildPostProcessorTests
             BuildPostProcess.AddSentryToXcodeProject(options, null, testLogger, _outputProjectPath));
 
         Directory.Delete(_outputProjectPath, true);
+    }
+
+    [Test]
+    public void AddSentryToXcodeProject_AppendBuildsAndSwitchToExternal_ThrowsBuildFailedException()
+    {
+        using (var xcodeProject = SentryXcodeProject.Open(_outputProjectPath))
+        {
+            xcodeProject.AddSentryFramework();
+        }
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeSupportEnabled = true,
+            IosNativeInitializationType = NativeInitializationType.External
+        };
+
+        Assert.Throws<BuildFailedException>(() =>
+            BuildPostProcess.AddSentryToXcodeProject(options, null, new TestLogger(), _outputProjectPath));
+    }
+
+    [Test]
+    public void AddSentryToXcodeProject_AppendBuildsAndSwitchFromExternal_ThrowsBuildFailedException()
+    {
+        using (var xcodeProject = SentryXcodeProject.Open(_outputProjectPath))
+        {
+            xcodeProject.AddBuildPhaseSymbolUpload(new SentryCliOptions(), uploadFromUnityFramework: true);
+        }
+        var options = new SentryUnityOptions
+        {
+            Dsn = "https://k@h/p",
+            IosNativeInitializationType = NativeInitializationType.Runtime
+        };
+
+        Assert.Throws<BuildFailedException>(() =>
+            BuildPostProcess.AddSentryToXcodeProject(options, null, new TestLogger(), _outputProjectPath));
+    }
+
+    [Test]
+    public void AddSentryToXcodeProject_AppendBuildsAndSwitchFromDisabledToExternal_ReplacesNoOpBridge()
+    {
+        var disabled = new SentryUnityOptions { Dsn = "https://k@h/p", IosNativeSupportEnabled = false };
+        var external = new SentryUnityOptions { Dsn = "https://k@h/p", IosNativeInitializationType = NativeInitializationType.External };
+
+        BuildPostProcess.AddSentryToXcodeProject(disabled, null, new TestLogger(), _outputProjectPath);
+        BuildPostProcess.AddSentryToXcodeProject(external, null, new TestLogger(), _outputProjectPath);
+
+        var bridgePath = Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName);
+        StringAssert.Contains("SentrySDKInternal", File.ReadAllText(bridgePath));
+    }
+
+    [Test]
+    public void AddSentryToXcodeProject_AppendBuildsAndSwitchFromExternalToRuntime_ReplacesExternalBridge()
+    {
+        var external = new SentryUnityOptions { Dsn = "https://k@h/p", IosNativeInitializationType = NativeInitializationType.External };
+        var runtime = new SentryUnityOptions { Dsn = "https://k@h/p", IosNativeInitializationType = NativeInitializationType.Runtime };
+
+        BuildPostProcess.AddSentryToXcodeProject(external, null, new TestLogger(), _outputProjectPath);
+        BuildPostProcess.AddSentryToXcodeProject(runtime, null, new TestLogger(), _outputProjectPath);
+
+        var bridge = File.ReadAllText(Path.Combine(_outputProjectPath, "Libraries", SentryPackageInfo.GetName(), SentryXcodeProject.BridgeName));
+        StringAssert.Contains("[SentryObjCSDK", bridge);
+        StringAssert.DoesNotContain("SentrySDKInternal", bridge);
     }
 
     [Test]
@@ -252,17 +354,17 @@ public class BuildPostProcessorTests
     }
 
     [Test]
-    public void CopyFile_FileAlreadyExists_LogsSkipMessage()
+    public void CopyFile_FileAlreadyExists_ReplacesFile()
     {
-        var testLogger = new TestLogger();
         var targetPath = Path.Combine(_outputProjectPath, "SomeDirectory", "Test.m");
+        Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+        File.WriteAllText(targetPath, "previous build");
+        File.SetAttributes(targetPath, FileAttributes.ReadOnly);
+        File.WriteAllText(_testFilePath, "current build");
 
-        BuildPostProcess.CopyFile(_testFilePath, targetPath, testLogger);
-        BuildPostProcess.CopyFile(_testFilePath, targetPath, testLogger);
+        BuildPostProcess.CopyFile(_testFilePath, targetPath, new TestLogger());
 
-        Assert.IsTrue(testLogger.Logs.Any(log =>
-            log.logLevel == SentryLevel.Debug &&
-            log.message.Contains("has already been copied to")));
+        Assert.AreEqual("current build", File.ReadAllText(targetPath));
     }
 
     [Test]

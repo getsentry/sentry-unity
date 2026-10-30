@@ -23,20 +23,17 @@ namespace Sentry.Unity.Editor.iOS.Tests
 
             var packageRoot = Path.GetFullPath(Path.Combine(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..", ".."));
-            var bridgePath = Path.Combine(packageRoot, "Plugins", "iOS", "SentryNativeBridge.m");
-            var noOpBridgePath = Path.Combine(packageRoot, "Plugins", "iOS", "SentryNativeBridgeNoOp.m");
+            var bridgePaths = new[] { "SentryNativeBridge.m", "SentryNativeBridgeNoOp.m", "SentryNativeBridgeExternal.m" }
+                .Select(name => Path.Combine(packageRoot, "Plugins", "iOS", name));
 
-            var bridgeContent = File.ReadAllText(bridgePath);
-            var noOpBridgeContent = File.ReadAllText(noOpBridgePath);
-
-            foreach (var entryPoint in entryPoints)
+            foreach (var bridgePath in bridgePaths)
             {
-                var pattern = $@"{entryPoint}\s*\(";
-
-                Assert.That(Regex.IsMatch(bridgeContent, pattern),
-                    $"Entry point '{entryPoint}' not found in {bridgePath}");
-                Assert.That(Regex.IsMatch(noOpBridgeContent, pattern),
-                    $"Entry point '{entryPoint}' not found in {noOpBridgePath}");
+                var bridgeContent = File.ReadAllText(bridgePath);
+                foreach (var entryPoint in entryPoints)
+                {
+                    Assert.That(Regex.IsMatch(bridgeContent, $@"{entryPoint}\s*\("),
+                        $"Entry point '{entryPoint}' not found in {bridgePath}");
+                }
             }
         }
     }

@@ -370,6 +370,15 @@ void SentryNativeBridgeGetConnection(char **type, char **effectiveType)
     *effectiveType = _CStringCopyOrNull(device[@"connection_effective_type"]);
 }
 
+// External initialization is iOS only.
+char *SentryNativeBridgeGetOption(const char *name) { return NULL; }
+
+char *SentryNativeBridgeGetTraceHeader() { return NULL; }
+
+char *SentryNativeBridgeGetBaggageHeader() { return NULL; }
+
+char *SentryNativeBridgeGetUser() { return NULL; }
+
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
     if (traceId == NULL || spanId == NULL) {

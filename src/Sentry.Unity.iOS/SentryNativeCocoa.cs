@@ -30,11 +30,20 @@ public static class SentryNativeCocoa
             return;
         }
 
+        var isExternal = platform == RuntimePlatform.IPhonePlayer &&
+                         options.IosNativeInitializationType is NativeInitializationType.External;
+
         if (platform == RuntimePlatform.IPhonePlayer)
         {
             if (SentryCocoaBridgeProxy.IsEnabled())
             {
                 Logger?.LogDebug("The native SDK is already initialized");
+            }
+            else if (isExternal)
+            {
+                Logger?.LogWarning("The native SDK is expected to be initialized by the app but it is not. " +
+                                   "Make sure the app initializes Sentry before the game starts. Skipping native support.");
+                return;
             }
             else if (!SentryCocoaBridgeProxy.Init(options))
             {
@@ -42,8 +51,24 @@ public static class SentryNativeCocoa
                 return;
             }
 
-            options.ScopeObserver = new NativeScopeObserver("iOS", options);
+            options.ScopeObserver = isExternal
+                ? new ExternalNativeScopeObserver("iOS", options)
+                : new NativeScopeObserver("iOS", options);
 
+            if (isExternal)
+            {
+                options.UseAppReleaseAndEnvironment(() => SentryCocoaBridgeProxy.GetOption("releaseName"),
+                    () => SentryCocoaBridgeProxy.GetOption("dist"), () => SentryCocoaBridgeProxy.GetOption("environment"));
+                NativePropagationContext.Use(options, SentryCocoaBridgeProxy.GetTraceHeader,
+                    SentryCocoaBridgeProxy.GetBaggageHeader);
+                NativeAppUser.Use(options, () => NativeAppUser.FromJson(SentryCocoaBridgeProxy.GetUser()));
+
+                if (options.AutoSessionTracking)
+                {
+                    Logger?.LogDebug("Disabling session tracking - the app tracks sessions.");
+                    options.AutoSessionTracking = false;
+                }
+            }
         }
         else
         {
@@ -55,7 +80,8 @@ public static class SentryNativeCocoa
             options.ScopeObserver = new NativeScopeObserver("macOS", options);
         }
 
-        if (options.EnableAppHangTracking)
+        // With external initialization, the app's sentry-cocoa handles app hangs.
+        if (isExternal || options.EnableAppHangTracking)
         {
             Logger?.LogDebug("Disabling the C# ANR watchdog - sentry-cocoa handles app hang detection.");
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -63,7 +89,10 @@ public static class SentryNativeCocoa
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        SentryCocoaBridgeProxy.SetSdkName(); // Since we're not building the SDK we have to overwrite the name here
+        if (!isExternal)
+        {
+            SentryCocoaBridgeProxy.SetSdkName(); // Since we're not building the SDK we have to overwrite the name here
+        }
 
         options.NativeContextWriter = new NativeContextWriter();
         options.NativeConnection = SentryCocoaBridgeProxy.GetConnection;
@@ -78,7 +107,12 @@ public static class SentryNativeCocoa
             return crashedLastRun;
         };
 
-        options.NativeSupportCloseCallback += () => Close(options);
+        // The app owns the SDK's lifetime.
+        if (!isExternal)
+        {
+            options.NativeSupportCloseCallback += () => Close(options);
+        }
+
         if (options.UnityInfo.IL2CPP)
         {
             var installationId = SentryCocoaBridgeProxy.GetInstallationId();

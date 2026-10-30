@@ -267,6 +267,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// When set to <see cref="NativeInitializationType.BuildTime"/>, the options are written and hardcoded into the
     /// Xcode project during the build process. This means that the options cannot be changed at runtime, as they are
     /// embedded into the project itself.
+    /// When set to <see cref="NativeInitializationType.External"/>, the app that embeds the game initializes the native
+    /// SDK, e.g. when using Unity as a Library. This is experimental.
     /// </remarks>
     public NativeInitializationType IosNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
@@ -284,6 +286,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// When set to <see cref="NativeInitializationType.BuildTime"/>, the options are written and hardcoded into the
     /// Gradle project during the build process. This means that the options cannot be changed at runtime, as they are
     /// embedded into the project itself.
+    /// When set to <see cref="NativeInitializationType.External"/>, the app that embeds the game provides the native
+    /// SDK, e.g. when using Unity as a Library. This is experimental.
     /// </remarks>
     public NativeInitializationType AndroidNativeInitializationType { get; set; } = NativeInitializationType.Runtime;
 
@@ -409,8 +413,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Configures a callback function to be invoked before capturing and attaching a screenshot to an event.
     /// </summary>
     /// <remarks>
-    /// This callback will get invoked right before a screenshot gets taken. If the screenshot should not
-    /// be taken return `false`.
+    /// This callback will get invoked when the event gets captured, possibly off the main thread, so don't use the Unity
+    /// API in it. If the screenshot should not be taken return `false`.
     /// </remarks>
     public void SetBeforeCaptureScreenshot(Func<SentryEvent, bool> beforeAttachScreenshot)
     {
@@ -425,6 +429,8 @@ public sealed class SentryUnityOptions : SentryOptions
     /// <remarks>
     /// This callback receives the captured screenshot as a Texture2D before JPEG compression.
     /// You can modify the texture (blur areas, redact PII, etc.) and return it, or return null to discard.
+    /// It runs once per screenshot. Events captured together share one, and the callback receives the first of them
+    /// that didn't get dropped.
     /// </remarks>
     /// <param name="beforeSendScreenshot">The callback function to invoke before sending screenshots.</param>
     public void SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?> beforeSendScreenshot)
@@ -488,6 +494,31 @@ public sealed class SentryUnityOptions : SentryOptions
     /// Used to synchronize context from .NET to the native SDK
     /// </summary>
     internal ContextWriter? NativeContextWriter { get; set; } = null;
+
+    // Lets the native SDK of an app that embeds the game provide release and environment, unless they were set.
+    internal string? DefaultRelease { get; }
+    internal string DefaultEnvironment { get; }
+    // Set through the Editor's overrides, which may match the defaults.
+    internal bool ReleaseOverridden { get; set; }
+    internal bool EnvironmentOverridden { get; set; }
+
+    // Events from the game belong to the app's release and environment, unless they were set in the options.
+    internal void UseAppReleaseAndEnvironment(Func<string?> getRelease, Func<string?> getDistribution,
+        Func<string?> getEnvironment)
+    {
+        if (!ReleaseOverridden && Release == DefaultRelease && getRelease() is { } release)
+        {
+            DiagnosticLogger?.LogDebug("Using the app's release: {0}", release);
+            Release = release;
+            Distribution ??= getDistribution();
+        }
+
+        if (!EnvironmentOverridden && Environment == DefaultEnvironment && getEnvironment() is { } environment)
+        {
+            DiagnosticLogger?.LogDebug("Using the app's environment: {0}", environment);
+            Environment = environment;
+        }
+    }
 
     /// <summary>
     /// Provides debug images from the native SDK for IL2CPP line number support.
@@ -629,6 +660,9 @@ public sealed class SentryUnityOptions : SentryOptions
             ? "editor"
             : "production";
 
+        DefaultRelease = Release;
+        DefaultEnvironment = Environment;
+
         CaptureStructuredLogsForLogType = new Dictionary<LogType, bool>
         {
             { LogType.Log, false },
@@ -753,4 +787,14 @@ public enum NativeInitializationType
     /// game. Options that you modify programmatically will not apply to the native SDK.
     /// </summary>
     BuildTime,
+    /// <summary>
+    /// The app that embeds the game owns the native SDK, e.g. when using Unity as a Library. The SDK does not initialize
+    /// or close the native SDK. It attaches to it if the app has initialized it before the game starts. Options that
+    /// you set in Unity do not apply to the native SDK. Events from the game use the app's release, environment, and
+    /// trace, unless the release and environment are set in the options. Currently supported on Android and iOS.
+    /// Experimental: the behavior may change between releases.
+    /// On Android, when the game runs in its own process, where the app did not initialize the native SDK, the SDK
+    /// initializes it there with the options set in Unity and owns it in that process.
+    /// </summary>
+    External,
 }

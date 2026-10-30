@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,6 +18,7 @@ internal class SentryXcodeProject : IDisposable
     internal const string FrameworkName = "SentryObjC.xcframework";
     internal const string BridgeName = "SentryNativeBridge.m";
     internal const string NoOpBridgeName = "SentryNativeBridgeNoOp.m";
+    internal const string ExternalBridgeName = "SentryNativeBridgeExternal.m";
     internal const string OptionsName = "SentryOptions.m";
     internal const string SymbolUploadPhaseName = "SymbolUpload";
 
@@ -110,18 +112,13 @@ fi";
         _logger?.LogInfo("Adding the build properties and flags.");
         AddBuildProperties();
 
-        var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
-
-        var hasFileMethod = _pbxProjectType.GetMethod("ContainsFileByProjectPath", new[] { typeof(string) });
-        if (hasFileMethod != null)
+        if (ContainsSentryFramework())
         {
-            var hasAddedFramework = (bool)hasFileMethod.Invoke(_project, new object[] { relativeFrameworkPath });
-            if (hasAddedFramework)
-            {
-                _logger?.LogDebug("Skipping. The Sentry framework has already been added to the project.");
-                return;
-            }
+            _logger?.LogDebug("Skipping. The Sentry framework has already been added to the project.");
+            return;
         }
+
+        var relativeFrameworkPath = Path.Combine("Frameworks", FrameworkName);
 
         _logger?.LogInfo("Adding the Sentry framework.");
 
@@ -145,17 +142,29 @@ fi";
         _logger?.LogDebug("Successfully added the Sentry framework.");
     }
 
+    internal bool ContainsSentryFramework()
+    {
+        var hasFileMethod = _pbxProjectType.GetMethod("ContainsFileByProjectPath", new[] { typeof(string) });
+        return hasFileMethod != null
+               && (bool)hasFileMethod.Invoke(_project, new object[] { Path.Combine("Frameworks", FrameworkName) });
+    }
+
     private void AddBuildProperties()
     {
         SetSearchPathBuildProperty("$(inherited)");
         SetSearchPathBuildProperty("$(PROJECT_DIR)/Frameworks/");
 
-        var setBuildPropertyMethod = _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) });
-        setBuildPropertyMethod.Invoke(_project, new object[] { _mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym" });
-        setBuildPropertyMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym" });
+        SetDebugInformationFormat();
 
         _pbxProjectType.GetMethod("AddBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
             .Invoke(_project, new object[] { _mainTargetGuid, "OTHER_LDFLAGS", "-ObjC" });
+    }
+
+    public void SetDebugInformationFormat()
+    {
+        var setBuildPropertyMethod = _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) });
+        setBuildPropertyMethod.Invoke(_project, new object[] { _mainTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym" });
+        setBuildPropertyMethod.Invoke(_project, new object[] { _unityFrameworkTargetGuid, "DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym" });
     }
 
     public void AddSentryNativeBridge()
@@ -179,24 +188,26 @@ fi";
             .Invoke(_project, new object[] { new[] { _mainTargetGuid, _unityFrameworkTargetGuid }, "FRAMEWORK_SEARCH_PATHS", path });
     }
 
-    public void AddBuildPhaseSymbolUpload(SentryCliOptions sentryCliOptions)
+    public void AddBuildPhaseSymbolUpload(SentryCliOptions sentryCliOptions, bool uploadFromUnityFramework = false)
     {
         _logger?.LogInfo("Setting up Sentry CLI build properties and upload script.");
 
+        var targetGuid = uploadFromUnityFramework ? _unityFrameworkTargetGuid : _mainTargetGuid;
+
         _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
-            .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPropertyName, sentryCliOptions.UploadSymbols ? "YES" : "NO" });
+            .Invoke(_project, new object[] { targetGuid, SymbolUploadPropertyName, sentryCliOptions.UploadSymbols ? "YES" : "NO" });
 
         // Set additional upload properties
         _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
-            .Invoke(_project, new object[] { _mainTargetGuid, IncludeSourcesPropertyName, sentryCliOptions.UploadSources ? "YES" : "NO" });
+            .Invoke(_project, new object[] { targetGuid, IncludeSourcesPropertyName, sentryCliOptions.UploadSources ? "YES" : "NO" });
 
         _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
-            .Invoke(_project, new object[] { _mainTargetGuid, AllowFailurePropertyName, sentryCliOptions.IgnoreCliErrors ? "YES" : "NO" });
+            .Invoke(_project, new object[] { targetGuid, AllowFailurePropertyName, sentryCliOptions.IgnoreCliErrors ? "YES" : "NO" });
 
         _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
-            .Invoke(_project, new object[] { _mainTargetGuid, PrintLogsPropertyName, sentryCliOptions.IgnoreCliErrors ? "NO" : "YES" });
+            .Invoke(_project, new object[] { targetGuid, PrintLogsPropertyName, sentryCliOptions.IgnoreCliErrors ? "NO" : "YES" });
 
-        if (MainTargetContainsSymbolUploadBuildPhase())
+        if (ContainsSymbolUploadBuildPhase(targetGuid))
         {
             _logger?.LogInfo("Success. Build phase '{0}' was already added.", SymbolUploadPhaseName);
             return;
@@ -204,8 +215,19 @@ fi";
 
         _logger?.LogDebug("Adding the upload script to {0}.", SymbolUploadPhaseName);
 
-        _pbxProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
-                .Invoke(_project, new object[] { _mainTargetGuid, SymbolUploadPhaseName, "/bin/sh", _uploadScript });
+        // Declaring the dSYM as input makes Xcode generate it before the upload runs.
+        var addWithInputPaths = _pbxProjectType.GetMethod("AddShellScriptBuildPhase",
+            new[] { typeof(string), typeof(string), typeof(string), typeof(string), typeof(List<string>) });
+        if (uploadFromUnityFramework && addWithInputPaths is not null)
+        {
+            addWithInputPaths.Invoke(_project, new object[] { targetGuid, SymbolUploadPhaseName, "/bin/sh", _uploadScript,
+                new List<string> { "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}" } });
+        }
+        else
+        {
+            _pbxProjectType.GetMethod("AddShellScriptBuildPhase", new[] { typeof(string), typeof(string), typeof(string), typeof(string) })
+                .Invoke(_project, new object[] { targetGuid, SymbolUploadPhaseName, "/bin/sh", _uploadScript });
+        }
 
         _logger?.LogInfo("Success. Added automated debug symbol upload script to build phase.");
     }
@@ -224,10 +246,14 @@ fi";
     public void AddSentryToMain(SentryUnityOptions options) =>
         NativeMain.AddSentry(Path.Combine(_projectRoot, MainPath), options.DiagnosticLogger);
 
-    internal bool MainTargetContainsSymbolUploadBuildPhase()
+    internal bool MainTargetContainsSymbolUploadBuildPhase() => ContainsSymbolUploadBuildPhase(_mainTargetGuid);
+
+    internal bool UnityFrameworkTargetContainsSymbolUploadBuildPhase() => ContainsSymbolUploadBuildPhase(_unityFrameworkTargetGuid);
+
+    private bool ContainsSymbolUploadBuildPhase(string targetGuid)
     {
         var allBuildPhases = (string[])_pbxProjectType.GetMethod("GetAllBuildPhasesForTarget", BindingFlags.Public | BindingFlags.Instance)
-            .Invoke(_project, new object[] { _mainTargetGuid });
+            .Invoke(_project, new object[] { targetGuid });
         var getBuildPhaseNameMethod = _pbxProjectType.GetMethod("GetBuildPhaseName", BindingFlags.Public | BindingFlags.Instance);
 
         return allBuildPhases.Any(buildPhase =>

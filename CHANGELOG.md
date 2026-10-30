@@ -2,9 +2,33 @@
 
 ## Unreleased
 
+### Behavioral Changes
+
+- Screenshots are now sent in the same envelope as their event instead of separately, so they no longer get orphaned when the event gets dropped, e.g. by sampling or rate limiting. Events captured on background threads now get a screenshot as well, and events captured while a screenshot is still being taken share it. Screenshots are no longer attached in batch mode, nor to user feedback unless requested via `addScreenshot`. `SetBeforeCaptureScreenshot` can now get invoked on a background thread. `SetBeforeSendScreenshot` now runs once per screenshot, receiving the first of the events sharing it that didn't get dropped. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+
+### Fixes
+
+- App hang detection no longer reports a false app hang after the game moves to the background. It now stays paused while the game is in the background or out of focus. ([#2895](https://github.com/getsentry/sentry-unity/pull/2895))
+- The Linux native SDK now loads on distros with older glibc versions, such as Ubuntu 22.04 and Debian 12. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
+- Attaching a screenshot no longer stalls the main thread. Unless `SetBeforeSendScreenshot` is set, the frame gets read back from the GPU asynchronously and encoded on a background thread. ([#2835](https://github.com/getsentry/sentry-unity/pull/2835))
+
 ### Features
 
+- Added experimental support for Unity as a Library on Android and iOS. With `AndroidNativeInitializationType` or `IosNativeInitializationType` set to `NativeInitializationType.External`, the game attaches to the sentry-android or sentry-cocoa SDK that the app already started instead of bundling and starting its own. On Android, when the game runs in its own process, it starts sentry-android there and continues the app's trace. Native crashes carry the game's context and breadcrumbs, C# events and logs use the app's release, environment, user, and trace, the game's transactions join the app's trace, and the game's debug symbols are still uploaded automatically. ([#2885](https://github.com/getsentry/sentry-unity/pull/2885), [#2895](https://github.com/getsentry/sentry-unity/pull/2895))
+- The SDK now supports Linux ARM64 dedicated servers (Unity 6000.3 and newer, IL2CPP). The native SDK for both backends ships for `x86_64` and `ARM64`, and the build picks the one matching the player. ([#2894](https://github.com/getsentry/sentry-unity/pull/2894))
 - On Android, iOS, and macOS, C# events now report the connection type in `device.connection_type` and the cellular network generation in `device.connection_effective_type`, for example `4g` or `5g`. On Android 11 and earlier, the generation requires the `READ_PHONE_STATE` permission. ([#2889](https://github.com/getsentry/sentry-unity/pull/2889))
+
+### Dependencies
+
+- Bump CLI from v3.8.0 to v3.8.2 ([#2893](https://github.com/getsentry/sentry-unity/pull/2893))
+  - [changelog](https://github.com/getsentry/sentry-cli/blob/master/CHANGELOG.md#382)
+  - [diff](https://github.com/getsentry/sentry-cli/compare/3.8.0...3.8.2)
+- Bump Native SDK from v0.17.4 to v0.17.5 ([#2916](https://github.com/getsentry/sentry-unity/pull/2916))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0175)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.4...0.17.5)
+- Bump .NET SDK from v6.12.0 to v6.12.1-53-gd4a1de12 ([#2919](https://github.com/getsentry/sentry-unity/pull/2919))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#6121)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.12.0...d4a1de12)
 
 ## 4.11.0
 

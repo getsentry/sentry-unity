@@ -6,6 +6,14 @@
 -keep class io.sentry.SentryLevel { *; }
 -keep class io.sentry.SentryOptions { *; }
 -keep class io.sentry.Hub { *; }
+-keep class io.sentry.IHub { *; }
+-keep class io.sentry.IScopes { *; }
+-keep class io.sentry.HubScopesWrapper { *; }
+-keep class io.sentry.SentryTraceHeader { *; }
+-keep class io.sentry.BaggageHeader { *; }
+-keep class io.sentry.SpanContext { *; }
+-keep class io.sentry.ISerializer { *; }
+-keep class io.sentry.JsonSerializer { *; }
 -keep class io.sentry.Breadcrumb { *; }
 -keep class io.sentry.Scope { *; }
 -keep class io.sentry.ScopeCallback { *; }

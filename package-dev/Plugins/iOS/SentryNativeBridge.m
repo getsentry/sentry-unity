@@ -254,6 +254,15 @@ void SentryNativeBridgeGetConnection(
     *effectiveType = _CStringCopyOrNull(device[@"connection_effective_type"]);
 }
 
+// Only the app's own SDK provides these, see SentryNativeBridgeExternal.m.
+char *_Nullable SentryNativeBridgeGetOption(const char *name) { return NULL; }
+
+char *_Nullable SentryNativeBridgeGetTraceHeader() { return NULL; }
+
+char *_Nullable SentryNativeBridgeGetBaggageHeader() { return NULL; }
+
+char *_Nullable SentryNativeBridgeGetUser() { return NULL; }
+
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
     if (traceId == NULL || spanId == NULL) {

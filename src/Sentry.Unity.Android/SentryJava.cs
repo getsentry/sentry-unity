@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Sentry.Extensibility;
@@ -10,7 +11,14 @@ namespace Sentry.Unity.Android;
 internal interface ISentryJava
 {
     public bool? IsEnabled();
+    public bool? IsMainProcess();
     public void Init(SentryUnityOptions options);
+    public string? GetOption(string getter);
+    public string? GetTraceHeader();
+    public string? GetBaggageHeader();
+    public string? GetMainProcessTraceHeader();
+    public SentryUser? GetUser();
+    public bool TryGetMainProcessUser(out SentryUser? user);
     public string? GetInstallationId();
     public bool? CrashedLastRun();
     public (string? Type, string? EffectiveType) GetConnection();
@@ -66,10 +74,17 @@ internal class SentryJava : ISentryJava
     private readonly AutoResetEvent _scopeSyncEvent;
     private readonly Thread _scopeSyncThread;
     private readonly ConcurrentQueue<(Action action, string actionName)> _scopeSyncItems = new();
+    private static readonly TimeSpan JniResultTimeout = TimeSpan.FromMilliseconds(500);
     private volatile bool _closed;
 
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
+
+    private static AndroidJavaObject GetCurrentActivity()
+    {
+        using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        return unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+    }
 
     public SentryJava(IDiagnosticLogger? logger, IAndroidJNI? androidJNI = null)
     {
@@ -103,6 +118,50 @@ internal class SentryJava : ISentryJava
         return null;
     }
 
+    // Whether the game runs in the app's main process. With Unity as a Library, the game can run in its own process.
+    public bool? IsMainProcess()
+    {
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling IsMainProcess() on Android SDK requires running on MainThread");
+            return null;
+        }
+
+        try
+        {
+            if (GetProcessName() is not { } processName)
+            {
+                return null;
+            }
+
+            using var activity = GetCurrentActivity();
+            return processName == activity.Call<string>("getPackageName");
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.IsMainProcess' failed.");
+        }
+
+        return null;
+    }
+
+    // `Application.getProcessName` requires API 28. Below, the process name is the NUL-terminated `/proc/self/cmdline`.
+    private static string? GetProcessName()
+    {
+        using var version = new AndroidJavaClass("android.os.Build$VERSION");
+        if (version.GetStatic<int>("SDK_INT") < 28)
+        {
+#pragma warning disable SN0001
+            var cmdline = File.ReadAllText("/proc/self/cmdline");
+#pragma warning restore SN0001
+            var end = cmdline.IndexOf('\0');
+            return end < 0 ? cmdline : cmdline.Substring(0, end);
+        }
+
+        using var application = new AndroidJavaClass("android.app.Application");
+        return application.CallStatic<string>("getProcessName");
+    }
+
     public void Init(SentryUnityOptions options)
     {
         if (!MainThreadData.IsMainThread())
@@ -114,16 +173,24 @@ internal class SentryJava : ISentryJava
         try
         {
             using var sentry = new AndroidJavaClass("io.sentry.android.core.SentryAndroid");
-            using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            using var context = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            using var context = GetCurrentActivity();
 
             sentry.CallStatic("init", context, new AndroidOptionsConfiguration(androidOptions =>
             {
                 androidOptions.Call("setDsn", options.Dsn);
                 androidOptions.Call("setDebug", options.Debug);
-                androidOptions.Call("setRelease", options.Release);
+
+                // With external initialization, the native SDK keeps the app's release and environment unless they were set.
+                var isExternal = options.AndroidNativeInitializationType is NativeInitializationType.External;
+                if (!isExternal || options.ReleaseOverridden || options.Release != options.DefaultRelease)
+                {
+                    androidOptions.Call("setRelease", options.Release);
+                }
                 androidOptions.Call("setDist", options.Distribution);
-                androidOptions.Call("setEnvironment", options.Environment);
+                if (!isExternal || options.EnvironmentOverridden || options.Environment != options.DefaultEnvironment)
+                {
+                    androidOptions.Call("setEnvironment", options.Environment);
+                }
 
                 using var sentryLevelClass = new AndroidJavaClass("io.sentry.SentryLevel");
                 var levelString = GetLevelString(options.DiagnosticLevel);
@@ -153,6 +220,38 @@ internal class SentryJava : ISentryJava
                 androidOptions.Call("setTombstoneEnabled", options.AndroidTombstoneEnabled);
                 androidOptions.Call("setReportHistoricalTombstones", options.AndroidReportHistoricalTombstones);
 
+                // With external initialization, the game runs in its own process, next to the app's SDK in the main
+                // process. Its own cache directory keeps it from taking over the app's session and persisted scope.
+                if (isExternal && GetProcessName() is { } processName)
+                {
+                    // Its events belong to the app's release and environment, persisted by the app's SDK.
+                    if (!options.ReleaseOverridden && options.Release == options.DefaultRelease && ReadMainProcessOption(androidOptions, "release.json") is { } release)
+                    {
+                        androidOptions.Call("setRelease", release);
+                        if (options.Distribution is null)
+                        {
+                            androidOptions.Call("setDist", ReadMainProcessOption(androidOptions, "dist.json"));
+                        }
+                    }
+                    if (!options.EnvironmentOverridden && options.Environment == options.DefaultEnvironment && ReadMainProcessOption(androidOptions, "environment.json") is { } environment)
+                    {
+                        androidOptions.Call("setEnvironment", environment);
+                    }
+
+                    using var cacheDir = context.Call<AndroidJavaObject>("getCacheDir");
+                    var processSuffix = processName.Substring(processName.IndexOf(':') + 1);
+                    androidOptions.Call("setCacheDirPath", $"{cacheDir.Call<string>("getAbsolutePath")}/sentry-{processSuffix}");
+                    // The game continues the app's trace instead of starting new ones on its own screens and taps.
+                    androidOptions.Call("setEnableAutoTraceIdGeneration", false);
+                    // From API 30, the app's SDK reports the exits of all of the app's processes, including this one.
+                    using var version = new AndroidJavaClass("android.os.Build$VERSION");
+                    if (version.GetStatic<int>("SDK_INT") >= 30)
+                    {
+                        androidOptions.Call("setAnrEnabled", false);
+                        androidOptions.Call("setTombstoneEnabled", false);
+                    }
+                }
+
                 using (var logsOptions = androidOptions.Call<AndroidJavaObject>("getLogs"))
                 {
                     logsOptions.Call("setEnabled", options.EnableLogs);
@@ -177,11 +276,12 @@ internal class SentryJava : ISentryJava
         }
     }
 
-    public string? GetInstallationId()
+    // A string option of the native SDK, e.g. `getRelease` or `getEnvironment`.
+    public string? GetOption(string getter)
     {
         if (!MainThreadData.IsMainThread())
         {
-            _logger?.LogError("Calling GetInstallationId() on Android SDK requires running on MainThread");
+            _logger?.LogError("Calling GetOption() on Android SDK requires running on MainThread");
             return null;
         }
 
@@ -190,15 +290,170 @@ internal class SentryJava : ISentryJava
             using var sentry = GetSentryJava();
             using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
             using var options = hub?.Call<AndroidJavaObject>("getOptions");
-            return options?.Call<string>("getDistinctId");
+            return options?.Call<string>(getter);
         }
         catch (Exception e)
         {
-            _logger?.LogError(e, "Calling 'SentryJava.GetInstallationId' failed.");
+            _logger?.LogError(e, "Calling 'SentryJava.GetOption' failed.");
         }
 
         return null;
     }
+
+    // The `sentry-trace` header of the app's SDK in the main process: its active span, otherwise its propagation context.
+    public string? GetMainProcessTraceHeader()
+    {
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling GetMainProcessTraceHeader() on Android SDK requires running on MainThread");
+            return null;
+        }
+
+        try
+        {
+            using var sentry = GetSentryJava();
+            using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
+            using var options = hub.Call<AndroidJavaObject>("getOptions");
+            using var spanContext = ReadMainProcessFile(options, ".scope-cache/trace.json", "io.sentry.SpanContext");
+            if (spanContext is null)
+            {
+                return null;
+            }
+
+            using var traceId = spanContext.Call<AndroidJavaObject>("getTraceId");
+            using var spanId = spanContext.Call<AndroidJavaObject>("getSpanId");
+            using var sampled = spanContext.Call<AndroidJavaObject>("getSampled");
+            var header = $"{traceId.Call<string>("toString")}-{spanId.Call<string>("toString")}";
+            return sampled is null ? header : $"{header}-{(sampled.Call<bool>("booleanValue") ? 1 : 0)}";
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.GetMainProcessTraceHeader' failed.");
+        }
+
+        return null;
+    }
+
+    // The user the app's SDK in the main process persisted, null when it has none. False when the file can't be read,
+    // e.g. while the app's SDK rewrites it.
+    public bool TryGetMainProcessUser(out SentryUser? user)
+    {
+        user = null;
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling TryGetMainProcessUser() on Android SDK requires running on MainThread");
+            return false;
+        }
+
+        try
+        {
+            using var sentry = GetSentryJava();
+            using var hub = sentry.CallStatic<AndroidJavaObject>("getCurrentHub");
+            using var options = hub.Call<AndroidJavaObject>("getOptions");
+            using var javaUser = ReadMainProcessFile(options, ".scope-cache/user.json", "io.sentry.protocol.User", out var failed);
+            if (failed)
+            {
+                return false;
+            }
+
+            user = ToSentryUser(javaUser);
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.TryGetMainProcessUser' failed.");
+        }
+
+        return false;
+    }
+
+    private static SentryUser? ToSentryUser(AndroidJavaObject? user) => user is null
+        ? null
+        : new SentryUser
+        {
+            Id = user.Call<string>("getId"),
+            Username = user.Call<string>("getUsername"),
+            Email = user.Call<string>("getEmail"),
+            IpAddress = user.Call<string>("getIpAddress")
+        };
+
+    private string? ReadMainProcessOption(AndroidJavaObject options, string fileName)
+    {
+        using var value = ReadMainProcessFile(options, $".options-cache/{fileName}", "java.lang.String");
+        return value?.Call<string>("toString");
+    }
+
+    // A file that the app's SDK in the main process persisted to its cache directory, next to ours: same DSN hash,
+    // default 'sentry' directory.
+    private AndroidJavaObject? ReadMainProcessFile(AndroidJavaObject options, string path, string className) =>
+        ReadMainProcessFile(options, path, className, out _);
+
+    // Failed when the file is there but can't be read, e.g. empty or partly written.
+    private AndroidJavaObject? ReadMainProcessFile(AndroidJavaObject options, string path, string className, out bool failed)
+    {
+        failed = false;
+        try
+        {
+            using var cacheDir = new AndroidJavaObject("java.io.File", options.Call<string>("getCacheDirPath"));
+            using var activity = GetCurrentActivity();
+            using var appCacheDir = activity.Call<AndroidJavaObject>("getCacheDir");
+            var filePath = $"{appCacheDir.Call<string>("getAbsolutePath")}/sentry/{cacheDir.Call<string>("getName")}/{path}";
+            using var file = new AndroidJavaObject("java.io.File", filePath);
+            if (!file.Call<bool>("exists"))
+            {
+                _logger?.LogDebug("Nothing persisted by the main process at '{0}'.", filePath);
+                return null;
+            }
+
+            using var fileReader = new AndroidJavaObject("java.io.FileReader", file);
+            using var reader = new AndroidJavaObject("java.io.BufferedReader", fileReader);
+            try
+            {
+                using var serializer = options.Call<AndroidJavaObject>("getSerializer");
+                using var javaClass = new AndroidJavaClass("java.lang.Class");
+                using var type = javaClass.CallStatic<AndroidJavaObject>("forName", className);
+                var value = serializer.Call<AndroidJavaObject>("deserialize", reader, type);
+                failed = value is null;
+                return value;
+            }
+            finally
+            {
+                reader.Call("close");
+            }
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Reading '{0}' persisted by the main process failed.", path);
+        }
+
+        failed = true;
+        return null;
+    }
+
+    public string? GetTraceHeader() => RunJniSafeAndWait(() =>
+    {
+        using var sentry = GetSentryJava();
+        using var header = sentry.CallStatic<AndroidJavaObject>("getTraceparent");
+        return header?.Call<string>("getValue");
+    });
+
+    // The user on the native SDK's scope.
+    public SentryUser? GetUser() => RunJniSafeAndWait(() =>
+    {
+        using var sentry = GetInternalSentryJava();
+        using var scope = sentry.CallStatic<AndroidJavaObject>("getCurrentScope");
+        using var user = scope?.Call<AndroidJavaObject>("getUser");
+        return ToSentryUser(user);
+    });
+
+    public string? GetBaggageHeader() => RunJniSafeAndWait(() =>
+    {
+        using var sentry = GetSentryJava();
+        using var header = sentry.CallStatic<AndroidJavaObject>("getBaggage");
+        return header?.Call<string>("getValue");
+    });
+
+    public string? GetInstallationId() => GetOption("getDistinctId");
 
     /// <summary>
     /// Returns whether the last run resulted in a crash.
@@ -501,6 +756,52 @@ internal class SentryJava : ISentryJava
         }
     }
 
+    // Like `RunJniSafe`, but waits for the result. Off the main thread, the call runs on the scope sync thread, which
+    // is attached to the JVM.
+    internal T? RunJniSafeAndWait<T>(Func<T?> func, [CallerMemberName] string actionName = "", bool? isMainThread = null)
+    {
+        if (_closed)
+        {
+            return default;
+        }
+
+        isMainThread ??= MainThreadData.IsMainThread();
+        if (isMainThread is true || Thread.CurrentThread == _scopeSyncThread)
+        {
+            try
+            {
+                return func();
+            }
+            catch (Exception e)
+            {
+                _logger?.LogError(e, "Calling '{0}' failed.", actionName);
+                return default;
+            }
+        }
+
+        T? result = default;
+        var done = new ManualResetEventSlim(false);
+        _scopeSyncItems.Enqueue((() =>
+        {
+            try
+            {
+                result = func();
+            }
+            finally
+            {
+                done.Set();
+            }
+        }, actionName));
+        _scopeSyncEvent.Set();
+
+        if (!done.Wait(JniResultTimeout))
+        {
+            _logger?.LogWarning("Timed out waiting for '{0}'.", actionName);
+        }
+
+        return result;
+    }
+
     private void SyncScope()
     {
         _androidJNI.AttachCurrentThread();
@@ -540,6 +841,11 @@ internal class SentryJava : ISentryJava
 
     public void Close()
     {
+        if (_closed)
+        {
+            return;
+        }
+
         _closed = true;
 
         _scopeSyncShutdownSource.Cancel();
