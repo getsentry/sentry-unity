@@ -104,24 +104,6 @@ internal static class EnrichmentTab
         EditorGUILayout.Space();
 
         {
-            options.ReleaseOverride = EditorGUILayout.TextField(
-                new GUIContent("Override Release", "By default release is built from the Application info as: " +
-                                                   "\"{productName}@{version}+{buildGUID}\". " +
-                                                   "\nThis option is an override."),
-                options.ReleaseOverride);
-
-            options.EnvironmentOverride = EditorGUILayout.TextField(
-                new GUIContent("Override Environment", "Auto detects 'production' or 'editor' by " +
-                                                       "default based on 'Application.isEditor'." +
-                                                       "\nThis option is an override."),
-                options.EnvironmentOverride);
-        }
-
-        EditorGUILayout.Space();
-        EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
-        EditorGUILayout.Space();
-
-        {
             options.ReportAssembliesMode = (ReportAssembliesMode)EditorGUILayout.EnumPopup(
                 new GUIContent("Report Assemblies Mode", "Whether or not to include referenced assemblies " +
                                                          "Version or InformationalVersion in each event sent to sentry."),
