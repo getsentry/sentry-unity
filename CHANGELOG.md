@@ -4,7 +4,7 @@
 
 ### Behavioral Changes
 
-- The `Override Release` and `Override Environment` fields have been removed from the Sentry editor window. Release and environment now come from the application's Player Settings by default and can be set in code through an options configuration. Values already saved in the options asset are still applied. ([#NNNN](https://github.com/getsentry/sentry-unity/pull/NNNN))
+- The `Override Release` and `Override Environment` fields have been removed from the Sentry editor window. Release and environment now come from the application's Player Settings by default and can be set in code through an options configuration. Values already saved in the options asset are still applied. ([#2922](https://github.com/getsentry/sentry-unity/pull/2922))
 
 ## 4.12.0
 
