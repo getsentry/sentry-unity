@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Corrected the tooltips, help boxes and option docs in the configuration window that described defaults or limitations wrongly: `Auto Set UserName` is disabled by default, `Attach Screenshots` works for events on background threads, the IL2CPP line number support needs no Org-Slug, and `Scene Traces` has no Unity version requirement. (PR_LINK)
+
 ## 4.12.0
 
 ### Behavioral Changes
@@ -212,7 +218,7 @@
 
 ### Features
 
-- Added `options.AndroidNativeTombstoneEnabled` (default `false`) and `options.AndroidReportHistoricalTombstones` (default `false`) to enable reporting of native crashes captured by Android's `ApplicationExitInfo` API as Tombstones ([#2749](https://github.com/getsentry/sentry-unity/pull/2749))
+- Added `options.AndroidTombstoneEnabled` (default `false`) and `options.AndroidReportHistoricalTombstones` (default `false`) to enable reporting of native crashes captured by Android's `ApplicationExitInfo` API as Tombstones ([#2749](https://github.com/getsentry/sentry-unity/pull/2749))
 
 ### Fixes
 

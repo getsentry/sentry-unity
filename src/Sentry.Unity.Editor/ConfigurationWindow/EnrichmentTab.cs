@@ -18,8 +18,7 @@ internal static class EnrichmentTab
 
             options.IsEnvironmentUser = EditorGUILayout.Toggle(
                 new GUIContent("Auto Set UserName", "Whether to report the 'Environment.UserName' as " +
-                                                    "the User affected in the event. Defaults to enabled on desktop " +
-                                                    "platforms and disabled on mobile and console platforms."),
+                                                    "the User affected in the event. Disabled by default."),
                 options.IsEnvironmentUser);
 
             EditorGUI.indentLevel--;
@@ -33,9 +32,9 @@ internal static class EnrichmentTab
         {
             options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Attach Screenshots to Events", "Try to attach current screenshot on events.\n" +
-                                                    "This is an early-access feature and may not work on all platforms (it is explicitly disabled on WebGL).\n" +
-                                                    "Additionally, the screenshot is captured mid-frame, when an event happens, so it may be incomplete.\n" +
-                                                    "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
+                                                    "This is an early-access feature and may not work on all platforms (it is explicitly disabled on WebGL and in batch mode).\n" +
+                                                    "The screenshot is taken at the end of the frame the event happens in. " +
+                                                    "It is missing when the main thread is blocked, for example during an app hang."),
                 options.AttachScreenshot);
             EditorGUI.indentLevel++;
 
