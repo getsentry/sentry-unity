@@ -125,6 +125,35 @@ public sealed class ContextWriterTests
         Assert.AreEqual(sysInfo.CopyTextureSupport?.Value, context.UnityCopyTextureSupport);
         Assert.AreEqual(sysInfo.RenderingThreadingMode?.Value, context.UnityRenderingThreadingMode);
     }
+
+    [Test]
+    public void DeviceName_WithoutSendDefaultPii_NotWritten()
+    {
+        // arrange
+        var context = new MockContextWriter();
+        var options = new SentryUnityOptions(application: _testApplication, behaviour: _sentryMonoBehaviour)
+        {
+            Dsn = "http://publickey@localhost/12345",
+            Enabled = true,
+            SendDefaultPii = false,
+            Debug = true,
+            DiagnosticLogger = new TestLogger(),
+            NativeContextWriter = context,
+            CreateHttpMessageHandler = () => new TestHttpClientHandler(),
+            AutoSessionTracking = false,
+            CacheDirectoryPath = null,
+        };
+
+        // act
+        MainThreadData.SentrySystemInfo = new TestSentrySystemInfo { DeviceName = "Jane's PC" };
+        MainThreadData.CollectData();
+
+        SentrySdk.Init(options);
+        Assert.IsTrue(context.SyncFinished.WaitOne(TimeSpan.FromSeconds(10)));
+
+        // assert
+        Assert.IsNull(context.DeviceName);
+    }
 }
 
 internal sealed class MockContextWriter : ContextWriter
