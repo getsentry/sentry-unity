@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- The SDK no longer throws a `NullReferenceException` during startup on Android and iOS when it can't load its options, for example when the configuration lives in an OBB file that isn't available yet. ([#PR](https://github.com/getsentry/sentry-unity/pull/PR))
+
 ## 4.12.0
 
 ### Behavioral Changes
