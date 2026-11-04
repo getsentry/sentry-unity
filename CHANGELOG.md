@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- The Event Sample Rate in the Sentry window now accepts values from 0.01 to 1.0. A rate of 0 made the SDK fail to initialize and builds fail to load the options. ([#2929](https://github.com/getsentry/sentry-unity/pull/2929))
+
 ## 4.12.0
 
 ### Behavioral Changes
