@@ -54,7 +54,42 @@ public class IntegrationTester : MonoBehaviour
 #if UNITY_ANDROID && !UNITY_EDITOR
     [DllImport("__Internal")]
     private static extern void sentry_diag_unwind_bindings(string when);
+
+    [DllImport("__Internal")]
+    private static extern void sentry_diag_compare_walks(string when);
+
+    [DllImport("__Internal")]
+    private static extern void sentry_diag_exception_trace(IntPtr gchandle, string when);
 #endif
+
+    // Diagnostic only: throws and catches a few times and logs how many native frames each exception kept,
+    // next to il2cpp's stack walk with and without an installed backtrace override.
+    private static void LogThrowDiagnostics()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        for (var i = 0; i < 5; i++)
+        {
+            sentry_diag_compare_walks($"pre-throw{i}");
+            try
+            {
+                DoSomeWork();
+            }
+            catch (Exception ex)
+            {
+                var handle = GCHandle.Alloc(ex);
+                try
+                {
+                    sentry_diag_exception_trace(GCHandle.ToIntPtr(handle), $"throw{i}");
+                }
+                finally
+                {
+                    handle.Free();
+                }
+                Logger.Log($"SentryDiag [throw{i}] managed frames={new System.Diagnostics.StackTrace(ex).FrameCount}");
+            }
+        }
+#endif
+    }
 
     // Diagnostic only: logs where libil2cpp's `end` and `_Unwind_*` bind and how many frames il2cpp's own walker sees.
     private static void LogUnwindDiagnostics(string when)
@@ -188,6 +223,7 @@ public class IntegrationTester : MonoBehaviour
         EmitLogAndMetric("exception-capture");
 
         LogUnwindDiagnostics("before-throw");
+        LogThrowDiagnostics();
         try
         {
             DoSomeWork();

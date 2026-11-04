@@ -43,7 +43,98 @@ namespace utils
 }
 }
 
+namespace il2cpp
+{
+namespace os
+{
+    typedef bool (*WalkStackCallback)(void (*frame)(), void* context);
+    // WalkStack goes through an installed il2cpp_override_stack_backtrace function if there is one,
+    // WalkStackNative is the _Unwind_Backtrace walker (declared public here to call it directly).
+    class StackTrace
+    {
+    public:
+        enum WalkOrder
+        {
+            kFirstCalledToLastCalled,
+            kLastCalledToFirstCalled
+        };
+        static void WalkStack(WalkStackCallback callback, void* context, WalkOrder walkOrder);
+        static void WalkStackNative(WalkStackCallback callback, void* context, WalkOrder walkOrder);
+    };
+}
+}
+
+struct Il2CppObject;
+extern "C" Il2CppObject* il2cpp_gchandle_get_target(uint32_t gchandle);
+extern "C" void il2cpp_native_stack_trace(const void* ex, uintptr_t** addresses, int* numFrames, char** imageUUID, char** imageName);
+extern "C" void il2cpp_free(void* ptr);
+
 static uintptr_t s_diag_base;
+
+struct diag_il2cpp_walk
+{
+    int frames;
+    int managed;
+    uintptr_t first[6];
+};
+
+static bool diag_il2cpp_walk_callback(void (*frame)(), void* context)
+{
+    diag_il2cpp_walk* walk = static_cast<diag_il2cpp_walk*>(context);
+    if (walk->frames < 6)
+        walk->first[walk->frames] = reinterpret_cast<uintptr_t>(frame);
+    walk->frames++;
+    if (il2cpp::utils::NativeSymbol::GetMethodFromNativeSymbol(frame) != NULL)
+        walk->managed++;
+    return true;
+}
+
+static void diag_log_il2cpp_walk(const char* when, const char* which, const diag_il2cpp_walk& walk)
+{
+    char offsets[256] = "";
+    size_t used = 0;
+    for (int i = 0; i < walk.frames && i < 6 && used < sizeof(offsets); i++)
+    {
+        uintptr_t addr = walk.first[i];
+        Dl_info info = {};
+        const char* lib = "?";
+        if (dladdr(reinterpret_cast<void*>(addr), &info) && info.dli_fname != NULL)
+        {
+            const char* slash = strrchr(info.dli_fname, '/');
+            lib = slash != NULL ? slash + 1 : info.dli_fname;
+        }
+        used += snprintf(offsets + used, sizeof(offsets) - used, " %s+0x%lx", lib,
+            (unsigned long)(addr - reinterpret_cast<uintptr_t>(info.dli_fbase)));
+    }
+    DIAG("[%s] %s frames=%d managed=%d first:%s", when, which, walk.frames, walk.managed, offsets);
+}
+
+extern "C" void sentry_diag_compare_walks(const char* when)
+{
+    diag_il2cpp_walk viaWalkStack = {};
+    il2cpp::os::StackTrace::WalkStack(diag_il2cpp_walk_callback, &viaWalkStack, il2cpp::os::StackTrace::kLastCalledToFirstCalled);
+    diag_il2cpp_walk viaNative = {};
+    il2cpp::os::StackTrace::WalkStackNative(diag_il2cpp_walk_callback, &viaNative, il2cpp::os::StackTrace::kLastCalledToFirstCalled);
+    diag_log_il2cpp_walk(when, "WalkStack(override-or-native)", viaWalkStack);
+    diag_log_il2cpp_walk(when, "WalkStackNative(_Unwind_Backtrace)", viaNative);
+}
+
+extern "C" void sentry_diag_exception_trace(uintptr_t gchandle, const char* when)
+{
+    Il2CppObject* ex = il2cpp_gchandle_get_target(static_cast<uint32_t>(gchandle));
+    uintptr_t* addresses = NULL;
+    int numFrames = 0;
+    char* uuid = NULL;
+    char* name = NULL;
+    il2cpp_native_stack_trace(ex, &addresses, &numFrames, &uuid, &name);
+    DIAG("[%s] exception native frames=%d image=%s", when, numFrames, name != NULL ? name : "-");
+    if (addresses != NULL)
+        il2cpp_free(addresses);
+    if (uuid != NULL)
+        il2cpp_free(uuid);
+    if (name != NULL)
+        il2cpp_free(name);
+}
 
 static void diag_log_guest_cpu()
 {
