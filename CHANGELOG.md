@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Values set in a `SentryCliOptionsConfiguration`, such as an auth token read from an environment variable, no longer get saved into `SentryCliOptions.asset` by the Sentry window after a build. The configuration now runs on a copy of the options. ([#2927](https://github.com/getsentry/sentry-unity/pull/2927))
+
 ## 4.12.0
 
 ### Behavioral Changes
