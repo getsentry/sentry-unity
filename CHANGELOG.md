@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- On iOS, development builds now respect `UploadDevelopmentSymbols` and no longer upload debug symbols unless it is enabled, matching the other platforms. ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
+- On iOS, development builds now respect `UploadDevelopmentSymbols` and no longer upload debug symbols unless it is enabled, matching the other platforms. ([#2928](https://github.com/getsentry/sentry-unity/pull/2928))
 
 ## 4.12.0
 
