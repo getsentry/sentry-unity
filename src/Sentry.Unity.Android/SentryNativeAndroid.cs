@@ -224,11 +224,21 @@ public static class SentryNativeAndroid
     /// <summary>
     /// Closes the native Android support.
     /// </summary>
-    public static void Close(SentryUnityOptions options)
+    public static void Close(SentryUnityOptions? options) =>
+        Close(options, ApplicationAdapter.Instance.Platform);
+
+    // For testing
+    internal static void Close(SentryUnityOptions? options, RuntimePlatform platform)
     {
         Logger?.LogInfo("Attempting to close the Android SDK");
 
-        if (!options.IsNativeSupportEnabled())
+        if (options is null)
+        {
+            Logger?.LogDebug("No options available. Skipping closing the Android SDK");
+            return;
+        }
+
+        if (!options.IsNativeSupportEnabled(platform))
         {
             Logger?.LogDebug("Android Native Support is not enabled. Skipping closing the Android SDK");
             return;
