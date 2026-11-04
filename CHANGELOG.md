@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- Setting `FilterBadGatewayExceptions` to `false` now takes effect when initializing the SDK in code with `SentrySdk.Init`. ([#PR](https://github.com/getsentry/sentry-unity/pull/PR))
+
 ## 4.12.0
 
 ### Behavioral Changes
