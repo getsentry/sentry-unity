@@ -51,10 +51,25 @@ public class IntegrationTester : MonoBehaviour
 #endif
     }
 
+#if UNITY_ANDROID && !UNITY_EDITOR
+    [DllImport("__Internal")]
+    private static extern void sentry_diag_unwind_bindings(string when);
+#endif
+
+    // Diagnostic only: logs where libil2cpp's `end` and `_Unwind_*` bind and how many frames il2cpp's own walker sees.
+    private static void LogUnwindDiagnostics(string when)
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        sentry_diag_unwind_bindings(when);
+        Logger.Log($"SentryDiag [{when}] il2cpp StackTrace.FrameCount={new System.Diagnostics.StackTrace().FrameCount}");
+#endif
+    }
+
     public void Start()
     {
         var arg = GetTestArg();
         Logger.Log($"IntegrationTester arg: '{arg}'");
+        LogUnwindDiagnostics($"start:{arg}");
 
         switch (arg)
         {
@@ -172,6 +187,7 @@ public class IntegrationTester : MonoBehaviour
         AddIntegrationTestContext("exception-capture");
         EmitLogAndMetric("exception-capture");
 
+        LogUnwindDiagnostics("before-throw");
         try
         {
             DoSomeWork();
