@@ -447,6 +447,10 @@ Describe "Unity $($env:SENTRY_TEST_PLATFORM) Integration Tests" {
                 Set-ItResult -Skipped -Because "line numbers come from the IL2CPP mappings, which a Mono player does not produce"
                 return
             }
+            if ($script:Platform -eq "Android" -and $script:TestSetup.UnityVersion -like "2021.3*") {
+                Set-ItResult -Skipped -Because "on the Android 2021.3 x86_64 emulator, IL2CPP intermittently reports no stack frames for the thrown exception, so the event carries only the throwing frame without a native address"
+                return
+            }
 
             $frame = $runEvent.exception.values[0].stacktrace.frames |
                 Where-Object { $_.module -eq "IntegrationTester" -and $_.function -eq "ThrowException" } |
