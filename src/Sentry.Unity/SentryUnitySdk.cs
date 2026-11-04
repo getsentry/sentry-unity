@@ -31,6 +31,11 @@ internal class SentryUnitySdk
         // Some integrations are controlled through a flag and opt-in. Adding these integrations late so we have equal
         // behaviour whether the options got created through the ScriptableObject or the SDK gets manually initialized
         AddIntegrations(options);
+        if (!options.FilterBadGatewayExceptions)
+        {
+            options.RemoveExceptionFilter<UnityBadGatewayExceptionFilter>();
+        }
+
         SetUpWindowsPlayerCaching(unitySdk, options);
 
         ConfigureUnsupportedPlatformFallbacks(options);
