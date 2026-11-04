@@ -200,17 +200,13 @@ internal static class AdvancedTab
                     "constructed exception. Capture a thrown exception to include its stack trace.",
                     MessageType.Info);
 
-                if (!SentryUnityVersion.IsNewerOrEqualThan("2020.3"))
-                {
-                    EditorGUILayout.HelpBox("The IL2CPP line number feature is supported from Unity version 2020.3 or newer and 2021.3  or newer onwards", MessageType.Warning);
-                }
-                else if (cliOptions is not null && !cliOptions.IsValid(null, EditorUserBuildSettings.development))
+                if (cliOptions is not null && !cliOptions.IsValid(null, EditorUserBuildSettings.development))
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
                     var errorIcon = EditorGUIUtility.IconContent("console.erroricon").image;
                     var content = new GUIContent("The IL2CPP line number support relies on the Debug Symbol Upload to be enabled and configured." +
-                                                 "\nAdditionally, this requires an Auth Token, an Org-Slug and the Project Name." +
+                                                 "\nAdditionally, this requires an Auth Token and the Project Name, and the Org-Slug unless the token is an organization token." +
                                                  "\nLearn more about how our IL2CPP support works in our docs.", errorIcon);
                     EditorGUILayout.LabelField(content, EditorStyles.wordWrappedLabel);
 
