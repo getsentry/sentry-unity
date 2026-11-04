@@ -18,6 +18,52 @@ void throw_cpp()
 #define DIAG(...) __android_log_print(ANDROID_LOG_INFO, "SentryDiag", __VA_ARGS__)
 
 extern "C" char end;
+extern "C" char __start_il2cpp;
+extern "C" char __stop_il2cpp;
+
+// il2cpp's own checks used by its Android stack walker (vm/StackTrace.cpp, vm-utils/NativeSymbol.cpp).
+struct MethodInfo;
+namespace il2cpp
+{
+namespace os
+{
+namespace Image
+{
+    bool ManagedSectionExists();
+    bool IsInManagedSection(void* ip);
+}
+}
+namespace utils
+{
+    class NativeSymbol
+    {
+    public:
+        static const MethodInfo* GetMethodFromNativeSymbol(void (*nativeMethod)());
+    };
+}
+}
+
+static uintptr_t s_diag_base;
+
+static void diag_log_guest_cpu()
+{
+    FILE* cpuinfo = fopen("/proc/cpuinfo", "r");
+    if (cpuinfo == NULL)
+        return;
+    char line[2048];
+    int logged = 0;
+    while (fgets(line, sizeof(line), cpuinfo) != NULL && logged < 6)
+    {
+        if (strncmp(line, "vendor_id", 9) == 0 || strncmp(line, "model name", 10) == 0 || strncmp(line, "cpu family", 10) == 0
+            || strncmp(line, "model\t", 6) == 0 || strncmp(line, "flags", 5) == 0 || strncmp(line, "microcode", 9) == 0)
+        {
+            line[strcspn(line, "\n")] = '\0';
+            DIAG("guest cpuinfo: %s", line);
+            logged++;
+        }
+    }
+    fclose(cpuinfo);
+}
 
 static void diag_log_mapping(const char* label, uintptr_t addr)
 {
@@ -54,11 +100,14 @@ static _Unwind_Reason_Code diag_walk_callback(struct _Unwind_Context* context, v
 {
     diag_walk* walk = static_cast<diag_walk*>(arg);
     uintptr_t ip = _Unwind_GetIP(context);
-    if (walk->count < 6)
+    if (walk->count < 8)
     {
         char label[32];
         snprintf(label, sizeof(label), "frame[%d]", walk->count);
         diag_log_mapping(label, ip);
+        DIAG("%s offset=0x%lx inManagedSection=%d method=%p", label, (unsigned long)(ip - s_diag_base),
+            il2cpp::os::Image::IsInManagedSection(reinterpret_cast<void*>(ip)) ? 1 : 0,
+            reinterpret_cast<const void*>(il2cpp::utils::NativeSymbol::GetMethodFromNativeSymbol(reinterpret_cast<void (*)()>(ip))));
     }
     walk->count++;
     return walk->count < 64 ? _URC_NO_REASON : _URC_END_OF_STACK;
@@ -72,7 +121,12 @@ extern "C" void sentry_diag_unwind_bindings(const char* when)
     uintptr_t endAddr = reinterpret_cast<uintptr_t>(&end);
     DIAG("[%s] image=%s base=%p end=%p endAboveBase=%d", when, self.dli_fname ? self.dli_fname : "-",
         reinterpret_cast<void*>(base), reinterpret_cast<void*>(endAddr), endAddr > base ? 1 : 0);
+    s_diag_base = base;
+    diag_log_guest_cpu();
     diag_log_mapping("end", endAddr);
+    DIAG("[%s] managedSectionExists=%d", when, il2cpp::os::Image::ManagedSectionExists() ? 1 : 0);
+    diag_log_mapping("__start_il2cpp", reinterpret_cast<uintptr_t>(&__start_il2cpp));
+    diag_log_mapping("__stop_il2cpp", reinterpret_cast<uintptr_t>(&__stop_il2cpp));
     diag_log_mapping("_Unwind_Backtrace", reinterpret_cast<uintptr_t>(&_Unwind_Backtrace));
     diag_log_mapping("_Unwind_GetIP", reinterpret_cast<uintptr_t>(&_Unwind_GetIP));
 

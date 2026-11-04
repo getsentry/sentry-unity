@@ -68,6 +68,17 @@ jobs:
           Write-Host "Found build-tools at: $buildToolsDir"
           $buildToolsDir >> $env:GITHUB_PATH
 
+      # Diagnostic only: record the host the emulator runs on.
+      - name: Host diagnostics
+        shell: bash
+        run: |
+          echo "HOSTDIAG uname: $(uname -a)"
+          lscpu | sed 's/^/HOSTDIAG lscpu: /'
+          grep -m1 -E '^(microcode)' /proc/cpuinfo | sed 's/^/HOSTDIAG cpuinfo: /' || true
+          nproc | sed 's/^/HOSTDIAG nproc: /'
+          for f in /sys/module/kvm_intel/parameters/* /sys/module/kvm_amd/parameters/*; do [ -r "$f" ] && echo "HOSTDIAG $f=$(cat $f)"; done || true
+          echo
+
       # See https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
       - name: Enable KVM group perms
         if: ${{ steps.device.outputs.device == 'emulator' }}
