@@ -64,7 +64,7 @@ Required tools:
 Required tools:
 - Git (accessible from `PATH`)
 - [Android Studio](https://developer.android.com/studio)
-- JDK 17 (via [sdkman](https://sdkman.io/) or [OpenJDK](https://openjdk.java.net/install/))
+- JDK 21 (via [sdkman](https://sdkman.io/) or [OpenJDK](https://openjdk.java.net/install/))
 
 **Android Studio Setup:**
 1. Open Android Studio → Customize → All settings...
