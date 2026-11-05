@@ -335,6 +335,53 @@ static void diag_log_unity_walk(const char* label)
         walk.stopped ? 1 : 0, walk.first);
 }
 
+// Round 6: run the walker through Unity's own frame callback (+0x2d057c), logging what it decides per frame.
+static const uintptr_t kUnityFrameCallbackOffset = 0x2d057c;
+
+struct diag_unity_collect
+{
+    size_t count;
+    size_t max;
+    DiagMethodPointer* buffer;
+};
+
+struct diag_unity_proxy
+{
+    diag_unity_collect collect;
+    int frames;
+    char first[512];
+    size_t used;
+};
+
+static bool diag_unity_proxy_callback(void* frame, void* context)
+{
+    diag_unity_proxy* proxy = static_cast<diag_unity_proxy*>(context);
+    DiagUnityWalkCallback unityCallback = reinterpret_cast<DiagUnityWalkCallback>(s_diag_unity_base + kUnityFrameCallbackOffset);
+    bool keepGoing = unityCallback(frame, &proxy->collect);
+    if (proxy->frames < 6 && proxy->used < sizeof(proxy->first))
+    {
+        uintptr_t pc = static_cast<const uintptr_t*>(frame)[1];
+        Dl_info info = {};
+        dladdr(reinterpret_cast<void*>(pc), &info);
+        const char* lib = info.dli_fname != NULL ? (strrchr(info.dli_fname, '/') != NULL ? strrchr(info.dli_fname, '/') + 1 : info.dli_fname) : "?";
+        proxy->used += snprintf(proxy->first + proxy->used, sizeof(proxy->first) - proxy->used, " [%s+0x%lx -> %d count=%zu]", lib,
+            (unsigned long)(pc - reinterpret_cast<uintptr_t>(info.dli_fbase)), keepGoing ? 1 : 0, proxy->collect.count);
+    }
+    proxy->frames++;
+    return keepGoing;
+}
+
+static void diag_log_unity_proxy_walk(const char* label, DiagMethodPointer* buffer, size_t maxSize)
+{
+    if (s_diag_unity_base == 0)
+        return;
+    diag_unity_proxy proxy = {};
+    proxy.collect.max = maxSize;
+    proxy.collect.buffer = buffer;
+    reinterpret_cast<DiagUnityWalker>(s_diag_unity_base + kUnityWalkerOffset)(&diag_unity_proxy_callback, 1, &proxy, 0);
+    DIAG("[%s] walker via unity callback: frames=%d kept=%zu:%s", label, proxy.frames, proxy.collect.count, proxy.first);
+}
+
 static size_t diag_backtrace(DiagMethodPointer* buffer, size_t maxSize)
 {
     size_t count = s_diag_unity_backtrace != NULL ? s_diag_unity_backtrace(buffer, maxSize) : 0;
@@ -354,7 +401,11 @@ static size_t diag_backtrace(DiagMethodPointer* buffer, size_t maxSize)
     if (count != 0)
         return count;
 
+    size_t retry = s_diag_unity_backtrace(buffer, maxSize);
+    size_t retry2 = s_diag_unity_backtrace(buffer, maxSize);
+    DIAG("[%s] unity backtrace retried right away: %zu then %zu", label, retry, retry2);
     diag_log_unity_walk(label);
+    diag_log_unity_proxy_walk(label, buffer, maxSize);
     diag_fill fill = {buffer, maxSize, 0};
     _Unwind_Backtrace(diag_fill_callback, &fill);
     diag_log_il2cpp_walk(label, "UnwindBacktraceHere", diag_walk_from_buffer(buffer, fill.count));
