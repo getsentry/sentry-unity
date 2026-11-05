@@ -54,6 +54,7 @@ jobs:
         uses: ./.github/actions/wait-for-artifact
         with:
           name: package-release
+          producer: Build Unity SDK
 
       - name: Extract UPM package
         run: ./test/Scripts.Integration.Test/extract-package.ps1
@@ -66,6 +67,7 @@ jobs:
         with:
           name: dependency-conflict-package
           path: dependency-conflict-package
+          producer: Build Unity SDK
 
       - name: Add DependencyConflict to the project
         run: ./test/Scripts.Integration.Test/add-dependency-conflict.ps1 -PackagePath "dependency-conflict-package"
