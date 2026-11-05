@@ -60,6 +60,15 @@ public class IntegrationTester : MonoBehaviour
 
     [DllImport("__Internal")]
     private static extern void sentry_diag_exception_trace(IntPtr gchandle, string when);
+
+    [DllImport("__Internal")]
+    private static extern void sentry_diag_install_backtrace_wrapper(string when);
+
+    [DllImport("__Internal")]
+    private static extern void sentry_diag_set_phase(string phase);
+
+    [DllImport("__Internal")]
+    private static extern void sentry_diag_set_fallback(int enabled);
 #endif
 
     // Diagnostic only: throws and catches a few times and logs how many native frames each exception kept,
@@ -69,13 +78,16 @@ public class IntegrationTester : MonoBehaviour
 #if UNITY_ANDROID && !UNITY_EDITOR
         for (var i = 0; i < 5; i++)
         {
+            sentry_diag_set_phase($"pre-throw{i}");
             sentry_diag_compare_walks($"pre-throw{i}");
+            sentry_diag_set_phase($"throw{i}");
             try
             {
                 DoSomeWork();
             }
             catch (Exception ex)
             {
+                sentry_diag_set_phase(null);
                 var handle = GCHandle.Alloc(ex);
                 try
                 {
@@ -105,6 +117,9 @@ public class IntegrationTester : MonoBehaviour
         var arg = GetTestArg();
         Logger.Log($"IntegrationTester arg: '{arg}'");
         LogUnwindDiagnostics($"start:{arg}");
+#if UNITY_ANDROID && !UNITY_EDITOR
+        sentry_diag_install_backtrace_wrapper($"start:{arg}");
+#endif
 
         switch (arg)
         {
@@ -224,12 +239,21 @@ public class IntegrationTester : MonoBehaviour
 
         LogUnwindDiagnostics("before-throw");
         LogThrowDiagnostics();
+#if UNITY_ANDROID && !UNITY_EDITOR
+        // Diagnostic only: on this throw, an empty Unity backtrace is replaced by _Unwind_Backtrace's frames.
+        sentry_diag_set_fallback(1);
+        sentry_diag_set_phase("captured-throw");
+#endif
         try
         {
             DoSomeWork();
         }
         catch (Exception ex)
         {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            sentry_diag_set_phase(null);
+            sentry_diag_set_fallback(0);
+#endif
             var eventId = SentrySdk.CaptureException(ex);
             Logger.Log($"EVENT_CAPTURED: {eventId}");
         }

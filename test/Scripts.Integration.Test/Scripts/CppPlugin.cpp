@@ -225,4 +225,127 @@ extern "C" void sentry_diag_unwind_bindings(const char* when)
     _Unwind_Backtrace(diag_walk_callback, &walk);
     DIAG("[%s] _Unwind_Backtrace frames=%d", when, walk.count);
 }
+
+// Round 4: wrap the backtrace function Unity installs through il2cpp_override_stack_backtrace, so every
+// il2cpp stack walk (including the one PrepareExceptionForThrow does at a throw) is logged with its result.
+typedef void (*DiagMethodPointer)();
+typedef size_t (*DiagBacktraceFunc)(DiagMethodPointer* buffer, size_t maxSize);
+extern "C" void il2cpp_override_stack_backtrace(DiagBacktraceFunc stackBacktraceFunc);
+
+static DiagBacktraceFunc s_diag_unity_backtrace;
+static __thread char s_diag_phase[64];
+static volatile int s_diag_fallback;
+static int s_diag_calls;
+static int s_diag_logged;
+
+struct diag_fill
+{
+    DiagMethodPointer* buffer;
+    size_t max;
+    size_t count;
+};
+
+static _Unwind_Reason_Code diag_fill_callback(struct _Unwind_Context* context, void* arg)
+{
+    diag_fill* fill = static_cast<diag_fill*>(arg);
+    if (fill->count >= fill->max)
+        return _URC_END_OF_STACK;
+    uintptr_t ip = _Unwind_GetIP(context);
+    if (ip == 0)
+        return _URC_END_OF_STACK;
+    fill->buffer[fill->count++] = reinterpret_cast<DiagMethodPointer>(ip);
+    return _URC_NO_REASON;
+}
+
+static diag_il2cpp_walk diag_walk_from_buffer(DiagMethodPointer* buffer, size_t count)
+{
+    diag_il2cpp_walk walk = {};
+    for (size_t i = 0; i < count; i++)
+        diag_il2cpp_walk_callback(buffer[i], &walk);
+    return walk;
+}
+
+static size_t diag_backtrace(DiagMethodPointer* buffer, size_t maxSize)
+{
+    size_t count = s_diag_unity_backtrace != NULL ? s_diag_unity_backtrace(buffer, maxSize) : 0;
+    int call = __atomic_add_fetch(&s_diag_calls, 1, __ATOMIC_RELAXED);
+    bool phased = s_diag_phase[0] != '\0';
+    if ((!phased && count != 0) || __atomic_add_fetch(&s_diag_logged, 1, __ATOMIC_RELAXED) > 300)
+        return count;
+
+    char label[96];
+    snprintf(label, sizeof(label), "%s call%d", phased ? s_diag_phase : "-", call);
+    void* caller = __builtin_return_address(0);
+    Dl_info callerInfo = {};
+    dladdr(caller, &callerInfo);
+    DIAG("[%s] unity backtrace returned %zu (max %zu) caller=+0x%lx", label, count, maxSize,
+        (unsigned long)(reinterpret_cast<uintptr_t>(caller) - reinterpret_cast<uintptr_t>(callerInfo.dli_fbase)));
+    diag_log_il2cpp_walk(label, "UnityBacktrace", diag_walk_from_buffer(buffer, count));
+    if (count != 0)
+        return count;
+
+    diag_fill fill = {buffer, maxSize, 0};
+    _Unwind_Backtrace(diag_fill_callback, &fill);
+    diag_log_il2cpp_walk(label, "UnwindBacktraceHere", diag_walk_from_buffer(buffer, fill.count));
+    if (s_diag_fallback)
+    {
+        DIAG("[%s] fallback: returning the %zu _Unwind_Backtrace frames", label, fill.count);
+        return fill.count;
+    }
+    return 0;
+}
+
+// WalkStack starts with `cmpq $0x0, s_StackBacktraceFunc(%rip)`; decode it to find the file-static slot.
+static DiagBacktraceFunc* diag_find_backtrace_slot()
+{
+#if defined(__x86_64__)
+    const unsigned char* code = reinterpret_cast<const unsigned char*>(&il2cpp::os::StackTrace::WalkStack);
+    for (int i = 0; i < 96; i++)
+    {
+        if (code[i] == 0x48 && code[i + 1] == 0x83 && code[i + 2] == 0x3d && code[i + 7] == 0x00)
+        {
+            int32_t disp;
+            memcpy(&disp, code + i + 3, sizeof(disp));
+            return reinterpret_cast<DiagBacktraceFunc*>(const_cast<unsigned char*>(code + i + 8 + disp));
+        }
+    }
+#endif
+    return NULL;
+}
+
+extern "C" void sentry_diag_install_backtrace_wrapper(const char* when)
+{
+    DiagBacktraceFunc* slot = diag_find_backtrace_slot();
+    if (slot == NULL)
+    {
+        DIAG("[%s] backtrace slot not found in WalkStack", when);
+        return;
+    }
+    DiagBacktraceFunc current = *slot;
+    Dl_info info = {};
+    dladdr(reinterpret_cast<void*>(current), &info);
+    DIAG("[%s] backtrace slot=%p current=%p lib=%s offset=0x%lx sname=%s", when, reinterpret_cast<void*>(slot),
+        reinterpret_cast<void*>(current), info.dli_fname ? info.dli_fname : "-",
+        (unsigned long)(reinterpret_cast<uintptr_t>(current) - reinterpret_cast<uintptr_t>(info.dli_fbase)),
+        info.dli_sname ? info.dli_sname : "-");
+    if (current == &diag_backtrace)
+        return;
+    s_diag_unity_backtrace = current;
+    il2cpp_override_stack_backtrace(&diag_backtrace);
+    DIAG("[%s] backtrace wrapper installed=%d", when, *slot == &diag_backtrace ? 1 : 0);
+}
+
+extern "C" void sentry_diag_set_phase(const char* phase)
+{
+    if (phase == NULL)
+        s_diag_phase[0] = '\0';
+    else
+        snprintf(s_diag_phase, sizeof(s_diag_phase), "%s", phase);
+}
+
+extern "C" void sentry_diag_set_fallback(int enabled)
+{
+    s_diag_fallback = enabled;
+    DIAG("fallback to _Unwind_Backtrace on an empty Unity backtrace: %d", enabled);
+}
 #endif
