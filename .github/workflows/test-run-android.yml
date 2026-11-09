@@ -26,7 +26,7 @@ jobs:
     name: ${{ inputs.unity-version }} ${{ inputs.api-level }} ${{ inputs.init-type }}
     # Unity 6000.x builds ARM64 so we run Redroid (containerized arm64 Android) on an 
     # arm64 Linux runner.
-    runs-on: ${{ fromJSON(inputs.unity-version) >= 6000 && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ubuntu-24.04-arm
     env:
       ARTIFACTS_PATH: samples/IntegrationTest/test-artifacts/
       HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -50,11 +50,7 @@ jobs:
       - name: Determine device
         id: device
         run: |
-          if ([double]"${{ inputs.unity-version }}" -ge 6000) {
-            $device = "redroid"; $arch = "arm64-v8a"
-          } else {
-            $device = "emulator"; $arch = "x86_64"
-          }
+          $device = "redroid"; $arch = "arm64-v8a"
           "device=$device" >> $env:GITHUB_OUTPUT
           "arch=$arch" >> $env:GITHUB_OUTPUT
           Write-Host "Using device: $device ($arch)"
