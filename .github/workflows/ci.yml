@@ -135,7 +135,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2021.3"]
+        unity-version: ["2022.3"]
     uses: ./.github/workflows/test-create.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -312,7 +312,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2021.3"]
+        unity-version: ["2022.3"]
     uses: ./.github/workflows/test-build-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
@@ -332,7 +332,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unity-version: ["2021.3"]
+        unity-version: ["2022.3"]
         # api-level: [30, 31, 34]
         api-level: [30]
         init-type: ["runtime", "buildtime"]
