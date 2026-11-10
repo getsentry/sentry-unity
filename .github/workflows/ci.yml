@@ -324,14 +324,11 @@ jobs:
     uses: ./.github/workflows/test-run-android.yml
     with:
       unity-version: ${{ matrix.unity-version }}
-      api-level: ${{ matrix.api-level }}
       init-type: ${{ matrix.init-type }}
     strategy:
       fail-fast: false
       matrix:
         unity-version: ${{ fromJSON(needs.create-unity-matrix.outputs.unity-matrix).unity-version }}
-        # api-level: [30, 31, 34]
-        api-level: [30]
         init-type: ["runtime", "buildtime"]
 
   test-build-ios:
