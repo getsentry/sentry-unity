@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- On iOS and macOS, native crashes now respect the Event Sample Rate (`SampleRate`). Unity passes it to the Cocoa SDK with both runtime and build-time initialization, so native crashes are no longer always sent. ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
+- On iOS and macOS, native crashes now respect the Event Sample Rate (`SampleRate`). Unity passes it to the Cocoa SDK with both runtime and build-time initialization, so native crashes are no longer always sent. ([#2940](https://github.com/getsentry/sentry-unity/pull/2940))
 - The Event Sample Rate in the Sentry window now accepts values from 0.01 to 1.0. A rate of 0 made the SDK fail to initialize and builds fail to load the options. ([#2929](https://github.com/getsentry/sentry-unity/pull/2929))
 - On iOS, development builds now respect `UploadDevelopmentSymbols` and no longer upload debug symbols unless it is enabled, matching the other platforms. ([#2928](https://github.com/getsentry/sentry-unity/pull/2928))
 
