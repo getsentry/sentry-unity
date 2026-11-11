@@ -206,7 +206,7 @@ internal static class AdvancedTab
 
                     var errorIcon = EditorGUIUtility.IconContent("console.erroricon").image;
                     var content = new GUIContent("The IL2CPP line number support relies on the Debug Symbol Upload to be enabled and configured." +
-                                                 "\nAdditionally, this requires an Auth Token and the Project Name, and the Org-Slug unless the token is an organization token." +
+                                                 "\nAdditionally, this requires an Auth Token and the Project Name, and the Org Slug unless the token is an organization token." +
                                                  "\nLearn more about how our IL2CPP support works in our docs.", errorIcon);
                     EditorGUILayout.LabelField(content, EditorStyles.wordWrappedLabel);
 

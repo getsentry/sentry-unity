@@ -32,10 +32,11 @@ internal static class EnrichmentTab
         {
             options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Attach Screenshots to Events", "Try to attach current screenshot on events.\n" +
-                                                    "This is an early-access feature and may not work on all platforms (it is explicitly disabled in the Editor, on WebGL and in batch mode).\n" +
-                                                    "The screenshot is taken at the end of the current or next frame. " +
-                                                    "It is missing when no frame completes within a second, for example while the main thread hangs " +
-                                                    "or the app is paused in the background."),
+                                                    "This is an early-access feature and may not work on all platforms (it is explicitly disabled on WebGL).\n" +
+                                                    "For C# events, the screenshot is taken at the end of the current or next frame, and none is " +
+                                                    "attached in the Editor or in batch mode. It is missing when no frame completes within a second, " +
+                                                    "for example while the main thread hangs or the app is paused in the background.\n" +
+                                                    "On Windows, native crashes get a screenshot taken by the native SDK when the crash happens."),
                 options.AttachScreenshot);
             EditorGUI.indentLevel++;
 

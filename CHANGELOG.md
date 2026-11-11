@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- Corrected the tooltips, help boxes and option docs in the configuration window that described defaults or limitations wrongly: `Auto Set UserName` is disabled by default, `Attach Screenshots` works for events on background threads, the IL2CPP line number support needs the Org-Slug unless the auth token is an organization token, and `Scene Traces` has no Unity version requirement. ([#2933](https://github.com/getsentry/sentry-unity/pull/2933))
+- The configuration window's tooltips and help boxes and the option docs describe the SDK's defaults and requirements correctly: `Auto Set UserName` is disabled by default, `Attach Screenshots` also attaches screenshots to events on background threads, `Org Slug` is required unless the Auth Token is an organization token, `Scene Traces` has no Unity version requirement, and `IosWatchdogTerminationIntegrationEnabled` turns on reporting of watchdog terminations on iOS. ([#2933](https://github.com/getsentry/sentry-unity/pull/2933))
 
 ## 4.12.0
 
