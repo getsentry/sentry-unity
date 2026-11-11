@@ -132,11 +132,21 @@ public static class SentryNativeCocoa
     /// <summary>
     /// Closes the native Cocoa support.
     /// </summary>
-    public static void Close(SentryUnityOptions options)
+    public static void Close(SentryUnityOptions? options) =>
+        Close(options, ApplicationAdapter.Instance.Platform);
+
+    // For testing
+    internal static void Close(SentryUnityOptions? options, RuntimePlatform platform)
     {
         Logger?.LogInfo("Attempting to close the Cocoa SDK");
 
-        if (!options.IsNativeSupportEnabled())
+        if (options is null)
+        {
+            Logger?.LogDebug("No options available. Skipping closing the Cocoa SDK");
+            return;
+        }
+
+        if (!options.IsNativeSupportEnabled(platform))
         {
             Logger?.LogDebug("Cocoa Native Support is not enable. Skipping closing the Cocoa SDK");
             return;

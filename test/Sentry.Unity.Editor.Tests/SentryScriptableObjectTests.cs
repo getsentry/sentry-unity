@@ -83,4 +83,31 @@ public class SentryScriptableObjectTests
         Assert.NotNull(actualOptions);
         Assert.AreEqual(expectedAuth, actualOptions!.Auth);
     }
+
+    [Test]
+    public void LoadCliOptions_ConfigurationSetsAuth_DoesNotChangeSavedAsset()
+    {
+        var savedOptions = SentryScriptableObject.CreateOrLoad<SentryCliOptions>(_assetPath);
+        savedOptions.CliOptionsConfiguration = ScriptableObject.CreateInstance<AuthFromCodeConfiguration>();
+
+        var cliOptions = SentryScriptableObject.LoadCliOptions(_assetPath);
+
+        Assert.NotNull(cliOptions);
+        Assert.AreEqual(AuthFromCodeConfiguration.Auth, cliOptions!.Auth);
+        Assert.IsNull(savedOptions.Auth);
+        Assert.IsNull(SentryScriptableObject.Load<SentryCliOptions>(_assetPath)!.Auth);
+    }
+
+    [Test]
+    public void LoadCliOptions_OptionsAssetDoesNotExist_ReturnsNull()
+    {
+        Assert.IsNull(SentryScriptableObject.LoadCliOptions(_assetPath));
+    }
+
+    private class AuthFromCodeConfiguration : SentryCliOptionsConfiguration
+    {
+        public const string Auth = "auth_from_code";
+
+        public override void Configure(SentryCliOptions cliOptions) => cliOptions.Auth = Auth;
+    }
 }

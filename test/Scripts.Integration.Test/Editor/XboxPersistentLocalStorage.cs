@@ -38,7 +38,11 @@ public class XboxPersistentLocalStorage : IPreprocessBuildWithReport
 
         pls.InnerXml = "<SizeMB>11</SizeMB><GrowableToMB>22</GrowableToMB>";
 
-        doc.Save(configPath);
+        // Unity watches the game config and re-reads it on change. Saving in place can make that read hit
+        // a sharing violation mid-write, which fails the build in strict mode. Swap in a complete file instead.
+        var tempPath = Path.Combine("Temp", configName);
+        doc.Save(tempPath);
+        File.Replace(tempPath, configPath, null);
         Debug.Log($"XboxPersistentLocalStorage: Configured PersistentLocalStorage in {configName}");
     }
 }
