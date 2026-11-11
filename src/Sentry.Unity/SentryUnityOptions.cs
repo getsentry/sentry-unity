@@ -228,7 +228,8 @@ public sealed class SentryUnityOptions : SentryOptions
     public bool IosNativeSupportEnabled { get; set; } = true;
 
     /// <summary>
-    /// Whether the SDK should add native support for iOS
+    /// Whether the SDK should report watchdog terminations on iOS: the app getting killed by the operating system,
+    /// for example for using too much memory. This is disabled by default.
     /// </summary>
     public bool IosWatchdogTerminationIntegrationEnabled { get; set; } = false;
 

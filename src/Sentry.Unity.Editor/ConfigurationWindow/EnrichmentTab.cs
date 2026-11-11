@@ -18,8 +18,7 @@ internal static class EnrichmentTab
 
             options.IsEnvironmentUser = EditorGUILayout.Toggle(
                 new GUIContent("Auto Set UserName", "Whether to report the 'Environment.UserName' as " +
-                                                    "the User affected in the event. Defaults to enabled on desktop " +
-                                                    "platforms and disabled on mobile and console platforms."),
+                                                    "the User affected in the event. Disabled by default."),
                 options.IsEnvironmentUser);
 
             EditorGUI.indentLevel--;
@@ -34,8 +33,11 @@ internal static class EnrichmentTab
             options.AttachScreenshot = EditorGUILayout.BeginToggleGroup(
                 new GUIContent("Attach Screenshots to Events", "Try to attach current screenshot on events.\n" +
                                                     "This is an early-access feature and may not work on all platforms (it is explicitly disabled on WebGL).\n" +
-                                                    "Additionally, the screenshot is captured mid-frame, when an event happens, so it may be incomplete.\n" +
-                                                    "A screenshot might not be able to be attached, for example when the error happens on a background thread."),
+                                                    "For C# events, the screenshot is taken at the end of the current or next frame, and none is " +
+                                                    "attached in the Editor or in batch mode. It is missing when no frame completes within a second, " +
+                                                    "for example while the main thread hangs or the app is paused in the background.\n" +
+                                                    "On Windows, with native support enabled, native crashes get a screenshot of the game's window, taken by the " +
+                                                    "native SDK when the crash happens (not in batch mode or server builds)."),
                 options.AttachScreenshot);
             EditorGUI.indentLevel++;
 

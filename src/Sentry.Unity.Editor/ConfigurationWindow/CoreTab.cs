@@ -90,7 +90,7 @@ internal static class CoreTab
 
             options.AutoSceneLoadTraces = EditorGUILayout.Toggle(
                 new GUIContent("Scene Traces ", "Whether the SDK should automatically create traces " +
-                                                     "during scene loading. Requires Unity 2020.3 or newer."),
+                                                     "during scene loading."),
                 options.AutoSceneLoadTraces);
 
             options.AutoAwakeTraces = EditorGUILayout.Toggle(

@@ -32,7 +32,9 @@ public sealed class ContextWriterTests
     }
 
     [Test]
-    public void Arguments()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Arguments(bool sendDefaultPii)
     {
         // arrange
         var sysInfo = new TestSentrySystemInfo
@@ -74,7 +76,7 @@ public sealed class ContextWriterTests
             Dsn = "http://publickey@localhost/12345",
             Enabled = true,
             AttachStacktrace = true,
-            SendDefaultPii = true,
+            SendDefaultPii = sendDefaultPii,
             Debug = true,
             DiagnosticLogger = new TestLogger(),
             NativeContextWriter = context,
@@ -98,9 +100,9 @@ public sealed class ContextWriterTests
         Assert.AreEqual(sysInfo.CpuDescription, context.DeviceCpuDescription);
         Assert.AreEqual(TimeZoneInfo.Local.Id, context.DeviceTimezone);
         Assert.AreEqual(sysInfo.SupportsVibration, context.DeviceSupportsVibration);
-        Assert.AreEqual(sysInfo.DeviceName, context.DeviceName);
+        Assert.AreEqual(sendDefaultPii ? sysInfo.DeviceName : null, context.DeviceName);
         Assert.AreEqual(_testApplication.IsEditor, context.DeviceSimulator);
-        Assert.AreEqual(sysInfo.DeviceUniqueIdentifier?.Value, context.DeviceDeviceUniqueIdentifier);
+        Assert.AreEqual(sendDefaultPii ? sysInfo.DeviceUniqueIdentifier?.Value : null, context.DeviceDeviceUniqueIdentifier);
         Assert.AreEqual(sysInfo.DeviceType?.Value, context.DeviceDeviceType);
         Assert.AreEqual(sysInfo.DeviceModel?.Value, context.DeviceModel);
         Assert.AreEqual(sysInfo.SystemMemorySize * 1048576L, context.DeviceMemorySize);
