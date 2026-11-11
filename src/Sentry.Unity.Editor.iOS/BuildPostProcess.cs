@@ -210,6 +210,7 @@ public static class BuildPostProcess
             using var sentryXcodeProject = SentryXcodeProject.Open(pathToProject, logger);
             // The app that embeds the game builds `UnityFramework`, but not the Unity app target.
             sentryXcodeProject.AddBuildPhaseSymbolUpload(cliOptions,
+                isDevelopmentBuild: EditorUserBuildSettings.development,
                 uploadFromUnityFramework: options.IosNativeInitializationType is NativeInitializationType.External);
         }
         catch (Exception e)
