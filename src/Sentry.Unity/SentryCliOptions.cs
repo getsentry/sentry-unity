@@ -31,7 +31,7 @@ public sealed class SentryCliOptions : ScriptableObject
     private static void MissingFieldWarning(IDiagnosticLogger? logger, string name) =>
         logger?.LogWarning("{0} missing. Please set it under {1}", name, EditorMenuPath);
 
-    public bool IsValid(IDiagnosticLogger? logger, bool isDevelopmentBuild)
+    internal bool IsUploadEnabled(IDiagnosticLogger? logger, bool isDevelopmentBuild)
     {
         if (!UploadSymbols)
         {
@@ -42,6 +42,16 @@ public sealed class SentryCliOptions : ScriptableObject
         if (isDevelopmentBuild && !UploadDevelopmentSymbols)
         {
             logger?.LogDebug("Automated symbols upload for development builds has been disabled.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public bool IsValid(IDiagnosticLogger? logger, bool isDevelopmentBuild)
+    {
+        if (!IsUploadEnabled(logger, isDevelopmentBuild))
+        {
             return false;
         }
 
