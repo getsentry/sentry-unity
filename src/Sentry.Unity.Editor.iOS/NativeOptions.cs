@@ -35,6 +35,9 @@ static SentryObjCOptions* getSentryOptions()
         @""failedRequestStatusCodes"" : @[{failedRequestStatusCodesArray}],
         @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
         @""attachScreenshot"" : @{ToObjCString(options.AttachScreenshot)},
+        // Screenshots for C# events come from the Unity SDK. sentry-cocoa attaches one only to native crashes,
+        // as its crash-time screenshot doesn't call this block.
+        @""beforeCaptureScreenshot"" : ^BOOL(id event) {{ return NO; }},
         @""release"" : @""{options.Release}"",
         @""environment"" : @""{options.Environment}"",
         @""enableNetworkBreadcrumbs"" : @NO,

@@ -90,6 +90,14 @@ public class NativeOptionsTests
     }
 
     [Test]
+    public void CreateOptionsFile_BeforeCaptureScreenshot_SkipsNonFatalEvents()
+    {
+        var nativeOptions = NativeOptions.Generate(new SentryUnityOptions { AttachScreenshot = true });
+
+        StringAssert.Contains("@\"beforeCaptureScreenshot\" : ^BOOL(id event) { return NO; }", nativeOptions);
+    }
+
+    [Test]
     public void CreateOptionsFile_FilterBadGatewayEnabled_AddsFiltering()
     {
         NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions { FilterBadGatewayExceptions = true });
