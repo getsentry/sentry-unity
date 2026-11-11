@@ -46,13 +46,14 @@ jobs:
         run: |
           run=true
           if [[ -n "$BEFORE" ]]; then
-            passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$BEFORE&event=pull_request&status=success" --jq '.total_count')
+            passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$BEFORE&event=pull_request&status=success" --jq '.total_count') || passed=0
             if [[ "$passed" -gt 0 ]]; then
               # The compare API lists at most 300 files; "ahead" rules out force-pushes that dropped commits.
+              # Markdown under package*/ ships in the UPM package, so it counts as code.
               run=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$HEAD" --jq '
                 if .status == "ahead" and (.files | length) > 0 and (.files | length) < 300
-                  and all(.files[]; (.filename | endswith(".md")) and ((.previous_filename // ".md") | endswith(".md")))
-                then "false" else "true" end')
+                  and all(.files[]; [.filename, .previous_filename // empty] | all(endswith(".md") and (startswith("package") | not)))
+                then "false" else "true" end') || run=true
             fi
           fi
           echo "run=$run" >> "$GITHUB_OUTPUT"
