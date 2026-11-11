@@ -25,6 +25,7 @@ public class SentryNativeCocoaTests
         SentryNativeCocoa.Configure(options, RuntimePlatform.IPhonePlayer);
         Assert.Null(options.ScopeObserver);
         Assert.Null(options.CrashedLastRun);
+        Assert.Null(options.NativeConnection);
         Assert.False(options.EnableScopeSync);
     }
 

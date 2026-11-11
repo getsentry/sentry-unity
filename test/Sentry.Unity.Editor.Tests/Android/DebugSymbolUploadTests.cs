@@ -23,6 +23,7 @@ public class DebugSymbolUploadTests
         public bool IsExporting { get; set; }
         public bool IsMinifyEnabled { get; set; }
         public bool IgnoreCliErrors { get; set; }
+        public bool IsExternal { get; set; }
         public TestApplication Application { get; set; }
 
         public Fixture()
@@ -45,7 +46,8 @@ public class DebugSymbolUploadTests
             GradleProjectPath,
             IsExporting,
             IsMinifyEnabled,
-            Application
+            Application,
+            IsExternal
         );
     }
 
@@ -196,6 +198,38 @@ public class DebugSymbolUploadTests
     }
 
     [Test]
+    public void AppendUploadToGradleFile_External_AppendsUploadTaskToUnityLibrary()
+    {
+        _fixture.IsExporting = true;
+        _fixture.IsMinifyEnabled = true;
+        _fixture.IsExternal = true;
+        var sut = _fixture.GetSut();
+
+        sut.AppendUploadToGradleFile(_fixture.SentryCliPath);
+
+        var actualFileContent = File.ReadAllText(GetGradleFilePath("unityLibrary"));
+        StringAssert.Contains("project.projectDir.parentFile", actualFileContent);
+        StringAssert.Contains("tasks.matching { it.name ==~ /merge\\w+JniLibFolders/ }.configureEach { finalizedBy 'sentryUploadSymbols' }", actualFileContent);
+        StringAssert.DoesNotContain("assembleRelease", actualFileContent);
+        StringAssert.DoesNotContain("upload-proguard", actualFileContent);
+        StringAssert.DoesNotContain("sentryUploadSymbols", File.ReadAllText(GetGradleFilePath()));
+    }
+
+    [Test]
+    public void RemoveUploadTaskFromGradleFile_InitializationTypeChanged_RemovesUploadTaskFromBothModules()
+    {
+        _fixture.GetSut().AppendUploadToGradleFile(_fixture.SentryCliPath);
+        _fixture.IsExternal = true;
+        var sut = _fixture.GetSut();
+        sut.AppendUploadToGradleFile(_fixture.SentryCliPath);
+
+        sut.RemoveUploadFromGradleFile();
+
+        StringAssert.DoesNotContain("sentryUploadSymbols", File.ReadAllText(GetGradleFilePath()));
+        StringAssert.DoesNotContain("sentryUploadSymbols", File.ReadAllText(GetGradleFilePath("unityLibrary")));
+    }
+
+    [Test]
     public void RemoveUploadTaskFromGradleFile_GradleFileDoesNotExist_ThrowsFileNotFoundException()
     {
         _fixture.GradleProjectPath = Path.GetRandomFileName();
@@ -293,5 +327,5 @@ public class DebugSymbolUploadTests
         }
     }
 
-    private string GetGradleFilePath() => Path.Combine(_fixture.GradleProjectPath, "launcher/build.gradle");
+    private string GetGradleFilePath(string moduleName = "launcher") => Path.Combine(_fixture.GradleProjectPath, moduleName, "build.gradle");
 }

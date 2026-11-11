@@ -15,6 +15,8 @@ public partial class SentryMonoBehaviour
 
     private Coroutine? _appHangHeartbeat;
     private Action? _appHangPause;
+    private Action? _appHangResume;
+    private bool _appHangArmed;
 
     /// <summary>
     /// Starts the app-hang heartbeat on the main thread at a fixed 1-second interval. Arming is
@@ -24,16 +26,37 @@ public partial class SentryMonoBehaviour
     public Coroutine StartAppHangHeartbeat(Action heartbeat) =>
         StartAppHangHeartbeat(heartbeat, AppHangHeartbeatInterval);
 
-    internal Coroutine StartAppHangHeartbeat(Action heartbeat, Action pause)
+    internal Coroutine StartAppHangHeartbeat(Action heartbeat, Action pause) =>
+        StartAppHangHeartbeat(heartbeat, pause, AppHangHeartbeatInterval);
+
+    internal Coroutine StartAppHangHeartbeat(Action heartbeat, Action pause, TimeSpan interval)
     {
         if (_appHangPause is not null)
         {
             ApplicationPausing -= _appHangPause;
         }
 
+        if (_appHangResume is not null)
+        {
+            ApplicationResuming -= _appHangResume;
+        }
+
         _appHangPause = pause;
         ApplicationPausing += pause;
-        return StartAppHangHeartbeat(heartbeat, AppHangHeartbeatInterval);
+        // Re-arms right away instead of on the next tick, so a hang right after resuming is caught.
+        _appHangResume = () =>
+        {
+            if (_appHangArmed)
+            {
+                heartbeat();
+                // Unloading and reloading the player (Unity as a Library) resets the frame count and time, and a
+                // coroutine suspended across it stalls for as long as the game ran before. A new one starts on the new clock.
+                StopCoroutine(_appHangHeartbeat);
+                _appHangHeartbeat = StartCoroutine(AppHangHeartbeatCoroutine(heartbeat, interval, arm: false));
+            }
+        };
+        ApplicationResuming += _appHangResume;
+        return StartAppHangHeartbeat(heartbeat, interval);
     }
 
     // Internal overload so tests can use a short interval.
@@ -44,25 +67,34 @@ public partial class SentryMonoBehaviour
             StopCoroutine(_appHangHeartbeat);
         }
 
+        _appHangArmed = false;
         _appHangHeartbeat = StartCoroutine(AppHangHeartbeatCoroutine(heartbeat, interval));
         return _appHangHeartbeat;
     }
 
-    private IEnumerator AppHangHeartbeatCoroutine(Action heartbeat, TimeSpan interval)
+    private IEnumerator AppHangHeartbeatCoroutine(Action heartbeat, TimeSpan interval, bool arm = true)
     {
-        // Skipping the first frame. The first heartbeat both latches the main thread as the
-        // monitored target and arms detection. The monitor no-op without having received a 
-        // heartbeat. During startup, splash screen plus the first scene load routinely block the 
-        // main thread longer than the hang timeout and would cause false positives.
-        // This also works in batchmode/headless (e.g. LinuxServer), unlike WaitForEndOfFrame.
-        yield return null;
-        heartbeat();
+        if (arm)
+        {
+            // Skipping the first frame. The first heartbeat both latches the main thread as the
+            // monitored target and arms detection. The monitor no-op without having received a 
+            // heartbeat. During startup, splash screen plus the first scene load routinely block the 
+            // main thread longer than the hang timeout and would cause false positives.
+            // This also works in batchmode/headless (e.g. LinuxServer), unlike WaitForEndOfFrame.
+            yield return null;
+            heartbeat();
+            _appHangArmed = true;
+        }
 
         var wait = new WaitForSecondsRealtime((float)interval.TotalSeconds);
         while (true)
         {
             yield return wait;
-            heartbeat();
+            // Unity still renders a few frames after losing focus, and a heartbeat there would re-arm the paused detector.
+            if (_isRunning)
+            {
+                heartbeat();
+            }
         }
     }
 }

@@ -171,6 +171,37 @@ public class AndroidManifestTests
     }
 
     [Test]
+    public void ModifyManifest_InitTypeExternal_DoesNotAddSentry()
+    {
+        _fixture.SentryUnityOptions!.AndroidNativeInitializationType = NativeInitializationType.External;
+        var sut = _fixture.GetSut();
+        var manifest = WithAndroidManifest(basePath => sut.ModifyManifest(basePath));
+
+        StringAssert.DoesNotContain("io.sentry.auto-init", manifest);
+        StringAssert.DoesNotContain("io.sentry.dsn", manifest);
+    }
+
+    [Test]
+    public void CopyAndroidSdkToGradleProject_InitTypeExternal_RemovesAndroidSdkFromGradleProject()
+    {
+        var fakeProjectPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var unityProjectPath = Path.Combine(fakeProjectPath, "UnityProject");
+        var gradleProjectPath = Path.Combine(fakeProjectPath, "GradleProject");
+        DebugSymbolUploadTests.SetupFakeProject(fakeProjectPath);
+        var androidSdk = Path.Combine(gradleProjectPath, "unityLibrary", "libs", "androidSdk.jar");
+        File.Create(androidSdk).Close();
+
+        _fixture.SentryUnityOptions!.AndroidNativeInitializationType = NativeInitializationType.External;
+        var sut = _fixture.GetSut();
+
+        sut.CopyAndroidSdkToGradleProject(unityProjectPath, gradleProjectPath);
+
+        Assert.IsFalse(File.Exists(androidSdk));
+
+        Directory.Delete(fakeProjectPath, true);
+    }
+
+    [Test]
     public void ModifyManifest_UnityOptions_AndroidNativeSupportEnabled_InitTypeBuildTime_AddsSentryAndAutoInits()
     {
         _fixture.SentryUnityOptions!.AndroidNativeInitializationType = NativeInitializationType.BuildTime;

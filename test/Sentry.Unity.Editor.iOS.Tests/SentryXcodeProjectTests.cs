@@ -77,6 +77,18 @@ public class SentryXcodeProjectTests
     }
 
     [Test]
+    public void ContainsSentryFramework_FrameworkAdded_ReturnsTrue()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+        Assert.IsFalse(xcodeProject.ContainsSentryFramework());
+
+        xcodeProject.AddSentryFramework();
+
+        Assert.IsTrue(xcodeProject.ContainsSentryFramework());
+    }
+
+    [Test]
     public void AddSentryFramework_EmbedsFramework()
     {
         var xcodeProject = _fixture.GetSut();
@@ -148,6 +160,19 @@ public class SentryXcodeProjectTests
     }
 
     [Test]
+    public void AddBuildPhaseSymbolUpload_UploadFromUnityFramework_BuildPhaseAddedToUnityFramework()
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+
+        xcodeProject.AddBuildPhaseSymbolUpload(new SentryCliOptions(), uploadFromUnityFramework: true);
+
+        Assert.IsTrue(xcodeProject.UnityFrameworkTargetContainsSymbolUploadBuildPhase());
+        Assert.IsFalse(xcodeProject.MainTargetContainsSymbolUploadBuildPhase());
+        StringAssert.Contains("${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}", xcodeProject.ProjectToString());
+    }
+
+    [Test]
     public void AddBuildPhaseSymbolUpload_PhaseAlreadyAdded_LogsAndDoesNotAddAgain()
     {
         const int expectedBuildPhaseOccurence = 1;
@@ -204,6 +229,27 @@ public class SentryXcodeProjectTests
         StringAssert.Contains($"{SentryXcodeProject.IncludeSourcesPropertyName} = NO", projectString);
         StringAssert.Contains($"{SentryXcodeProject.AllowFailurePropertyName} = NO", projectString);
         StringAssert.Contains($"{SentryXcodeProject.PrintLogsPropertyName} = YES", projectString);
+    }
+
+    [Test]
+    [TestCase(false, false, "YES")]
+    [TestCase(false, true, "YES")]
+    [TestCase(true, false, "NO")]
+    [TestCase(true, true, "YES")]
+    public void AddBuildPhaseSymbolUpload_DevelopmentBuild_RespectsUploadDevelopmentSymbols(
+        bool isDevelopmentBuild, bool uploadDevelopmentSymbols, string expectedValue)
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+
+        var sentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+        sentryCliOptions.UploadSymbols = true;
+        sentryCliOptions.UploadDevelopmentSymbols = uploadDevelopmentSymbols;
+
+        xcodeProject.AddBuildPhaseSymbolUpload(sentryCliOptions, isDevelopmentBuild: isDevelopmentBuild);
+
+        StringAssert.Contains($"{SentryXcodeProject.SymbolUploadPropertyName} = {expectedValue}", xcodeProject.ProjectToString());
+        Assert.IsTrue(xcodeProject.MainTargetContainsSymbolUploadBuildPhase());
     }
 
     [Test]

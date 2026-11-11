@@ -151,6 +151,7 @@ function BuildMethodFor([string] $platform)
         "Windows-x86" { return "Builder.BuildWindowsX86Il2CPPPlayer" }
         "Windows-Mono" { return "Builder.BuildWindowsMonoPlayer" }
         "Linux" { return "Builder.BuildLinuxIl2CPPPlayer" }
+        "Linux-Server-arm64" { return "Builder.BuildLinuxServerArm64Il2CPPPlayer" }
         "WebGL" { return "Builder.BuildWebGLPlayer" }
         "iOS" { return "Builder.BuildIOSProject" }
         "Switch" { return "Builder.BuildSwitchIL2CPPPlayer" }

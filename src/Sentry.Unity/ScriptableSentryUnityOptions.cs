@@ -290,11 +290,13 @@ public class ScriptableSentryUnityOptions : ScriptableObject
         if (!string.IsNullOrWhiteSpace(ReleaseOverride))
         {
             options.Release = ReleaseOverride;
+            options.ReleaseOverridden = true;
         }
 
         if (!string.IsNullOrWhiteSpace(EnvironmentOverride))
         {
             options.Environment = EnvironmentOverride;
+            options.EnvironmentOverridden = true;
         }
 
         options.AddBreadcrumbsForLogType[LogType.Log] = BreadcrumbsForLogs;

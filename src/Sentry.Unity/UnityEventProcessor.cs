@@ -111,6 +111,13 @@ internal class UnityEventProcessor :
                 // TODO: Add to protocol?
                 break;
         }
+
+        if (_sentryOptions.NativeConnection is { } nativeConnection)
+        {
+            var (connectionType, connectionEffectiveType) = nativeConnection();
+            device.ConnectionType = connectionType;
+            device.ConnectionEffectiveType = connectionEffectiveType;
+        }
     }
 
     private void PopulateUnity(Protocol.Unity unity)

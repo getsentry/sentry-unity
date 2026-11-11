@@ -487,14 +487,18 @@ public static partial class SentrySdk
     /// </summary>
     [DebuggerStepThrough]
     public static ITransactionTracer StartTransaction(string name, string operation)
-        => Sentry.SentrySdk.StartTransaction(name, operation);
+        => NativePropagationContext.StartTransaction(Sentry.SentrySdk.CurrentHub, name, operation);
 
     /// <summary>
     /// Starts a transaction.
     /// </summary>
     [DebuggerStepThrough]
     public static ITransactionTracer StartTransaction(string name, string operation, string? description)
-        => Sentry.SentrySdk.StartTransaction(name, operation, description);
+    {
+        var transaction = StartTransaction(name, operation);
+        transaction.Description = description;
+        return transaction;
+    }
 
     /// <summary>
     /// Starts a transaction.

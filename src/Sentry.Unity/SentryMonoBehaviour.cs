@@ -59,7 +59,7 @@ public partial class SentryMonoBehaviour
 /// </summary>
 public partial class SentryMonoBehaviour
 {
-    // Unbounded queue - used by the ScreenshotEventProcessor where capture is already limited by Interlocked to 1/frame
+    // Unbounded queue - used by the ScreenshotEventProcessor, which shares a capture among events until it is done
     private readonly ConcurrentQueue<IEnumerator> _coroutineQueue = new();
 
     public void QueueCoroutine(IEnumerator routine)

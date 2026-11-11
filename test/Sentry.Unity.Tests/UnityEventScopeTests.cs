@@ -268,9 +268,36 @@ public sealed class UnityEventProcessorTests
     }
 
     [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public void DeviceName_SetOnlyWithSendDefaultPii(bool sendDefaultPii)
+    {
+        // arrange
+        MainThreadData.SentrySystemInfo = new TestSentrySystemInfo { DeviceName = "Jane's iPhone" };
+        MainThreadData.CollectData();
+
+        var sentryOptions = new SentryUnityOptions(application: _testApplication) { SendDefaultPii = sendDefaultPii };
+        var sut = new UnityScopeUpdater(sentryOptions, _testApplication);
+        var scope = new Scope(sentryOptions);
+
+        // act
+        sut.ConfigureScope(scope);
+
+        // assert
+        Assert.AreEqual(sendDefaultPii ? "Jane's iPhone" : null, scope.Contexts.Device.Name);
+    }
+
+    [Test]
     public void AppProtocol_Assigned()
     {
         // arrange
+        MainThreadData.SentrySystemInfo = new TestSentrySystemInfo
+        {
+            StartTime = new Lazy<DateTimeOffset>(() => DateTimeOffset.UtcNow),
+            IsDebugBuild = new Lazy<bool>(() => true)
+        };
+        MainThreadData.CollectData();
+
         _testApplication = new TestApplication(productName: "TestGame");
         var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
@@ -296,6 +323,49 @@ public sealed class UnityEventProcessorTests
 
         // assert
         Assert.IsNotNull(sentryEvent.Contexts.App.Memory);
+    }
+
+    [Test]
+    public void Process_NativeConnectionSet_SetsDeviceConnection()
+    {
+        _sentryOptions.NativeConnection = () => ("cellular", "5g");
+        var sut = new UnityEventProcessor(_sentryOptions, new TestUnityInfo());
+        var sentryEvent = new SentryEvent();
+
+        sut.Process(sentryEvent);
+
+        Assert.AreEqual("cellular", sentryEvent.Contexts.Device.ConnectionType);
+        Assert.AreEqual("5g", sentryEvent.Contexts.Device.ConnectionEffectiveType);
+    }
+
+    [Test]
+    public void Process_NativeConnectionNotSet_LeavesDeviceConnectionEmpty()
+    {
+        var sut = new UnityEventProcessor(_sentryOptions, new TestUnityInfo());
+        var sentryEvent = new SentryEvent();
+
+        sut.Process(sentryEvent);
+
+        Assert.IsNull(sentryEvent.Contexts.Device.ConnectionType);
+        Assert.IsNull(sentryEvent.Contexts.Device.ConnectionEffectiveType);
+    }
+
+    [Test]
+    public void Process_OffMainThread_DoesNotCallNativeConnection()
+    {
+        var called = false;
+        _sentryOptions.NativeConnection = () =>
+        {
+            called = true;
+            return ("wifi", null);
+        };
+        var sut = new UnityEventProcessor(_sentryOptions, new TestUnityInfo());
+        var sentryEvent = new SentryEvent();
+
+        Task.Run(() => sut.Process(sentryEvent)).Wait();
+
+        Assert.IsFalse(called);
+        Assert.IsNull(sentryEvent.Contexts.Device.ConnectionType);
     }
 
     [Test]
@@ -507,6 +577,7 @@ public sealed class UnityEventProcessorTests
         MainThreadData.SentrySystemInfo = systemInfo;
         MainThreadData.CollectData();
 
+        _sentryOptions.SendDefaultPii = true; // for Device.Name
         var sut = new UnityScopeUpdater(_sentryOptions, _testApplication);
         var scope = new Scope(_sentryOptions);
 

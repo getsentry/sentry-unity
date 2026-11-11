@@ -97,4 +97,20 @@ public class BuildPostProcessTests
         Assert.AreEqual(expectedArchDir, Path.GetFileName(actual));
         Assert.AreEqual(expectedBackendDir, Path.GetFileName(Path.GetDirectoryName(actual)));
     }
+
+    [TestCase(LinuxBackend.Breakpad, "Sentry~", "x86_64")]
+    [TestCase(LinuxBackend.Breakpad, "Sentry~", "ARM64")]
+    [TestCase(LinuxBackend.Native, "SentryNative~", "x86_64")]
+    [TestCase(LinuxBackend.Native, "SentryNative~", "ARM64")]
+    public void GetLinuxBackendDir_ResolvesBackendAndArchitecture(
+        LinuxBackend backend, string expectedBackendDir, string arch)
+    {
+        var options = new SentryUnityOptions();
+        options.Experimental.LinuxBackend = backend;
+
+        var actual = BuildPostProcess.GetLinuxBackendDir(options, arch);
+
+        Assert.AreEqual(arch, Path.GetFileName(actual));
+        Assert.AreEqual(expectedBackendDir, Path.GetFileName(Path.GetDirectoryName(actual)));
+    }
 }

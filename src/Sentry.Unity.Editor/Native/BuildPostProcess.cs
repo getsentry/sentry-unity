@@ -10,6 +10,7 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace Sentry.Unity.Editor.Native;
 
@@ -84,7 +85,9 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
             _ => string.Empty
         };
 
-        UploadDebugSymbols(logger, target, buildOutputDir, executableName, options, cliOptions, isMono);
+        var linuxArch = target == BuildTarget.StandaloneLinux64 ? GetLinuxArchitecture() : string.Empty;
+
+        UploadDebugSymbols(logger, target, buildOutputDir, executableName, linuxArch, options, cliOptions, isMono);
 
         if (!IsEnabledForPlatform(target, options))
         {
@@ -108,10 +111,10 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
             else if (target == BuildTarget.StandaloneLinux64)
             {
                 // Since the backend can change between iterative builds we need to clean up after ourselves
-                CleanupStaleLinuxArtifacts(logger, buildOutputDir);
+                CleanupStaleLinuxArtifacts(logger, buildOutputDir, linuxArch);
             }
 
-            foreach (var artifact in GetNativePluginArtifact(target, options, executablePath, buildOutputDir))
+            foreach (var artifact in GetNativePluginArtifact(target, options, executablePath, buildOutputDir, linuxArch))
             {
                 _ = Directory.CreateDirectory(Path.GetDirectoryName(artifact.Destination));
                 logger.LogDebug("Copying '{0}' to '{1}'", artifact.Source, artifact.Destination);
@@ -157,6 +160,24 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
         return Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Windows/{backend}/{arch}");
     }
 
+    // Linux ships x86_64 and ARM64, each in a subfolder named like the player's plugin folder. Both build for `StandaloneLinux64`,
+    // so the architecture comes from the Linux build settings.
+    internal static string GetLinuxBackendDir(SentryUnityOptions options, string arch)
+    {
+        var backend = options.Experimental.LinuxBackend == LinuxBackend.Native ? "SentryNative~" : "Sentry~";
+        return Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/{backend}/{arch}");
+    }
+
+    // Unity's Linux build picks the player from `UnityEditor.LinuxStandalone.UserBuildSettings.architecture`.
+    // It lives in the Linux module's assembly and is missing on versions without ARM64 support.
+    internal static string GetLinuxArchitecture()
+    {
+        var architecture = Type.GetType("UnityEditor.LinuxStandalone.UserBuildSettings, UnityEditor.LinuxStandalone.Extensions")
+            ?.GetProperty("architecture", BindingFlags.Public | BindingFlags.Static)
+            ?.GetValue(null);
+        return architecture?.ToString() == "ARM64" ? "ARM64" : "x86_64";
+    }
+
     private readonly struct NativePluginArtifact(string source, string destination, bool isExecutable = false)
     {
         public readonly string Source = source;
@@ -165,7 +186,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
     }
 
     private static IEnumerable<NativePluginArtifact> GetNativePluginArtifact(
-        BuildTarget target, SentryUnityOptions options, string executablePath, string buildOutputDir)
+        BuildTarget target, SentryUnityOptions options, string executablePath, string buildOutputDir, string linuxArch)
     {
         var pluginsPath = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins");
 
@@ -214,9 +235,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
                 break;
 
             case BuildTarget.StandaloneLinux64:
-                var linuxBackendSourcePath = options.Experimental.LinuxBackend == LinuxBackend.Native
-                    ? Path.Combine(pluginsPath, "Linux", "SentryNative~")
-                    : Path.Combine(pluginsPath, "Linux", "Sentry~");
+                var linuxBackendSourcePath = GetLinuxBackendDir(options, linuxArch);
                 if (!Directory.Exists(linuxBackendSourcePath))
                 {
                     var buildTarget = options.Experimental.LinuxBackend == LinuxBackend.Native ? "BuildLinuxNativeSDK" : "BuildLinuxSDK";
@@ -226,7 +245,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
                 }
                 // The Linux player resolves the P/Invoke from the plugin dir, and sentry-native spawns
                 // the crash daemon from next to the executable. Debug sidecars stay in the package.
-                var linuxPluginDir = GetLinuxPluginDir(buildOutputDir);
+                var linuxPluginDir = GetLinuxPluginDir(buildOutputDir, linuxArch);
                 foreach (var file in Directory.GetFiles(linuxBackendSourcePath))
                 {
                     var name = Path.GetFileName(file);
@@ -309,9 +328,9 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
         }
     }
 
-    // Unity places Linux native plugins under <PlayerName>_Data/Plugins/x86_64, which the player adds
-    // to its dlopen search path. We resolve the data dir by globbing (the player name isn't known here).
-    private static string GetLinuxPluginDir(string buildOutputDir)
+    // Unity places Linux native plugins under <PlayerName>_Data/Plugins/<CPU>, using the plugin importer's
+    // CPU names (`x86_64`, `ARM64`). We resolve the data dir by globbing (the player name isn't known here).
+    private static string GetLinuxPluginDir(string buildOutputDir, string arch)
     {
         var dataDir = Directory.GetDirectories(buildOutputDir, "*_Data").FirstOrDefault();
         if (dataDir is null)
@@ -320,20 +339,20 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
                 $"Could not locate the player '*_Data' directory under '{buildOutputDir}' to place the Sentry native plugin.");
         }
 
-        return Path.Combine(dataDir, "Plugins", "x86_64");
+        return Path.Combine(dataDir, "Plugins", arch);
     }
 
     // Switching Linux backends between iterative builds leaves the other backend's artifacts behind
     // (a stale sentry-crash next to the player, or the other backend's libsentry.so in the plugin dir).
     // Wipe them before copying the current backend's files in.
-    private static void CleanupStaleLinuxArtifacts(IDiagnosticLogger logger, string buildOutputDir)
+    private static void CleanupStaleLinuxArtifacts(IDiagnosticLogger logger, string buildOutputDir, string arch)
     {
         var stalePaths = new List<string> { Path.Combine(buildOutputDir, "sentry-crash") };
         var dataDir = Directory.GetDirectories(buildOutputDir, "*_Data").FirstOrDefault();
         if (dataDir is not null)
         {
-            stalePaths.Add(Path.Combine(dataDir, "Plugins", "x86_64", "libsentry.so"));
-            stalePaths.Add(Path.Combine(dataDir, "Plugins", "x86_64", LinuxLibraryName));
+            stalePaths.Add(Path.Combine(dataDir, "Plugins", arch, "libsentry.so"));
+            stalePaths.Add(Path.Combine(dataDir, "Plugins", arch, LinuxLibraryName));
         }
 
         foreach (var stale in stalePaths)
@@ -364,7 +383,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
     }
 
     private static void UploadDebugSymbols(IDiagnosticLogger logger, BuildTarget target, string buildOutputDir,
-        string executableName, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
+        string executableName, string linuxArch, SentryUnityOptions options, SentryCliOptions? cliOptions, bool isMono)
     {
         var projectDir = Directory.GetParent(Application.dataPath)?.FullName ?? "";
         if (cliOptions?.IsValid(logger, EditorUserBuildSettings.development) is not true)
@@ -454,11 +473,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
                 // Sentry native SDK symbols from package.
                 // Glob the debug sidecars (libsentry.dbg.so, and sentry-crash.dbg for the native backend)
                 // from whichever backend's source dir is in use.
-                var linuxBackendDir = options.Experimental.LinuxBackend == LinuxBackend.Native
-                    ? "SentryNative~"
-                    : "Sentry~";
-                var linuxSymbolDir = Path.GetFullPath(
-                    $"Packages/{SentryPackageInfo.GetName()}/Plugins/Linux/{linuxBackendDir}");
+                var linuxSymbolDir = GetLinuxBackendDir(options, linuxArch);
                 if (Directory.Exists(linuxSymbolDir))
                 {
                     foreach (var file in Directory.GetFiles(linuxSymbolDir))

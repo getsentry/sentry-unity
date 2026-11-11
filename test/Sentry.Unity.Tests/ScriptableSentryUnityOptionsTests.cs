@@ -102,6 +102,22 @@ public class ScriptableSentryUnityOptionsTests
     }
 
     [Test]
+    [TestCase("", "", false, false)]
+    [TestCase("game@1.0", "production", true, true)]
+    public void ToSentryUnityOptions_Overrides_MarkReleaseAndEnvironmentOverridden(
+        string releaseOverride, string environmentOverride, bool releaseOverridden, bool environmentOverridden)
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        scriptableOptions.ReleaseOverride = releaseOverride;
+        scriptableOptions.EnvironmentOverride = environmentOverride;
+
+        var options = scriptableOptions.ToSentryUnityOptions(application: _fixture.Application);
+
+        Assert.AreEqual(releaseOverridden, options.ReleaseOverridden);
+        Assert.AreEqual(environmentOverridden, options.EnvironmentOverridden);
+    }
+
+    [Test]
     public void ToSentryUnityOptions_MapsAutoMetricsOptions()
     {
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
