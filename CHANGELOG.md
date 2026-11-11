@@ -9,6 +9,7 @@
 ### Fixes
 
 - The SDK no longer throws a `NullReferenceException` during startup on Android and iOS when it can't load its options, for example when the configuration lives in an OBB file that isn't available yet. ([#2931](https://github.com/getsentry/sentry-unity/pull/2931))
+- Setting `FilterBadGatewayExceptions` to `false` now takes effect when initializing the SDK in code with `SentrySdk.Init`. ([#2930](https://github.com/getsentry/sentry-unity/pull/2930))
 - The Event Sample Rate in the Sentry window now accepts values from 0.01 to 1.0. A rate of 0 made the SDK fail to initialize and builds fail to load the options. ([#2929](https://github.com/getsentry/sentry-unity/pull/2929))
 - On iOS, development builds now respect `UploadDevelopmentSymbols` and no longer upload debug symbols unless it is enabled, matching the other platforms. ([#2928](https://github.com/getsentry/sentry-unity/pull/2928))
 
