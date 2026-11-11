@@ -26,90 +26,75 @@ internal static class SentryCocoaBridgeProxy
         Logger = options.DiagnosticLogger;
 
         var cOptions = OptionsNew();
-        WriteOptions(options,
-            (name, value) => OptionsSetString(cOptions, name, value),
-            (name, value) => OptionsSetInt(cOptions, name, value),
-            (name, value) => OptionsSetDouble(cOptions, name, value),
-            (min, max) => OptionsAddFailedRequestStatusCodeRange(cOptions, min, max));
 
-        var result = StartWithOptions(cOptions);
-        return result is 1;
-    }
-
-    /// <summary>
-    /// Writes the options sentry-cocoa reads from its options dictionary through the given setters.
-    /// </summary>
-    internal static void WriteOptions(SentryUnityOptions options,
-        Action<string, string> setString,
-        Action<string, int> setInt,
-        Action<string, double> setDouble,
-        Action<int, int> addFailedRequestStatusCodeRange)
-    {
         // Note: DSN is not null because options.IsValid() must have returned true for this to be called.
-        setString("dsn", options.Dsn!);
+        OptionsSetString(cOptions, "dsn", options.Dsn!);
 
         if (options.Release is not null)
         {
             Logger?.LogDebug("Setting Release: {0}", options.Release);
-            setString("release", options.Release);
+            OptionsSetString(cOptions, "release", options.Release);
         }
 
         if (options.Environment is not null)
         {
             Logger?.LogDebug("Setting Environment: {0}", options.Environment);
-            setString("environment", options.Environment);
+            OptionsSetString(cOptions, "environment", options.Environment);
         }
 
         Logger?.LogDebug("Setting Debug: {0}", options.Debug);
-        setInt("debug", options.Debug ? 1 : 0);
+        OptionsSetInt(cOptions, "debug", options.Debug ? 1 : 0);
 
         var diagnosticLevel = options.DiagnosticLevel.ToString().ToLowerInvariant();
         Logger?.LogDebug("Setting DiagnosticLevel: {0}", diagnosticLevel);
-        setString("diagnosticLevel", diagnosticLevel);
+        OptionsSetString(cOptions, "diagnosticLevel", diagnosticLevel);
 
         if (options.SampleRate.HasValue)
         {
             Logger?.LogDebug("Setting SampleRate: {0}", options.SampleRate.Value);
-            setDouble("sampleRate", options.SampleRate.Value);
+            OptionsSetDouble(cOptions, "sampleRate", options.SampleRate.Value);
         }
 
         Logger?.LogDebug("Setting SendDefaultPii: {0}", options.SendDefaultPii);
-        setInt("sendDefaultPii", options.SendDefaultPii ? 1 : 0);
+        OptionsSetInt(cOptions, "sendDefaultPii", options.SendDefaultPii ? 1 : 0);
 
         // macOS screenshots currently don't work, because there's no UIKit. Cocoa logs: "Sentry - info:: NO UIKit"
         // Logger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
-        // setInt("attachScreenshot", options.AttachScreenshot ? 1 : 0);
-        setInt("attachScreenshot", 0);
+        // OptionsSetInt(cOptions, "attachScreenshot", options.AttachScreenshot ? 1 : 0);
+        OptionsSetInt(cOptions, "attachScreenshot", 0);
 
         Logger?.LogDebug("Setting MaxBreadcrumbs: {0}", options.MaxBreadcrumbs);
-        setInt("maxBreadcrumbs", options.MaxBreadcrumbs);
+        OptionsSetInt(cOptions, "maxBreadcrumbs", options.MaxBreadcrumbs);
 
         Logger?.LogDebug("Setting MaxCacheItems: {0}", options.MaxCacheItems);
-        setInt("maxCacheItems", options.MaxCacheItems);
+        OptionsSetInt(cOptions, "maxCacheItems", options.MaxCacheItems);
 
         // See https://github.com/getsentry/sentry-unity/issues/1658
-        setInt("enableNetworkBreadcrumbs", 0);
+        OptionsSetInt(cOptions, "enableNetworkBreadcrumbs", 0);
 
         Logger?.LogDebug("Setting EnableAppHangTracking: {0}", options.EnableAppHangTracking);
-        setInt("enableAppHangTracking", options.EnableAppHangTracking ? 1 : 0);
+        OptionsSetInt(cOptions, "enableAppHangTracking", options.EnableAppHangTracking ? 1 : 0);
 
         Logger?.LogDebug("Setting AppHangTimeoutInterval: {0}s", options.AppHangTimeout.TotalSeconds);
-        setDouble("appHangTimeoutInterval", options.AppHangTimeout.TotalSeconds);
+        OptionsSetDouble(cOptions, "appHangTimeoutInterval", options.AppHangTimeout.TotalSeconds);
 
         Logger?.LogDebug("Setting EnableWatchdogTerminationTracking: {0}", options.IosWatchdogTerminationIntegrationEnabled);
-        setInt("enableWatchdogTerminationTracking", options.IosWatchdogTerminationIntegrationEnabled ? 1 : 0);
+        OptionsSetInt(cOptions, "enableWatchdogTerminationTracking", options.IosWatchdogTerminationIntegrationEnabled ? 1 : 0);
 
         Logger?.LogDebug("Setting CaptureFailedRequests: {0}", options.CaptureFailedRequests);
-        setInt("enableCaptureFailedRequests", options.CaptureFailedRequests ? 1 : 0);
+        OptionsSetInt(cOptions, "enableCaptureFailedRequests", options.CaptureFailedRequests ? 1 : 0);
 
         Logger?.LogDebug("Setting EnableLogs: {0}", options.EnableLogs);
-        setInt("enableLogs", options.EnableLogs ? 1 : 0);
+        OptionsSetInt(cOptions, "enableLogs", options.EnableLogs ? 1 : 0);
 
         foreach (var range in options.FailedRequestStatusCodes)
         {
             Logger?.LogDebug("Adding FailedRequestStatusCodeRange: {0}-{1}", range.Start, range.End);
-            addFailedRequestStatusCodeRange(range.Start, range.End);
+            OptionsAddFailedRequestStatusCodeRange(cOptions, range.Start, range.End);
         }
+
+        var result = StartWithOptions(cOptions);
+        return result is 1;
     }
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeLoadLibrary")]

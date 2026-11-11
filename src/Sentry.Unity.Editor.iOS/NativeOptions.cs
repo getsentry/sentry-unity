@@ -62,7 +62,7 @@ static SentryObjCOptions* getSentryOptions()
         return nativeOptions;
     }
 
-    // The key is left out when no rate is set, so sentry-cocoa keeps its default of 1.
+    // SampleRate is null at a rate of 1.0. Leaving the key out keeps sentry-cocoa's default, which is also 1.0.
     private static string GetSampleRateEntry(float? sampleRate) => sampleRate.HasValue
         ? $"@\"sampleRate\" : @{sampleRate.Value.ToString(CultureInfo.InvariantCulture)},"
         : string.Empty;
