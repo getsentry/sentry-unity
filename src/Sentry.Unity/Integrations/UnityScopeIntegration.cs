@@ -98,7 +98,9 @@ internal class UnityScopeUpdater
         device.CpuDescription = MainThreadData.CpuDescription;
         device.Timezone = TimeZoneInfo.Local;
         device.SupportsVibration = MainThreadData.SupportsVibration;
-        device.Name = MainThreadData.DeviceName;
+        device.Name = _options.SendDefaultPii
+            ? MainThreadData.DeviceName
+            : null;
 
         // The app can be run in an iOS or Android emulator. We can't safely set a value for simulator.
         device.Simulator = _application.IsEditor ? true : null;
