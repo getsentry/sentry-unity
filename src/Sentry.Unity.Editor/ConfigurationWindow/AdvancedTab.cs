@@ -204,7 +204,8 @@ internal static class AdvancedTab
                 {
                     EditorGUILayout.HelpBox("The IL2CPP line number feature is supported from Unity version 2020.3 or newer and 2021.3  or newer onwards", MessageType.Warning);
                 }
-                else if (cliOptions is not null && !cliOptions.IsValid(null, EditorUserBuildSettings.development))
+                else if (cliOptions is not null && (!cliOptions.IsValid(null, EditorUserBuildSettings.development)
+                                                  || DebugSymbolsTab.IsOrganizationMissing(cliOptions)))
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 

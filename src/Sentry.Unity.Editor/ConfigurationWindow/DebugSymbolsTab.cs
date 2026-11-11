@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -5,6 +6,15 @@ namespace Sentry.Unity.Editor.ConfigurationWindow;
 
 internal static class DebugSymbolsTab
 {
+    /// <summary>
+    /// sentry-cli needs an organization unless the auth token is an organization token or SENTRY_ORG is set.
+    /// Only drives hints in this window; the upload itself leaves the decision to sentry-cli.
+    /// </summary>
+    internal static bool IsOrganizationMissing(SentryCliOptions cliOptions) =>
+        string.IsNullOrWhiteSpace(cliOptions.Organization)
+        && cliOptions.Auth?.Trim().StartsWith("sntrys_", StringComparison.Ordinal) is not true
+        && string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SENTRY_ORG"));
+
     internal static void Display(SentryCliOptions cliOptions)
     {
         cliOptions.UploadSymbols = EditorGUILayout.BeginToggleGroup(
@@ -38,7 +48,7 @@ internal static class DebugSymbolsTab
         cliOptions.Organization = EditorGUILayout.TextField(
                 new GUIContent(
                     "Org Slug",
-                    cliOptions.UploadSymbols && cliOptions.IsOrganizationRequired() ? SentryWindow.ErrorIcon : null,
+                    cliOptions.UploadSymbols && IsOrganizationMissing(cliOptions) ? SentryWindow.ErrorIcon : null,
                     "The organization slug in Sentry"),
                 cliOptions.Organization);
 
