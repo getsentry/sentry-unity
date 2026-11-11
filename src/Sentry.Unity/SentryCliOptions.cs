@@ -28,6 +28,18 @@ public sealed class SentryCliOptions : ScriptableObject
     internal static string GetConfigPath(string? notDefaultConfigName = null)
         => $"Assets/Plugins/Sentry/{notDefaultConfigName ?? ConfigName}.asset";
 
+    private const string OrganizationTokenPrefix = "sntrys_";
+    internal const string OrganizationEnvironmentVariable = "SENTRY_ORG";
+
+    /// <summary>
+    /// sentry-cli needs an organization unless the auth token is an organization token, which carries its own.
+    /// sentry-cli also reads the organization from the SENTRY_ORG environment variable.
+    /// </summary>
+    internal bool IsOrganizationRequired() =>
+        string.IsNullOrWhiteSpace(Organization)
+        && Auth?.Trim().StartsWith(OrganizationTokenPrefix, StringComparison.Ordinal) is not true
+        && string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(OrganizationEnvironmentVariable));
+
     private static void MissingFieldWarning(IDiagnosticLogger? logger, string name) =>
         logger?.LogWarning("{0} missing. Please set it under {1}", name, EditorMenuPath);
 
@@ -59,6 +71,13 @@ public sealed class SentryCliOptions : ScriptableObject
         if (string.IsNullOrWhiteSpace(Auth))
         {
             MissingFieldWarning(logger, "Auth Token");
+            validated = false;
+        }
+
+        if (IsOrganizationRequired())
+        {
+            logger?.LogWarning("Org Slug missing. Set it under {0} or via the {1} environment variable, " +
+                               "or use an organization auth token.", EditorMenuPath, OrganizationEnvironmentVariable);
             validated = false;
         }
 

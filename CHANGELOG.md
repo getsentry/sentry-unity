@@ -4,6 +4,7 @@
 
 ### Fixes
 
+- Debug symbol upload validation now requires the Org Slug unless the Auth Token is an organization token or the `SENTRY_ORG` environment variable is set. Without it, the IL2CPP line number help box now shows and builds skip the upload with a warning instead of failing in sentry-cli. ([#TBD](https://github.com/getsentry/sentry-unity/pull/TBD))
 - The Event Sample Rate in the Sentry window now accepts values from 0.01 to 1.0. A rate of 0 made the SDK fail to initialize and builds fail to load the options. ([#2929](https://github.com/getsentry/sentry-unity/pull/2929))
 - On iOS, development builds now respect `UploadDevelopmentSymbols` and no longer upload debug symbols unless it is enabled, matching the other platforms. ([#2928](https://github.com/getsentry/sentry-unity/pull/2928))
 

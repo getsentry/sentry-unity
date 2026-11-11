@@ -38,6 +38,7 @@ internal static class DebugSymbolsTab
         cliOptions.Organization = EditorGUILayout.TextField(
                 new GUIContent(
                     "Org Slug",
+                    cliOptions.UploadSymbols && cliOptions.IsOrganizationRequired() ? SentryWindow.ErrorIcon : null,
                     "The organization slug in Sentry"),
                 cliOptions.Organization);
 
