@@ -358,11 +358,6 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 
     private void HandleExceptionFilter(SentryUnityOptions options)
     {
-        if (!options.FilterBadGatewayExceptions)
-        {
-            options.RemoveExceptionFilter<UnityBadGatewayExceptionFilter>();
-        }
-
         if (!FilterWebExceptions)
         {
             options.RemoveExceptionFilter<UnityWebExceptionFilter>();
