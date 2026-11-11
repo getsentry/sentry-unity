@@ -4,7 +4,7 @@
 
 ### Behavioral Changes
 
-- The device name (`device.name`), which often contains the user's name, is now only sent when `SendDefaultPii` is enabled. This also applies to native crashes on desktop and consoles. ([#2932](https://github.com/getsentry/sentry-unity/pull/2932))
+- The device name (`device.name`) is now guarded by `SendDefaultPii`. This also applies to native crashes on desktop and consoles. ([#2932](https://github.com/getsentry/sentry-unity/pull/2932))
 
 ## 4.12.0
 
