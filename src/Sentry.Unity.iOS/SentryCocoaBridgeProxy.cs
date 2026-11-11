@@ -54,6 +54,10 @@ internal static class SentryCocoaBridgeProxy
         OptionsSetInt(cOptions, "sendDefaultPii", options.SendDefaultPii ? 1 : 0);
 
         var attachScreenshot = ShouldAttachScreenshot(options, platform);
+        if (options.AttachScreenshot && platform == RuntimePlatform.IPhonePlayer && !attachScreenshot)
+        {
+            Logger?.LogDebug("Not attaching screenshots to native crashes: a screenshot callback is set, and it can't run during a crash.");
+        }
         Logger?.LogDebug("Setting AttachScreenshot: {0}", attachScreenshot);
         OptionsSetInt(cOptions, "attachScreenshot", attachScreenshot ? 1 : 0);
 
@@ -93,7 +97,7 @@ internal static class SentryCocoaBridgeProxy
 
     // sentry-cocoa takes screenshots through UIKit, which macOS doesn't have.
     internal static bool ShouldAttachScreenshot(SentryUnityOptions options, RuntimePlatform platform) =>
-        platform == RuntimePlatform.IPhonePlayer && options.AttachScreenshot;
+        platform == RuntimePlatform.IPhonePlayer && options.AttachNativeCrashScreenshot;
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeLoadLibrary")]
     private static extern int LoadLibrary();

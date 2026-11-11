@@ -59,4 +59,22 @@ public class SentryNativeCocoaTests
 
         Assert.AreEqual(expected, SentryCocoaBridgeProxy.ShouldAttachScreenshot(options, platform));
     }
+
+    [Test]
+    public void ShouldAttachScreenshot_BeforeCaptureScreenshotSet_False()
+    {
+        var options = new SentryUnityOptions { AttachScreenshot = true };
+        options.SetBeforeCaptureScreenshot(_ => true);
+
+        Assert.IsFalse(SentryCocoaBridgeProxy.ShouldAttachScreenshot(options, RuntimePlatform.IPhonePlayer));
+    }
+
+    [Test]
+    public void ShouldAttachScreenshot_BeforeSendScreenshotSet_False()
+    {
+        var options = new SentryUnityOptions { AttachScreenshot = true };
+        options.SetBeforeSendScreenshot((screenshot, _) => screenshot);
+
+        Assert.IsFalse(SentryCocoaBridgeProxy.ShouldAttachScreenshot(options, RuntimePlatform.IPhonePlayer));
+    }
 }

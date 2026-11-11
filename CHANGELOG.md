@@ -4,7 +4,7 @@
 
 ### Fixes
 
-- On iOS, native crashes come with a screenshot when `AttachScreenshot` is enabled, also when the native SDK is initialized at runtime, the default. ([#PR](https://github.com/getsentry/sentry-unity/pull/PR))
+- On iOS, native crashes come with a screenshot when `AttachScreenshot` is enabled, also when the native SDK is initialized at runtime, the default. With `SetBeforeCaptureScreenshot` or `SetBeforeSendScreenshot` set, native crashes come without one, as these callbacks can't run during a crash. Events that sentry-cocoa captures itself, such as failed HTTP requests, no longer get a screenshot. ([#PR](https://github.com/getsentry/sentry-unity/pull/PR))
 - The Event Sample Rate in the Sentry window now accepts values from 0.01 to 1.0. A rate of 0 made the SDK fail to initialize and builds fail to load the options. ([#2929](https://github.com/getsentry/sentry-unity/pull/2929))
 - On iOS, development builds now respect `UploadDevelopmentSymbols` and no longer upload debug symbols unless it is enabled, matching the other platforms. ([#2928](https://github.com/getsentry/sentry-unity/pull/2928))
 
