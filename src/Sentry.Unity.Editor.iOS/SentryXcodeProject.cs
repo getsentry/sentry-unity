@@ -188,14 +188,15 @@ fi";
             .Invoke(_project, new object[] { new[] { _mainTargetGuid, _unityFrameworkTargetGuid }, "FRAMEWORK_SEARCH_PATHS", path });
     }
 
-    public void AddBuildPhaseSymbolUpload(SentryCliOptions sentryCliOptions, bool uploadFromUnityFramework = false)
+    public void AddBuildPhaseSymbolUpload(SentryCliOptions sentryCliOptions, bool isDevelopmentBuild = false, bool uploadFromUnityFramework = false)
     {
         _logger?.LogInfo("Setting up Sentry CLI build properties and upload script.");
 
         var targetGuid = uploadFromUnityFramework ? _unityFrameworkTargetGuid : _mainTargetGuid;
 
+        var uploadSymbols = sentryCliOptions.IsUploadEnabled(_logger, isDevelopmentBuild);
         _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })
-            .Invoke(_project, new object[] { targetGuid, SymbolUploadPropertyName, sentryCliOptions.UploadSymbols ? "YES" : "NO" });
+            .Invoke(_project, new object[] { targetGuid, SymbolUploadPropertyName, uploadSymbols ? "YES" : "NO" });
 
         // Set additional upload properties
         _pbxProjectType.GetMethod("SetBuildProperty", new[] { typeof(string), typeof(string), typeof(string) })

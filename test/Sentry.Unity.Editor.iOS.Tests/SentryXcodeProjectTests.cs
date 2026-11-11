@@ -232,6 +232,27 @@ public class SentryXcodeProjectTests
     }
 
     [Test]
+    [TestCase(false, false, "YES")]
+    [TestCase(false, true, "YES")]
+    [TestCase(true, false, "NO")]
+    [TestCase(true, true, "YES")]
+    public void AddBuildPhaseSymbolUpload_DevelopmentBuild_RespectsUploadDevelopmentSymbols(
+        bool isDevelopmentBuild, bool uploadDevelopmentSymbols, string expectedValue)
+    {
+        var xcodeProject = _fixture.GetSut();
+        xcodeProject.ReadFromProjectFile();
+
+        var sentryCliOptions = ScriptableObject.CreateInstance<SentryCliOptions>();
+        sentryCliOptions.UploadSymbols = true;
+        sentryCliOptions.UploadDevelopmentSymbols = uploadDevelopmentSymbols;
+
+        xcodeProject.AddBuildPhaseSymbolUpload(sentryCliOptions, isDevelopmentBuild: isDevelopmentBuild);
+
+        StringAssert.Contains($"{SentryXcodeProject.SymbolUploadPropertyName} = {expectedValue}", xcodeProject.ProjectToString());
+        Assert.IsTrue(xcodeProject.MainTargetContainsSymbolUploadBuildPhase());
+    }
+
+    [Test]
     public void AddBuildPhaseSymbolUpload_UploadScriptContainsPropertyReferences()
     {
         var xcodeProject = _fixture.GetSut();

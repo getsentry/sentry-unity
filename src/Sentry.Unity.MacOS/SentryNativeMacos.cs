@@ -26,7 +26,7 @@ public static class SentryNativeMacos
         SentryNativeCocoa.Configure(options);
     }
 
-    public static void Close(SentryUnityOptions options)
+    public static void Close(SentryUnityOptions? options)
     {
         if (options is null)
         {

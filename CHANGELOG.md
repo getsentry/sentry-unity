@@ -2,9 +2,23 @@
 
 ## Unreleased
 
+### Behavioral Changes
+
+- The device name (`device.name`) is now guarded by `SendDefaultPii`. This also applies to native crashes on desktop and consoles. ([#2932](https://github.com/getsentry/sentry-unity/pull/2932))
+
 ### Fixes
 
 - The configuration window's tooltips and help boxes and the option docs describe the SDK's defaults and requirements correctly: `Auto Set UserName` is disabled by default, `Attach Screenshots` also attaches screenshots to events on background threads, `Org Slug` is required unless the Auth Token is an organization token, `Scene Traces` has no Unity version requirement, and `IosWatchdogTerminationIntegrationEnabled` turns on reporting of watchdog terminations on iOS. ([#2933](https://github.com/getsentry/sentry-unity/pull/2933))
+- The SDK no longer throws a `NullReferenceException` during startup on Android and iOS when it can't load its options, for example when the configuration lives in an OBB file that isn't available yet. ([#2931](https://github.com/getsentry/sentry-unity/pull/2931))
+- Setting `FilterBadGatewayExceptions` to `false` now takes effect when initializing the SDK in code with `SentrySdk.Init`. ([#2930](https://github.com/getsentry/sentry-unity/pull/2930))
+- The Event Sample Rate in the Sentry window now accepts values from 0.01 to 1.0. A rate of 0 made the SDK fail to initialize and builds fail to load the options. ([#2929](https://github.com/getsentry/sentry-unity/pull/2929))
+- On iOS, development builds now respect `UploadDevelopmentSymbols` and no longer upload debug symbols unless it is enabled, matching the other platforms. ([#2928](https://github.com/getsentry/sentry-unity/pull/2928))
+
+### Dependencies
+
+- Bump Native SDK from v0.17.5 to v0.17.6 ([#2935](https://github.com/getsentry/sentry-unity/pull/2935))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0176)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.5...0.17.6)
 
 ## 4.12.0
 
