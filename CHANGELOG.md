@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Behavioral Changes
+
+- The device name (`device.name`) is now guarded by `SendDefaultPii`. This also applies to native crashes on desktop and consoles. ([#2932](https://github.com/getsentry/sentry-unity/pull/2932))
+
 ### Fixes
 
 - The Event Sample Rate in the Sentry window now accepts values from 0.01 to 1.0. A rate of 0 made the SDK fail to initialize and builds fail to load the options. ([#2929](https://github.com/getsentry/sentry-unity/pull/2929))
