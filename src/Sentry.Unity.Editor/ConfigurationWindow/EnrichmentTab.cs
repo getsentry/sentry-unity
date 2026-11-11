@@ -36,7 +36,8 @@ internal static class EnrichmentTab
                                                     "For C# events, the screenshot is taken at the end of the current or next frame, and none is " +
                                                     "attached in the Editor or in batch mode. It is missing when no frame completes within a second, " +
                                                     "for example while the main thread hangs or the app is paused in the background.\n" +
-                                                    "On Windows, native crashes get a screenshot taken by the native SDK when the crash happens."),
+                                                    "On Windows, with native support enabled, native crashes get a screenshot of the game's window, taken by the " +
+                                                    "native SDK when the crash happens (not in batch mode or server builds)."),
                 options.AttachScreenshot);
             EditorGUI.indentLevel++;
 
