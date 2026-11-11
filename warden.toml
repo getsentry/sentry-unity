@@ -42,7 +42,7 @@ ignorePaths = [
 
 [[skills.triggers]]
 type = "pull_request"
-actions = ["opened", "synchronize", "reopened"]
+actions = ["opened", "synchronize", "reopened", "ready_for_review"]
 draft = false
 
 # Workflows, scripts, MSBuild, packaging, and the integration-test harness.
@@ -73,5 +73,5 @@ ignorePaths = [
 
 [[skills.triggers]]
 type = "pull_request"
-actions = ["opened", "synchronize", "reopened"]
+actions = ["opened", "synchronize", "reopened", "ready_for_review"]
 draft = false
