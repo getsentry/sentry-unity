@@ -1,0 +1,69 @@
+# Warden configuration for sentry-unity.
+# https://github.com/getsentry/warden
+#
+# The org workflow (getsentry/.github) layers this file on top of the org base
+# config. The base runs `security-review`; do not redeclare it here, Warden
+# ignores repo skills that share a base skill's name.
+#
+# Repo skills inherit the base model, effort, runtime, and incrementalApp.
+# They do not inherit the base reportOn, failOn, or ignorePaths, so they use
+# the action defaults: reportOn "medium", failOn "high", failCheck false.
+# With failCheck false, findings are comments and never fail the check.
+
+version = 1
+
+# Runtime, Editor, and native bridge code, plus the unit tests that cover it.
+[[skills]]
+name = "unity-sdk-review"
+incremental = true
+paths = [
+  "src/**/*.cs",
+  "package-dev/**/*.cs",
+  "package-dev/Plugins/**/*.m",
+  "package-dev/Plugins/**/*.mm",
+  "package-dev/Plugins/**/*.c",
+  "package-dev/Plugins/**/*.cpp",
+  "package-dev/Plugins/**/*.h",
+  "package-dev/Plugins/**/*.pro",
+  "package*/**/*.asmdef",
+  "test/**/*.cs",
+]
+ignorePaths = [
+  "src/sentry-dotnet/**",
+  "test/Scripts.Integration.Test/**",
+  "**/*.meta",
+]
+
+[[skills.triggers]]
+type = "pull_request"
+actions = ["opened", "synchronize", "reopened"]
+
+# Workflows, scripts, MSBuild, packaging, and the integration-test harness.
+[[skills]]
+name = "unity-ci-review"
+incremental = true
+paths = [
+  ".github/**",
+  "scripts/**",
+  "build/**",
+  "**/*.ps1",
+  "**/*.sh",
+  "**/Directory.Build.props",
+  "**/Directory.Build.targets",
+  "**/*.csproj",
+  "global.json",
+  ".craft.yml",
+  "package/package.json",
+  "package-dev/package.json",
+  "test/Scripts.Integration.Test/**",
+  "test/Scripts.Tests/**",
+  "samples/*/Assets/Editor/**/*.cs",
+]
+ignorePaths = [
+  "**/*.md",
+  "**/*.meta",
+]
+
+[[skills.triggers]]
+type = "pull_request"
+actions = ["opened", "synchronize", "reopened"]
