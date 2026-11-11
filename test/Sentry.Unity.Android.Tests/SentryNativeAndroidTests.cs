@@ -4,6 +4,7 @@ using System.Threading;
 using NUnit.Framework;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
+using UnityEngine;
 
 namespace Sentry.Unity.Android.Tests;
 
@@ -35,6 +36,15 @@ public class SentryNativeAndroidTests
         _fakeReinstallSentryNativeBackendStrategy =
             Interlocked.Exchange(ref SentryNative.ReinstallSentryNativeBackendStrategy!,
                 _originalReinstallSentryNativeBackendStrategy)!;
+
+    [Test]
+    public void Close_OptionsNull_DoesNotCloseSentryJava()
+    {
+        _testSentryJava.SentryPresent = true;
+
+        Assert.DoesNotThrow(() => SentryNativeAndroid.Close(null, RuntimePlatform.Android));
+        Assert.False(_testSentryJava.CloseCalled);
+    }
 
     [Test]
     public void Configure_DefaultConfiguration_SetsScopeObserver()

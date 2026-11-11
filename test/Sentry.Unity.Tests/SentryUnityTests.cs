@@ -2,9 +2,11 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 using Sentry.Extensibility;
+using Sentry.Unity.Integrations;
 using Sentry.Unity.Tests.SharedClasses;
 using Sentry.Unity.Tests.Stubs;
 using UnityEngine;
@@ -76,6 +78,22 @@ public class SentryUnitySelfInitializationTests
         SentrySdk.Init(options);
 
         Assert.IsTrue(SentrySdk.IsEnabled);
+    }
+
+    [Test]
+    public void SentryUnity_FilterBadGatewayExceptionsDisabled_RemovesBadGatewayFilter()
+    {
+        var options = new SentryUnityOptions(application: new TestApplication())
+        {
+            Dsn = SentryTests.TestDsn,
+            FilterBadGatewayExceptions = false
+        };
+
+        SentrySdk.Init(options);
+
+        var exceptionFiltersPropertyInfo = typeof(SentryOptions).GetProperty("ExceptionFilters", BindingFlags.NonPublic | BindingFlags.Instance);
+        var filters = (List<IExceptionFilter>)exceptionFiltersPropertyInfo!.GetValue(options);
+        Assert.That(filters.OfType<UnityBadGatewayExceptionFilter>(), Is.Empty);
     }
 
     [Test]
