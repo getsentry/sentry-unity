@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Sentry.Extensibility;
+using UnityEngine;
 
 namespace Sentry.Unity.iOS;
 
@@ -16,7 +17,7 @@ internal static class SentryCocoaBridgeProxy
     private static IDiagnosticLogger? Logger;
     public static bool IsEnabled() => SentryNativeBridgeIsEnabled() == 1;
 
-    public static bool Init(SentryUnityOptions options)
+    public static bool Init(SentryUnityOptions options, RuntimePlatform platform)
     {
         if (LoadLibrary() != 1)
         {
@@ -52,10 +53,9 @@ internal static class SentryCocoaBridgeProxy
         Logger?.LogDebug("Setting SendDefaultPii: {0}", options.SendDefaultPii);
         OptionsSetInt(cOptions, "sendDefaultPii", options.SendDefaultPii ? 1 : 0);
 
-        // macOS screenshots currently don't work, because there's no UIKit. Cocoa logs: "Sentry - info:: NO UIKit"
-        // Logger?.LogDebug("Setting AttachScreenshot: {0}", options.AttachScreenshot);
-        // OptionsSetInt(cOptions, "attachScreenshot", options.AttachScreenshot ? 1 : 0);
-        OptionsSetInt(cOptions, "attachScreenshot", 0);
+        var attachScreenshot = ShouldAttachScreenshot(options, platform);
+        Logger?.LogDebug("Setting AttachScreenshot: {0}", attachScreenshot);
+        OptionsSetInt(cOptions, "attachScreenshot", attachScreenshot ? 1 : 0);
 
         Logger?.LogDebug("Setting MaxBreadcrumbs: {0}", options.MaxBreadcrumbs);
         OptionsSetInt(cOptions, "maxBreadcrumbs", options.MaxBreadcrumbs);
@@ -90,6 +90,10 @@ internal static class SentryCocoaBridgeProxy
         var result = StartWithOptions(cOptions);
         return result is 1;
     }
+
+    // sentry-cocoa takes screenshots through UIKit, which macOS doesn't have.
+    internal static bool ShouldAttachScreenshot(SentryUnityOptions options, RuntimePlatform platform) =>
+        platform == RuntimePlatform.IPhonePlayer && options.AttachScreenshot;
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeLoadLibrary")]
     private static extern int LoadLibrary();
