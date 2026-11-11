@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Behavioral Changes
+
+- The device name (`device.name`) is now guarded by `SendDefaultPii`. This also applies to native crashes on desktop and consoles. ([#2932](https://github.com/getsentry/sentry-unity/pull/2932))
+
+### Fixes
+
+- Values set in a `SentryCliOptionsConfiguration`, such as an auth token read from an environment variable, no longer get saved into `SentryCliOptions.asset` by the Sentry window after a build. The configuration now runs on a copy of the options. ([#2938](https://github.com/getsentry/sentry-unity/pull/2938))
+- The configuration window's tooltips and help boxes and the option docs describe the SDK's defaults and requirements correctly: `Auto Set UserName` is disabled by default, `Attach Screenshots` also attaches screenshots to events on background threads, `Org Slug` is required unless the Auth Token is an organization token, `Scene Traces` has no Unity version requirement, and `IosWatchdogTerminationIntegrationEnabled` turns on reporting of watchdog terminations on iOS. ([#2933](https://github.com/getsentry/sentry-unity/pull/2933))
+- The SDK no longer throws a `NullReferenceException` during startup on Android and iOS when it can't load its options, for example when the configuration lives in an OBB file that isn't available yet. ([#2931](https://github.com/getsentry/sentry-unity/pull/2931))
+- Setting `FilterBadGatewayExceptions` to `false` now takes effect when initializing the SDK in code with `SentrySdk.Init`. ([#2930](https://github.com/getsentry/sentry-unity/pull/2930))
+- The Event Sample Rate in the Sentry window now accepts values from 0.01 to 1.0. A rate of 0 made the SDK fail to initialize and builds fail to load the options. ([#2929](https://github.com/getsentry/sentry-unity/pull/2929))
+- On iOS, development builds now respect `UploadDevelopmentSymbols` and no longer upload debug symbols unless it is enabled, matching the other platforms. ([#2928](https://github.com/getsentry/sentry-unity/pull/2928))
+
+### Dependencies
+
+- Bump Java SDK from v8.61.0 to v8.62.0 ([#2897](https://github.com/getsentry/sentry-unity/pull/2897))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8620)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.61.0...8.62.0)
+- Bump Native SDK from v0.17.5 to v0.17.6 ([#2935](https://github.com/getsentry/sentry-unity/pull/2935))
+  - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0176)
+  - [diff](https://github.com/getsentry/sentry-native/compare/0.17.5...0.17.6)
+
 ## 4.12.0
 
 ### Behavioral Changes
@@ -212,7 +236,7 @@
 
 ### Features
 
-- Added `options.AndroidNativeTombstoneEnabled` (default `false`) and `options.AndroidReportHistoricalTombstones` (default `false`) to enable reporting of native crashes captured by Android's `ApplicationExitInfo` API as Tombstones ([#2749](https://github.com/getsentry/sentry-unity/pull/2749))
+- Added `options.AndroidTombstoneEnabled` (default `false`) and `options.AndroidReportHistoricalTombstones` (default `false`) to enable reporting of native crashes captured by Android's `ApplicationExitInfo` API as Tombstones ([#2749](https://github.com/getsentry/sentry-unity/pull/2749))
 
 ### Fixes
 

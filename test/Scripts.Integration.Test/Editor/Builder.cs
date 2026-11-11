@@ -92,11 +92,9 @@ public class Builder
             Debug.Log("Builder: Enabling minify");
             PlayerSettings.Android.minifyDebug = PlayerSettings.Android.minifyRelease = true;
 
-#if UNITY_6000_0_OR_NEWER
-            // X86_64 has been deprecated and was removed with 6.5
+            // The integration tests run the app on Redroid on an arm64 runner
             Debug.Log("Builder: Setting target architecture to ARM64");
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
-#endif
         }
 
         Debug.Log("Builder: Checking for Test scene");

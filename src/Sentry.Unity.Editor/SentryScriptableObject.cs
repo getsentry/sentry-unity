@@ -24,10 +24,20 @@ internal static class SentryScriptableObject
 
     internal static T? Load<T>(string path) where T : ScriptableObject => AssetDatabase.LoadAssetAtPath<T>(path);
 
-    public static SentryCliOptions? LoadCliOptions()
+    public static SentryCliOptions? LoadCliOptions() => LoadCliOptions(SentryCliOptions.GetConfigPath());
+
+    internal static SentryCliOptions? LoadCliOptions(string path)
     {
-        var cliOptions = Load<SentryCliOptions>(SentryCliOptions.GetConfigPath());
-        cliOptions?.CliOptionsConfiguration?.Configure(cliOptions);
+        var savedCliOptions = Load<SentryCliOptions>(path);
+        if (savedCliOptions == null)
+        {
+            return null;
+        }
+
+        // The configuration runs on a copy. The asset is the instance the Sentry window edits and saves, so values
+        // set in code, such as an auth token read from the environment, would otherwise get written to disk.
+        var cliOptions = Object.Instantiate(savedCliOptions);
+        cliOptions.CliOptionsConfiguration?.Configure(cliOptions);
 
         return cliOptions;
     }

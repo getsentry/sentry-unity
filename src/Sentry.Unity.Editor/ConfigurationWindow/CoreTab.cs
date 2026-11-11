@@ -6,6 +6,11 @@ namespace Sentry.Unity.Editor.ConfigurationWindow;
 
 internal static class CoreTab
 {
+    // The .NET SDK's SampleRate throws for 0 and documents 0.01 as its minimum.
+    internal const float MinSampleRate = 0.01f;
+
+    internal static float ClampSampleRate(float sampleRate) => Mathf.Clamp(sampleRate, MinSampleRate, 1.0f);
+
     internal static void Display(ScriptableSentryUnityOptions options)
     {
         {
@@ -21,12 +26,12 @@ internal static class CoreTab
 
             var sampleRate = EditorGUILayout.FloatField(
                 new GUIContent("Event Sample Rate", "Indicates the percentage of events that are " +
-                                                    "captured. Setting this to 0.1 captures 10% of events. " +
-                                                    "Setting this to 1.0 captures all events." +
+                                                    "captured, from 0.01 (1%) to 1.0. Setting this to 0.1 " +
+                                                    "captures 10% of events. Setting this to 1.0 captures all events." +
                                                     "\nThis affects only errors and logs, not performance " +
                                                     "(transactions) data. See TraceSampleRate for that."),
                 options.SampleRate);
-            options.SampleRate = Mathf.Clamp01(sampleRate);
+            options.SampleRate = ClampSampleRate(sampleRate);
 
             options.CaptureInEditor = EditorGUILayout.Toggle(
                 new GUIContent("Capture In Editor", "Capture errors while running in the Editor."),
@@ -85,7 +90,7 @@ internal static class CoreTab
 
             options.AutoSceneLoadTraces = EditorGUILayout.Toggle(
                 new GUIContent("Scene Traces ", "Whether the SDK should automatically create traces " +
-                                                     "during scene loading. Requires Unity 2020.3 or newer."),
+                                                     "during scene loading."),
                 options.AutoSceneLoadTraces);
 
             options.AutoAwakeTraces = EditorGUILayout.Toggle(

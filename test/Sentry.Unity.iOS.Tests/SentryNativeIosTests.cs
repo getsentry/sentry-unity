@@ -8,6 +8,12 @@ namespace Sentry.Unity.iOS.Tests;
 public class SentryNativeCocoaTests
 {
     [Test]
+    public void Close_OptionsNull_DoesNotThrow()
+    {
+        Assert.DoesNotThrow(() => SentryNativeCocoa.Close(null, RuntimePlatform.IPhonePlayer));
+    }
+
+    [Test]
     public void Configure_DefaultConfiguration_iOS()
     {
         var options = new SentryUnityOptions();

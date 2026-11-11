@@ -32,13 +32,13 @@ internal static class DebugSymbolsTab
             new GUIContent(
                 "Auth Token",
                 cliOptions.UploadSymbols && string.IsNullOrWhiteSpace(cliOptions.Auth) ? SentryWindow.ErrorIcon : null,
-                "The authorization token from your user settings in Sentry"),
+                "The auth token sentry-cli uses to upload debug symbols, e.g. an organization token from your organization's settings in Sentry"),
             cliOptions.Auth);
 
         cliOptions.Organization = EditorGUILayout.TextField(
                 new GUIContent(
                     "Org Slug",
-                    "The organization slug in Sentry"),
+                    "The organization slug in Sentry. Required unless the Auth Token is an organization token."),
                 cliOptions.Organization);
 
         cliOptions.Project = EditorGUILayout.TextField(
