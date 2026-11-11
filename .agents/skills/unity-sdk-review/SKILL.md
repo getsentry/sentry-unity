@@ -60,8 +60,9 @@ Maintainers rejected these as false positives:
 |-------|---------|
 | high | Crash, link failure, or build failure on a supported platform in the default configuration. Events, crashes, or symbols silently not reported. User options reset or ignored. |
 | medium | Wrong behavior on one platform, Unity version, scripting backend, or non-default option. Duplicate reports. State that leaks into a later build in the same Editor session. |
+| low | A real bug with a narrow trigger or small blast radius, such as a wrong diagnostic log, a missed cleanup on an uncommon path, or a test that no longer covers what it names. |
 
-Report nothing below medium. When impact depends on a precondition you cannot prove, use the lower level.
+Do not report style, dead code, or suspicion as low. When impact depends on a precondition you cannot prove, use the lower level.
 
 ## Finding Format
 

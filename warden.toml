@@ -6,11 +6,17 @@
 # ignores repo skills that share a base skill's name.
 #
 # Repo skills inherit the base model, effort, runtime, and incrementalApp.
-# They do not inherit the base reportOn, failOn, or ignorePaths, so they use
-# the action defaults: reportOn "medium", failOn "high", failCheck false.
-# With failCheck false, findings are comments and never fail the check.
+# They do not inherit the base reportOn, failOn, failCheck, requestChanges, or
+# ignorePaths, so the org policy values are repeated below. Findings of every
+# severity are posted as comments and never fail the check or request changes.
 
 version = 1
+
+[defaults]
+reportOn = "low"
+failOn = "off"
+failCheck = false
+requestChanges = false
 
 # Runtime, Editor, and native bridge code, plus the unit tests that cover it.
 [[skills]]

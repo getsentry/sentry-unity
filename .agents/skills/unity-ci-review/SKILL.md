@@ -60,8 +60,9 @@ Maintainers rejected these as false positives:
 |-------|---------|
 | high | CI broken for every PR or for `main`, a release or package artifact missing files or shipping stale ones, a required job that always passes, or bootstrap broken for a fresh clone. |
 | medium | One platform, Unity version, or runner path broken or falsely green. A developer script that fails in a documented mode. A retry or re-run that cannot recover. |
+| low | A real but narrow breakage, such as a cache key missing an input, wrong output in a failure summary, or a developer script that misbehaves only with uncommon arguments. |
 
-Report nothing below medium. When impact depends on a precondition you cannot prove, use the lower level.
+Do not report style, dead code, or suspicion as low. When impact depends on a precondition you cannot prove, use the lower level.
 
 ## Finding Format
 
