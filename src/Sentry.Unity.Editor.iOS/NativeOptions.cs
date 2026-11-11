@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace Sentry.Unity.Editor.iOS;
@@ -33,7 +34,7 @@ static SentryObjCOptions* getSentryOptions()
         @""appHangTimeoutInterval"": @{options.AppHangTimeout.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture)},
         @""enableCaptureFailedRequests"": @{ToObjCString(options.CaptureFailedRequests)},
         @""failedRequestStatusCodes"" : @[{failedRequestStatusCodesArray}],
-        @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
+{GetSampleRateEntry(options.SampleRate)}        @""sendDefaultPii"" : @{ToObjCString(options.SendDefaultPii)},
         @""attachScreenshot"" : @{ToObjCString(options.AttachScreenshot)},
         @""release"" : @""{options.Release}"",
         @""environment"" : @""{options.Environment}"",
@@ -59,6 +60,11 @@ static SentryObjCOptions* getSentryOptions()
 
         return nativeOptions;
     }
+
+    // The key is left out when no rate is set, so sentry-cocoa keeps its default of 1.
+    private static string GetSampleRateEntry(float? sampleRate) => sampleRate.HasValue
+        ? $"        @\"sampleRate\" : @{sampleRate.Value.ToString(CultureInfo.InvariantCulture)},\n"
+        : string.Empty;
 
     private static string ToObjCString(bool b) => b ? "YES" : "NO";
 
