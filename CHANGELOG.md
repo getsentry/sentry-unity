@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- The configuration window's tooltips and help boxes and the option docs describe the SDK's defaults and requirements correctly: `Auto Set UserName` is disabled by default, `Attach Screenshots` also attaches screenshots to events on background threads, `Org Slug` is required unless the Auth Token is an organization token, `Scene Traces` has no Unity version requirement, and `IosWatchdogTerminationIntegrationEnabled` turns on reporting of watchdog terminations on iOS. ([#2933](https://github.com/getsentry/sentry-unity/pull/2933))
 - The SDK no longer throws a `NullReferenceException` during startup on Android and iOS when it can't load its options, for example when the configuration lives in an OBB file that isn't available yet. ([#2931](https://github.com/getsentry/sentry-unity/pull/2931))
 - Setting `FilterBadGatewayExceptions` to `false` now takes effect when initializing the SDK in code with `SentrySdk.Init`. ([#2930](https://github.com/getsentry/sentry-unity/pull/2930))
 - The Event Sample Rate in the Sentry window now accepts values from 0.01 to 1.0. A rate of 0 made the SDK fail to initialize and builds fail to load the options. ([#2929](https://github.com/getsentry/sentry-unity/pull/2929))
@@ -231,7 +232,7 @@
 
 ### Features
 
-- Added `options.AndroidNativeTombstoneEnabled` (default `false`) and `options.AndroidReportHistoricalTombstones` (default `false`) to enable reporting of native crashes captured by Android's `ApplicationExitInfo` API as Tombstones ([#2749](https://github.com/getsentry/sentry-unity/pull/2749))
+- Added `options.AndroidTombstoneEnabled` (default `false`) and `options.AndroidReportHistoricalTombstones` (default `false`) to enable reporting of native crashes captured by Android's `ApplicationExitInfo` API as Tombstones ([#2749](https://github.com/getsentry/sentry-unity/pull/2749))
 
 ### Fixes
 

@@ -16,8 +16,8 @@ public class SentryCliOptionsEditor : UnityEditor.Editor
 
         EditorGUILayout.Toggle("Enable Symbols Upload", cliOptions.UploadSymbols);
         EditorGUILayout.Toggle("Enable Dev Symbols Upload", cliOptions.UploadDevelopmentSymbols);
-        EditorGUILayout.TextField("Auth-Token", cliOptions.Auth);
-        EditorGUILayout.TextField("Org-Slug", cliOptions.Organization);
+        EditorGUILayout.TextField("Auth Token", cliOptions.Auth);
+        EditorGUILayout.TextField("Org Slug", cliOptions.Organization);
         EditorGUILayout.TextField("Project Name", cliOptions.Project);
 
         EditorGUILayout.LabelField("Options Configuration", EditorStyles.boldLabel);
