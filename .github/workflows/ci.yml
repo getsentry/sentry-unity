@@ -27,39 +27,11 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-  # A push to a PR that changes only Markdown files since a head that already passed CI skips the build and test jobs.
   changes:
-    name: Check for code changes
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/check-changes.yml
     permissions:
       actions: read
       contents: read
-    outputs:
-      run: ${{ steps.check.outputs.run }}
-    steps:
-      - id: check
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BEFORE: ${{ github.event.action == 'synchronize' && github.event.before || '' }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
-        run: |
-          run=true
-          if [[ -n "$BEFORE" ]]; then
-            passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$BEFORE&event=pull_request&status=success" --jq '.total_count') || passed=0
-            if [[ "$passed" -gt 0 ]]; then
-              # The compare API lists at most 300 files; "ahead" rules out force-pushes that dropped commits.
-              # Markdown under package*/ ships in the UPM package, so it counts as code.
-              run=$(gh api "repos/$GITHUB_REPOSITORY/compare/$BEFORE...$HEAD" --jq '
-                if .status == "ahead" and (.files | length) > 0 and (.files | length) < 300
-                  and all(.files[]; [.filename, .previous_filename // empty] | all(endswith(".md") and (startswith("package") | not)))
-                then "false" else "true" end') || run=true
-            fi
-          fi
-          echo "run=$run" >> "$GITHUB_OUTPUT"
-          if [[ "$run" == "false" ]]; then
-            echo "Only Markdown files changed since $BEFORE, which passed CI. Skipping the build and test jobs." >> "$GITHUB_STEP_SUMMARY"
-          fi
 
   create-unity-matrix:
     uses: ./.github/workflows/create-unity-matrix.yml
