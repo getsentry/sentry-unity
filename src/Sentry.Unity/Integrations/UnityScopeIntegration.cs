@@ -98,7 +98,6 @@ internal class UnityScopeUpdater
         device.CpuDescription = MainThreadData.CpuDescription;
         device.Timezone = TimeZoneInfo.Local;
         device.SupportsVibration = MainThreadData.SupportsVibration;
-        // The device name is often set by the user and can contain their name, e.g. "Jane's iPhone".
         device.Name = _options.SendDefaultPii
             ? MainThreadData.DeviceName
             : null;
