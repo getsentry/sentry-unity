@@ -27,6 +27,12 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
+  changes:
+    uses: ./.github/workflows/check-changes.yml
+    permissions:
+      actions: read
+      contents: read
+
   create-unity-matrix:
     uses: ./.github/workflows/create-unity-matrix.yml
     with:
@@ -34,6 +40,8 @@ jobs:
       head-ref: ${{ github.head_ref }}
 
   sdk:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.run == 'true' }}
     strategy:
       matrix:
         include:
@@ -66,6 +74,8 @@ jobs:
 
   build-unity-sdk:
     name: Build Unity SDK
+    needs: [changes]
+    if: ${{ needs.changes.outputs.run == 'true' }}
     secrets:
       UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
     permissions:
@@ -83,6 +93,8 @@ jobs:
     
   package-validation:
     name: UPM Package validation
+    needs: [changes]
+    if: ${{ needs.changes.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -127,8 +139,8 @@ jobs:
   # This produces the `samples/IntegrationTest` as `test-${{ matrix.unity-version }}`.
   test-create:
     name: Create ${{ matrix.unity-version }} Test Project
-    if: ${{ !startsWith(github.ref, 'refs/heads/release/') }}
-    needs: [create-unity-matrix]
+    if: ${{ needs.changes.outputs.run == 'true' && !startsWith(github.ref, 'refs/heads/release/') }}
+    needs: [changes, create-unity-matrix]
     secrets:
       UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
     strategy:
