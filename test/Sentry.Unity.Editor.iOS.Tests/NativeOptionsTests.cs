@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using NUnit.Framework;
 
@@ -109,5 +110,42 @@ public class NativeOptionsTests
 
         var nativeOptions = File.ReadAllText(_testOptionsFilePath);
         StringAssert.DoesNotContain("event.request.url containsString:@\"operate-sdk-telemetry.unity3d.com\"", nativeOptions);
+    }
+
+    [Test]
+    public void CreateOptionsFile_SampleRateSet_WritesSampleRate()
+    {
+        NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions { SampleRate = 0.3f });
+
+        var nativeOptions = File.ReadAllText(_testOptionsFilePath);
+        StringAssert.Contains("@\"sampleRate\" : @0.3,", nativeOptions);
+    }
+
+    [Test]
+    public void CreateOptionsFile_SampleRateSetUnderCommaDecimalCulture_WritesInvariantSampleRate()
+    {
+        var originalCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+            NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions { SampleRate = 0.3f });
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+
+        var nativeOptions = File.ReadAllText(_testOptionsFilePath);
+        StringAssert.Contains("@\"sampleRate\" : @0.3,", nativeOptions);
+    }
+
+    [Test]
+    public void CreateOptionsFile_SampleRateNotSet_LeavesSampleRateOut()
+    {
+        NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions { SampleRate = null });
+
+        var nativeOptions = File.ReadAllText(_testOptionsFilePath);
+        StringAssert.DoesNotContain("sampleRate", nativeOptions);
     }
 }

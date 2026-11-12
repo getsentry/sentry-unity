@@ -8,6 +8,7 @@
 
 ### Fixes
 
+- On iOS and macOS, native crashes now respect the Event Sample Rate (`SampleRate`). Unity passes it to the Cocoa SDK with both runtime and build-time initialization, so native crashes are no longer always sent. ([#2940](https://github.com/getsentry/sentry-unity/pull/2940))
 - Values set in a `SentryCliOptionsConfiguration`, such as an auth token read from an environment variable, no longer get saved into `SentryCliOptions.asset` by the Sentry window after a build. The configuration now runs on a copy of the options. ([#2938](https://github.com/getsentry/sentry-unity/pull/2938))
 - The configuration window's tooltips and help boxes and the option docs describe the SDK's defaults and requirements correctly: `Auto Set UserName` is disabled by default, `Attach Screenshots` also attaches screenshots to events on background threads, `Org Slug` is required unless the Auth Token is an organization token, `Scene Traces` has no Unity version requirement, and `IosWatchdogTerminationIntegrationEnabled` turns on reporting of watchdog terminations on iOS. ([#2933](https://github.com/getsentry/sentry-unity/pull/2933))
 - The SDK no longer throws a `NullReferenceException` during startup on Android and iOS when it can't load its options, for example when the configuration lives in an OBB file that isn't available yet. ([#2931](https://github.com/getsentry/sentry-unity/pull/2931))
