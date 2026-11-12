@@ -17,6 +17,10 @@
 - The Event Sample Rate in the Sentry window now accepts values from 0.01 to 1.0. A rate of 0 made the SDK fail to initialize and builds fail to load the options. ([#2929](https://github.com/getsentry/sentry-unity/pull/2929))
 - On iOS, development builds now respect `UploadDevelopmentSymbols` and no longer upload debug symbols unless it is enabled, matching the other platforms. ([#2928](https://github.com/getsentry/sentry-unity/pull/2928))
 
+### Features
+
+- `SentrySdk.LastEventId` is now available on the Unity `SentrySdk`, returning the ID of the last event captured in the current scope. ([#2923](https://github.com/getsentry/sentry-unity/issues/2923))
+
 ### Dependencies
 
 - Bump Java SDK from v8.61.0 to v8.64.0 ([#2897](https://github.com/getsentry/sentry-unity/pull/2897), [#2944](https://github.com/getsentry/sentry-unity/pull/2944))
