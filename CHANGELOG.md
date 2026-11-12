@@ -19,7 +19,7 @@
 
 ### Features
 
-- `SentrySdk.LastEventId` is now available on the Unity `SentrySdk`, returning the ID of the last event captured in the current scope. ([#2923](https://github.com/getsentry/sentry-unity/issues/2923))
+- `SentrySdk.LastEventId` is now available on the Unity `SentrySdk`, returning the ID of the last event captured in the current scope. ([#2945](https://github.com/getsentry/sentry-unity/pull/2945))
 
 ### Dependencies
 
