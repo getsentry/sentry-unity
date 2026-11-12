@@ -45,7 +45,7 @@ public static class SentryNativeCocoa
                                    "Make sure the app initializes Sentry before the game starts. Skipping native support.");
                 return;
             }
-            else if (!SentryCocoaBridgeProxy.Init(options))
+            else if (!SentryCocoaBridgeProxy.Init(options, platform))
             {
                 Logger?.LogWarning("Failed to initialize the native SDK");
                 return;
@@ -72,7 +72,7 @@ public static class SentryNativeCocoa
         }
         else
         {
-            if (!SentryCocoaBridgeProxy.Init(options))
+            if (!SentryCocoaBridgeProxy.Init(options, platform))
             {
                 Logger?.LogWarning("Failed to initialize the native SDK");
                 return;

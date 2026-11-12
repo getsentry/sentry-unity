@@ -410,12 +410,17 @@ public sealed class SentryUnityOptions : SentryOptions
 
     internal Func<SentryEvent, bool>? BeforeCaptureScreenshotInternal { get; private set; }
 
+    // The native SDKs take native-crash screenshots in their crash handler, where these C# callbacks can't run.
+    internal bool AttachNativeCrashScreenshot =>
+        AttachScreenshot && BeforeCaptureScreenshotInternal is null && BeforeSendScreenshotInternal is null;
+
     /// <summary>
     /// Configures a callback function to be invoked before capturing and attaching a screenshot to an event.
     /// </summary>
     /// <remarks>
     /// This callback will get invoked when the event gets captured, possibly off the main thread, so don't use the Unity
     /// API in it. If the screenshot should not be taken return `false`.
+    /// Setting it turns off screenshots for native crashes on iOS, as the callback can't run during a crash.
     /// </remarks>
     public void SetBeforeCaptureScreenshot(Func<SentryEvent, bool> beforeAttachScreenshot)
     {
@@ -432,6 +437,7 @@ public sealed class SentryUnityOptions : SentryOptions
     /// You can modify the texture (blur areas, redact PII, etc.) and return it, or return null to discard.
     /// It runs once per screenshot. Events captured together share one, and the callback receives the first of them
     /// that didn't get dropped.
+    /// Setting it turns off screenshots for native crashes on iOS, as the callback can't run during a crash.
     /// </remarks>
     /// <param name="beforeSendScreenshot">The callback function to invoke before sending screenshots.</param>
     public void SetBeforeSendScreenshot(Func<Texture2D, SentryEvent, Texture2D?> beforeSendScreenshot)

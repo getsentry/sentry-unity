@@ -91,6 +91,33 @@ public class NativeOptionsTests
     }
 
     [Test]
+    public void CreateOptionsFile_AttachScreenshot_SetsYes()
+    {
+        var nativeOptions = NativeOptions.Generate(new SentryUnityOptions { AttachScreenshot = true });
+
+        StringAssert.Contains("@\"attachScreenshot\" : @YES", nativeOptions);
+    }
+
+    [Test]
+    public void CreateOptionsFile_AttachScreenshotWithScreenshotCallback_SetsNo()
+    {
+        var options = new SentryUnityOptions { AttachScreenshot = true };
+        options.SetBeforeCaptureScreenshot(_ => true);
+
+        var nativeOptions = NativeOptions.Generate(options);
+
+        StringAssert.Contains("@\"attachScreenshot\" : @NO", nativeOptions);
+    }
+
+    [Test]
+    public void CreateOptionsFile_BeforeCaptureScreenshot_SkipsNonFatalEvents()
+    {
+        var nativeOptions = NativeOptions.Generate(new SentryUnityOptions { AttachScreenshot = true });
+
+        StringAssert.Contains("@\"beforeCaptureScreenshot\" : ^BOOL(id event) { return NO; }", nativeOptions);
+    }
+
+    [Test]
     public void CreateOptionsFile_FilterBadGatewayEnabled_AddsFiltering()
     {
         NativeOptions.CreateFile(_testOptionsFilePath, new SentryUnityOptions { FilterBadGatewayExceptions = true });

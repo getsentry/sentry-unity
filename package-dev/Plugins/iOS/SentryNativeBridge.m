@@ -48,6 +48,9 @@ const void *SentryNativeBridgeOptionsNew()
     dictOptions[@"sdk"] = @ { @"name" : @"sentry.cocoa.unity" };
     dictOptions[@"enableAutoSessionTracking"] = @NO;
     dictOptions[@"enableAppHangTracking"] = @NO;
+    // Screenshots for C# events come from the Unity SDK. With `attachScreenshot`, sentry-cocoa attaches one
+    // only to native crashes: the crash-time screenshot doesn't call this block.
+    dictOptions[@"beforeCaptureScreenshot"] = ^BOOL(id event) { return NO; };
     return CFBridgingRetain(dictOptions);
 }
 
