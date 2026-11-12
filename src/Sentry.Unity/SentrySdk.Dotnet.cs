@@ -48,6 +48,11 @@ public static partial class SentrySdk
     public static Task FlushAsync(TimeSpan timeout) => Sentry.SentrySdk.FlushAsync(timeout);
 
     /// <summary>
+    /// The last event id recorded in the current scope.
+    /// </summary>
+    public static SentryId LastEventId { [DebuggerStepThrough] get => Sentry.SentrySdk.LastEventId; }
+
+    /// <summary>
     /// Whether the SDK is enabled or not.
     /// </summary>
     public static bool IsEnabled { [DebuggerStepThrough] get => Sentry.SentrySdk.IsEnabled; }

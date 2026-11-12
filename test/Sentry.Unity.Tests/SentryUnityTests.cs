@@ -97,6 +97,22 @@ public class SentryUnitySelfInitializationTests
     }
 
     [Test]
+    public void LastEventId_EventCaptured_ReturnsCapturedEventId()
+    {
+        var options = new SentryUnityOptions(application: new TestApplication())
+        {
+            Dsn = SentryTests.TestDsn,
+            CreateHttpMessageHandler = () => new TestHttpClientHandler("LastEventIdTest")
+        };
+        SentrySdk.Init(options);
+
+        var capturedId = SentrySdk.CaptureMessage("test message");
+
+        Assert.AreNotEqual(SentryId.Empty, capturedId);
+        Assert.AreEqual(capturedId, SentrySdk.LastEventId);
+    }
+
+    [Test]
     public void SentryUnity_OptionsInvalid_DoesNotInitialize()
     {
         var options = new SentryUnityOptions(application: new TestApplication());
