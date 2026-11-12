@@ -50,6 +50,12 @@ internal static class SentryCocoaBridgeProxy
         Logger?.LogDebug("Setting DiagnosticLevel: {0}", diagnosticLevel);
         OptionsSetString(cOptions, "diagnosticLevel", diagnosticLevel);
 
+        if (options.SampleRate.HasValue)
+        {
+            Logger?.LogDebug("Setting SampleRate: {0}", options.SampleRate.Value);
+            OptionsSetDouble(cOptions, "sampleRate", options.SampleRate.Value);
+        }
+
         Logger?.LogDebug("Setting SendDefaultPii: {0}", options.SendDefaultPii);
         OptionsSetInt(cOptions, "sendDefaultPii", options.SendDefaultPii ? 1 : 0);
 

@@ -9,6 +9,7 @@
 ### Fixes
 
 - iOS native crashes now come with a screenshot when `AttachScreenshot` is enabled. Screenshots captured during a crash skip `SetBeforeCaptureScreenshot` and `SetBeforeSendScreenshot` because these callbacks can't run during a crash. To make sure a screenshot you'd skip or redact isn't sent unredacted, setting either callback turns crash screenshots off. Events that sentry-cocoa captures itself, such as failed HTTP requests, no longer get a screenshot  ([#2941](https://github.com/getsentry/sentry-unity/pull/2941))
+- On iOS and macOS, native crashes now respect the Event Sample Rate (`SampleRate`). Unity passes it to the Cocoa SDK with both runtime and build-time initialization, so native crashes are no longer always sent. ([#2940](https://github.com/getsentry/sentry-unity/pull/2940))
 - Values set in a `SentryCliOptionsConfiguration`, such as an auth token read from an environment variable, no longer get saved into `SentryCliOptions.asset` by the Sentry window after a build. The configuration now runs on a copy of the options. ([#2938](https://github.com/getsentry/sentry-unity/pull/2938))
 - The configuration window's tooltips and help boxes and the option docs describe the SDK's defaults and requirements correctly: `Auto Set UserName` is disabled by default, `Attach Screenshots` also attaches screenshots to events on background threads, `Org Slug` is required unless the Auth Token is an organization token, `Scene Traces` has no Unity version requirement, and `IosWatchdogTerminationIntegrationEnabled` turns on reporting of watchdog terminations on iOS. ([#2933](https://github.com/getsentry/sentry-unity/pull/2933))
 - The SDK no longer throws a `NullReferenceException` during startup on Android and iOS when it can't load its options, for example when the configuration lives in an OBB file that isn't available yet. ([#2931](https://github.com/getsentry/sentry-unity/pull/2931))
@@ -18,9 +19,9 @@
 
 ### Dependencies
 
-- Bump Java SDK from v8.61.0 to v8.62.0 ([#2897](https://github.com/getsentry/sentry-unity/pull/2897))
-  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8620)
-  - [diff](https://github.com/getsentry/sentry-java/compare/8.61.0...8.62.0)
+- Bump Java SDK from v8.61.0 to v8.64.0 ([#2897](https://github.com/getsentry/sentry-unity/pull/2897), [#2944](https://github.com/getsentry/sentry-unity/pull/2944))
+  - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8640)
+  - [diff](https://github.com/getsentry/sentry-java/compare/8.61.0...8.64.0)
 - Bump Native SDK from v0.17.5 to v0.17.6 ([#2935](https://github.com/getsentry/sentry-unity/pull/2935))
   - [changelog](https://github.com/getsentry/sentry-native/blob/master/CHANGELOG.md#0176)
   - [diff](https://github.com/getsentry/sentry-native/compare/0.17.5...0.17.6)
