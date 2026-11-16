@@ -97,6 +97,24 @@ public static class SentryNativeAndroid
         options.NativeDebugImageProvider = new Native.NativeDebugImageProvider();
         options.NativeConnection = SentryJava.GetConnection;
 
+        if (options.Experimental.SessionReplay.IsEnabled)
+        {
+            if (options.AndroidNativeInitializationType is NativeInitializationType.Runtime)
+            {
+                Logger?.LogDebug("Capturing the session replay for C# errors.");
+                options.ReplaySession = new AndroidReplaySession(SentryJava);
+                if (SentryJava.IsProcessLifecycleObserved() is false)
+                {
+                    PauseReplayWithUnity(options, SentryJava);
+                }
+            }
+            else
+            {
+                Logger?.LogWarning("Session replay requires the Android SDK to be initialized at runtime. Ignoring it " +
+                                   "with initialization type '{0}'.", options.AndroidNativeInitializationType);
+            }
+        }
+
         if (isExternal)
         {
             // In its own process, the game's SDK took them from the app's SDK when it initialized.
@@ -188,6 +206,36 @@ public static class SentryNativeAndroid
         }
 
         Logger?.LogInfo("Successfully configured the Android SDK");
+    }
+
+    // Without androidx's process lifecycle, the native SDK doesn't see the app go to the background: Unity tells it,
+    // so the replay pauses there. Like the native SDK, a background longer than the session interval starts a new one.
+    private static void PauseReplayWithUnity(SentryUnityOptions options, ISentryJava sentryJava)
+    {
+        Logger?.LogDebug("Pausing and resuming session replay with the Unity application's lifecycle.");
+
+        DateTime? pausedAt = null;
+        void Pause()
+        {
+            pausedAt = DateTime.UtcNow;
+            sentryJava.PauseReplay();
+        }
+
+        void Resume()
+        {
+            var startNewSession = pausedAt is { } paused && DateTime.UtcNow - paused >= options.AutoSessionTrackingInterval;
+            pausedAt = null;
+            sentryJava.ResumeReplay(startNewSession);
+        }
+
+        var monoBehaviour = SentryMonoBehaviour.Instance;
+        monoBehaviour.ApplicationPausing += Pause;
+        monoBehaviour.ApplicationResuming += Resume;
+        options.NativeSupportCloseCallback += () =>
+        {
+            monoBehaviour.ApplicationPausing -= Pause;
+            monoBehaviour.ApplicationResuming -= Resume;
+        };
     }
 
     // The game runs in its own process and continues the trace the app was in when it showed the game, with its user.

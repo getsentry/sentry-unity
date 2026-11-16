@@ -20,6 +20,14 @@
 
 The Java layer disables duplicate screenshots, auto-session tracking, activity lifecycle breadcrumbs, and user-interaction breadcrumbs/tracing because Unity/.NET owns them.
 
+## Session Replay (Experimental)
+
+- `options.Experimental.SessionReplay` is set from code, with no editor UI. Replay is enabled when `SessionSampleRate` or `OnErrorSampleRate` is above 0.
+- `sentry-android-replay-release.aar` ships in `Sentry~` next to the other artifacts. `GradleSetup` adds it, and `org.jetbrains.kotlin:kotlin-stdlib` from Maven at the version sentry-android-replay builds with, to `unityLibrary/build.gradle` only when replay is enabled in the build-time options. Without replay, the Sentry dependency block is unchanged. Adding and clearing recognize both variants of the block, so a persisted Gradle project follows replay and native support being toggled.
+- Replay is runtime-init only: `SentryJava.Init` configures the replay options (sample rates, quality, SurfaceView capture, since Unity renders into a SurfaceView). Build-time and external initialization log that replay is ignored. A missing replay library logs an error asking to enable replay in the build-time options.
+- sentry-java samples and starts the replay itself. `AndroidReplaySession` is the .NET SDK's replay session: the replay id of the dynamic sampling context comes from the Java scope, and the .NET client calls `captureReplay` for each error event and puts the returned replay id on that event's dynamic sampling context.
+- Unity builds don't start androidx's process lifecycle (the `lifecycle-process` startup provider isn't in the manifest), so the Java SDK doesn't see the app go to the background. When it isn't running, Unity's pause and resume pause and resume the replay, starting a new one after a background longer than `AutoSessionTrackingInterval`.
+
 ## Constraints
 
 - Android native ANR and C# ANR monitor different threads; both can report one full hang.

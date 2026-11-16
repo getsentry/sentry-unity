@@ -40,6 +40,11 @@ public class ExperimentalSentryUnityOptions
     [field: SerializeField] public LinuxBackend LinuxBackend { get; set; } = LinuxBackend.Breakpad;
 
     /// <summary>
+    /// Session replay on Android. Off by default; set from code.
+    /// </summary>
+    public ExperimentalSessionReplayOptions SessionReplay { get; } = new();
+
+    /// <summary>
     /// Legacy opt-in for native app hang detection. Use <see cref="SentryUnityOptions.EnableAppHangTracking"/>
     /// instead. This property will be removed in a future version.
     /// </summary>

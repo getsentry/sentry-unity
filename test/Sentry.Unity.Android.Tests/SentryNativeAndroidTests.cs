@@ -433,4 +433,116 @@ public class SentryNativeAndroidTests
         Assert.IsNotInstanceOf<ExternalAndroidJavaScopeObserver>(options.ScopeObserver);
         Assert.NotNull(options.NativeSupportCloseCallback);
     }
+
+    [Test]
+    public void Configure_SessionReplayEnabledAtRuntime_UsesAndroidReplaySession()
+    {
+        var options = new SentryUnityOptions();
+        options.Experimental.SessionReplay.OnErrorSampleRate = 1;
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.IsInstanceOf<AndroidReplaySession>(options.ReplaySession);
+    }
+
+    [Test]
+    public void Configure_SessionReplayDisabled_KeepsDefaultReplaySession()
+    {
+        var options = new SentryUnityOptions();
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.IsNull(options.ReplaySession);
+    }
+
+    [Test]
+    [TestCase(NativeInitializationType.BuildTime)]
+    [TestCase(NativeInitializationType.External)]
+    public void Configure_SessionReplayEnabledWithoutRuntimeInit_LogsAndIgnoresIt(NativeInitializationType initializationType)
+    {
+        var options = new SentryUnityOptions
+        {
+            AndroidNativeInitializationType = initializationType,
+            DiagnosticLogger = _logger,
+            Debug = true
+        };
+        options.Experimental.SessionReplay.SessionSampleRate = 1;
+
+        SentryNativeAndroid.Configure(options);
+
+        Assert.IsNull(options.ReplaySession);
+        Assert.IsTrue(_logger.Logs.Any(log =>
+            log.logLevel == SentryLevel.Warning &&
+            log.message.Contains("Session replay requires the Android SDK to be initialized at runtime")));
+    }
+
+    [Test]
+    public void AndroidReplaySession_CaptureReplay_ReturnsCapturedReplayId()
+    {
+        var replayId = SentryId.Create();
+        _testSentryJava.CapturedReplayId = replayId.ToString();
+        var sut = new AndroidReplaySession(_testSentryJava);
+
+        Assert.AreEqual(replayId, sut.CaptureReplay(new SentryEvent()));
+        Assert.AreEqual(1, _testSentryJava.CaptureReplayCalls);
+    }
+
+    [Test]
+    [TestCase(null)]
+    [TestCase("00000000000000000000000000000000")]
+    public void AndroidReplaySession_NoReplay_ReturnsNull(string? nativeReplayId)
+    {
+        _testSentryJava.CapturedReplayId = nativeReplayId;
+        _testSentryJava.ReplayId = nativeReplayId;
+        var sut = new AndroidReplaySession(_testSentryJava);
+
+        Assert.IsNull(sut.CaptureReplay(new SentryEvent()));
+        Assert.IsNull(sut.ActiveReplayId);
+    }
+
+    [Test]
+    public void AndroidReplaySession_ActiveReplayId_ReadsNativeScope()
+    {
+        var replayId = SentryId.Create();
+        _testSentryJava.ReplayId = replayId.ToString();
+        var sut = new AndroidReplaySession(_testSentryJava);
+
+        Assert.AreEqual(replayId, sut.ActiveReplayId);
+        Assert.AreEqual(0, _testSentryJava.CaptureReplayCalls);
+    }
+
+    [Test]
+    public void Configure_SessionReplayWithoutProcessLifecycle_PausesAndResumesReplayWithUnity()
+    {
+        var options = new SentryUnityOptions { AutoSessionTrackingInterval = TimeSpan.FromHours(1) };
+        options.Experimental.SessionReplay.OnErrorSampleRate = 1;
+        _testSentryJava.ProcessLifecycleObserved = false;
+
+        SentryNativeAndroid.Configure(options);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(true);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(false);
+        options.AutoSessionTrackingInterval = TimeSpan.Zero;
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(true);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(false);
+        options.NativeSupportCloseCallback?.Invoke();
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(true);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(false);
+
+        CollectionAssert.AreEqual(new[] { "pause", "resume:False", "pause", "resume:True" }, _testSentryJava.ReplayLifecycleCalls);
+    }
+
+    [Test]
+    public void Configure_SessionReplayWithProcessLifecycle_LeavesReplayLifecycleToNativeSdk()
+    {
+        var options = new SentryUnityOptions();
+        options.Experimental.SessionReplay.OnErrorSampleRate = 1;
+        _testSentryJava.ProcessLifecycleObserved = true;
+
+        SentryNativeAndroid.Configure(options);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(true);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(false);
+        options.NativeSupportCloseCallback?.Invoke();
+
+        CollectionAssert.IsEmpty(_testSentryJava.ReplayLifecycleCalls);
+    }
 }

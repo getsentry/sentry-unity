@@ -24,6 +24,11 @@ internal class TestSentryJava : ISentryJava
     public SentryUser? MainProcessUser { get; set; }
     public bool MainProcessUserReadable { get; set; } = true;
     public (SentryId TraceId, SpanId SpanId)? Trace { get; private set; }
+    public string? ReplayId { get; set; }
+    public string? CapturedReplayId { get; set; }
+    public int CaptureReplayCalls { get; private set; }
+    public bool? ProcessLifecycleObserved { get; set; } = true;
+    public List<string> ReplayLifecycleCalls { get; } = new();
 
     public bool? IsEnabled() => Enabled;
 
@@ -56,6 +61,20 @@ internal class TestSentryJava : ISentryJava
     public string? GetInstallationId() => InstallationId;
 
     public bool? CrashedLastRun() => IsCrashedLastRun;
+
+    public string? GetReplayId() => ReplayId;
+
+    public bool? IsProcessLifecycleObserved() => ProcessLifecycleObserved;
+
+    public void PauseReplay() => ReplayLifecycleCalls.Add("pause");
+
+    public void ResumeReplay(bool startNewSession) => ReplayLifecycleCalls.Add($"resume:{startNewSession}");
+
+    public string? CaptureReplay()
+    {
+        CaptureReplayCalls++;
+        return CapturedReplayId;
+    }
 
     public (string? Type, string? EffectiveType) GetConnection() => Connection;
 

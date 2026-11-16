@@ -87,6 +87,60 @@ public class GradleSetupTests
         StringAssert.DoesNotContain(GradleSetup.SdkDependencies, unityLibraryGradleContent);
     }
 
+    private string UnityLibraryGradle => File.ReadAllText(Path.Combine(GradleProjectPath, "unityLibrary", "build.gradle"));
+
+    [Test]
+    public void UpdateGradleProject_SessionReplayEnabled_AddsReplayDependencies()
+    {
+        var sut = new GradleSetup(Logger, GradleProjectPath, sessionReplayEnabled: true);
+
+        sut.UpdateGradleProject();
+
+        StringAssert.Contains(GradleSetup.SdkDependencies + GradleSetup.ReplayDependencies, UnityLibraryGradle);
+    }
+
+    [Test]
+    public void UpdateGradleProject_SessionReplayDisabled_AddsNoReplayDependencies()
+    {
+        var original = UnityLibraryGradle;
+        var sut = new GradleSetup(Logger, GradleProjectPath, sessionReplayEnabled: false);
+
+        sut.UpdateGradleProject();
+
+        Assert.AreEqual(original.Replace("android {", GradleSetup.SdkDependencies + "\n}\n\nandroid {"), UnityLibraryGradle);
+        StringAssert.DoesNotContain("sentry-android-replay", UnityLibraryGradle);
+        StringAssert.DoesNotContain("kotlin-stdlib:1.9.24", UnityLibraryGradle);
+    }
+
+    [Test]
+    public void ClearGradleProject_SessionReplayDependenciesAdded_RestoresOriginal()
+    {
+        var original = UnityLibraryGradle;
+        new GradleSetup(Logger, GradleProjectPath, sessionReplayEnabled: true).UpdateGradleProject();
+
+        new GradleSetup(Logger, GradleProjectPath).ClearGradleProject();
+
+        Assert.AreEqual(original, UnityLibraryGradle);
+    }
+
+    [Test]
+    public void UpdateGradleProject_SessionReplayToggled_SwapsDependencies()
+    {
+        var original = UnityLibraryGradle;
+        new GradleSetup(Logger, GradleProjectPath, sessionReplayEnabled: true).UpdateGradleProject();
+
+        new GradleSetup(Logger, GradleProjectPath, sessionReplayEnabled: false).UpdateGradleProject();
+
+        StringAssert.DoesNotContain("sentry-android-replay", UnityLibraryGradle);
+        StringAssert.DoesNotContain("kotlin-stdlib:1.9.24", UnityLibraryGradle);
+        Assert.AreEqual(original.Replace("android {", GradleSetup.SdkDependencies + "\n}\n\nandroid {"), UnityLibraryGradle);
+
+        new GradleSetup(Logger, GradleProjectPath, sessionReplayEnabled: true).UpdateGradleProject();
+
+        StringAssert.Contains(GradleSetup.SdkDependencies + GradleSetup.ReplayDependencies, UnityLibraryGradle);
+        Assert.AreEqual(1, UnityLibraryGradle.Split(new[] { "sentry-android-core-release" }, StringSplitOptions.None).Length - 1);
+    }
+
     [Test]
     [TestCase("InsertIntoScope/build.gradle_test_1")]
     [TestCase("InsertIntoScope/build.gradle_test_2")]

@@ -317,7 +317,8 @@ public class AndroidManifestConfiguration
 
     internal void AddAndroidSdkDependencies(string gradleProjectPath)
     {
-        var tool = new GradleSetup(_logger, gradleProjectPath);
+        var sessionReplayEnabled = _options?.Experimental.SessionReplay.IsEnabled is true;
+        var tool = new GradleSetup(_logger, gradleProjectPath, sessionReplayEnabled);
         var nativeSupportEnabled = ShipsAndroidSdk;
 
         try

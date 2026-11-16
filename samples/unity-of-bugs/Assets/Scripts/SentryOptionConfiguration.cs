@@ -52,10 +52,51 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
         //   - Miss some early errors that happen before the SDK initialized
 #if UNITY_ANDROID
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
+        ConfigureSessionReplay(options);
 #elif UNITY_IOS
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
 #endif
 
         Debug.Log("SentryOptionConfigure finished.");
     }
+
+#if UNITY_ANDROID
+    // Experimental session replay. Enabled at build time, so the build carries the replay library. At runtime, a
+    // launch extra picks the mode: `adb shell am start -n <package>/com.unity3d.player.UnityPlayerActivity
+    // --es sentry_replay off|session|error`. Without it, replays are sent for errors.
+    private static void ConfigureSessionReplay(SentryUnityOptions options)
+    {
+        var mode = Application.isEditor ? null : GetLaunchExtra("sentry_replay");
+        var replay = options.Experimental.SessionReplay;
+        switch (mode)
+        {
+            case "off":
+                break;
+            case "session":
+                replay.SessionSampleRate = 1.0;
+                break;
+            default:
+                replay.OnErrorSampleRate = 1.0;
+                break;
+        }
+
+        Debug.Log($"Session replay mode: {mode ?? "error"}");
+    }
+
+    private static string GetLaunchExtra(string name)
+    {
+        try
+        {
+            using var player = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            using var activity = player.GetStatic<AndroidJavaObject>("currentActivity");
+            using var intent = activity.Call<AndroidJavaObject>("getIntent");
+            return intent.Call<string>("getStringExtra", name);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"Failed to read the launch extra '{name}': {e.Message}");
+            return null;
+        }
+    }
+#endif
 }

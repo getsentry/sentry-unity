@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Experimental session replay on Android: set `options.Experimental.SessionReplay.SessionSampleRate` or `OnErrorSampleRate` in code, in the options used both at build time and at runtime. The Android SDK records the game, and errors captured in C# send the replay of the moments before them, like native errors do. Session replay requires runtime initialization of the Android SDK and adds the Kotlin standard library to the build.
+
 ## 4.13.0
 
 ### Behavioral Changes
