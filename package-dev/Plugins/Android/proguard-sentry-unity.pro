@@ -29,6 +29,10 @@
 -keep interface io.sentry.android.replay.Recorder { *; }
 -keep class io.sentry.android.replay.ScreenshotRecorderConfig { *; }
 -keep interface kotlin.jvm.functions.Function0 { *; }
+# The classes in the JNI signatures of the ReplayIntegration constructor and SentryOptions.addIntegration.
+-keep interface io.sentry.transport.ICurrentDateProvider { *; }
+-keep interface io.sentry.Integration { *; }
+-keep interface kotlin.jvm.functions.Function1 { *; }
 # Unity checks whether androidx's process lifecycle runs, to pause the replay itself when it doesn't.
 -keep class androidx.lifecycle.ProcessLifecycleOwner { *; }
 -keep class androidx.lifecycle.Lifecycle { *; }

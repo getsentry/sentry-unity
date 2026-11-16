@@ -288,6 +288,7 @@ internal sealed class UnityReplayRecorder
     }
 
     // The replay computes the frame config from the window size. It doesn't send one to a recorder of its own.
+    // A change of Unity's screen size, e.g. on rotation, asks for a new one.
     private void RequestConfig()
     {
         var width = Screen.width;
@@ -303,8 +304,10 @@ internal sealed class UnityReplayRecorder
         _mainHandler?.Call<bool>("post", new AndroidJavaRunnable(() => OnWindowSizeChanged(width, height)));
     }
 
-    // On Android's UI thread, where the replay's own recorder reports the window size.
-    private void OnWindowSizeChanged(int width, int height)
+    // On Android's UI thread, where the replay's own recorder reports the window size. Unity's screen size can be a
+    // lower render resolution than the window. The replay scales recorded touches, which are in window pixels, by the
+    // config it computes from the window size, so it gets the window's.
+    private void OnWindowSizeChanged(int screenWidth, int screenHeight)
     {
         try
         {
@@ -315,15 +318,16 @@ internal sealed class UnityReplayRecorder
             }
 
             // Starting or resetting the replay clears the config on this thread, so a config for this size is current.
-            if (_config is not null && width == _configuredWidth && height == _configuredHeight)
+            if (_config is not null && screenWidth == _configuredWidth && screenHeight == _configuredHeight)
             {
                 return;
             }
 
             if (replayIntegration.Call<bool>("isRecording"))
             {
-                _configuredWidth = width;
-                _configuredHeight = height;
+                var (width, height) = GetWindowSize() ?? (screenWidth, screenHeight);
+                _configuredWidth = screenWidth;
+                _configuredHeight = screenHeight;
                 replayIntegration.Call("onWindowSizeChanged", width, height);
             }
             else if (_recording)
@@ -335,6 +339,23 @@ internal sealed class UnityReplayRecorder
         {
             _logger?.LogError(e, "Session replay failed to update the frame size.");
         }
+    }
+
+    // The size of the activity's window, in pixels. Null before it's laid out.
+    private static (int Width, int Height)? GetWindowSize()
+    {
+        using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        using var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        using var window = activity?.Call<AndroidJavaObject>("getWindow");
+        using var decorView = window?.Call<AndroidJavaObject>("getDecorView");
+        if (decorView is null)
+        {
+            return null;
+        }
+
+        var width = decorView.Call<int>("getWidth");
+        var height = decorView.Call<int>("getHeight");
+        return width > 0 && height > 0 ? (width, height) : null;
     }
 
     private bool IsCaptureDue()
