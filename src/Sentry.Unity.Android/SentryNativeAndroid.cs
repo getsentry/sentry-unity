@@ -209,7 +209,8 @@ public static class SentryNativeAndroid
     }
 
     // Without androidx's process lifecycle, the native SDK doesn't see the app go to the background: Unity tells it,
-    // so the replay pauses there. Like the native SDK, a background longer than the session interval starts a new one.
+    // so the replay pauses there and no segment covers the time away. Like the native SDK, a background longer than
+    // the session interval ends the replay at the pause and starts a new one.
     private static void PauseReplayWithUnity(SentryUnityOptions options, ISentryJava sentryJava)
     {
         Logger?.LogDebug("Pausing and resuming session replay with the Unity application's lifecycle.");

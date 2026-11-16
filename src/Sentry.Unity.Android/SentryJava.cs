@@ -423,16 +423,26 @@ internal class SentryJava : ISentryJava
         return null;
     }
 
+    // Pauses the replay, ending its current segment. It's the replay's manual pause, so nothing but `ResumeReplay`
+    // resumes it: the replay resumes itself when the device reconnects, which happens in the background too.
     public void PauseReplay() => RunJniSafe(() =>
     {
         using var replayController = GetReplayController();
-        replayController?.Call("onAppBackgrounded");
+        replayController?.Call("pause");
     });
 
+    // Resumes the replay. Its next segment starts now, so none covers the time away. With `startNewSession`, the
+    // replay then ends and a new one starts, sampled as the replay samples sessions. Ending a replay sends a segment
+    // from its last one to now; with the timeline moved to now and no frames since the pause, it sends none. Both
+    // calls are queued in order on Android's UI thread.
     public void ResumeReplay(bool startNewSession) => RunJniSafe(() =>
     {
         using var replayController = GetReplayController();
-        replayController?.Call("onAppForegrounded", startNewSession);
+        replayController?.Call("resume");
+        if (startNewSession)
+        {
+            replayController?.Call("onAppForegrounded", true);
+        }
     });
 
     private static AndroidJavaObject? GetReplayController()

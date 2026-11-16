@@ -439,8 +439,9 @@ internal sealed class UnityReplayRecorder
                 return;
             }
 
-            // The config can change while the frame is read back, e.g. on rotation.
-            if (_closed || !_recording || _config is not { } config)
+            // The config can change while the frame is read back, e.g. on rotation. A frame read back after the replay
+            // paused would land after the segment that ended at the pause, so it's dropped.
+            if (_closed || !_recording || !_resumed || _config is not { } config)
             {
                 return;
             }
@@ -540,7 +541,11 @@ internal sealed class UnityReplayRecorder
         bitmap.Call("copyPixelsFromBuffer", buffer);
         // The screen's alpha channel isn't meant to be seen.
         bitmap.Call("setHasAlpha", false);
-        _replayIntegration?.Call("onScreenshotRecorded", bitmap);
+        // The replay may have paused while the frame was handed over.
+        if (_recording && _resumed)
+        {
+            _replayIntegration?.Call("onScreenshotRecorded", bitmap);
+        }
     }
 
     private void Drop(string reason)

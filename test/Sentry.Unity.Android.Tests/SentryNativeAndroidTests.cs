@@ -532,6 +532,24 @@ public class SentryNativeAndroidTests
     }
 
     [Test]
+    public void Configure_SessionReplayWithoutProcessLifecycle_PausesOncePerBackground()
+    {
+        var options = new SentryUnityOptions { AutoSessionTrackingInterval = TimeSpan.FromHours(1) };
+        options.Experimental.SessionReplay.SessionSampleRate = 1;
+        _testSentryJava.ProcessLifecycleObserved = false;
+
+        SentryNativeAndroid.Configure(options);
+        // Losing focus and pausing both arrive when the game goes to the background.
+        SentryMonoBehaviour.Instance.OnApplicationFocus(false);
+        SentryMonoBehaviour.Instance.OnApplicationPause(true);
+        SentryMonoBehaviour.Instance.OnApplicationPause(false);
+        SentryMonoBehaviour.Instance.OnApplicationFocus(true);
+        options.NativeSupportCloseCallback?.Invoke();
+
+        CollectionAssert.AreEqual(new[] { "pause", "resume:False" }, _testSentryJava.ReplayLifecycleCalls);
+    }
+
+    [Test]
     public void Configure_SessionReplayWithProcessLifecycle_LeavesReplayLifecycleToNativeSdk()
     {
         var options = new SentryUnityOptions();
