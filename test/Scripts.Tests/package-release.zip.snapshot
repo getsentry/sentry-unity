@@ -402,6 +402,8 @@ Samples~/unity-of-bugs/Scripts/Editor.meta
 Samples~/unity-of-bugs/Scripts/ForceCrashButtons.cs
 Samples~/unity-of-bugs/Scripts/ForceCrashButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport.meta
+Samples~/unity-of-bugs/Scripts/ReplayBenchmark.cs
+Samples~/unity-of-bugs/Scripts/ReplayBenchmark.cs.meta
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs
 Samples~/unity-of-bugs/Scripts/SceneButtons.cs.meta
 Samples~/unity-of-bugs/Scripts/SentryCliConfiguration.cs

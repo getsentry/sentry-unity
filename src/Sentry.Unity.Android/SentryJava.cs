@@ -82,6 +82,7 @@ internal class SentryJava : ISentryJava
     private readonly ConcurrentQueue<(Action action, string actionName)> _scopeSyncItems = new();
     private static readonly TimeSpan JniResultTimeout = TimeSpan.FromMilliseconds(500);
     private volatile bool _closed;
+    private UnityReplayRecorder? _unityReplayRecorder;
 
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
@@ -278,9 +279,11 @@ internal class SentryJava : ISentryJava
                 // With external initialization, the app's SDK owns session replay.
                 if (!isExternal)
                 {
-                    ConfigureSessionReplay(androidOptions, options.Experimental.SessionReplay);
+                    ConfigureSessionReplay(androidOptions, context, options.Experimental.SessionReplay);
                 }
             }, options.DiagnosticLogger));
+
+            StartUnityReplayRecorder();
         }
         catch (Exception e)
         {
@@ -289,7 +292,8 @@ internal class SentryJava : ISentryJava
     }
 
     // Runs in its own try/catch, so a failure can't skip the options Unity relies on.
-    private void ConfigureSessionReplay(AndroidJavaObject androidOptions, ExperimentalSessionReplayOptions replay)
+    private void ConfigureSessionReplay(AndroidJavaObject androidOptions, AndroidJavaObject context,
+        ExperimentalSessionReplayOptions replay)
     {
         if (!replay.IsEnabled)
         {
@@ -309,28 +313,53 @@ internal class SentryJava : ISentryJava
                 return;
             }
 
-            if (replay.Capture is SessionReplayCapture.Unity)
-            {
-                _logger?.LogWarning("Session replay capture by Unity is not available. The Android SDK captures the frames.");
-            }
-
             using var replayOptions = androidOptions.Call<AndroidJavaObject>("getSessionReplay");
             using var sessionSampleRate = new AndroidJavaObject("java.lang.Double", replay.SessionSampleRate);
             replayOptions.Call("setSessionSampleRate", sessionSampleRate);
             using var onErrorSampleRate = new AndroidJavaObject("java.lang.Double", replay.OnErrorSampleRate);
             replayOptions.Call("setOnErrorSampleRate", onErrorSampleRate);
             // Unity renders into a SurfaceView, which the Android SDK only captures when asked to.
-            replayOptions.Call("setCaptureSurfaceViews", true);
+            replayOptions.Call("setCaptureSurfaceViews", replay.Capture is SessionReplayCapture.SentryJava);
             using var qualityClass = new AndroidJavaClass("io.sentry.SentryReplayOptions$SentryReplayQuality");
             using var quality = qualityClass.GetStatic<AndroidJavaObject>(GetReplayQualityString(replay.Quality));
             replayOptions.Call("setQuality", quality);
 
-            _logger?.LogDebug("Session replay configured: session sample rate {0}, on-error sample rate {1}, quality {2}.",
-                replay.SessionSampleRate, replay.OnErrorSampleRate, replay.Quality);
+            _logger?.LogDebug($"Session replay configured: session sample rate {replay.SessionSampleRate}, " +
+                              $"on-error sample rate {replay.OnErrorSampleRate}, quality {replay.Quality}, capture {replay.Capture}.");
         }
         catch (Exception e)
         {
             _logger?.LogError(e, "Failed to configure session replay.");
+            return;
+        }
+
+        if (replay.Capture is not SessionReplayCapture.Unity)
+        {
+            return;
+        }
+
+        // On failure, the replay the Android SDK added stays: it records nothing without SurfaceView capture.
+        try
+        {
+            var recorder = new UnityReplayRecorder(_logger);
+            recorder.Install(androidOptions, context);
+            _unityReplayRecorder = recorder;
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Failed to set up session replay capture by Unity.");
+        }
+    }
+
+    private void StartUnityReplayRecorder()
+    {
+        try
+        {
+            _unityReplayRecorder?.Start();
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Failed to start session replay capture by Unity.");
         }
     }
 

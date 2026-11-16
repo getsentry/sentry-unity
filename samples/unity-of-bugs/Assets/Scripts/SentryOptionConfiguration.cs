@@ -61,12 +61,14 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
     }
 
 #if UNITY_ANDROID
-    // Experimental session replay. Enabled at build time, so the build carries the replay library. At runtime, a
-    // launch extra picks the mode: `adb shell am start -n <package>/com.unity3d.player.UnityPlayerActivity
-    // --es sentry_replay off|session|error`. Without it, replays are sent for errors.
+    // Experimental session replay. Enabled at build time, so the build carries the replay library. At runtime, launch
+    // extras pick the mode: `adb shell am start -n <package>/com.unity3d.player.UnityPlayerActivity
+    // --es sentry_replay off|session|error --es sentry_replay_capture java|unity`. Without them, replays are sent for
+    // errors, with frames the Android SDK captures.
     private static void ConfigureSessionReplay(SentryUnityOptions options)
     {
         var mode = Application.isEditor ? null : GetLaunchExtra("sentry_replay");
+        var capture = Application.isEditor ? null : GetLaunchExtra("sentry_replay_capture");
         var replay = options.Experimental.SessionReplay;
         switch (mode)
         {
@@ -80,10 +82,12 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
                 break;
         }
 
-        Debug.Log($"Session replay mode: {mode ?? "error"}");
+        replay.Capture = capture == "unity" ? SessionReplayCapture.Unity : SessionReplayCapture.SentryJava;
+
+        Debug.Log($"Session replay mode: {mode ?? "error"}, capture: {replay.Capture}");
     }
 
-    private static string GetLaunchExtra(string name)
+    internal static string GetLaunchExtra(string name)
     {
         try
         {

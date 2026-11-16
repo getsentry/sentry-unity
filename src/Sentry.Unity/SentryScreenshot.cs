@@ -97,6 +97,28 @@ internal static class SentryScreenshot
         }
     }
 
+    /// <summary>
+    /// Copies a screen captured with <see cref="ScreenCapture.CaptureScreenshotIntoRenderTexture(RenderTexture)"/>
+    /// into <paramref name="destination"/>, scaling it to fit. The rows start at the bottom, as in Unity's textures,
+    /// or with <paramref name="topDown"/> at the top, as in Android's bitmaps.
+    /// </summary>
+    internal static void BlitScreen(RenderTexture screen, RenderTexture destination, bool topDown = false)
+    {
+        // The captured image is mirrored on platforms where UVs start at the top.
+        // See https://docs.unity3d.com/2019.4/Documentation/Manual/SL-PlatformDifferences.html for more info.
+        // Note, we can't use the `UNITY_UV_STARTS_AT_TOP` macro because it's only available in shaders.
+        // Instead, there's https://docs.unity3d.com/2019.4/Documentation/ScriptReference/SystemInfo-graphicsUVStartsAtTop.html
+        var uvStartsAtTop = SentrySystemInfoAdapter.Instance.GraphicsUVStartsAtTop ?? true;
+        if (uvStartsAtTop != topDown)
+        {
+            Graphics.Blit(screen, destination, new Vector2(1, -1), new Vector2(0, 1));
+        }
+        else
+        {
+            Graphics.Blit(screen, destination);
+        }
+    }
+
     // Returns a temporary render texture holding the screenshot, scaled down to the configured quality
     private static RenderTexture CaptureIntoRenderTexture(SentryUnityOptions options, int width, int height)
     {
@@ -122,20 +144,7 @@ internal static class SentryScreenshot
         {
             ScreenCapture.CaptureScreenshotIntoRenderTexture(renderTextureFull);
             var renderTextureResized = RenderTexture.GetTemporary(width, height);
-
-            // The image may be mirrored on some platforms - mirror it back.
-            // See https://docs.unity3d.com/2019.4/Documentation/Manual/SL-PlatformDifferences.html for more info.
-            // Note, we can't use the `UNITY_UV_STARTS_AT_TOP` macro because it's only available in shaders.
-            // Instead, there's https://docs.unity3d.com/2019.4/Documentation/ScriptReference/SystemInfo-graphicsUVStartsAtTop.html
-            if (SentrySystemInfoAdapter.Instance.GraphicsUVStartsAtTop ?? true)
-            {
-                Graphics.Blit(renderTextureFull, renderTextureResized, new Vector2(1, -1), new Vector2(0, 1));
-            }
-            else
-            {
-                Graphics.Blit(renderTextureFull, renderTextureResized);
-            }
-
+            BlitScreen(renderTextureFull, renderTextureResized);
             return renderTextureResized;
         }
         finally
