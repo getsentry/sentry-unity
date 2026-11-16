@@ -46,10 +46,10 @@ Maintainers rejected these as false positives:
 
 - Claims that a sentry-cocoa, sentry-java, sentry-native, or sentry-dotnet API is missing, renamed, or has a different signature. Their sources are not in the checkout. Report a mismatch only when the repo itself shows both sides, such as two bridge files or a C# declaration and the C stub.
 - Stale-file bugs in a fresh player build. Unity deletes and recreates the `.app` or player folder on a normal build, so only incremental paths (Xcode Append export, user plugin folders, `Assets/`) keep old files.
-- Unity callback lifecycle claims you cannot show in the code. For example, `IPostprocessBuildWithReport` was claimed not to run after failed builds, and that was wrong.
+- Claims about when or whether a Unity build callback runs (ordering, failed builds) that you cannot show in the code. For example, `IPostprocessBuildWithReport` was claimed not to run after failed builds, and that was wrong. This does not cover the Unity API behavior listed in `references/editor-build.md`.
 - Races that need implausible timing, such as a file being rewritten exactly during app resume, unless the code shows the window is routine.
 - Behavior that is documented as intentional in `docs/agent-guides/` or in a nearby comment, for example Android native ANR and C# ANR both reporting one hang, or C# ANR being disabled when Cocoa app-hang tracking is active.
-- Experimental options (`Experimental.*`) whose limitations the PR or code states as known follow-ups.
+- Experimental options (`Experimental.*`) whose limitations the PR or code states as known follow-ups. Reading a top-level option where `Experimental.*` is meant, or the reverse, is still a bug.
 - Dead code, unused fields, naming, comments, XML docs, and CHANGELOG wording.
 - Generated or downloaded artifacts under `package-dev/` (`*.dll`, `*.meta`, native libraries) and submodule pointer bumps.
 - Security issues. `security-review` runs separately.

@@ -63,7 +63,7 @@ paths = [
   "package-dev/package.json",
   "test/Scripts.Integration.Test/**",
   "test/Scripts.Tests/**",
-  "samples/*/Assets/Editor/**/*.cs",
+  "samples/*/Assets/**/Editor/**/*.cs",
 ]
 ignorePaths = [
   "**/*.md",

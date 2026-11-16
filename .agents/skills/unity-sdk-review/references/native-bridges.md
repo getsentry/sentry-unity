@@ -24,6 +24,7 @@ So report:
 - A P/Invoke that becomes reachable on Switch without a matching stub function in `sentry_native_stubs.c`.
 - A bridge function that calls an Objective-C class that another bridge file has already migrated away from (for example `SentrySDK` vs `SentryObjCSDK`), when the repo shows the migration.
 - In `SentryNativeBridgeExternal.m`: a selector called without a `respondsToSelector:` check. Unity builds without Objective-C exceptions, so an unknown selector crashes the host app.
+- The macOS bridge (`package-dev/Plugins/macOS/SentryNativeBridge.m`) loads `Sentry.dylib` with `dlopen` and calls sentry-cocoa through `performSelector:` and `objc_msgSend`, so nothing checks its selectors at build time. When a hunk adds or changes a selector there, compare it with the same call in `package-dev/Plugins/iOS/SentryNativeBridge.m`, which compiles against the headers. A mismatch is a crash on macOS.
 
 ## Marshalling Under IL2CPP
 

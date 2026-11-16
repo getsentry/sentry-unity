@@ -50,7 +50,7 @@ Maintainers rejected these as false positives:
 - PowerShell semantics you have not confirmed. For example, `"WebGL" -in "WebGL"` is `$true`: a scalar right-hand side is a one-element collection, not a list of characters.
 - Simulator architecture claims for Unity 2021.3 exports without evidence from the build settings in the repo.
 - Version catalog formats or upstream file layouts in submodules (`modules/**`). They are not in the checkout. Code that intentionally supports one format and fails with a clear error is fine.
-- Known follow-ups that the PR description or a comment names.
+- Known follow-ups that the PR description names, unless the code is itself a temporary edit that would ship (item 5 above).
 - Secrets, injection, and `pull_request_target` risks. `security-review` covers those.
 - Style, naming, comments, duplicate CHANGELOG lines, and Markdown.
 
