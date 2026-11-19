@@ -18,7 +18,8 @@ namespace Sentry.Unity.iOS;
 /// sentry-cocoa takes no further frame until it gets the one it asked for, so a request Unity took is always either
 /// delivered or cancelled: cancelling completes it with the last frame. Everything here runs on Unity's main thread,
 /// which on iOS is also UIKit's. After <see cref="MaxFailures"/> failures in a row the recorder gives up: sentry-cocoa
-/// then waits on its next request, so the replay records no further frames until it ends.
+/// then waits on its next request, and Unity capture stays off for the rest of the process: later replays record no
+/// frames either.
 /// </remarks>
 internal sealed class UnityReplayRecorder
 {
@@ -130,7 +131,7 @@ internal sealed class UnityReplayRecorder
         }
 
         LogError(exception, "Session replay " + message + FormattableString.Invariant(
-            $" {MaxFailures} times in a row. Unity stops capturing the replay's frames."));
+            $" {MaxFailures} times in a row. Unity stops capturing replay frames until the app restarts."));
         _running = false;
         Cancel();
         if (!_readbackPending)
