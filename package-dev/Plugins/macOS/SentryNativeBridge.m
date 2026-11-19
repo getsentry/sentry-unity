@@ -398,6 +398,14 @@ int SentryNativeBridgeReplayCapture() { return 0; }
 
 char *SentryNativeBridgeGetReplayId() { return NULL; }
 
+void SentryNativeBridgeReplayUseUnityCapture() { }
+
+int SentryNativeBridgeReplayTakeFrameRequest(int *width, int *height) { return 0; }
+
+void SentryNativeBridgeReplayDeliverFrame(int requestId, const void *rgba, int width, int height) { }
+
+void SentryNativeBridgeReplayCancelFrameRequest() { }
+
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {
     if (traceId == NULL || spanId == NULL) {

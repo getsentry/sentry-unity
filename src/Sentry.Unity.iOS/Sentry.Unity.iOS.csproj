@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutDir>$(PackageRuntimePath)</OutDir>
+    <!-- UnityReplayRecorder hands the GPU readback's buffer to the native bridge without copying it. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

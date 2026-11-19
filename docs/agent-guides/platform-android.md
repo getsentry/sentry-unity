@@ -33,7 +33,8 @@ The Java layer disables duplicate screenshots, auto-session tracking, activity l
     so a persisted Gradle project follows replay and native support being toggled.
 - Replay is runtime-init only:
   - `SentryJava.Init` configures the replay options: sample rates, quality,
-    and SurfaceView capture when sentry-java captures the frames, since Unity renders into a SurfaceView.
+    and SurfaceView capture when sentry-java captures the frames (`Capture = SessionReplayCapture.Native`,
+    the default), since Unity renders into a SurfaceView.
   - Build-time and external initialization log that replay is ignored.
   - A missing replay library logs an error asking to enable replay in the build-time options.
 - Unity capture (`Capture = SessionReplayCapture.Unity`):

@@ -23,6 +23,28 @@ internal interface ICocoaReplay
     /// The replay id on the native scope, or null when no replay is sent.
     /// </summary>
     string? GetReplayId();
+
+    /// <summary>
+    /// Lets Unity capture the frames of every replay started afterwards.
+    /// </summary>
+    void UseUnityCapture();
+
+    /// <summary>
+    /// Takes the frame request sentry-cocoa made, with the frame's size in points. Returns the request's id, or 0 when
+    /// there's none.
+    /// </summary>
+    int TakeFrameRequest(out int width, out int height);
+
+    /// <summary>
+    /// Completes a request with a frame of top-down RGBA pixels. A request that was cancelled in the meantime isn't
+    /// completed again.
+    /// </summary>
+    void DeliverFrame(int request, IntPtr rgba, int width, int height);
+
+    /// <summary>
+    /// Completes a pending request with the last frame.
+    /// </summary>
+    void CancelFrameRequest();
 }
 
 internal sealed class CocoaReplayBridge : ICocoaReplay
@@ -34,6 +56,15 @@ internal sealed class CocoaReplayBridge : ICocoaReplay
     public void Stop() => SentryCocoaBridgeProxy.ReplayStop();
     public bool Capture() => SentryCocoaBridgeProxy.ReplayCapture() == 1;
     public string? GetReplayId() => SentryCocoaBridgeProxy.GetReplayId();
+    public void UseUnityCapture() => SentryCocoaBridgeProxy.ReplayUseUnityCapture();
+
+    public int TakeFrameRequest(out int width, out int height) =>
+        SentryCocoaBridgeProxy.ReplayTakeFrameRequest(out width, out height);
+
+    public void DeliverFrame(int request, IntPtr rgba, int width, int height) =>
+        SentryCocoaBridgeProxy.ReplayDeliverFrame(request, rgba, width, height);
+
+    public void CancelFrameRequest() => SentryCocoaBridgeProxy.ReplayCancelFrameRequest();
 }
 
 /// <summary>
@@ -49,29 +80,34 @@ internal sealed class CocoaReplayLifecycle
     private readonly ICocoaReplay _replay;
     private readonly Func<double> _random;
     private readonly SentryMonoBehaviour _monoBehaviour;
+    private readonly UnityReplayRecorder? _recorder;
     private DateTime? _pausedAt;
 
     private CocoaReplayLifecycle(SentryUnityOptions options, ICocoaReplay replay, Func<double> random,
-        SentryMonoBehaviour monoBehaviour)
+        SentryMonoBehaviour monoBehaviour, UnityReplayRecorder? recorder)
     {
         _options = options;
         _replay = replay;
         _random = random;
         _monoBehaviour = monoBehaviour;
+        _recorder = recorder;
     }
 
     public static void Use(SentryUnityOptions options, ICocoaReplay replay, Func<double>? random = null)
     {
+        UnityReplayRecorder? recorder = null;
         if (options.Experimental.SessionReplay.Capture is SessionReplayCapture.Unity)
         {
-            options.DiagnosticLogger?.LogWarning("Unity capture of session replay is Android only. sentry-cocoa " +
-                                                 "captures the replay's frames on iOS.");
+            options.DiagnosticLogger?.LogDebug("Session replay records the frames Unity captures.");
+            replay.UseUnityCapture();
+            recorder = new UnityReplayRecorder(replay, options.DiagnosticLogger);
         }
 
         var randomGenerator = new Random();
         var lifecycle = new CocoaReplayLifecycle(options, replay, random ?? randomGenerator.NextDouble,
-            SentryMonoBehaviour.Instance);
+            SentryMonoBehaviour.Instance, recorder);
         options.ReplaySession = new CocoaReplaySession(replay);
+        recorder?.Start(lifecycle._monoBehaviour);
         lifecycle.Start();
 
         lifecycle._monoBehaviour.ApplicationPausing += lifecycle.OnPausing;
@@ -101,6 +137,7 @@ internal sealed class CocoaReplayLifecycle
     private void OnPausing()
     {
         _pausedAt = DateTime.UtcNow;
+        _recorder?.Pause();
         _replay.Pause();
     }
 
@@ -108,6 +145,7 @@ internal sealed class CocoaReplayLifecycle
     {
         var newSession = _pausedAt is { } pausedAt && DateTime.UtcNow - pausedAt >= _options.AutoSessionTrackingInterval;
         _pausedAt = null;
+        _recorder?.Resume();
         if (!newSession)
         {
             _replay.Resume();
@@ -124,6 +162,7 @@ internal sealed class CocoaReplayLifecycle
     {
         _monoBehaviour.ApplicationPausing -= OnPausing;
         _monoBehaviour.ApplicationResuming -= OnResuming;
+        _recorder?.Stop();
         _replay.Stop();
     }
 }

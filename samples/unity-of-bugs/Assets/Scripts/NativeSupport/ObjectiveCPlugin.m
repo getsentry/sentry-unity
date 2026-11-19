@@ -1,4 +1,6 @@
 #import <Foundation/Foundation.h>
+#import <mach/mach.h>
+#import <sys/resource.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -34,6 +36,29 @@ char *_Nullable sampleLaunchArgument(const char *name)
         return NULL;
     }
     return strdup(arguments[index + 1].UTF8String);
+}
+
+// The CPU time the process used so far, in seconds, on all cores. For ReplayBenchmark.
+double sampleProcessCpuSeconds(void)
+{
+    struct rusage usage;
+    if (getrusage(RUSAGE_SELF, &usage) != 0) {
+        return -1;
+    }
+    return usage.ru_utime.tv_sec + usage.ru_utime.tv_usec / 1e6 + usage.ru_stime.tv_sec
+        + usage.ru_stime.tv_usec / 1e6;
+}
+
+// The process's memory footprint in bytes, as Xcode's memory gauge and the system's memory limit count it.
+// For ReplayBenchmark.
+int64_t sampleMemoryFootprint(void)
+{
+    task_vm_info_data_t info;
+    mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
+    if (task_info(mach_task_self(), TASK_VM_INFO, (task_info_t)&info, &count) != KERN_SUCCESS) {
+        return -1;
+    }
+    return (int64_t)info.phys_footprint;
 }
 
 NS_ASSUME_NONNULL_END

@@ -104,6 +104,58 @@ public class CocoaReplayTests
     }
 
     [Test]
+    public void Use_NativeCapture_LeavesCaptureToCocoa()
+    {
+        _options.Experimental.SessionReplay.SessionSampleRate = 1;
+        _options.Experimental.SessionReplay.Capture = SessionReplayCapture.Native;
+
+        CocoaReplayLifecycle.Use(_options, _replay, () => 0);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(true);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(false);
+
+        CollectionAssert.AreEqual(new[] { "Start", "Pause", "Resume" }, _replay.Calls);
+    }
+
+    [Test]
+    public void Use_UnityCapture_InstallsUnityCaptureBeforeTheReplayStarts()
+    {
+        _options.Experimental.SessionReplay.SessionSampleRate = 1;
+        _options.Experimental.SessionReplay.Capture = SessionReplayCapture.Unity;
+
+        CocoaReplayLifecycle.Use(_options, _replay, () => 0);
+
+        CollectionAssert.AreEqual(new[] { "UseUnityCapture", "Start" }, _replay.Calls);
+    }
+
+    [Test]
+    public void UnityCapture_Background_CancelsFrameRequestBeforePausing()
+    {
+        _options.Experimental.SessionReplay.SessionSampleRate = 1;
+        _options.Experimental.SessionReplay.Capture = SessionReplayCapture.Unity;
+        _options.AutoSessionTrackingInterval = TimeSpan.FromHours(1);
+        CocoaReplayLifecycle.Use(_options, _replay, () => 0);
+
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(true);
+        SentryMonoBehaviour.Instance.UpdatePauseStatus(false);
+
+        CollectionAssert.AreEqual(new[] { "UseUnityCapture", "Start", "CancelFrameRequest", "Pause", "Resume" },
+            _replay.Calls);
+    }
+
+    [Test]
+    public void UnityCapture_Close_CancelsFrameRequestAndStopsReplay()
+    {
+        _options.Experimental.SessionReplay.SessionSampleRate = 1;
+        _options.Experimental.SessionReplay.Capture = SessionReplayCapture.Unity;
+        CocoaReplayLifecycle.Use(_options, _replay, () => 0);
+
+        _options.NativeSupportCloseCallback?.Invoke();
+        _options.NativeSupportCloseCallback = null;
+
+        CollectionAssert.AreEqual(new[] { "UseUnityCapture", "Start", "CancelFrameRequest", "Stop" }, _replay.Calls);
+    }
+
+    [Test]
     public void CocoaReplaySession_CaptureReplay_ReturnsReplayId()
     {
         var replayId = SentryId.Create();
@@ -167,5 +219,18 @@ public class CocoaReplayTests
         }
 
         public string? GetReplayId() => ReplayId;
+
+        public void UseUnityCapture() => Calls.Add("UseUnityCapture");
+
+        // Polled every frame while Unity captures: not a call the tests follow.
+        public int TakeFrameRequest(out int width, out int height)
+        {
+            width = 0;
+            height = 0;
+            return 0;
+        }
+
+        public void DeliverFrame(int request, IntPtr rgba, int width, int height) => Calls.Add("DeliverFrame");
+        public void CancelFrameRequest() => Calls.Add("CancelFrameRequest");
     }
 }

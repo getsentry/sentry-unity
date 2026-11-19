@@ -66,6 +66,14 @@ int SentryNativeBridgeReplayCapture() { return 0; }
 
 char *_Nullable SentryNativeBridgeGetReplayId() { return NULL; }
 
+void SentryNativeBridgeReplayUseUnityCapture() { }
+
+int SentryNativeBridgeReplayTakeFrameRequest(int *width, int *height) { return 0; }
+
+void SentryNativeBridgeReplayDeliverFrame(int requestId, const void *rgba, int width, int height) { }
+
+void SentryNativeBridgeReplayCancelFrameRequest() { }
+
 void SentryNativeBridgeWriteScope( // clang-format off
     // // const char *AppStartTime,
     // const char *AppBuildType,

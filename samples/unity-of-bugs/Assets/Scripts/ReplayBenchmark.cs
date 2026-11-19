@@ -1,11 +1,15 @@
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
 using System.Collections.Generic;
+#if UNITY_IOS
+using System.Runtime.InteropServices;
+#endif
 using UnityEngine;
 using UnityEngine.UI;
 
-// Spins a cube above the sample's UI, so session replays show motion, and logs frame timings to logcat under the
-// 'ReplayBenchmark' tag, to compare session replay's capture modes (see SentryOptionConfiguration).
-// Android players only. The GPU and per-thread timings need 'Frame Timing Stats' in the player settings.
+// Spins a cube above the sample's UI, so session replays show motion, and logs frame timings under the
+// 'ReplayBenchmark' tag (logcat on Android, the player log on iOS), to compare session replay's capture modes (see
+// SentryOptionConfiguration). On iOS, it also logs the process's CPU use and memory footprint.
+// Android and iOS players only. The GPU and per-thread timings need 'Frame Timing Stats' in the player settings.
 public class ReplayBenchmark : MonoBehaviour
 {
     private const string LogTag = "ReplayBenchmark";
@@ -24,7 +28,12 @@ public class ReplayBenchmark : MonoBehaviour
     private float _nextReport;
     private Transform _cube;
     private string _mode;
+#if UNITY_ANDROID
     private AndroidJavaClass _log;
+#else
+    private double _cpuSecondsAtStart;
+    private float _cpuFrom;
+#endif
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Spawn()
@@ -39,7 +48,9 @@ public class ReplayBenchmark : MonoBehaviour
         Application.targetFrameRate = 60;
         _mode = $"replay={SentryOptionConfiguration.GetLaunchArgument("sentry_replay") ?? "error"} " +
                 $"capture={SentryOptionConfiguration.GetLaunchArgument("sentry_replay_capture") ?? "native"}";
+#if UNITY_ANDROID
         _log = new AndroidJavaClass("android.util.Log");
+#endif
         _collectFrom = Time.realtimeSinceStartup + WarmUpSeconds;
         _nextReport = _collectFrom + ReportSeconds;
 
@@ -98,6 +109,13 @@ public class ReplayBenchmark : MonoBehaviour
             return;
         }
 
+#if UNITY_IOS
+        if (_cpuFrom == 0)
+        {
+            _cpuFrom = now;
+            _cpuSecondsAtStart = sampleProcessCpuSeconds();
+        }
+#endif
         _frameTimes.Add(Time.unscaledDeltaTime * 1000f);
         FrameTimingManager.CaptureFrameTimings();
         if (FrameTimingManager.GetLatestTimings(1, _timings) > 0)
@@ -139,13 +157,34 @@ public class ReplayBenchmark : MonoBehaviour
             : $"cpu main {_cpuMainMs / _timingCount:F2} ms, " +
               $"cpu render {_cpuRenderMs / _timingCount:F2} ms, " +
               $"gpu {_gpuMs / _timingCount:F2} ms";
-        _log.CallStatic<int>("i", LogTag,
-            $"{_mode} frames {_frameTimes.Count}, frame avg {sum / _frameTimes.Count:F2} ms, " +
-            $"p95 {p95:F2} ms, {timings}");
+        var report = $"{_mode} frames {_frameTimes.Count}, frame avg {sum / _frameTimes.Count:F2} ms, " +
+                     $"p95 {p95:F2} ms, {timings}";
+#if UNITY_ANDROID
+        _log.CallStatic<int>("i", LogTag, report);
+#else
+        // CPU use as a share of one core, since the last report.
+        var now = Time.realtimeSinceStartup;
+        var cpuSeconds = sampleProcessCpuSeconds();
+        var cpu = (cpuSeconds - _cpuSecondsAtStart) / (now - _cpuFrom) * 100;
+        _cpuSecondsAtStart = cpuSeconds;
+        _cpuFrom = now;
+        var memory = sampleMemoryFootprint() / (1024.0 * 1024.0);
+        Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, null, "{0}: {1}, cpu {2:F1} %, memory {3:F1} MB",
+            LogTag, report, cpu, memory);
+#endif
 
         _frameTimes.Clear();
         _cpuMainMs = _cpuRenderMs = _gpuMs = 0;
         _timingCount = 0;
     }
+
+#if UNITY_IOS
+    // ObjectiveCPlugin.m
+    [DllImport("__Internal")]
+    private static extern double sampleProcessCpuSeconds();
+
+    [DllImport("__Internal")]
+    private static extern long sampleMemoryFootprint();
+#endif
 }
 #endif

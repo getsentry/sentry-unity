@@ -218,4 +218,16 @@ internal static class SentryCocoaBridgeProxy
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeGetReplayId")]
     public static extern string? GetReplayId();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeReplayUseUnityCapture")]
+    public static extern void ReplayUseUnityCapture();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeReplayTakeFrameRequest")]
+    public static extern int ReplayTakeFrameRequest(out int width, out int height);
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeReplayDeliverFrame")]
+    public static extern void ReplayDeliverFrame(int request, IntPtr rgba, int width, int height);
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeReplayCancelFrameRequest")]
+    public static extern void ReplayCancelFrameRequest();
 }

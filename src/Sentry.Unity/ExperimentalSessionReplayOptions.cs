@@ -43,8 +43,8 @@ public enum SessionReplayCapture
     Native,
 
     /// <summary>
-    /// Unity captures its own frames and hands them to the native SDK. Android only: iOS captures with
-    /// <see cref="Native"/>.
+    /// Unity captures its own frames at the end of a frame and hands them to the native SDK, which asks for them at
+    /// the replay's frame rate.
     /// </summary>
     Unity,
 }
