@@ -295,67 +295,10 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
     }
 }
 
-// Session replay. sentry-cocoa runs the replay commands on the main thread.
-void SentryNativeBridgeReplayStart() { [SentryObjCSDK.internal.replay start]; }
-
-void SentryNativeBridgeReplayStartBuffering() { [SentryObjCSDK.internal.replay startBuffering]; }
-
-void SentryNativeBridgeReplayPause() { [SentryObjCSDK.internal.replay pause]; }
-
-void SentryNativeBridgeReplayResume() { [SentryObjCSDK.internal.replay resume]; }
-
-void SentryNativeBridgeReplayStop() { [SentryObjCSDK.internal.replay stop]; }
-
-// Captures the replay for an error: a buffered replay is sent and keeps recording as a session. Returns 1 when the
-// error belongs to a replay. Capturing runs on the main thread: called from another thread, it waits for it, and
-// gives up after half a second, so a busy main thread doesn't hold up the event.
-int SentryNativeBridgeReplayCapture()
-{
-    if ([NSThread isMainThread]) {
-        return [SentryObjCSDK.internal.replay capture] ? 1 : 0;
-    }
-
-    __block int captured = 0;
-    __block BOOL timedOut = NO;
-    NSObject *lock = [[NSObject alloc] init];
-    dispatch_semaphore_t done = dispatch_semaphore_create(0);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        @synchronized(lock) {
-            if (timedOut) {
-                return;
-            }
-        }
-        int result = [SentryObjCSDK.internal.replay capture] ? 1 : 0;
-        @synchronized(lock) {
-            captured = result;
-        }
-        dispatch_semaphore_signal(done);
-    });
-
-    if (dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, 500 * NSEC_PER_MSEC)) != 0) {
-        @synchronized(lock) {
-            timedOut = YES;
-            // The capture may have finished between the timeout and taking the lock.
-            return captured;
-        }
-    }
-    @synchronized(lock) {
-        return captured;
-    }
-}
-
-// The replay id on the native scope: a replay buffered for errors only gets one once an error captured it.
-char *_Nullable SentryNativeBridgeGetReplayId()
-{
-    __block NSString *replayId = nil;
-    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) { replayId = scope.replayId; }];
-    return replayId.length > 0 ? strdup(replayId.UTF8String) : NULL;
-}
-
 // Unity capture of session replay: sentry-cocoa asks for each frame on the main thread, and Unity captures it at the
 // end of a frame and delivers it. sentry-cocoa takes no further frame until a request completes, so every request
-// completes exactly once: with the frame Unity delivers, or with the last frame (or a blank one before the first)
-// when Unity cancels it, a new request replaces it, or the replay stops.
+// completes exactly once: with the frame Unity delivers, or with the replay's last frame (or a blank one before the
+// first, or when the window's size changed) when Unity cancels it, a new request replaces it, or the replay ends.
 @interface SentryUnityReplayFrameProvider : NSObject <SentryObjCReplayScreenshotProvider>
 @end
 
@@ -366,7 +309,9 @@ char *_Nullable SentryNativeBridgeGetReplayId()
     BOOL _taken;
     CGSize _pendingSize;
     int32_t _nextId;
+    // The current replay's last delivered frame, and a blank frame of the last size asked for.
     UIImage *_Nullable _lastFrame;
+    UIImage *_Nullable _blankFrame;
 }
 
 - (instancetype)init
@@ -416,8 +361,9 @@ char *_Nullable SentryNativeBridgeGetReplayId()
 {
     void (^completion)(UIImage *) = nil;
     @synchronized(_lock) {
-        _lastFrame = image;
+        // A frame for a request that was cancelled may belong to a replay that has ended since.
         if (_pending && _pendingId == requestId) {
+            _lastFrame = image;
             completion = _pending;
             _pending = nil;
         }
@@ -444,27 +390,114 @@ char *_Nullable SentryNativeBridgeGetReplayId()
     }
 }
 
-// Under the lock.
+// Completes a pending request and forgets the replay's last frame, so the next replay never shows it. Called when a
+// replay ends and before one starts.
+- (void)endReplay
+{
+    [self cancelRequest:0];
+    @synchronized(_lock) {
+        _lastFrame = nil;
+    }
+}
+
+static BOOL SentryUnitySameSize(CGSize a, CGSize b)
+{
+    return lround(a.width) == lround(b.width) && lround(a.height) == lround(b.height);
+}
+
+// The last frame when it has the size asked for, otherwise a blank frame of that size. Under the lock.
 - (UIImage *)fallbackFrameOfSize:(CGSize)size
 {
-    if (_lastFrame) {
+    CGSize blankSize = CGSizeMake(MAX(lround(size.width), 1), MAX(lround(size.height), 1));
+    if (_lastFrame && SentryUnitySameSize(_lastFrame.size, blankSize)) {
         return _lastFrame;
+    }
+    if (_blankFrame && SentryUnitySameSize(_blankFrame.size, blankSize)) {
+        return _blankFrame;
     }
     UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat preferredFormat];
     format.scale = 1;
     format.opaque = YES;
-    CGSize blankSize = CGSizeMake(MAX(size.width, 1), MAX(size.height, 1));
     UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:blankSize format:format];
-    _lastFrame = [renderer imageWithActions:^(UIGraphicsImageRendererContext *context) {
+    _blankFrame = [renderer imageWithActions:^(UIGraphicsImageRendererContext *context) {
         [UIColor.blackColor setFill];
         [context fillRect:CGRectMake(0, 0, blankSize.width, blankSize.height)];
     }];
-    return _lastFrame;
+    return _blankFrame;
 }
 
 @end
 
 static SentryUnityReplayFrameProvider *_Nullable sentryUnityReplayFrameProvider = nil;
+
+// Session replay. sentry-cocoa runs the replay commands on the main thread.
+void SentryNativeBridgeReplayStart()
+{
+    [sentryUnityReplayFrameProvider endReplay];
+    [SentryObjCSDK.internal.replay start];
+}
+
+void SentryNativeBridgeReplayStartBuffering()
+{
+    [sentryUnityReplayFrameProvider endReplay];
+    [SentryObjCSDK.internal.replay startBuffering];
+}
+
+void SentryNativeBridgeReplayPause() { [SentryObjCSDK.internal.replay pause]; }
+
+void SentryNativeBridgeReplayResume() { [SentryObjCSDK.internal.replay resume]; }
+
+void SentryNativeBridgeReplayStop()
+{
+    [sentryUnityReplayFrameProvider endReplay];
+    [SentryObjCSDK.internal.replay stop];
+}
+
+// Captures the replay for an error: a buffered replay is sent and keeps recording as a session. Returns 1 when the
+// error belongs to a replay. Capturing runs on the main thread: called from another thread, it waits for it, and
+// gives up after half a second, so a busy main thread doesn't hold up the event.
+int SentryNativeBridgeReplayCapture()
+{
+    if ([NSThread isMainThread]) {
+        return [SentryObjCSDK.internal.replay capture] ? 1 : 0;
+    }
+
+    __block int captured = 0;
+    __block BOOL timedOut = NO;
+    NSObject *lock = [[NSObject alloc] init];
+    dispatch_semaphore_t done = dispatch_semaphore_create(0);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        @synchronized(lock) {
+            if (timedOut) {
+                return;
+            }
+        }
+        int result = [SentryObjCSDK.internal.replay capture] ? 1 : 0;
+        @synchronized(lock) {
+            captured = result;
+        }
+        dispatch_semaphore_signal(done);
+    });
+
+    if (dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, 500 * NSEC_PER_MSEC)) != 0) {
+        @synchronized(lock) {
+            timedOut = YES;
+            // The capture may have finished between the timeout and taking the lock.
+            return captured;
+        }
+    }
+    @synchronized(lock) {
+        return captured;
+    }
+}
+
+// The replay id on the native scope: a replay buffered for errors only gets one once an error captured it.
+char *_Nullable SentryNativeBridgeGetReplayId()
+{
+    __block NSString *replayId = nil;
+    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) { replayId = scope.replayId; }];
+    return replayId.length > 0 ? strdup(replayId.UTF8String) : NULL;
+}
 
 // Lets Unity capture the replay's frames, for every replay started afterwards.
 void SentryNativeBridgeReplayUseUnityCapture()
@@ -486,7 +519,11 @@ int SentryNativeBridgeReplayTakeFrameRequest(int *width, int *height)
 void SentryNativeBridgeReplayDeliverFrame(int requestId, const void *rgba, int width, int height)
 {
     SentryUnityReplayFrameProvider *provider = sentryUnityReplayFrameProvider;
-    if (!provider || !rgba || width <= 0 || height <= 0) {
+    if (!provider) {
+        return;
+    }
+    if (!rgba || width <= 0 || height <= 0) {
+        [provider cancelRequest:requestId];
         return;
     }
 

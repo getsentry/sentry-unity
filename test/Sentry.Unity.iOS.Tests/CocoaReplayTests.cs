@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 
 namespace Sentry.Unity.iOS.Tests;
 
@@ -155,6 +158,57 @@ public class CocoaReplayTests
         CollectionAssert.AreEqual(new[] { "UseUnityCapture", "Start", "CancelFrameRequest", "Stop" }, _replay.Calls);
     }
 
+    [UnityTest]
+    public IEnumerator UnityCapture_TakingFrameRequestFails_CancelsItAndStopsCapturing()
+    {
+        _replay.TakeFrameRequestThrows = true;
+        UseUnityCapture();
+
+        yield return null;
+        yield return null;
+        yield return null;
+
+        Assert.AreEqual(1, _replay.FrameRequestsPolled);
+        CollectionAssert.AreEqual(new[] { "UseUnityCapture", "Start", "CancelFrameRequest" }, _replay.Calls);
+    }
+
+    [UnityTest]
+    public IEnumerator UnityCapture_FrameRequestWithoutSize_IsCancelledWithoutCapturing()
+    {
+        _replay.FrameRequests.Enqueue((1, 0, 0));
+        UseUnityCapture();
+
+        yield return null;
+        yield return null;
+        yield return null;
+
+        CollectionAssert.AreEqual(new[] { "UseUnityCapture", "Start", "CancelFrameRequest" }, _replay.Calls);
+        Assert.Greater(_replay.FrameRequestsPolled, 1);
+    }
+
+    [UnityTest]
+    public IEnumerator UnityCapture_HostDisabled_CancelsFrameRequestUntilEnabled()
+    {
+        UseUnityCapture();
+        yield return null;
+        var host = SentryMonoBehaviour.Instance.GetComponents<UnityReplayRecorderHost>()
+            .Single(component => component.Recorder is not null);
+
+        host.enabled = false;
+        var polled = _replay.FrameRequestsPolled;
+        yield return null;
+        yield return null;
+
+        CollectionAssert.AreEqual(new[] { "UseUnityCapture", "Start", "CancelFrameRequest" }, _replay.Calls);
+        Assert.AreEqual(polled, _replay.FrameRequestsPolled);
+
+        host.enabled = true;
+        yield return null;
+        yield return null;
+
+        Assert.Greater(_replay.FrameRequestsPolled, polled);
+    }
+
     [Test]
     public void CocoaReplaySession_CaptureReplay_ReturnsReplayId()
     {
@@ -200,6 +254,13 @@ public class CocoaReplayTests
         Assert.IsNull(sut.ActiveReplayId);
     }
 
+    private void UseUnityCapture()
+    {
+        _options.Experimental.SessionReplay.SessionSampleRate = 1;
+        _options.Experimental.SessionReplay.Capture = SessionReplayCapture.Unity;
+        CocoaReplayLifecycle.Use(_options, _replay, () => 0);
+    }
+
     private class FakeCocoaReplay : ICocoaReplay
     {
         public List<string> Calls { get; } = new();
@@ -222,12 +283,24 @@ public class CocoaReplayTests
 
         public void UseUnityCapture() => Calls.Add("UseUnityCapture");
 
-        // Polled every frame while Unity captures: not a call the tests follow.
+        // Requests sentry-cocoa makes, as (id, width, height).
+        public Queue<(int, int, int)> FrameRequests { get; } = new();
+        public bool TakeFrameRequestThrows { get; set; }
+        public int FrameRequestsPolled { get; private set; }
+
+        // Polled every frame while Unity captures: counted, not one of the calls the tests follow.
         public int TakeFrameRequest(out int width, out int height)
         {
-            width = 0;
-            height = 0;
-            return 0;
+            FrameRequestsPolled++;
+            if (TakeFrameRequestThrows)
+            {
+                throw new InvalidOperationException("Taking the frame request failed.");
+            }
+
+            var (request, requestWidth, requestHeight) = FrameRequests.Count > 0 ? FrameRequests.Dequeue() : (0, 0, 0);
+            width = requestWidth;
+            height = requestHeight;
+            return request;
         }
 
         public void DeliverFrame(int request, IntPtr rgba, int width, int height) => Calls.Add("DeliverFrame");

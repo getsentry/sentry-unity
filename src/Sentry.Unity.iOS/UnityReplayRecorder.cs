@@ -17,17 +17,23 @@ namespace Sentry.Unity.iOS;
 /// <remarks>
 /// sentry-cocoa takes no further frame until it gets the one it asked for, so a request Unity took is always either
 /// delivered or cancelled: cancelling completes it with the last frame. Everything here runs on Unity's main thread,
-/// which on iOS is also UIKit's.
+/// which on iOS is also UIKit's. After <see cref="MaxFailures"/> failures in a row the recorder gives up: sentry-cocoa
+/// then waits on its next request, so the replay records no further frames until it ends.
 /// </remarks>
 internal sealed class UnityReplayRecorder
 {
     private static readonly TimeSpan StatsInterval = TimeSpan.FromSeconds(10);
+    internal const int MaxFailures = 5;
 
     private readonly ICocoaReplay _replay;
     private readonly IDiagnosticLogger? _logger;
 
     private bool _running;
     private bool _paused;
+    private int _failures;
+    // The component the capture coroutine runs on, and whether that coroutine runs.
+    private UnityReplayRecorderHost? _host;
+    private bool _capturing;
     // The request being captured, or 0. Cancelling it clears it, so its frame doesn't complete a later request.
     private int _request;
     private bool _readbackPending;
@@ -55,7 +61,35 @@ internal sealed class UnityReplayRecorder
 
         _running = true;
         _statsWatch.Restart();
-        monoBehaviour.StartCoroutine(Run());
+        _host = monoBehaviour.gameObject.AddComponent<UnityReplayRecorderHost>();
+        _host.Recorder = this;
+        OnHostEnabled();
+    }
+
+    // The coroutine stops when the host's GameObject is deactivated or destroyed, which leaves no one to complete
+    // sentry-cocoa's request, so the host cancels it. Disabling the host stops the coroutine too.
+    internal void OnHostEnabled()
+    {
+        if (!_running || _capturing || _host is null || !_host.isActiveAndEnabled)
+        {
+            return;
+        }
+
+        _capturing = true;
+        _host.StartCoroutine(Run());
+    }
+
+    internal void OnHostDisabled()
+    {
+        if (!_capturing)
+        {
+            return;
+        }
+
+        _capturing = false;
+        _host?.StopAllCoroutines();
+        Cancel();
+        ReleaseTextures();
     }
 
     /// <summary>
@@ -72,7 +106,37 @@ internal sealed class UnityReplayRecorder
     public void Stop()
     {
         _running = false;
+        _capturing = false;
         Cancel();
+        ReleaseTextures();
+        if (_host is not null)
+        {
+            _host.Recorder = null;
+            _host.StopAllCoroutines();
+            UnityEngine.Object.Destroy(_host);
+            _host = null;
+        }
+    }
+
+    // Gives up after MaxFailures failures in a row; until then the replay repeats the last frame.
+    private void Fail(Exception? exception, string message)
+    {
+        _failures++;
+        if (_failures < MaxFailures)
+        {
+            LogError(exception, "Session replay " + message + ". The replay repeats the last frame.");
+            Cancel();
+            return;
+        }
+
+        LogError(exception, "Session replay " + message + FormattableString.Invariant(
+            $" {MaxFailures} times in a row. Unity stops capturing the replay's frames."));
+        _running = false;
+        Cancel();
+        if (!_readbackPending)
+        {
+            ReleaseTextures();
+        }
     }
 
     private void Cancel()
@@ -85,6 +149,18 @@ internal sealed class UnityReplayRecorder
         _request = 0;
         // Also completes a request sentry-cocoa made that Unity hasn't taken yet.
         _replay.CancelFrameRequest();
+    }
+
+    private void LogError(Exception? exception, string message)
+    {
+        if (exception is null)
+        {
+            _logger?.LogError(message);
+        }
+        else
+        {
+            _logger?.LogError(exception, message);
+        }
     }
 
     private IEnumerator Run()
@@ -114,8 +190,11 @@ internal sealed class UnityReplayRecorder
             }
             catch (Exception e)
             {
-                _logger?.LogError(e, "Session replay failed to take a frame request.");
-                yield break;
+                _logger?.LogError(e, "Session replay failed to take a frame request. Unity stops capturing the " +
+                                     "replay's frames.");
+                _running = false;
+                Cancel();
+                break;
             }
 
             if (request == 0)
@@ -124,6 +203,13 @@ internal sealed class UnityReplayRecorder
             }
 
             _request = request;
+            // A window without a size has nothing to capture.
+            if (width <= 0 || height <= 0)
+            {
+                Cancel();
+                continue;
+            }
+
             yield return endOfFrame;
 
             try
@@ -132,15 +218,15 @@ internal sealed class UnityReplayRecorder
             }
             catch (Exception e)
             {
-                _logger?.LogError(e, "Session replay failed to capture a frame.");
                 _readbackPending = false;
                 if (_request == request)
                 {
-                    Cancel();
+                    Fail(e, "failed to capture a frame");
                 }
             }
         }
 
+        _capturing = false;
         ReleaseTextures();
     }
 
@@ -206,8 +292,7 @@ internal sealed class UnityReplayRecorder
 
             if (readback.hasError)
             {
-                _logger?.LogDebug("Session replay's GPU readback failed. The replay repeats the last frame.");
-                Cancel();
+                Fail(null, "failed to read a frame back from the GPU");
                 return;
             }
 
@@ -215,14 +300,14 @@ internal sealed class UnityReplayRecorder
             var pixels = readback.GetData<byte>();
             if (pixels.Length != readback.width * readback.height * 4)
             {
-                _logger?.LogDebug("Session replay's GPU readback has an unexpected size. The replay repeats the last frame.");
-                Cancel();
+                Fail(null, "read a frame of an unexpected size back from the GPU");
                 return;
             }
 
             _request = 0;
             // The bridge copies the pixels before it returns: the readback's buffer is only valid in this callback.
             _replay.DeliverFrame(request, GetPixels(pixels), readback.width, readback.height);
+            _failures = 0;
 
             _statsDeliverMs += stopwatch.Elapsed.TotalMilliseconds;
             _statsFrames++;
@@ -230,16 +315,15 @@ internal sealed class UnityReplayRecorder
         }
         catch (Exception e)
         {
-            _logger?.LogError(e, "Session replay failed to deliver a frame.");
             if (_request == request)
             {
-                Cancel();
+                Fail(e, "failed to deliver a frame");
             }
         }
         finally
         {
             // Paused or stopped while the GPU read the frame back: the textures weren't released then.
-            if (!_running || _paused)
+            if (!_running || _paused || !_capturing)
             {
                 ReleaseTextures();
             }
@@ -293,4 +377,16 @@ internal sealed class UnityReplayRecorder
         UnityEngine.Object.Destroy(texture);
         texture = null;
     }
+}
+
+/// <summary>
+/// Runs <see cref="UnityReplayRecorder"/>'s capture coroutine, and tells it when the coroutine stops with the component.
+/// </summary>
+internal sealed class UnityReplayRecorderHost : MonoBehaviour
+{
+    internal UnityReplayRecorder? Recorder { get; set; }
+
+    private void OnEnable() => Recorder?.OnHostEnabled();
+
+    private void OnDisable() => Recorder?.OnHostDisabled();
 }
