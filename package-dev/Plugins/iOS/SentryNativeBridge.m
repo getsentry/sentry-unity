@@ -72,6 +72,17 @@ void SentryNativeBridgeOptionsSetDouble(const void *options, const char *name, d
     dictOptions[[NSString stringWithUTF8String:name]] = [NSNumber numberWithDouble:value];
 }
 
+void SentryNativeBridgeOptionsSetReplay(
+    const void *options, double sessionSampleRate, double errorSampleRate, int32_t quality)
+{
+    NSMutableDictionary *dictOptions = (__bridge NSMutableDictionary *)options;
+    dictOptions[@"sessionReplay"] = @{
+        @"sessionSampleRate" : @(sessionSampleRate),
+        @"errorSampleRate" : @(errorSampleRate),
+        @"quality" : @(quality),
+    };
+}
+
 void SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange(const void *options, int32_t min, int32_t max)
 {
     NSMutableDictionary *dictOptions = (__bridge NSMutableDictionary *)options;
@@ -281,6 +292,63 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
     if (sentryTraceId && sentrySpanId) {
         [[SentryObjCSDK internal] setTrace:sentryTraceId spanId:sentrySpanId];
     }
+}
+
+// Session replay. sentry-cocoa runs the replay commands on the main thread.
+void SentryNativeBridgeReplayStart() { [SentryObjCSDK.internal.replay start]; }
+
+void SentryNativeBridgeReplayStartBuffering() { [SentryObjCSDK.internal.replay startBuffering]; }
+
+void SentryNativeBridgeReplayPause() { [SentryObjCSDK.internal.replay pause]; }
+
+void SentryNativeBridgeReplayResume() { [SentryObjCSDK.internal.replay resume]; }
+
+void SentryNativeBridgeReplayStop() { [SentryObjCSDK.internal.replay stop]; }
+
+// Captures the replay for an error: a buffered replay is sent and keeps recording as a session. Returns 1 when the
+// error belongs to a replay. Capturing runs on the main thread: called from another thread, it waits for it, and
+// gives up after half a second, so a busy main thread doesn't hold up the event.
+int SentryNativeBridgeReplayCapture()
+{
+    if ([NSThread isMainThread]) {
+        return [SentryObjCSDK.internal.replay capture] ? 1 : 0;
+    }
+
+    __block int captured = 0;
+    __block BOOL timedOut = NO;
+    NSObject *lock = [[NSObject alloc] init];
+    dispatch_semaphore_t done = dispatch_semaphore_create(0);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        @synchronized(lock) {
+            if (timedOut) {
+                return;
+            }
+        }
+        int result = [SentryObjCSDK.internal.replay capture] ? 1 : 0;
+        @synchronized(lock) {
+            captured = result;
+        }
+        dispatch_semaphore_signal(done);
+    });
+
+    if (dispatch_semaphore_wait(done, dispatch_time(DISPATCH_TIME_NOW, 500 * NSEC_PER_MSEC)) != 0) {
+        @synchronized(lock) {
+            timedOut = YES;
+            // The capture may have finished between the timeout and taking the lock.
+            return captured;
+        }
+    }
+    @synchronized(lock) {
+        return captured;
+    }
+}
+
+// The replay id on the native scope: a replay buffered for errors only gets one once an error captured it.
+char *_Nullable SentryNativeBridgeGetReplayId()
+{
+    __block NSString *replayId = nil;
+    [SentryObjCSDK configureScope:^(SentryObjCScope *scope) { replayId = scope.replayId; }];
+    return replayId.length > 0 ? strdup(replayId.UTF8String) : NULL;
 }
 
 void SentryNativeBridgeWriteScope( // clang-format off

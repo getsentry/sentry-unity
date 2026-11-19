@@ -37,8 +37,8 @@ public class ReplayBenchmark : MonoBehaviour
     private void Start()
     {
         Application.targetFrameRate = 60;
-        _mode = $"replay={SentryOptionConfiguration.GetLaunchExtra("sentry_replay") ?? "error"} " +
-                $"capture={SentryOptionConfiguration.GetLaunchExtra("sentry_replay_capture") ?? "java"}";
+        _mode = $"replay={SentryOptionConfiguration.GetLaunchArgument("sentry_replay") ?? "error"} " +
+                $"capture={SentryOptionConfiguration.GetLaunchArgument("sentry_replay_capture") ?? "native"}";
         _log = new AndroidJavaClass("android.util.Log");
         _collectFrom = Time.realtimeSinceStartup + WarmUpSeconds;
         _nextReport = _collectFrom + ReportSeconds;

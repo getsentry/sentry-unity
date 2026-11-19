@@ -306,7 +306,7 @@ internal class SentryJava : ISentryJava
             _logger?.LogWarning(
                 "Session replay capture by Unity needs async GPU readback, which this device's graphics API doesn't " +
                 "support. The Android SDK captures the frames instead.");
-            capture = SessionReplayCapture.SentryJava;
+            capture = SessionReplayCapture.Native;
         }
 
         try
@@ -329,7 +329,7 @@ internal class SentryJava : ISentryJava
             using var onErrorSampleRate = new AndroidJavaObject("java.lang.Double", replay.OnErrorSampleRate);
             replayOptions.Call("setOnErrorSampleRate", onErrorSampleRate);
             // Unity renders into a SurfaceView, which the Android SDK only captures when asked to.
-            replayOptions.Call("setCaptureSurfaceViews", capture is SessionReplayCapture.SentryJava);
+            replayOptions.Call("setCaptureSurfaceViews", capture is SessionReplayCapture.Native);
             using var qualityClass = new AndroidJavaClass("io.sentry.SentryReplayOptions$SentryReplayQuality");
             using var quality = qualityClass.GetStatic<AndroidJavaObject>(GetReplayQualityString(replay.Quality));
             replayOptions.Call("setQuality", quality);

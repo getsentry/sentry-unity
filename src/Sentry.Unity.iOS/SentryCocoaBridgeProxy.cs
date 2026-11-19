@@ -91,6 +91,14 @@ internal static class SentryCocoaBridgeProxy
         Logger?.LogDebug("Setting EnableLogs: {0}", options.EnableLogs);
         OptionsSetInt(cOptions, "enableLogs", options.EnableLogs ? 1 : 0);
 
+        var replay = options.Experimental.SessionReplay;
+        if (platform == RuntimePlatform.IPhonePlayer && replay.IsEnabled)
+        {
+            Logger?.LogDebug("Setting SessionReplay: session sample rate {0}, on-error sample rate {1}, quality {2}",
+                replay.SessionSampleRate, replay.OnErrorSampleRate, replay.Quality);
+            OptionsSetReplay(cOptions, replay.SessionSampleRate, replay.OnErrorSampleRate, (int)replay.Quality);
+        }
+
         foreach (var range in options.FailedRequestStatusCodes)
         {
             Logger?.LogDebug("Adding FailedRequestStatusCodeRange: {0}-{1}", range.Start, range.End);
@@ -122,6 +130,9 @@ internal static class SentryCocoaBridgeProxy
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsSetDouble")]
     private static extern void OptionsSetDouble(IntPtr options, string name, double value);
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsSetReplay")]
+    private static extern void OptionsSetReplay(IntPtr options, double sessionSampleRate, double errorSampleRate, int quality);
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange")]
     private static extern void OptionsAddFailedRequestStatusCodeRange(IntPtr options, int min, int max);
@@ -186,4 +197,25 @@ internal static class SentryCocoaBridgeProxy
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeSetEnvironment")]
     public static extern void SetEnvironment(string? environment);
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeReplayStart")]
+    public static extern void ReplayStart();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeReplayStartBuffering")]
+    public static extern void ReplayStartBuffering();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeReplayPause")]
+    public static extern void ReplayPause();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeReplayResume")]
+    public static extern void ReplayResume();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeReplayStop")]
+    public static extern void ReplayStop();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeReplayCapture")]
+    public static extern int ReplayCapture();
+
+    [DllImport("__Internal", EntryPoint = "SentryNativeBridgeGetReplayId")]
+    public static extern string? GetReplayId();
 }

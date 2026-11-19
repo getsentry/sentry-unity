@@ -23,8 +23,10 @@ namespace Sentry.Unity.Editor.iOS.Tests
 
             var packageRoot = Path.GetFullPath(Path.Combine(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..", ".."));
+            // macOS shares the proxy, so its bridge needs every entry point too.
             var bridgePaths = new[] { "SentryNativeBridge.m", "SentryNativeBridgeNoOp.m", "SentryNativeBridgeExternal.m" }
-                .Select(name => Path.Combine(packageRoot, "Plugins", "iOS", name));
+                .Select(name => Path.Combine(packageRoot, "Plugins", "iOS", name))
+                .Append(Path.Combine(packageRoot, "Plugins", "macOS", "SentryNativeBridge.m"));
 
             foreach (var bridgePath in bridgePaths)
             {

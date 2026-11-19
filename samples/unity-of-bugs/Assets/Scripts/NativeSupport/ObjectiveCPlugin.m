@@ -23,4 +23,17 @@ void applicationNotResponding()
     NSLog(@"Objective-C main thread stall finished.");
 }
 
+// The value after `-<name>` in the process's launch arguments, which IL2CPP's Environment.GetCommandLineArgs()
+// doesn't return on iOS. The caller owns the returned string.
+char *_Nullable sampleLaunchArgument(const char *name)
+{
+    NSString *flag = [@"-" stringByAppendingString:[NSString stringWithUTF8String:name]];
+    NSArray<NSString *> *arguments = NSProcessInfo.processInfo.arguments;
+    NSUInteger index = [arguments indexOfObject:flag];
+    if (index == NSNotFound || index + 1 >= arguments.count) {
+        return NULL;
+    }
+    return strdup(arguments[index + 1].UTF8String);
+}
+
 NS_ASSUME_NONNULL_END

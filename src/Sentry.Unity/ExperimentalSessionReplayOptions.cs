@@ -1,10 +1,10 @@
 namespace Sentry.Unity;
 
 /// <summary>
-/// Session replay on Android, recorded by the Android SDK (sentry-java). Off unless one of the sample rates is above 0.
-/// Experimental: set these from code, in the options configuration used both at build time and at runtime. The build
-/// adds the replay library to the Android project only when replay is enabled there. Replay needs the Android SDK
-/// initialized at runtime (<see cref="NativeInitializationType.Runtime"/>).
+/// Session replay on Android and iOS, recorded by the native SDK (sentry-java, sentry-cocoa). Off unless one of the
+/// sample rates is above 0. Experimental: set these from code, in the options configuration used both at build time
+/// and at runtime. On Android, the build adds the replay library to the Android project only when replay is enabled
+/// there. Replay needs the native SDK initialized at runtime (<see cref="NativeInitializationType.Runtime"/>).
 /// </summary>
 public class ExperimentalSessionReplayOptions
 {
@@ -19,9 +19,9 @@ public class ExperimentalSessionReplayOptions
     public double OnErrorSampleRate { get; set; }
 
     /// <summary>
-    /// What captures the replay's frames. Defaults to <see cref="SessionReplayCapture.SentryJava"/>.
+    /// What captures the replay's frames. Defaults to <see cref="SessionReplayCapture.Native"/>.
     /// </summary>
-    public SessionReplayCapture Capture { get; set; } = SessionReplayCapture.SentryJava;
+    public SessionReplayCapture Capture { get; set; } = SessionReplayCapture.Native;
 
     /// <summary>
     /// The replay's video quality. Defaults to <see cref="SessionReplayQuality.Medium"/>.
@@ -37,12 +37,14 @@ public class ExperimentalSessionReplayOptions
 public enum SessionReplayCapture
 {
     /// <summary>
-    /// The Android SDK copies the screen, including Unity's surface, at the replay's frame rate.
+    /// The native SDK copies the screen at the replay's frame rate: on Android, including Unity's surface; on iOS,
+    /// by drawing the app's view hierarchy.
     /// </summary>
-    SentryJava,
+    Native,
 
     /// <summary>
-    /// Unity captures its own frames and hands them to the Android SDK.
+    /// Unity captures its own frames and hands them to the native SDK. Android only: iOS captures with
+    /// <see cref="Native"/>.
     /// </summary>
     Unity,
 }
