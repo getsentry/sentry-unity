@@ -132,7 +132,8 @@ internal static class SentryCocoaBridgeProxy
     private static extern void OptionsSetDouble(IntPtr options, string name, double value);
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsSetReplay")]
-    private static extern void OptionsSetReplay(IntPtr options, double sessionSampleRate, double errorSampleRate, int quality);
+    private static extern void OptionsSetReplay(
+        IntPtr options, double sessionSampleRate, double errorSampleRate, int quality);
 
     [DllImport("__Internal", EntryPoint = "SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange")]
     private static extern void OptionsAddFailedRequestStatusCodeRange(IntPtr options, int min, int max);

@@ -65,8 +65,10 @@ public static class SentryNativeCocoa
                 }
                 else
                 {
-                    Logger?.LogWarning("Session replay requires the iOS SDK to be initialized at runtime. Ignoring it " +
-                                       "with initialization type '{0}'.", options.IosNativeInitializationType);
+                    Logger?.LogWarning(
+                        "Session replay requires the iOS SDK to be initialized at runtime. " +
+                        "Ignoring it with initialization type '{0}'.",
+                        options.IosNativeInitializationType);
                 }
             }
 

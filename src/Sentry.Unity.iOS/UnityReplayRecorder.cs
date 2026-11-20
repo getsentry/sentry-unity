@@ -343,10 +343,14 @@ internal sealed class UnityReplayRecorder
 
         var capture = _statsCaptureMs / _statsFrames;
         var deliver = _statsDeliverMs / _statsFrames;
-        _logger?.LogDebug(FormattableString.Invariant(
-            $"Session replay captured {_statsFrames} frames in {_statsWatch.Elapsed.TotalSeconds:F0}s ({_statsCancelled} cancelled). ") +
+        var seconds = _statsWatch.Elapsed.TotalSeconds;
+        _logger?.LogDebug(
             FormattableString.Invariant(
-            $"Main thread per frame: {capture + deliver:F2} ms (capture {capture:F2} ms, deliver {deliver:F2} ms)."));
+                $"Session replay captured {_statsFrames} frames in {seconds:F0}s ({_statsCancelled} cancelled). ") +
+            FormattableString.Invariant(
+                $"Main thread per frame: {capture + deliver:F2} ms ") +
+            FormattableString.Invariant(
+                $"(capture {capture:F2} ms, deliver {deliver:F2} ms)."));
 
         _statsWatch.Restart();
         _statsFrames = 0;
@@ -381,7 +385,8 @@ internal sealed class UnityReplayRecorder
 }
 
 /// <summary>
-/// Runs <see cref="UnityReplayRecorder"/>'s capture coroutine, and tells it when the coroutine stops with the component.
+/// Runs <see cref="UnityReplayRecorder"/>'s capture coroutine, and tells it when the coroutine stops with the
+/// component.
 /// </summary>
 internal sealed class UnityReplayRecorderHost : MonoBehaviour
 {

@@ -143,7 +143,8 @@ internal sealed class CocoaReplayLifecycle
 
     private void OnResuming()
     {
-        var newSession = _pausedAt is { } pausedAt && DateTime.UtcNow - pausedAt >= _options.AutoSessionTrackingInterval;
+        var newSession = _pausedAt is { } pausedAt
+            && DateTime.UtcNow - pausedAt >= _options.AutoSessionTrackingInterval;
         _pausedAt = null;
         _recorder?.Resume();
         if (!newSession)
