@@ -4,7 +4,7 @@
 
 ### Features
 
-- Experimental session replay on Android:
+- Experimental session replay on Android ([#2948](https://github.com/getsentry/sentry-unity/pull/2948)):
   - Set `options.Experimental.SessionReplay.SessionSampleRate` or `OnErrorSampleRate` in code,
     in the options used both at build time and at runtime.
   - The Android SDK records the game, and errors captured in C# send the replay of the moments before them,
