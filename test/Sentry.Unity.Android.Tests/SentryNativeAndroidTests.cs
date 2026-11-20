@@ -458,7 +458,8 @@ public class SentryNativeAndroidTests
     [Test]
     [TestCase(NativeInitializationType.BuildTime)]
     [TestCase(NativeInitializationType.External)]
-    public void Configure_SessionReplayEnabledWithoutRuntimeInit_LogsAndIgnoresIt(NativeInitializationType initializationType)
+    public void Configure_SessionReplayEnabledWithoutRuntimeInit_LogsAndIgnoresIt(
+        NativeInitializationType initializationType)
     {
         var options = new SentryUnityOptions
         {
@@ -528,7 +529,9 @@ public class SentryNativeAndroidTests
         SentryMonoBehaviour.Instance.UpdatePauseStatus(true);
         SentryMonoBehaviour.Instance.UpdatePauseStatus(false);
 
-        CollectionAssert.AreEqual(new[] { "pause", "resume:False", "pause", "resume:True" }, _testSentryJava.ReplayLifecycleCalls);
+        CollectionAssert.AreEqual(
+            new[] { "pause", "resume:False", "pause", "resume:True" },
+            _testSentryJava.ReplayLifecycleCalls);
     }
 
     [Test]

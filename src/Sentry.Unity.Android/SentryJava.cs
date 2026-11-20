@@ -308,8 +308,9 @@ internal class SentryJava : ISentryJava
             }
             catch (AndroidJavaException)
             {
-                _logger?.LogError("Session replay is enabled but the Android replay library is missing from the build. " +
-                                  "Enable 'Experimental.SessionReplay' in the options used at build time and rebuild.");
+                _logger?.LogError(
+                    "Session replay is enabled but the Android replay library is missing from the build. " +
+                    "Enable 'Experimental.SessionReplay' in the options used at build time and rebuild.");
                 return;
             }
 
@@ -324,8 +325,10 @@ internal class SentryJava : ISentryJava
             using var quality = qualityClass.GetStatic<AndroidJavaObject>(GetReplayQualityString(replay.Quality));
             replayOptions.Call("setQuality", quality);
 
-            _logger?.LogDebug($"Session replay configured: session sample rate {replay.SessionSampleRate}, " +
-                              $"on-error sample rate {replay.OnErrorSampleRate}, quality {replay.Quality}, capture {replay.Capture}.");
+            _logger?.LogDebug(
+                $"Session replay configured: session sample rate {replay.SessionSampleRate}, " +
+                $"on-error sample rate {replay.OnErrorSampleRate}, " +
+                $"quality {replay.Quality}, capture {replay.Capture}.");
         }
         catch (Exception e)
         {

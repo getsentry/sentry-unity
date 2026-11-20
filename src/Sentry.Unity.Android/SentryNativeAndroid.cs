@@ -110,8 +110,10 @@ public static class SentryNativeAndroid
             }
             else
             {
-                Logger?.LogWarning("Session replay requires the Android SDK to be initialized at runtime. Ignoring it " +
-                                   "with initialization type '{0}'.", options.AndroidNativeInitializationType);
+                Logger?.LogWarning(
+                    "Session replay requires the Android SDK to be initialized at runtime. " +
+                    "Ignoring it with initialization type '{0}'.",
+                    options.AndroidNativeInitializationType);
             }
         }
 
@@ -224,7 +226,8 @@ public static class SentryNativeAndroid
 
         void Resume()
         {
-            var startNewSession = pausedAt is { } paused && DateTime.UtcNow - paused >= options.AutoSessionTrackingInterval;
+            var startNewSession = pausedAt is { } paused
+                && DateTime.UtcNow - paused >= options.AutoSessionTrackingInterval;
             pausedAt = null;
             sentryJava.ResumeReplay(startNewSession);
         }

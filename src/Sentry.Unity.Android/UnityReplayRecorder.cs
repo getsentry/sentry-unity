@@ -106,7 +106,10 @@ internal sealed class UnityReplayRecorder
         // `ReplayIntegration(Context, ICurrentDateProvider, (() -> Recorder)?, ((SentryId) -> ReplayCache)?)`. Called
         // through JNI, as Unity can't pick a constructor for a null argument.
         var constructor = AndroidJNI.GetMethodID(replayClass.GetRawClass(), "<init>",
-            "(Landroid/content/Context;Lio/sentry/transport/ICurrentDateProvider;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)V");
+            "(Landroid/content/Context;" +
+            "Lio/sentry/transport/ICurrentDateProvider;" +
+            "Lkotlin/jvm/functions/Function0;" +
+            "Lkotlin/jvm/functions/Function1;)V");
         ThrowOnJavaException("finding the ReplayIntegration constructor");
 
         var provider = IntPtr.Zero;
@@ -566,10 +569,14 @@ internal sealed class UnityReplayRecorder
             var capture = _statsCaptureMs / _statsFrames;
             var copy = _statsCopyMs / _statsFrames;
             var handOver = _statsHandedOver == 0 ? 0 : _statsHandOverMs / _statsHandedOver;
-            _logger?.LogDebug(FormattableString.Invariant(
-                $"Session replay captured {_statsFrames} frames in {_statsWatch.Elapsed.TotalSeconds:F0}s ({_statsDropped} dropped). ") +
+            var seconds = _statsWatch.Elapsed.TotalSeconds;
+            _logger?.LogDebug(
                 FormattableString.Invariant(
-                $"Main thread per frame: {capture + copy:F2} ms (capture {capture:F2} ms, copy {copy:F2} ms). Worker per frame: {handOver:F2} ms."));
+                    $"Session replay captured {_statsFrames} frames in {seconds:F0}s ({_statsDropped} dropped). ") +
+                FormattableString.Invariant(
+                    $"Main thread per frame: {capture + copy:F2} ms (capture {capture:F2} ms, copy {copy:F2} ms). ") +
+                FormattableString.Invariant(
+                    $"Worker per frame: {handOver:F2} ms."));
         }
 
         _statsWatch.Restart();
@@ -670,7 +677,8 @@ internal sealed class UnityReplayRecorder
     {
         private readonly RecorderProxy _recorder;
 
-        public RecorderProvider(RecorderProxy recorder) : base("kotlin.jvm.functions.Function0") => _recorder = recorder;
+        public RecorderProvider(RecorderProxy recorder) : base("kotlin.jvm.functions.Function0") =>
+            _recorder = recorder;
 
         public override AndroidJavaObject? Invoke(string methodName, AndroidJavaObject[] args)
         {

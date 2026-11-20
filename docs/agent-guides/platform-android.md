@@ -22,13 +22,55 @@ The Java layer disables duplicate screenshots, auto-session tracking, activity l
 
 ## Session Replay (Experimental)
 
-- `options.Experimental.SessionReplay` is set from code, with no editor UI. Replay is enabled when `SessionSampleRate` or `OnErrorSampleRate` is above 0.
-- `sentry-android-replay-release.aar` ships in `Sentry~` next to the other artifacts. `GradleSetup` adds it, and `org.jetbrains.kotlin:kotlin-stdlib` from Maven at the version sentry-android-replay builds with, to `unityLibrary/build.gradle` only when replay is enabled in the build-time options. Without replay, the Sentry dependency block is unchanged. Adding and clearing recognize both variants of the block, so a persisted Gradle project follows replay and native support being toggled.
-- Replay is runtime-init only: `SentryJava.Init` configures the replay options (sample rates, quality, and SurfaceView capture when sentry-java captures the frames, since Unity renders into a SurfaceView). Build-time and external initialization log that replay is ignored. A missing replay library logs an error asking to enable replay in the build-time options.
-- With `Capture = SessionReplayCapture.Unity`, `UnityReplayRecorder` replaces the `ReplayIntegration` sentry-java added with one built through JNI around a custom `Recorder` (a Unity `AndroidJavaProxy`, returned by a `kotlin.jvm.functions.Function0` proxy). sentry-java calls the recorder on Android's UI thread, which only updates flags and the frame config. sentry-java never sends a custom recorder a frame config: after each start or reset, and when Unity's screen size changes, Unity's main thread asks the UI thread to call `onWindowSizeChanged` with the activity window's size, and sentry-java computes the config from it. It gets the window's size, not `Screen.width/height`, which can be a lower render resolution: sentry-java scales recorded touches, which are in window pixels, by that config. At the config's frame rate, Unity's main thread captures the screen at end of frame, blits it top-down into an RGBA render texture at the recording size (`SentryScreenshot.BlitScreen`) and reads it back with `AsyncGPUReadback`. A worker thread attached to the JVM copies each frame into a new `ARGB_8888` bitmap and calls `onScreenshotRecorded`. A started recorder captures until it's paused: sentry-java only resumes a paused one.
-- `proguard-sentry-unity.pro` keeps the replay classes Unity reaches through JNI and proxies, and the classes in the JNI signatures it looks up (`ICurrentDateProvider`, `Integration`, `Function0`, `Function1`): keeping a method doesn't keep the classes in its signature, so minified builds would rename them.
-- sentry-java samples and starts the replay itself. `AndroidReplaySession` is the .NET SDK's replay session: the replay id of the dynamic sampling context comes from the Java scope. The .NET client calls `captureReplay` for each error event and puts the returned replay id on that event's dynamic sampling context; other events get the Java scope's current replay id.
-- Unity builds don't start androidx's process lifecycle (the `lifecycle-process` startup provider isn't in the manifest), so the Java SDK doesn't see the app go to the background. When it isn't running, Unity's pause and resume drive the replay instead. A pause is the replay's manual pause: sentry-java resumes a replay paused for the background when the device reconnects, which happens in the background too, but not a manually paused one. Resuming moves the replay's timeline to the return, so no segment covers the time away. After a background longer than `AutoSessionTrackingInterval`, the replay is resumed and then ended right away (`onAppForegrounded(true)`), so it ends at the pause without a segment for the time away, and a new one starts. Unity capture drops frames read back or handed over after the pause, so none lands after the pause segment.
+- `options.Experimental.SessionReplay` is set from code, with no editor UI.
+  Replay is enabled when `SessionSampleRate` or `OnErrorSampleRate` is above 0.
+- Packaging:
+  - `sentry-android-replay-release.aar` ships in `Sentry~` next to the other artifacts.
+  - `GradleSetup` adds it to `unityLibrary/build.gradle` only when replay is enabled in the build-time options,
+    together with `org.jetbrains.kotlin:kotlin-stdlib` from Maven, at the version sentry-android-replay builds with.
+  - Without replay, the Sentry dependency block is unchanged.
+  - Adding and clearing recognize both variants of the block,
+    so a persisted Gradle project follows replay and native support being toggled.
+- Replay is runtime-init only:
+  - `SentryJava.Init` configures the replay options: sample rates, quality,
+    and SurfaceView capture when sentry-java captures the frames, since Unity renders into a SurfaceView.
+  - Build-time and external initialization log that replay is ignored.
+  - A missing replay library logs an error asking to enable replay in the build-time options.
+- Unity capture (`Capture = SessionReplayCapture.Unity`):
+  - `UnityReplayRecorder` replaces the `ReplayIntegration` sentry-java added with one built through JNI
+    around a custom `Recorder`: a Unity `AndroidJavaProxy`, returned by a `kotlin.jvm.functions.Function0` proxy.
+  - sentry-java calls the recorder on Android's UI thread, which only updates flags and the frame config.
+  - sentry-java never sends a custom recorder a frame config. After each start or reset,
+    and when Unity's screen size changes, Unity's main thread asks the UI thread to call `onWindowSizeChanged`
+    with the activity window's size, and sentry-java computes the config from it.
+  - It gets the window's size, not `Screen.width/height`, which can be a lower render resolution:
+    sentry-java scales recorded touches, which are in window pixels, by that config.
+  - At the config's frame rate, Unity's main thread captures the screen at end of frame,
+    blits it top-down into an RGBA render texture at the recording size (`SentryScreenshot.BlitScreen`)
+    and reads it back with `AsyncGPUReadback`.
+  - A worker thread attached to the JVM copies each frame into a new `ARGB_8888` bitmap
+    and calls `onScreenshotRecorded`.
+  - A started recorder captures until it's paused: sentry-java only resumes a paused one.
+- `proguard-sentry-unity.pro` keeps the replay classes Unity reaches through JNI and proxies,
+  and the classes in the JNI signatures it looks up (`ICurrentDateProvider`, `Integration`, `Function0`, `Function1`):
+  keeping a method doesn't keep the classes in its signature, so minified builds would rename them.
+- Replays for C# errors:
+  - sentry-java samples and starts the replay itself.
+  - `AndroidReplaySession` is the .NET SDK's replay session: the replay id of the dynamic sampling context
+    comes from the Java scope.
+  - The .NET client calls `captureReplay` for each error event
+    and puts the returned replay id on that event's dynamic sampling context.
+    Other events get the Java scope's current replay id.
+- Background and foreground:
+  - Unity builds don't start androidx's process lifecycle (the `lifecycle-process` startup provider isn't in the
+    manifest), so the Java SDK doesn't see the app go to the background.
+    When it isn't running, Unity's pause and resume drive the replay instead.
+  - A pause is the replay's manual pause. sentry-java resumes a replay paused for the background
+    when the device reconnects, which happens in the background too, but not a manually paused one.
+  - Resuming moves the replay's timeline to the return, so no segment covers the time away.
+  - After a background longer than `AutoSessionTrackingInterval`, the replay is resumed and then ended right away
+    (`onAppForegrounded(true)`), so it ends at the pause without a segment for the time away, and a new one starts.
+  - Unity capture drops frames read back or handed over after the pause, so none lands after the pause segment.
 
 ## Constraints
 

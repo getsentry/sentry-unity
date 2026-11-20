@@ -136,9 +136,12 @@ public class ReplayBenchmark : MonoBehaviour
         var p95 = _frameTimes[Mathf.Min(_frameTimes.Count - 1, (int)(_frameTimes.Count * 0.95f))];
         var timings = _timingCount == 0
             ? "frame timing stats off"
-            : $"cpu main {_cpuMainMs / _timingCount:F2} ms, cpu render {_cpuRenderMs / _timingCount:F2} ms, gpu {_gpuMs / _timingCount:F2} ms";
+            : $"cpu main {_cpuMainMs / _timingCount:F2} ms, " +
+              $"cpu render {_cpuRenderMs / _timingCount:F2} ms, " +
+              $"gpu {_gpuMs / _timingCount:F2} ms";
         _log.CallStatic<int>("i", LogTag,
-            $"{_mode} frames {_frameTimes.Count}, frame avg {sum / _frameTimes.Count:F2} ms, p95 {p95:F2} ms, {timings}");
+            $"{_mode} frames {_frameTimes.Count}, frame avg {sum / _frameTimes.Count:F2} ms, " +
+            $"p95 {p95:F2} ms, {timings}");
 
         _frameTimes.Clear();
         _cpuMainMs = _cpuRenderMs = _gpuMs = 0;

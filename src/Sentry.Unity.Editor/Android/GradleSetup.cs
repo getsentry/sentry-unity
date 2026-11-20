@@ -10,7 +10,8 @@ internal class GradleSetup
 
     private const string AndroidMarker = "android {";
     private const string SdkDependenciesFull = SdkDependencies + "\n}\n\n" + AndroidMarker;
-    private const string SdkDependenciesWithReplayFull = SdkDependencies + ReplayDependencies + "\n}\n\n" + AndroidMarker;
+    private const string SdkDependenciesWithReplayFull =
+        SdkDependencies + ReplayDependencies + "\n}\n\n" + AndroidMarker;
 
     public const string SdkDependencies = @"dependencies {
     implementation(name: 'sentry-android-ndk-release', ext:'aar')

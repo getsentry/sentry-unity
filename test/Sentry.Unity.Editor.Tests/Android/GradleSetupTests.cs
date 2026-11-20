@@ -87,7 +87,8 @@ public class GradleSetupTests
         StringAssert.DoesNotContain(GradleSetup.SdkDependencies, unityLibraryGradleContent);
     }
 
-    private string UnityLibraryGradle => File.ReadAllText(Path.Combine(GradleProjectPath, "unityLibrary", "build.gradle"));
+    private string UnityLibraryGradle =>
+        File.ReadAllText(Path.Combine(GradleProjectPath, "unityLibrary", "build.gradle"));
 
     [Test]
     public void UpdateGradleProject_SessionReplayEnabled_AddsReplayDependencies()
@@ -107,7 +108,9 @@ public class GradleSetupTests
 
         sut.UpdateGradleProject();
 
-        Assert.AreEqual(original.Replace("android {", GradleSetup.SdkDependencies + "\n}\n\nandroid {"), UnityLibraryGradle);
+        Assert.AreEqual(
+            original.Replace("android {", GradleSetup.SdkDependencies + "\n}\n\nandroid {"),
+            UnityLibraryGradle);
         StringAssert.DoesNotContain("sentry-android-replay", UnityLibraryGradle);
         StringAssert.DoesNotContain("kotlin-stdlib:1.9.24", UnityLibraryGradle);
     }
@@ -133,12 +136,16 @@ public class GradleSetupTests
 
         StringAssert.DoesNotContain("sentry-android-replay", UnityLibraryGradle);
         StringAssert.DoesNotContain("kotlin-stdlib:1.9.24", UnityLibraryGradle);
-        Assert.AreEqual(original.Replace("android {", GradleSetup.SdkDependencies + "\n}\n\nandroid {"), UnityLibraryGradle);
+        Assert.AreEqual(
+            original.Replace("android {", GradleSetup.SdkDependencies + "\n}\n\nandroid {"),
+            UnityLibraryGradle);
 
         new GradleSetup(Logger, GradleProjectPath, sessionReplayEnabled: true).UpdateGradleProject();
 
         StringAssert.Contains(GradleSetup.SdkDependencies + GradleSetup.ReplayDependencies, UnityLibraryGradle);
-        Assert.AreEqual(1, UnityLibraryGradle.Split(new[] { "sentry-android-core-release" }, StringSplitOptions.None).Length - 1);
+        var coreDependencies = UnityLibraryGradle.Split(
+            new[] { "sentry-android-core-release" }, StringSplitOptions.None);
+        Assert.AreEqual(1, coreDependencies.Length - 1);
     }
 
     [Test]
