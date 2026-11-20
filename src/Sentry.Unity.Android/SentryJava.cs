@@ -22,6 +22,11 @@ internal interface ISentryJava
     public bool TryGetMainProcessUser(out SentryUser? user);
     public string? GetInstallationId();
     public bool? CrashedLastRun();
+    public string? GetReplayId();
+    public string? CaptureReplay();
+    public bool? IsProcessLifecycleObserved();
+    public void PauseReplay();
+    public void ResumeReplay(bool startNewSession);
     public (string? Type, string? EffectiveType) GetConnection();
     public void Close();
     public void WriteScope(
@@ -77,6 +82,7 @@ internal class SentryJava : ISentryJava
     private readonly ConcurrentQueue<(Action action, string actionName)> _scopeSyncItems = new();
     private static readonly TimeSpan JniResultTimeout = TimeSpan.FromMilliseconds(500);
     private volatile bool _closed;
+    private UnityReplayRecorder? _unityReplayRecorder;
 
     private static AndroidJavaObject GetInternalSentryJava() => new AndroidJavaClass("io.sentry.android.core.InternalSentrySdk");
     private static AndroidJavaObject GetSentryJava() => new AndroidJavaClass("io.sentry.Sentry");
@@ -269,12 +275,194 @@ internal class SentryJava : ISentryJava
                 // Disable user interaction tracking to prevent conflicts with VR platforms (e.g., Oculus InputHooks)
                 androidOptions.Call("setEnableUserInteractionBreadcrumbs", false);
                 androidOptions.Call("setEnableUserInteractionTracing", false);
+
+                // With external initialization, the app's SDK owns session replay.
+                if (!isExternal)
+                {
+                    ConfigureSessionReplay(androidOptions, context, options.Experimental.SessionReplay);
+                }
             }, options.DiagnosticLogger));
+
+            StartUnityReplayRecorder();
         }
         catch (Exception e)
         {
             _logger?.LogError(e, "Calling 'SentryJava.Init' failed.");
         }
+    }
+
+    // Runs in its own try/catch, so a failure can't skip the options Unity relies on.
+    private void ConfigureSessionReplay(AndroidJavaObject androidOptions, AndroidJavaObject context,
+        ExperimentalSessionReplayOptions replay)
+    {
+        if (!replay.IsEnabled)
+        {
+            return;
+        }
+
+        var capture = replay.Capture;
+        if (capture is SessionReplayCapture.Unity && !SystemInfo.supportsAsyncGPUReadback)
+        {
+            _logger?.LogWarning(
+                "Session replay capture by Unity needs async GPU readback, which this device's graphics API doesn't " +
+                "support. The Android SDK captures the frames instead.");
+            capture = SessionReplayCapture.SentryJava;
+        }
+
+        try
+        {
+            try
+            {
+                using var _ = new AndroidJavaClass("io.sentry.android.replay.ReplayIntegration");
+            }
+            catch (AndroidJavaException)
+            {
+                _logger?.LogError(
+                    "Session replay is enabled but the Android replay library is missing from the build. " +
+                    "Enable 'Experimental.SessionReplay' in the options used at build time and rebuild.");
+                return;
+            }
+
+            using var replayOptions = androidOptions.Call<AndroidJavaObject>("getSessionReplay");
+            using var sessionSampleRate = new AndroidJavaObject("java.lang.Double", replay.SessionSampleRate);
+            replayOptions.Call("setSessionSampleRate", sessionSampleRate);
+            using var onErrorSampleRate = new AndroidJavaObject("java.lang.Double", replay.OnErrorSampleRate);
+            replayOptions.Call("setOnErrorSampleRate", onErrorSampleRate);
+            // Unity renders into a SurfaceView, which the Android SDK only captures when asked to.
+            replayOptions.Call("setCaptureSurfaceViews", capture is SessionReplayCapture.SentryJava);
+            using var qualityClass = new AndroidJavaClass("io.sentry.SentryReplayOptions$SentryReplayQuality");
+            using var quality = qualityClass.GetStatic<AndroidJavaObject>(GetReplayQualityString(replay.Quality));
+            replayOptions.Call("setQuality", quality);
+
+            _logger?.LogDebug(
+                $"Session replay configured: session sample rate {replay.SessionSampleRate}, " +
+                $"on-error sample rate {replay.OnErrorSampleRate}, " +
+                $"quality {replay.Quality}, capture {capture}.");
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Failed to configure session replay.");
+            return;
+        }
+
+        if (capture is not SessionReplayCapture.Unity)
+        {
+            return;
+        }
+
+        // On failure, the replay the Android SDK added stays: it records nothing without SurfaceView capture.
+        try
+        {
+            var recorder = new UnityReplayRecorder(_logger);
+            recorder.Install(androidOptions, context);
+            _unityReplayRecorder = recorder;
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Failed to set up session replay capture by Unity.");
+        }
+    }
+
+    private void StartUnityReplayRecorder()
+    {
+        try
+        {
+            _unityReplayRecorder?.Start();
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Failed to start session replay capture by Unity.");
+        }
+    }
+
+    internal static string GetReplayQualityString(SessionReplayQuality quality) => quality switch
+    {
+        SessionReplayQuality.Low => "LOW",
+        SessionReplayQuality.High => "HIGH",
+        _ => "MEDIUM"
+    };
+
+    // The replay id on the native SDK's scope: set while a session is recorded, or once an error captured its replay.
+    public string? GetReplayId() => RunJniSafeAndWait(() =>
+    {
+        using var sentry = GetInternalSentryJava();
+        using var scope = sentry.CallStatic<AndroidJavaObject>("getCurrentScope");
+        using var replayId = scope?.Call<AndroidJavaObject>("getReplayId");
+        return replayId?.Call<string>("toString");
+    });
+
+    // Captures the replay for an error, like the native SDK does for its own errors. Returns the replay's id, empty
+    // when the error has no replay (none recorded, or not sampled for errors).
+    public string? CaptureReplay() => RunJniSafeAndWait(() =>
+    {
+        using var replayController = GetReplayController();
+        // `captureReplay(Boolean isTerminating)` takes a boxed Boolean.
+        using var isTerminating = new AndroidJavaObject("java.lang.Boolean", false);
+        using var replayId = replayController?.Call<AndroidJavaObject>("captureReplay", isTerminating);
+        return replayId?.Call<string>("toString");
+    });
+
+    // Whether androidx's process lifecycle runs, which tells the native SDK that the app went to the background and
+    // back. It needs the startup provider of `androidx.lifecycle:lifecycle-process`, which Unity builds don't have.
+    public bool? IsProcessLifecycleObserved()
+    {
+        if (!MainThreadData.IsMainThread())
+        {
+            _logger?.LogError("Calling IsProcessLifecycleObserved() on Android SDK requires running on MainThread");
+            return null;
+        }
+
+        try
+        {
+            using var processLifecycleOwner = new AndroidJavaClass("androidx.lifecycle.ProcessLifecycleOwner");
+            using var owner = processLifecycleOwner.CallStatic<AndroidJavaObject>("get");
+            using var lifecycle = owner.Call<AndroidJavaObject>("getLifecycle");
+            using var state = lifecycle.Call<AndroidJavaObject>("getCurrentState");
+            using var stateClass = new AndroidJavaClass("androidx.lifecycle.Lifecycle$State");
+            using var created = stateClass.GetStatic<AndroidJavaObject>("CREATED");
+            return state.Call<bool>("isAtLeast", created);
+        }
+        catch (AndroidJavaException)
+        {
+            // Not in the app.
+            return false;
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError(e, "Calling 'SentryJava.IsProcessLifecycleObserved' failed.");
+        }
+
+        return null;
+    }
+
+    // Pauses the replay, ending its current segment. It's the replay's manual pause, so nothing but `ResumeReplay`
+    // resumes it: the replay resumes itself when the device reconnects, which happens in the background too.
+    public void PauseReplay() => RunJniSafe(() =>
+    {
+        using var replayController = GetReplayController();
+        replayController?.Call("pause");
+    });
+
+    // Resumes the replay. Its next segment starts now, so none covers the time away. With `startNewSession`, the
+    // replay then ends and a new one starts, sampled as the replay samples sessions. Ending a replay sends a segment
+    // from its last one to now; with the timeline moved to now and no frames since the pause, it sends none. Both
+    // calls are queued in order on Android's UI thread.
+    public void ResumeReplay(bool startNewSession) => RunJniSafe(() =>
+    {
+        using var replayController = GetReplayController();
+        replayController?.Call("resume");
+        if (startNewSession)
+        {
+            replayController?.Call("onAppForegrounded", true);
+        }
+    });
+
+    private static AndroidJavaObject? GetReplayController()
+    {
+        using var sentry = GetSentryJava();
+        using var scopes = sentry.CallStatic<AndroidJavaObject>("getCurrentScopes");
+        using var options = scopes?.Call<AndroidJavaObject>("getOptions");
+        return options?.Call<AndroidJavaObject>("getReplayController");
     }
 
     // A string option of the native SDK, e.g. `getRelease` or `getEnvironment`.

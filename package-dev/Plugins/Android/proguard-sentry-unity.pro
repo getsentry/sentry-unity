@@ -20,4 +20,22 @@
 -keep class io.sentry.protocol.** { *; }
 -keep class io.sentry.android.core.internal.util.AndroidConnectionStatusProvider { *; }
 -keep class io.sentry.android.core.internal.util.NetworkConnection { *; }
+# Experimental session replay: options, the replay controller and the recorder Unity can provide.
+-keep class io.sentry.SentryReplayOptions { *; }
+-keep class io.sentry.SentryReplayOptions$SentryReplayQuality { *; }
+-keep interface io.sentry.ReplayController { *; }
+-keep class io.sentry.transport.CurrentDateProvider { *; }
+-keep class io.sentry.android.replay.ReplayIntegration { *; }
+-keep interface io.sentry.android.replay.Recorder { *; }
+-keep class io.sentry.android.replay.ScreenshotRecorderConfig { *; }
+-keep interface kotlin.jvm.functions.Function0 { *; }
+# The classes in the JNI signatures of the ReplayIntegration constructor and SentryOptions.addIntegration.
+-keep interface io.sentry.transport.ICurrentDateProvider { *; }
+-keep interface io.sentry.Integration { *; }
+-keep interface kotlin.jvm.functions.Function1 { *; }
+# Unity checks whether androidx's process lifecycle runs, to pause the replay itself when it doesn't.
+-keep class androidx.lifecycle.ProcessLifecycleOwner { *; }
+-keep class androidx.lifecycle.Lifecycle { *; }
+-keep class androidx.lifecycle.Lifecycle$State { *; }
+-dontwarn androidx.lifecycle.**
 -dontwarn io.sentry.**
