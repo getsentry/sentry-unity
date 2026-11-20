@@ -436,6 +436,13 @@ internal sealed class UnityReplayRecorder
         _readbackPending = false;
         try
         {
+            // Run has already ended and left the textures to the readback that was still reading them.
+            if (_closed)
+            {
+                ReleaseTextures();
+                return;
+            }
+
             if (readback.hasError)
             {
                 Drop("the GPU readback failed");
