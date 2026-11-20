@@ -37,12 +37,14 @@ The Java layer disables duplicate screenshots, auto-session tracking, activity l
   - Build-time and external initialization log that replay is ignored.
   - A missing replay library logs an error asking to enable replay in the build-time options.
 - Unity capture (`Capture = SessionReplayCapture.Unity`):
+  - Without `SystemInfo.supportsAsyncGPUReadback`, `SentryJava.Init` logs a warning and sentry-java captures instead.
   - `UnityReplayRecorder` replaces the `ReplayIntegration` sentry-java added with one built through JNI
     around a custom `Recorder`: a Unity `AndroidJavaProxy`, returned by a `kotlin.jvm.functions.Function0` proxy.
   - sentry-java calls the recorder on Android's UI thread, which only updates flags and the frame config.
   - sentry-java never sends a custom recorder a frame config. After each start or reset,
     and when Unity's screen size changes, Unity's main thread asks the UI thread to call `onWindowSizeChanged`
     with the activity window's size, and sentry-java computes the config from it.
+    Before the window is laid out, Unity's screen size stands in once, and a later frame asks again.
   - It gets the window's size, not `Screen.width/height`, which can be a lower render resolution:
     sentry-java scales recorded touches, which are in window pixels, by that config.
   - At the config's frame rate, Unity's main thread captures the screen at end of frame,

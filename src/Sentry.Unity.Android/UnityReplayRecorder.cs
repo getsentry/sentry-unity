@@ -328,7 +328,23 @@ internal sealed class UnityReplayRecorder
 
             if (replayIntegration.Call<bool>("isRecording"))
             {
-                var (width, height) = GetWindowSize() ?? (screenWidth, screenHeight);
+                var windowSize = GetWindowSize();
+                if (windowSize is null)
+                {
+                    // Before the window is laid out, Unity's screen size stands in, so recording can start. A later
+                    // frame asks again for the window's. A new size starts a new segment, so it's sent only once.
+                    _configuredWidth = 0;
+                    _configuredHeight = 0;
+                    Interlocked.Exchange(ref _configNeeded, 1);
+                    if (_config is null)
+                    {
+                        replayIntegration.Call("onWindowSizeChanged", screenWidth, screenHeight);
+                    }
+
+                    return;
+                }
+
+                var (width, height) = windowSize.Value;
                 _configuredWidth = screenWidth;
                 _configuredHeight = screenHeight;
                 replayIntegration.Call("onWindowSizeChanged", width, height);

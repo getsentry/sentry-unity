@@ -300,6 +300,15 @@ internal class SentryJava : ISentryJava
             return;
         }
 
+        var capture = replay.Capture;
+        if (capture is SessionReplayCapture.Unity && !SystemInfo.supportsAsyncGPUReadback)
+        {
+            _logger?.LogWarning(
+                "Session replay capture by Unity needs async GPU readback, which this device's graphics API doesn't " +
+                "support. The Android SDK captures the frames instead.");
+            capture = SessionReplayCapture.SentryJava;
+        }
+
         try
         {
             try
@@ -320,7 +329,7 @@ internal class SentryJava : ISentryJava
             using var onErrorSampleRate = new AndroidJavaObject("java.lang.Double", replay.OnErrorSampleRate);
             replayOptions.Call("setOnErrorSampleRate", onErrorSampleRate);
             // Unity renders into a SurfaceView, which the Android SDK only captures when asked to.
-            replayOptions.Call("setCaptureSurfaceViews", replay.Capture is SessionReplayCapture.SentryJava);
+            replayOptions.Call("setCaptureSurfaceViews", capture is SessionReplayCapture.SentryJava);
             using var qualityClass = new AndroidJavaClass("io.sentry.SentryReplayOptions$SentryReplayQuality");
             using var quality = qualityClass.GetStatic<AndroidJavaObject>(GetReplayQualityString(replay.Quality));
             replayOptions.Call("setQuality", quality);
@@ -328,7 +337,7 @@ internal class SentryJava : ISentryJava
             _logger?.LogDebug(
                 $"Session replay configured: session sample rate {replay.SessionSampleRate}, " +
                 $"on-error sample rate {replay.OnErrorSampleRate}, " +
-                $"quality {replay.Quality}, capture {replay.Capture}.");
+                $"quality {replay.Quality}, capture {capture}.");
         }
         catch (Exception e)
         {
@@ -336,7 +345,7 @@ internal class SentryJava : ISentryJava
             return;
         }
 
-        if (replay.Capture is not SessionReplayCapture.Unity)
+        if (capture is not SessionReplayCapture.Unity)
         {
             return;
         }
