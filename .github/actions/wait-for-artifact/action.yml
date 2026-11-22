@@ -7,6 +7,9 @@ inputs:
   path:
     description: 'Destination path for the artifact contents'
     required: false
+  producer:
+    description: 'Name prefix of the job that uploads the artifact; stop waiting once it has failed'
+    required: false
 
 runs:
   using: composite
@@ -15,12 +18,24 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
         NAME: ${{ inputs.name }}
+        PRODUCER: ${{ inputs.producer }}
       shell: pwsh
       run: |
         for ($i = 0; $i -lt 120; $i++) {
+          # Read the producer state before the artifact, so an upload in between is not missed
+          $failed = if ($env:PRODUCER) {
+            gh api --paginate "/repos/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/attempts/$env:GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '.jobs[] | select(.status == "completed" and .conclusion != "success") | .name' |
+              Where-Object { $_.StartsWith($env:PRODUCER) }
+          }
           $count = gh api "/repos/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/artifacts?name=$env:NAME" --jq .total_count
-          if ([int]$count -gt 0) {
-            exit 0
+          if ($LASTEXITCODE -eq 0) {
+            if ([int]$count -gt 0) {
+              exit 0
+            }
+            if ($failed) {
+              Write-Output "::error::$($failed -join ', ') failed, $env:NAME will not be uploaded"
+              exit 1
+            }
           }
           Start-Sleep -Seconds 30
         }

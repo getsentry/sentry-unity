@@ -88,24 +88,28 @@ jobs:
         with:
           name: Android-sdk
           path: package-dev/Plugins/Android
+          producer: sdk (Android,
 
       - name: Download Cocoa SDK
         uses: ./.github/actions/wait-for-artifact
         with:
           name: Cocoa-sdk
           path: package-dev/Plugins
+          producer: sdk (Cocoa,
 
       - name: Download MacOSNative SDK
         uses: ./.github/actions/wait-for-artifact
         with:
           name: MacOSNative-sdk
           path: package-dev/Plugins/macOS/SentryNative~
+          producer: sdk (MacOSNative,
 
       - name: Download Linux SDK
         uses: ./.github/actions/wait-for-artifact
         with:
           name: Linux-sdk
           path: package-dev/Plugins/Linux/Sentry~
+          producer: sdk (Linux,
 
       - name: Download LinuxArm64 SDK
         uses: ./.github/actions/wait-for-artifact
@@ -118,6 +122,7 @@ jobs:
         with:
           name: LinuxNative-sdk
           path: package-dev/Plugins/Linux/SentryNative~
+          producer: sdk (LinuxNative,
 
       - name: Download LinuxNativeArm64 SDK
         uses: ./.github/actions/wait-for-artifact
@@ -130,12 +135,14 @@ jobs:
         with:
           name: Windows-sdk
           path: package-dev/Plugins/Windows/Sentry~
+          producer: sdk (Windows,
 
       - name: Download WindowsNative SDK
         uses: ./.github/actions/wait-for-artifact
         with:
           name: WindowsNative-sdk
           path: package-dev/Plugins/Windows/SentryNative~
+          producer: sdk (WindowsNative,
 
       - name: Build Sentry.Unity Solution
         run: docker exec unity dotnet build -c Release -v:d

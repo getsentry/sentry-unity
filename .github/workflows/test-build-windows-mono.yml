@@ -54,6 +54,7 @@ jobs:
         uses: ./.github/actions/wait-for-artifact
         with:
           name: package-release
+          producer: Build Unity SDK
 
       - name: Extract UPM package
         run: ./test/Scripts.Integration.Test/extract-package.ps1
