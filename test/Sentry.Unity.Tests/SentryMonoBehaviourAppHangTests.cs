@@ -113,6 +113,27 @@ public class SentryMonoBehaviourAppHangTests
         Assert.Greater(count, countAfterResume);
     }
 
+    [UnityTest]
+    public IEnumerator StartAppHangHeartbeat_DoesNotArmWhilePausedBeforeFirstFrame()
+    {
+        var sut = GetSut();
+        var count = 0;
+
+        // The game loses focus before its first frame, e.g. when the player switches away during the first scene load.
+        sut.StartAppHangHeartbeat(() => count++, () => { }, TimeSpan.FromSeconds(0.05));
+        sut.UpdatePauseStatus(true);
+
+        // Frames go on while the game is paused; a heartbeat would arm the detector and it would report the pause.
+        yield return null;
+        yield return new WaitForSecondsRealtime(0.12f);
+        Assert.AreEqual(0, count);
+
+        // Detection arms once the game runs again.
+        sut.UpdatePauseStatus(false);
+        yield return null;
+        Assert.GreaterOrEqual(count, 1);
+    }
+
     [Test]
     public void StartAppHangHeartbeat_DoesNotArmOnResumeBeforeFirstHeartbeat()
     {
