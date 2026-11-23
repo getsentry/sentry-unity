@@ -38,8 +38,12 @@ internal static class MacOSNativePlugins
 
     internal static string PackagePath(string plugin) => $"Packages/{SentryPackageInfo.GetName()}/Plugins/macOS/{plugin}";
 
-    internal static void Register(IDiagnosticLogger? logger)
+    /// <summary>
+    /// Sets the include-in-build delegate on each plugin, and returns the asset paths it found no plugin at.
+    /// </summary>
+    internal static List<string> Register(IDiagnosticLogger? logger)
     {
+        var missing = new List<string>();
         foreach (var plugin in Plugins)
         {
             var assetPath = PackagePath(plugin);
@@ -50,8 +54,11 @@ internal static class MacOSNativePlugins
             else
             {
                 logger?.LogDebug("No macOS plugin at '{0}'.", assetPath);
+                missing.Add(assetPath);
             }
         }
+
+        return missing;
     }
 
     internal static void SetBuildOptions(SentryUnityOptions? options) => BuildOptions = options;
@@ -88,6 +95,26 @@ internal static class MacOSNativePlugins
         options is not null && options.IsValid() && options.MacosNativeSupportEnabled
             ? options.Experimental.MacosBackend
             : null;
+
+    /// <summary>
+    /// The files a backend needs in the package, relative to <c>Plugins/macOS</c>.
+    /// </summary>
+    internal static string[] RequiredFiles(MacosBackend? backend) => backend switch
+    {
+        MacosBackend.Cocoa => new[] { CocoaLibrary },
+        MacosBackend.Native => new[] { NativeLibrary, CrashExecutable },
+        _ => Array.Empty<string>()
+    };
+
+    internal static string MissingFileMessage(MacosBackend backend, string path, bool isDevPackage)
+    {
+        var restore = isDevPackage
+            ? $"Run 'dotnet msbuild /t:{(backend == MacosBackend.Native ? "BuildMacOSNativeSDK" : "BuildCocoaSDK")} src/Sentry.Unity' " +
+              "(or 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity') to populate it"
+            : "Reinstall the Sentry package";
+        return $"Sentry's macOS {backend} backend file is missing: {path}\n" +
+               $"{restore}, or turn off macOS native support in the Sentry options.";
+    }
 
     internal static bool ShouldIncludeInBuild(string assetPath, SentryUnityOptions? options)
     {
@@ -174,7 +201,23 @@ internal class MacOSNativePluginsBuildProcess : IPreprocessBuildWithReport, IPos
         var logger = options?.DiagnosticLogger ?? new UnityLogger(options ?? new SentryUnityOptions());
 
         MacOSNativePlugins.SetBuildOptions(options);
-        MacOSNativePlugins.Register(logger);
+        foreach (var assetPath in MacOSNativePlugins.Register(logger))
+        {
+            // The plugin may still be in the project somewhere else, and then it ships whatever the backend.
+            logger.LogWarning("Sentry found no macOS plugin at '{0}', so it can't leave it out of the build " +
+                              "when its backend isn't selected.", assetPath);
+        }
+
+        var backend = MacOSNativePlugins.SelectedBackend(options);
+        foreach (var file in MacOSNativePlugins.RequiredFiles(backend))
+        {
+            var path = Path.GetFullPath(MacOSNativePlugins.PackagePath(file));
+            if (!File.Exists(path))
+            {
+                throw new BuildFailedException(
+                    MacOSNativePlugins.MissingFileMessage(backend!.Value, path, SentryPackageInfo.IsDevPackage));
+            }
+        }
 
         // Unity builds into an existing app, so another backend's plugins would stay behind. Removed here,
         // before Unity signs the app.
@@ -184,20 +227,10 @@ internal class MacOSNativePluginsBuildProcess : IPreprocessBuildWithReport, IPos
             MacOSNativePlugins.RemoveStaleArtifacts(logger, outputPath, options);
         }
 
-        if (MacOSNativePlugins.SelectedBackend(options) == MacosBackend.Native)
+        if (backend == MacosBackend.Native)
         {
             // Zip archives and artifact uploads can lose the execute bit, and Unity copies the bundle as it is.
             var executable = Path.GetFullPath(MacOSNativePlugins.PackagePath(MacOSNativePlugins.CrashExecutable));
-            if (!File.Exists(executable))
-            {
-                var restore = SentryPackageInfo.IsDevPackage
-                    ? "Run 'dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity'"
-                    : "Reinstall the Sentry package";
-                throw new BuildFailedException(
-                    $"Sentry's macOS crash handler is missing at '{executable}'. {restore}, or switch the " +
-                    "macOS backend to Cocoa in the Sentry options.");
-            }
-
             try
             {
                 SentryCli.SetExecutePermission(executable);

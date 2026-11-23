@@ -5,7 +5,7 @@ namespace Sentry.Unity.Tests;
 
 public class MacosNativeHandlerPathTests
 {
-    private static readonly string Bundled = Path.Combine("PlugIns", "SentryCrash.bundle", "Contents", "MacOS", "sentry-crash");
+    private const string Bundled = MacosNativeHandlerPath.BundleRelativePath;
 
     [Test]
     public void Resolve_App_FindsTheBundleInContentsPlugIns()

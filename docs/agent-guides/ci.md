@@ -4,7 +4,7 @@
 
 - `ci.yml` is the primary workflow for pushes to `main`/`release/*`, pull requests, and manual dispatch.
 - `build.yml` builds the package, aliases assemblies, packages it, builds the dependency-conflict fixture, and runs Unity tests.
-- `sdk.yml` builds native SDK artifacts.
+- `sdk.yml` builds native SDK artifacts. The macOS artifacts leave out `.meta` files, so the checkout's plugin importer settings are the ones that ship.
 - `create-unity-matrix.yml` selects integration-test Unity versions.
 
 ## Current Matrix

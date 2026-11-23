@@ -75,6 +75,47 @@ public class MacOSNativePluginsTests
         Assert.IsFalse(MacOSNativePlugins.ShouldIncludeInBuild(assetPath, Options(MacosBackend.Cocoa)));
     }
 
+    [Test]
+    public void RequiredFiles_Cocoa_IsTheCocoaLibrary()
+    {
+        CollectionAssert.AreEqual(new[] { "Sentry/Sentry.dylib" }, MacOSNativePlugins.RequiredFiles(MacosBackend.Cocoa));
+    }
+
+    [Test]
+    public void RequiredFiles_Native_AreTheLibraryAndTheCrashHandler()
+    {
+        CollectionAssert.AreEqual(
+            new[] { "SentryNative/libsentry-native.dylib", "SentryNative/SentryCrash.bundle/Contents/MacOS/sentry-crash" },
+            MacOSNativePlugins.RequiredFiles(MacosBackend.Native));
+    }
+
+    [Test]
+    public void RequiredFiles_NativeSupportOff_IsEmpty()
+    {
+        CollectionAssert.IsEmpty(MacOSNativePlugins.RequiredFiles(MacOSNativePlugins.SelectedBackend(Options(MacosBackend.Native, nativeSupport: false))));
+    }
+
+    [TestCase(MacosBackend.Cocoa, "BuildCocoaSDK")]
+    [TestCase(MacosBackend.Native, "BuildMacOSNativeSDK")]
+    public void MissingFileMessage_DevPackage_NamesTheBuildTargets(MacosBackend backend, string target)
+    {
+        var message = MacOSNativePlugins.MissingFileMessage(backend, "/pkg/file", isDevPackage: true);
+
+        StringAssert.Contains("/pkg/file", message);
+        StringAssert.Contains($"dotnet msbuild /t:{target} src/Sentry.Unity", message);
+        StringAssert.Contains("dotnet msbuild /t:DownloadNativeSDKs src/Sentry.Unity", message);
+    }
+
+    [Test]
+    public void MissingFileMessage_Package_SaysToReinstall()
+    {
+        var message = MacOSNativePlugins.MissingFileMessage(MacosBackend.Cocoa, "/pkg/file", isDevPackage: false);
+
+        StringAssert.Contains("/pkg/file", message);
+        StringAssert.Contains("Reinstall the Sentry package", message);
+        StringAssert.DoesNotContain("dotnet", message);
+    }
+
     private static string[] StaleNames(SentryUnityOptions? options) =>
         MacOSNativePlugins.StaleArtifacts("/build/game.app", options)
             .Select(path => path.Replace('\\', '/'))
