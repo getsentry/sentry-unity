@@ -19,7 +19,7 @@
 
 ### Fixes
 
-- On macOS, Sentry's binaries no longer break the app's code signature, and "Create Xcode Project" exports now include them. Unity places them in the app as plugins before it signs it, and only the selected backend's files ship. With the Native backend the crash handler ships as `Contents/PlugIns/SentryCrash.bundle`. Release packages ship the binaries signed with Sentry's Developer ID and notarized. ([#2950](https://github.com/getsentry/sentry-unity/issues/2950))
+- On macOS, Sentry's binaries no longer break the app's code signature, and "Create Xcode Project" exports now include them. Unity places them in the app as plugins before it signs it, and only the selected backend's files ship. With the Native backend the crash handler ships as `Contents/PlugIns/SentryCrash.bundle`. Release packages ship the binaries signed with Sentry's Developer ID and notarized. ([#2953](https://github.com/getsentry/sentry-unity/pull/2953))
 
 ## 4.13.0
 
