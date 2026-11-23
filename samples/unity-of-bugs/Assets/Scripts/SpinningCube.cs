@@ -15,6 +15,10 @@ public class SpinningCube : MonoBehaviour
     private const float TitleHalfWidth = 64f;
     private const float Margin = 4f;
 
+    // The gap between the cube and the screen's top and right edges, the same both ways. Wide enough to keep the cube
+    // clear of a phone's rounded corners.
+    private const float EdgeGap = 12f;
+
     // The most of the screen width the spinning cube takes up, on wide screens.
     private const float MaxWidthShare = 0.2f;
 
@@ -85,14 +89,14 @@ public class SpinningCube : MonoBehaviour
 
         _renderer.enabled = true;
 
-        // The free space in the header, in pixels: right of the title, inside the safe area (notches, rounded corners).
+        // The free space in the header, in pixels: right of the title, the same gap from the top and the right edge,
+        // and inside the safe area's right side (a notch in landscape).
         var width = (float)mainCamera.pixelWidth;
         var height = (float)mainCamera.pixelHeight;
         var unit = height / CanvasHeight;
-        var safeArea = Screen.safeArea;
         var left = width * 0.5f + (TitleHalfWidth + Margin) * unit;
-        var right = Mathf.Min(width, safeArea.xMax) - Margin * unit;
-        var top = Mathf.Min(height, safeArea.yMax) - Margin * unit;
+        var right = Mathf.Min(width, Screen.safeArea.xMax) - EdgeGap * unit;
+        var top = height - EdgeGap * unit;
         var bottom = height - (HeaderHeight - Margin) * unit;
 
         // The square the spinning cube fills: as big as the space allows, up to a share of the screen width.
@@ -112,8 +116,8 @@ public class SpinningCube : MonoBehaviour
         // The cube's space diagonal is its widest silhouette while it spins: keep that within the square.
         _cube.localScale = Vector3.one * (box / width * visibleWidth / Mathf.Sqrt(3f));
 
-        // Against the right edge of the space, centred in it vertically.
-        var centre = new Vector3(right - box * 0.5f, (top + bottom) * 0.5f, depth);
+        // In the space's top-right corner.
+        var centre = new Vector3(right - box * 0.5f, top - box * 0.5f, depth);
         _cube.position = mainCamera.ScreenToWorldPoint(centre);
     }
 }
