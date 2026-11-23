@@ -10,6 +10,9 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$macOSDestination,
 
+    [Parameter(Mandatory = $true)]
+    [string]$macOSdSYMDestination,
+
     [switch]$Clean
 )
 
@@ -117,9 +120,11 @@ try {
     $macOSFrameworkPath = Join-Path $macOSSlice.FullName "SentryObjC.framework/Versions/A/SentryObjC"
     $macOSdSYMPath = Join-Path $macOSSlice.FullName "dSYMs/SentryObjC.framework.dSYM/Contents/Resources/DWARF/SentryObjC"
 
-    $macOSDestDir = Split-Path $macOSDestination -Parent
-    if (-not (Test-Path $macOSDestDir)) {
-        New-Item -ItemType Directory -Path $macOSDestDir -Force | Out-Null
+    foreach ($destination in @($macOSDestination, $macOSdSYMDestination)) {
+        $destinationDir = Split-Path $destination -Parent
+        if (-not (Test-Path $destinationDir)) {
+            New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
+        }
     }
 
     if (-not (Test-Path $macOSFrameworkPath)) {
@@ -129,7 +134,6 @@ try {
     Copy-Item -Path $macOSFrameworkPath -Destination $macOSDestination -Force
     Write-Host "Copied macOS dylib to: $macOSDestination" -ForegroundColor Green
 
-    $macOSdSYMDestination = "$macOSDestination.dSYM"
     if (-not (Test-Path $macOSdSYMPath)) {
         Write-Error "macOS dSYM not found at: $macOSdSYMPath"
         exit 1

@@ -52,6 +52,13 @@ modules/sentry-native-ndk
 !package-dev/**/SentryNativeBridgeNoOp.m.meta
 !package-dev/**/SentryCxaThrowHook.cpp.meta
 
+# macOS plugins: the .meta files enable them for the macOS player only
+!package-dev/Plugins/macOS/Sentry.meta
+!package-dev/Plugins/macOS/SentryNative.meta
+!package-dev/Plugins/macOS/Sentry/Sentry.dylib.meta
+!package-dev/Plugins/macOS/SentryNative/libsentry-native.dylib.meta
+!package-dev/Plugins/macOS/SentryNative/SentryCrash.bundle.meta
+
 # Android SDK files
 package-dev/Plugins/Android/Sentry~/*
 
@@ -66,6 +73,7 @@ package-dev/Plugins/Linux/SentryNative~/*
 # macOS SDK files
 package-dev/Plugins/macOS/Sentry~/*
 package-dev/Plugins/macOS/SentryNative~/*
+package-dev/Plugins/macOS/SentryNative/SentryCrash.bundle/
 
 # CLI
 package-dev/Editor/sentry-cli

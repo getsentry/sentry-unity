@@ -24,6 +24,7 @@ Exact Unity editor versions and changesets live in `scripts/unity-versions.json`
 1. Checks out `src/sentry-dotnet`.
 2. Starts a `unityci/editor` Docker image.
 3. Restores .NET workloads and downloads native CI artifacts.
+   On `release/*` branches it signs the macOS binaries with rcodesign and notarizes them, using the `APPLE_CERT_DATA`, `APPLE_CERT_PASSWORD` and `APPLE_API_KEY` secrets; it warns and skips when one is missing.
 4. Runs `dotnet build -c Release -v:d` in the container.
 5. Installs `Sentry.AssemblyAlias` and runs `scripts/alias-assemblies.ps1`.
 6. Runs `scripts/pack.ps1` and uploads `package-release`.

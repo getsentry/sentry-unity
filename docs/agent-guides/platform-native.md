@@ -16,21 +16,21 @@
 | --- | --- | --- |
 | Windows | Crashpad | `sentry-crash.exe` |
 | Linux | In-process Breakpad | `sentry-crash` |
-| macOS | Cocoa | `sentry-crash` |
+| macOS | Cocoa | `sentry-crash` in `SentryCrash.bundle` |
 
 Experimental native modes raise minimum shutdown timeout to 10 seconds.
 
 ## Post-Build Behavior
 
-`Sentry.Unity.Editor/Native/BuildPostProcess.cs` selects legacy `Sentry~` or experimental `SentryNative~`, clears stale handler artifacts when switching backend, copies runtime libraries to player locations, and leaves symbols in package for upload.
+`Sentry.Unity.Editor/Native/BuildPostProcess.cs` selects legacy `Sentry~` or experimental `SentryNative~`, clears stale handler artifacts when switching backend, copies runtime libraries to player locations, and leaves symbols in package for upload. macOS doesn't copy anything after the build; see below.
 
 - Windows: runtime files beside player `.exe`; the library lands as `sentry-native.dll`. Both
   architectures ship, under `x86/` and `x64/` inside each backend folder, because Unity still
   builds a 32-bit standalone player. `BuildTarget.StandaloneWindows` picks `x86/`.
 - Linux: `libsentry-native.so` under `<Player>_Data/Plugins/<arch>` (`x86_64` or `ARM64`, from the Linux build settings' architecture); native daemon beside executable.
-- macOS: `libsentry-native.dylib` in `.app/Contents/PlugIns`; handler in `.app/Contents/MacOS`. Cocoa's `Sentry.dylib` keeps its name, it is dlopened not P/Invoked.
+- macOS: the binaries are Unity plugins (`Plugins/macOS/Sentry/Sentry.dylib`, `Plugins/macOS/SentryNative/{libsentry-native.dylib,SentryCrash.bundle}`), so Unity places them in `.app/Contents/PlugIns` before it signs the app, and in an Xcode export too. Anything written into the app after the build breaks its signature. `Native/MacOSNativePlugins.cs` sets each importer's include-in-build delegate so only the selected backend ships, and none when native support is off; before the build it removes the other backend's files from an existing app and makes the package's `sentry-crash` executable. Cocoa's `Sentry.dylib` keeps its name, it is dlopened not P/Invoked. dSYMs stay in `Sentry~` and `SentryNative~` for upload.
 - Post-build copies names through unchanged; stale cleanup wipes pre-rename names.
-- Placement is what sentry-native probes by default. `SentryUnityOptions.NativeHandlerPath` overrides it via `handler_path`, for handlers staged somewhere else; sidecars the handler resolves relative to itself, such as `crashpad_wer.dll`, move with it.
+- Windows and Linux placement is what sentry-native probes by default. On macOS `SentryNativeBridge` points `handler_path` at `Contents/PlugIns/SentryCrash.bundle/Contents/MacOS/sentry-crash` (`MacosNativeHandlerPath`). `SentryUnityOptions.NativeHandlerPath` overrides it via `handler_path`, for handlers staged somewhere else; sidecars the handler resolves relative to itself, such as `crashpad_wer.dll`, move with it.
 
 ## Console Plugins
 
@@ -44,4 +44,6 @@ Experimental native modes raise minimum shutdown timeout to 10 seconds.
 ## Tests
 
 - `test/Sentry.Unity.Editor.Tests/Native/BuildPostProcessTests.cs`
+- `test/Sentry.Unity.Editor.Tests/Native/MacOSNativePluginsTests.cs`
+- `test/Sentry.Unity.Tests/MacosNativeHandlerPathTests.cs`
 - Platform integration coverage: `test/Scripts.Integration.Test/`

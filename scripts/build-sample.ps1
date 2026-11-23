@@ -103,7 +103,9 @@ else {
         "build", $projectPath,
         "--target", $Target,
         "--execute-method", "Editor.SampleBuilder.Build",
-        "--output-path", $outputPath
+        "--output-path", $outputPath,
+        # Beside the build: written into a macOS .app, it would break the app's signature.
+        "--provenance-path", (Join-Path $buildDirectory "unity-build.provenance.json")
     )
 
     $run = Invoke-UnityCli -Arguments $arguments

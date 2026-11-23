@@ -95,15 +95,16 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
             return;
         }
 
+        // macOS ships its binaries as plugins, which Unity places in the app before it signs it. See MacOSNativePlugins.
+        if (target == BuildTarget.StandaloneOSX)
+        {
+            return;
+        }
+
         // Setup the actual plugin and crash handler in the build ouput directory
         try
         {
-            if (target == BuildTarget.StandaloneOSX)
-            {
-                // Since the backend can change between iterative builds we need to clean up after ourselves
-                CleanupStaleMacOSArtifacts(logger, executablePath);
-            }
-            else if (target is BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64)
+            if (target is BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64)
             {
                 // Since the backend can change between iterative builds we need to clean up after ourselves
                 CleanupStaleWindowsArtifacts(logger, buildOutputDir);
@@ -114,7 +115,7 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
                 CleanupStaleLinuxArtifacts(logger, buildOutputDir, linuxArch);
             }
 
-            foreach (var artifact in GetNativePluginArtifact(target, options, executablePath, buildOutputDir, linuxArch))
+            foreach (var artifact in GetNativePluginArtifact(target, options, buildOutputDir, linuxArch))
             {
                 _ = Directory.CreateDirectory(Path.GetDirectoryName(artifact.Destination));
                 logger.LogDebug("Copying '{0}' to '{1}'", artifact.Source, artifact.Destination);
@@ -149,7 +150,6 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
     // Only needed to clear stale artifacts; the package already ships these names.
     internal const string WindowsLibraryName = "sentry-native.dll";
     internal const string LinuxLibraryName = "libsentry-native.so";
-    internal const string MacOSLibraryName = "libsentry-native.dylib";
 
     // Windows ships both architectures. Unity still builds a 32-bit standalone player and it cannot
     // load the x64 library, so `native-sdks.targets` writes each backend into an `x86`/`x64` subfolder.
@@ -186,10 +186,8 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
     }
 
     private static IEnumerable<NativePluginArtifact> GetNativePluginArtifact(
-        BuildTarget target, SentryUnityOptions options, string executablePath, string buildOutputDir, string linuxArch)
+        BuildTarget target, SentryUnityOptions options, string buildOutputDir, string linuxArch)
     {
-        var pluginsPath = Path.GetFullPath($"Packages/{SentryPackageInfo.GetName()}/Plugins");
-
         switch (target)
         {
             case BuildTarget.StandaloneWindows:
@@ -213,24 +211,6 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
                     yield return new NativePluginArtifact(
                         file,
                         Path.Combine(buildOutputDir, Path.GetFileName(file)));
-                }
-                break;
-
-            case BuildTarget.StandaloneOSX:
-                var backendSourcePath = options.Experimental.MacosBackend == MacosBackend.Native
-                    ? Path.Combine(pluginsPath, "macOS", "SentryNative~")
-                    : Path.Combine(pluginsPath, "macOS", "Sentry~");
-                var contents = Path.Combine(executablePath, "Contents");
-                foreach (var file in Directory.GetFiles(backendSourcePath))
-                {
-                    var name = Path.GetFileName(file);
-                    var isDylib = name.EndsWith(".dylib", StringComparison.OrdinalIgnoreCase);
-                    // Unity loads dylibs from PlugIns; the crash handler has to be next to the executable.
-                    var desination = Path.Combine(contents, isDylib ? "PlugIns" : "MacOS", name);
-                    yield return new NativePluginArtifact(
-                        file,
-                        desination,
-                        isExecutable: !isDylib);
                 }
                 break;
 
@@ -280,27 +260,6 @@ internal class BuildPostProcess : IPostprocessBuildWithReport
                     break;
                 }
                 throw new ArgumentException($"Unsupported build target: {target}");
-        }
-    }
-
-    // A prior build with the other backend, or an older SDK's pre-rename library, would otherwise
-    // leave a second library behind in PlugIns.
-    private static void CleanupStaleMacOSArtifacts(IDiagnosticLogger logger, string executablePath)
-    {
-        var contents = Path.Combine(executablePath, "Contents");
-        foreach (var stale in new[]
-        {
-            Path.Combine(contents, "PlugIns", "Sentry.dylib"),
-            Path.Combine(contents, "PlugIns", "libsentry.dylib"),
-            Path.Combine(contents, "PlugIns", MacOSLibraryName),
-            Path.Combine(contents, "MacOS", "sentry-crash"),
-        })
-        {
-            if (File.Exists(stale))
-            {
-                logger.LogDebug("Removing stale Sentry artifact from prior build: '{0}'", stale);
-                File.Delete(stale);
-            }
         }
     }
 

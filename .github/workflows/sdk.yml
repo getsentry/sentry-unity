@@ -71,7 +71,7 @@ jobs:
           # hash of package/package.json for cache busting on release builds (version bump)
           path: |
             package-dev/Plugins
-          key: sdk=${{ env.ARTIFACT }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1') }}
+          key: sdk=${{ env.ARTIFACT }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1', 'build/macos/**') }}
 
       - name: Installing Linux Dependencies
         if: ${{ (env.TARGET == 'Linux' || env.TARGET == 'LinuxNative') && steps.cache.outputs.cache-hit != 'true' }}
@@ -121,6 +121,7 @@ jobs:
           name: ${{ env.TARGET }}-sdk
           path: |
             package-dev/Plugins/iOS/SentryObjC.xcframework~
+            package-dev/Plugins/macOS/Sentry
             package-dev/Plugins/macOS/Sentry~
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
@@ -129,7 +130,9 @@ jobs:
         if: ${{ env.TARGET == 'MacOSNative' }}
         with:
           name: ${{ env.TARGET }}-sdk
-          path: package-dev/Plugins/macOS/SentryNative~
+          path: |
+            package-dev/Plugins/macOS/SentryNative
+            package-dev/Plugins/macOS/SentryNative~
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 

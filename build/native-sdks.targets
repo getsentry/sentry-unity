@@ -5,8 +5,14 @@
     <!-- Cocoa -->
     <SentryCocoaRoot>$(RepoRoot)modules/sentry-cocoa/</SentryCocoaRoot>
     <SentryiOSArtifactsDestination>$(SentryArtifactsDestination)iOS/SentryObjC.xcframework~/</SentryiOSArtifactsDestination>
-    <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)macOS/Sentry~/</SentrymacOSArtifactsDestination>
-    <SentryMacOSNativeArtifactsDestination>$(SentryArtifactsDestination)macOS/SentryNative~/</SentryMacOSNativeArtifactsDestination>
+    <!-- macOS binaries are Unity plugins, so Unity places them in the app before it signs it.
+         Debug symbols stay in the `~` folders, which Unity doesn't import. -->
+    <SentrymacOSArtifactsDestination>$(SentryArtifactsDestination)macOS/Sentry/</SentrymacOSArtifactsDestination>
+    <SentrymacOSSymbolsDestination>$(SentryArtifactsDestination)macOS/Sentry~/</SentrymacOSSymbolsDestination>
+    <SentryMacOSNativeArtifactsDestination>$(SentryArtifactsDestination)macOS/SentryNative/</SentryMacOSNativeArtifactsDestination>
+    <SentryMacOSNativeSymbolsDestination>$(SentryArtifactsDestination)macOS/SentryNative~/</SentryMacOSNativeSymbolsDestination>
+    <!-- The native backend's crash daemon ships as a bundle, so it is signed and placed like any other plugin. -->
+    <SentryMacOSCrashBundle>$(SentryMacOSNativeArtifactsDestination)SentryCrash.bundle</SentryMacOSCrashBundle>
 
     <!-- Android -->
     <SentryAndroidRoot>$(RepoRoot)modules/sentry-java/</SentryAndroidRoot>
@@ -40,10 +46,16 @@
 
     <Message Importance="High" Text="Building Cocoa SDK from submodule." />
 
-    <Exec Command="pwsh &quot;$(RepoRoot)scripts/build-cocoa-sdk.ps1&quot; -CocoaRoot &quot;$(SentryCocoaRoot)&quot; -iOSDestination &quot;$(SentryiOSArtifactsDestination)&quot; -macOSDestination &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot;" />
+    <!-- Wipe prior macOS outputs, including the dylib's old place next to its dSYM -->
+    <Delete Files="$(SentrymacOSArtifactsDestination)Sentry.dylib;$(SentrymacOSSymbolsDestination)Sentry.dylib;$(SentrymacOSSymbolsDestination)Sentry.dylib.dSYM" ContinueOnError="true" />
+
+    <Exec Command="pwsh &quot;$(RepoRoot)scripts/build-cocoa-sdk.ps1&quot; -CocoaRoot &quot;$(SentryCocoaRoot)&quot; -iOSDestination &quot;$(SentryiOSArtifactsDestination)&quot; -macOSDestination &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot; -macOSdSYMDestination &quot;$(SentrymacOSSymbolsDestination)Sentry.dylib.dSYM&quot;" />
+
+    <!-- Ad-hoc sign every architecture slice, so the player's signature stays valid on any Mac -->
+    <Exec Command="codesign --force --sign - &quot;$(SentrymacOSArtifactsDestination)Sentry.dylib&quot;" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
 
     <Error Condition="!Exists('$(SentryiOSArtifactsDestination)')" Text="Failed to set up the iOS SDK." />
-    <Error Condition="!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib.dSYM')" Text="Failed to set up the macOS SDK." />
+    <Error Condition="!Exists('$(SentrymacOSArtifactsDestination)Sentry.dylib') Or !Exists('$(SentrymacOSSymbolsDestination)Sentry.dylib.dSYM')" Text="Failed to set up the macOS SDK." />
   </Target>
 
   <!--
@@ -206,9 +218,10 @@
   <!--
     Build the Sentry Native SDK for macOS:
         dotnet msbuild /t:BuildMacOSNativeSDK src/Sentry.Unity
-    Always wipes prior outputs and rebuilds. Produces a universal
-    (x86_64 + arm64) dylib and the sentry-crash out-of-process handler.
-    Debug symbols are extracted into .dSYM bundles; binaries are then stripped.
+    Always wipes prior outputs and rebuilds. Produces a universal (x86_64 + arm64)
+    libsentry-native.dylib and SentryCrash.bundle holding the sentry-crash daemon, both Unity plugins.
+    Debug symbols are extracted into .dSYM bundles in SentryNative~; the shipped binaries are
+    stripped and then ad-hoc signed.
   -->
   <Target Name="BuildMacOSNativeSDK" Condition="'$(MSBuildProjectName)' == 'Sentry.Unity'">
     <Error Condition="!$([MSBuild]::IsOSPlatform('OSX'))" Text="BuildMacOSNativeSDK can only run on macOS." />
@@ -216,35 +229,33 @@
 
     <Message Importance="High" Text="Building Sentry Native SDK for macOS (clean rebuild)." />
 
-    <!-- Wipe prior outputs -->
-    <RemoveDir Directories="$(SentryNativeRoot)build_macos" ContinueOnError="true" />
-    <Delete Files="$(SentryMacOSNativeArtifactsDestination)libsentry.dylib" ContinueOnError="true" />
+    <!-- Wipe prior outputs. The plugin folder keeps its committed .meta files. -->
+    <RemoveDir Directories="$(SentryNativeRoot)build_macos;$(SentryMacOSNativeSymbolsDestination);$(SentryMacOSCrashBundle)" ContinueOnError="true" />
     <Delete Files="$(SentryMacOSNativeArtifactsDestination)$(SentryMacOSLibraryName)" ContinueOnError="true" />
-    <Delete Files="$(SentryMacOSNativeArtifactsDestination)sentry-crash" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryMacOSNativeArtifactsDestination)libsentry.dylib.dSYM" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryMacOSNativeArtifactsDestination)$(SentryMacOSLibraryName).dSYM" ContinueOnError="true" />
-    <RemoveDir Directories="$(SentryMacOSNativeArtifactsDestination)sentry-crash.dSYM" ContinueOnError="true" />
 
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake -B build_macos -D SENTRY_BACKEND=native -D SENTRY_SDK_NAME=sentry.native.unity -D SENTRY_BUILD_SHARED_LIBS=ON -D &quot;CMAKE_OSX_ARCHITECTURES=x86_64;arm64&quot; -D CMAKE_OSX_DEPLOYMENT_TARGET=10.15 -D CMAKE_BUILD_TYPE=RelWithDebInfo -S ." />
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build_macos --target sentry --config RelWithDebInfo --parallel" />
     <Exec WorkingDirectory="$(SentryNativeRoot)" Command="cmake --build build_macos --target sentry-crash --config RelWithDebInfo --parallel" />
 
-    <MakeDir Directories="$(SentryMacOSNativeArtifactsDestination)" />
+    <MakeDir Directories="$(SentryMacOSNativeArtifactsDestination);$(SentryMacOSNativeSymbolsDestination);$(SentryMacOSCrashBundle)/Contents/MacOS" />
 
-    <ItemGroup>
-      <MacOSNativeSdkArtifacts Include="$(SentryNativeRoot)build_macos/sentry-crash" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(MacOSNativeSdkArtifacts)" DestinationFolder="$(SentryMacOSNativeArtifactsDestination)" />
     <Copy SourceFiles="$(SentryNativeRoot)build_macos/libsentry.dylib" DestinationFiles="$(SentryMacOSNativeArtifactsDestination)$(SentryMacOSLibraryName)" />
+    <Copy SourceFiles="$(SentryNativeRoot)build_macos/sentry-crash" DestinationFiles="$(SentryMacOSCrashBundle)/Contents/MacOS/sentry-crash" />
+    <Copy SourceFiles="$(RepoRoot)build/macos/SentryCrash-Info.plist" DestinationFiles="$(SentryMacOSCrashBundle)/Contents/Info.plist" />
 
     <!-- Generate dSYMs for symbol upload, then strip debug info from the shipped binaries -->
-    <Exec Command="dsymutil $(SentryMacOSNativeArtifactsDestination)$(SentryMacOSLibraryName) -o $(SentryMacOSNativeArtifactsDestination)$(SentryMacOSLibraryName).dSYM" />
-    <Exec Command="dsymutil $(SentryMacOSNativeArtifactsDestination)sentry-crash -o $(SentryMacOSNativeArtifactsDestination)sentry-crash.dSYM" />
-    <Exec Command="strip -x $(SentryMacOSNativeArtifactsDestination)$(SentryMacOSLibraryName)" />
-    <Exec Command="strip -x $(SentryMacOSNativeArtifactsDestination)sentry-crash" />
+    <Exec Command="dsymutil &quot;$(SentryMacOSNativeArtifactsDestination)$(SentryMacOSLibraryName)&quot; -o &quot;$(SentryMacOSNativeSymbolsDestination)$(SentryMacOSLibraryName).dSYM&quot;" />
+    <Exec Command="dsymutil &quot;$(SentryMacOSCrashBundle)/Contents/MacOS/sentry-crash&quot; -o &quot;$(SentryMacOSNativeSymbolsDestination)sentry-crash.dSYM&quot;" />
+    <Exec Command="strip -x &quot;$(SentryMacOSNativeArtifactsDestination)$(SentryMacOSLibraryName)&quot;" />
+    <Exec Command="strip -x &quot;$(SentryMacOSCrashBundle)/Contents/MacOS/sentry-crash&quot;" />
+    <Exec Command="chmod +x &quot;$(SentryMacOSCrashBundle)/Contents/MacOS/sentry-crash&quot;" />
+
+    <!-- Ad-hoc sign every architecture slice, so the player's signature stays valid on any Mac -->
+    <Exec Command="codesign --force --sign - &quot;$(SentryMacOSNativeArtifactsDestination)$(SentryMacOSLibraryName)&quot;" />
+    <Exec Command="codesign --force --sign - &quot;$(SentryMacOSCrashBundle)&quot;" />
 
     <Error Condition="!Exists('$(SentryMacOSNativeArtifactsDestination)$(SentryMacOSLibraryName)')" Text="Failed to set up the macOS Native SDK." />
+    <Error Condition="!Exists('$(SentryMacOSCrashBundle)/Contents/MacOS/sentry-crash')" Text="Failed to set up the macOS Native SDK crash daemon." />
   </Target>
 
   <!--

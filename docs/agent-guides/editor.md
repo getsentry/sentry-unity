@@ -12,7 +12,7 @@
 - Editor platform setup only establishes `SentryPlatformServices.UnityInfo` on domain reload/build. It does not configure player native SDKs.
 - IL2CPP preprocessing adds `--emit-source-mapping`; line-number support also needs debug-symbol upload configuration.
 - Performance auto-instrumentation is opt-in post-build IL rewriting. It only instruments types whose direct base type is `MonoBehaviour`, around `Awake` returns.
-- Generic native post-build uploads symbols before copying artifacts; copy failures raise `BuildFailedException`.
+- Generic native post-build uploads symbols before copying artifacts; copy failures raise `BuildFailedException`. macOS ships its binaries as plugins instead (`Native/MacOSNativePlugins.cs`), so nothing is copied into the signed app.
 - WebGL preprocessing fails with exception support `None` and warns unless `FullWithStacktrace`.
 - Android export processing implements `IPostGenerateGradleAndroidProject`; callback order is configurable by `PostGenerateGradleProjectCallbackOrder`.
 

@@ -106,7 +106,25 @@ internal static class SentryNativeBridge
 #if !SENTRY_NATIVE_SWITCH
         // Left unset, sentry-native looks for the handler next to the running executable.
         // Switch does not run an out-of-process handler, so the option does not apply there.
-        if (options.NativeHandlerPath is { } handlerPath && !string.IsNullOrWhiteSpace(handlerPath))
+        var handlerPath = options.NativeHandlerPath;
+        if (string.IsNullOrWhiteSpace(handlerPath)
+            && Application.platform is RuntimePlatform.OSXPlayer or RuntimePlatform.OSXServer)
+        {
+            // macOS ships the handler in SentryCrash.bundle, so the app's signature covers it.
+#pragma warning disable SN0001 // Checks the app's own bundle, not files the SDK writes
+            handlerPath = MacosNativeHandlerPath.Resolve(Application.dataPath, File.Exists, out var expected);
+#pragma warning restore SN0001
+            if (handlerPath is null)
+            {
+                Logger?.LogWarning("Could not find sentry-crash at '{0}'. The build is missing SentryCrash.bundle.", expected);
+            }
+            else
+            {
+                Logger?.LogDebug("Using sentry-crash at '{0}'", handlerPath);
+            }
+        }
+
+        if (handlerPath is not null && !string.IsNullOrWhiteSpace(handlerPath))
         {
             if (IsWindows)
             {

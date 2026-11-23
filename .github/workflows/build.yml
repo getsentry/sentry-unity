@@ -8,6 +8,13 @@ on:
     secrets:
       UNITY_LICENSE_SERVER_CONFIG:
         required: true
+      # Sign and notarize the macOS binaries on release branches
+      APPLE_CERT_DATA:
+        required: false
+      APPLE_CERT_PASSWORD:
+        required: false
+      APPLE_API_KEY:
+        required: false
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -99,7 +106,7 @@ jobs:
         uses: ./.github/actions/wait-for-artifact
         with:
           name: MacOSNative-sdk
-          path: package-dev/Plugins/macOS/SentryNative~
+          path: package-dev/Plugins/macOS
 
       - name: Download Linux SDK
         uses: ./.github/actions/wait-for-artifact
@@ -136,6 +143,69 @@ jobs:
         with:
           name: WindowsNative-sdk
           path: package-dev/Plugins/Windows/SentryNative~
+
+      # Unity copies the macOS plugins into the app and signs it with the user's identity, keeping nested signatures.
+      # The release package ships them signed with Sentry's Developer ID and notarized.
+      - name: Sign and notarize macOS binaries
+        if: startsWith(github.ref, 'refs/heads/release/')
+        shell: bash
+        env:
+          APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          CODESIGN_VERSION: 0.29.0
+          CODESIGN_CHECKSUM: dbe85cedd8ee4217b64e9a0e4c2aef92ab8bcaaa41f20bde99781ff02e600002
+        run: |
+          set -euo pipefail
+
+          missing=0
+          for name in APPLE_CERT_DATA APPLE_CERT_PASSWORD APPLE_API_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::warning title=macOS binaries not signed::Secret $name is not set. Add it to the repository's Actions secrets to sign and notarize the macOS binaries."
+              missing=1
+            fi
+          done
+          if [ "$missing" = 1 ]; then
+            exit 0
+          fi
+
+          echo "$APPLE_CERT_DATA" | base64 --decode > /tmp/certs.p12
+          printf '%s' "$APPLE_CERT_PASSWORD" > /tmp/certs.password
+          echo "$APPLE_API_KEY" | base64 --decode > /tmp/apple_key.json
+
+          curl -fsSL "https://github.com/indygreg/apple-platform-rs/releases/download/apple-codesign/${CODESIGN_VERSION}/apple-codesign-${CODESIGN_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+            -o /tmp/rcodesign.tar.gz
+          echo "${CODESIGN_CHECKSUM}  /tmp/rcodesign.tar.gz" | sha256sum -c -
+          tar -xz --strip-components=1 -C /tmp -f /tmp/rcodesign.tar.gz
+          sudo mv /tmp/rcodesign /usr/local/bin/rcodesign
+
+          cd package-dev/Plugins/macOS
+          binaries=(Sentry/Sentry.dylib SentryNative/libsentry-native.dylib SentryNative/SentryCrash.bundle)
+          for binary in "${binaries[@]}"; do
+            rcodesign sign --for-notarization \
+              --p12-file /tmp/certs.p12 --p12-password-file /tmp/certs.password \
+              "$binary"
+          done
+          # rcodesign verifies Mach-O files only, so the bundle is checked through its executable.
+          # The signature info lists every architecture slice.
+          for binary in Sentry/Sentry.dylib SentryNative/libsentry-native.dylib SentryNative/SentryCrash.bundle/Contents/MacOS/sentry-crash; do
+            rcodesign verify "$binary"
+            rcodesign print-signature-info "$binary"
+          done
+
+          zip -qr /tmp/sentry-macos.zip "${binaries[@]}"
+          rcodesign notary-submit --wait --api-key-file /tmp/apple_key.json /tmp/sentry-macos.zip 2>&1 | tee /tmp/notary.log
+          if ! grep -q "Accepted" /tmp/notary.log; then
+            echo "::error title=Notarization failed::Apple did not accept the macOS binaries. See the notary log above."
+            exit 1
+          fi
+
+          rm -f /tmp/certs.p12 /tmp/certs.password /tmp/apple_key.json /tmp/sentry-macos.zip
+
+      # Artifact downloads don't keep the execute bit. The mode isn't part of the signature.
+      - name: Make the macOS crash handler executable
+        shell: bash
+        run: chmod +x package-dev/Plugins/macOS/SentryNative/SentryCrash.bundle/Contents/MacOS/sentry-crash
 
       - name: Build Sentry.Unity Solution
         run: docker exec unity dotnet build -c Release -v:d

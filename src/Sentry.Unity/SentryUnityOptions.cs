@@ -348,7 +348,8 @@ public sealed class SentryUnityOptions : SentryOptions
     public int PostGenerateGradleProjectCallbackOrder { get; set; } = 1;
 
     /// <summary>
-    /// Path to the native crash handler executable. Defaults to next to the player executable.
+    /// Path to the native crash handler executable. Defaults to next to the player executable on Windows and Linux,
+    /// and to <c>Contents/PlugIns/SentryCrash.bundle/Contents/MacOS/sentry-crash</c> in the app on macOS.
     /// Applies to Windows, Linux, and macOS with <see cref="MacosBackend.Native"/>.
     /// </summary>
     public string? NativeHandlerPath { get; set; }
