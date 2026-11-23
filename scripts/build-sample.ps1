@@ -95,8 +95,14 @@ function Wait-ForUnityPipelineBuild([string] $projectPath, [int] $timeoutSeconds
 }
 
 function Set-SampleIosSdk([string] $projectPath, [string] $sdk) {
-    $result = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "script eval" -CommandArguments @("--code", "return Editor.SampleBuilder.SetIosSdk(`"$sdk`");")
-    return "$result"
+    # Returns the SDK it replaced, as SampleBuilder.SetIosSdk does.
+    $evaluated = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "script eval" -CommandArguments @("--code", "return Editor.SampleBuilder.SetIosSdk(`"$sdk`");")
+    # script eval answers with the code's output and diagnostics, and its return value in result.
+    $previous = if ($evaluated.PSObject.Properties["result"]) { $evaluated.result } else { $evaluated }
+    if ("$previous" -notin @("Device", "Simulator")) {
+        throw "Setting the iOS SDK in the open Editor returned '$previous'. Close the Editor and rerun, to build in batch mode."
+    }
+    return "$previous"
 }
 
 function Start-UnityPipelineBuild([string] $projectPath) {

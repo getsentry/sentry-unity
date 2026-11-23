@@ -451,8 +451,9 @@ function Get-EventSummary($sentryEvent) {
 # Finds the run's error and message events, with their full payloads.
 function Find-RunEvents([string] $runId) {
     Set-StrictMode -Version 1
-    $found = Get-SentryEventsByTag -TagName "sample.run_id" -TagValue $runId -Limit 10
-    return @($found | Where-Object { $_ } | ForEach-Object { Get-SentryEvent -EventId $_.eventID })
+    # Through the issues the tag matches: the project's event list doesn't filter by tag.
+    $found = Find-SentryEventByTag -TagName "sample.run_id" -TagValue $runId -Limit 10
+    return @($found | Where-Object { $_ })
 }
 
 function Find-RunTransactions([string] $runId) {
@@ -627,6 +628,20 @@ function Get-AndroidActivity([string] $package) {
 function Build-Android {
     & pwsh (Join-Path $PSScriptRoot "build-sample.ps1") -Target Android
     if ($LASTEXITCODE -ne 0) { throw "The Android build failed." }
+
+    # The Gradle task sentryUploadDebugFiles prints sentry-cli's summary into Gradle's build log.
+    $gradleLog = Join-Path $projectPath "Library/Bee/Android/Prj/IL2CPP/Gradle/launcher/build/outputs/logs/unity-assembleRelease-build.log"
+    $upload = @(if (Test-Path $gradleLog) {
+            Get-Content $gradleLog | Where-Object { $_ -match '^(> Task :launcher:sentryUploadDebugFiles|> (Found|Resolved|Prepared|Uploaded|File upload|Nothing)|  UPLOADED|  OK)' }
+        })
+    if ($upload.Count -gt 0) {
+        Write-Host "Debug symbol upload ($gradleLog):"
+        $upload | ForEach-Object { Write-Host $_ }
+    }
+    else {
+        Write-Warning "No debug symbols were uploaded: set SENTRY_AUTH_TOKEN and rerun with -Build."
+    }
+
     $apk = Join-Path $projectPath "Builds/Android/unity-of-bugs-local.apk"
     Write-Host "Installing $apk on $script:DeviceId"
     Invoke-Adb install -r $apk | Out-Host
@@ -757,8 +772,15 @@ function Build-Ios {
         Get-Content $log -Tail 40 | Out-Host
         throw "xcodebuild failed with exit code $LASTEXITCODE. See $log."
     }
-    # The build phase that uploads debug symbols prints sentry-cli's output.
-    Select-String -Path $log -Pattern "sentry-cli|Uploaded|debug information files" | Select-Object -First 20 | ForEach-Object { Write-Host $_.Line }
+    # The build phase that uploads debug symbols writes sentry-cli's output next to the Xcode project.
+    $uploadLog = Join-Path $projectPath "Builds/iOS/sentry-symbols-upload.log"
+    if (Test-Path $uploadLog) {
+        Write-Host "Debug symbol upload ($uploadLog):"
+        Get-Content $uploadLog | Where-Object { $_ -match '^(> |  UPLOADED|  OK|error)' } | ForEach-Object { Write-Host $_ }
+    }
+    else {
+        Write-Warning "No debug symbols were uploaded: set SENTRY_AUTH_TOKEN and rerun with -Build."
+    }
 
     $app = Get-IosAppPath
     if (-not $app) { throw "xcodebuild produced no .app under $derived." }
