@@ -6,9 +6,9 @@ extern "C" {
 void crash_in_cpp()
 {
     // volatile: a plain null write is undefined behaviour, which the optimizer may drop, running on into the
-    // function after this one.
+    // function after this one. A different write from crash_in_c's, so the linker doesn't fold the two into one.
     volatile char *ptr = 0;
-    *ptr += 1;
+    *ptr += 2;
 }
 }
 
