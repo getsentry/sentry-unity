@@ -82,6 +82,14 @@ public partial class SentryMonoBehaviour
             // main thread longer than the hang timeout and would cause false positives.
             // This also works in batchmode/headless (e.g. LinuxServer), unlike WaitForEndOfFrame.
             yield return null;
+            // The game can lose focus before its first frame, e.g. when the player switches away during the first
+            // scene load. The first heartbeat also resumes a paused detector, so arming now would make it report the
+            // paused main thread as a hang. Arm once the game is running again.
+            while (!_isRunning)
+            {
+                yield return null;
+            }
+
             heartbeat();
             _appHangArmed = true;
         }
