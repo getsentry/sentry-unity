@@ -1,19 +1,22 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Spins a small cube in the top-right corner of every scene, so screenshots, session replays and frame timings
-// always show motion. Each scene's Main Camera draws it behind the button overlay, lit by a light of its own.
+// Spins a small cube in the header's top-right corner of every scene, so screenshots, session replays and frame
+// timings always show motion. Each scene's Main Camera draws it, lit by a light of its own.
 public class SpinningCube : MonoBehaviour
 {
     // A layer of its own, so the cube's light shades nothing else.
     private const int CubeLayer = 31;
 
-    // The scenes' header is 75 units tall on a canvas scaled to a 480 units high screen.
-    private const float HeaderBottom = 1f - 75f / 480f;
+    // The scenes' canvas is scaled to a 480 units high screen. Its header is the top 75 units, with the title centred
+    // in it: the cube goes in the space right of the title, where no UI is drawn on any screen shape.
+    private const float CanvasHeight = 480f;
+    private const float HeaderHeight = 75f;
+    private const float TitleHalfWidth = 64f;
+    private const float Margin = 4f;
 
-    // Share of the screen width the spinning cube takes up, and its distance from the right edge and the header.
-    private const float WidthShare = 0.2f;
-    private const float Margin = 0.02f;
+    // The most of the screen width the spinning cube takes up, on wide screens.
+    private const float MaxWidthShare = 0.2f;
 
     private static readonly Vector3 DegreesPerSecond = new Vector3(30f, 60f, 15f);
 
@@ -82,23 +85,35 @@ public class SpinningCube : MonoBehaviour
 
         _renderer.enabled = true;
 
+        // The free space in the header, in pixels: right of the title, inside the safe area (notches, rounded corners).
+        var width = (float)mainCamera.pixelWidth;
+        var height = (float)mainCamera.pixelHeight;
+        var unit = height / CanvasHeight;
+        var safeArea = Screen.safeArea;
+        var left = width * 0.5f + (TitleHalfWidth + Margin) * unit;
+        var right = Mathf.Min(width, safeArea.xMax) - Margin * unit;
+        var top = Mathf.Min(height, safeArea.yMax) - Margin * unit;
+        var bottom = height - (HeaderHeight - Margin) * unit;
+
+        // The square the spinning cube fills: as big as the space allows, up to a share of the screen width.
+        var box = Mathf.Min(Mathf.Min(right - left, top - bottom), MaxWidthShare * width);
+        if (box <= 0f)
+        {
+            _renderer.enabled = false;
+            return;
+        }
+
         // Well inside the clip planes, so the spinning corners never cross the near plane.
         var depth = mainCamera.nearClipPlane + 5f;
         var visibleWidth = mainCamera.orthographic
             ? 2f * mainCamera.orthographicSize * mainCamera.aspect
             : 2f * depth * Mathf.Tan(mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) * mainCamera.aspect;
 
-        // The cube's space diagonal is its widest silhouette while it spins: keep that within the share.
-        var box = WidthShare * visibleWidth;
-        _cube.localScale = Vector3.one * (box / Mathf.Sqrt(3f));
+        // The cube's space diagonal is its widest silhouette while it spins: keep that within the square.
+        _cube.localScale = Vector3.one * (box / width * visibleWidth / Mathf.Sqrt(3f));
 
-        // The box's half extent in viewport units: horizontally a share of the width, vertically scaled by the aspect.
-        var halfWidth = WidthShare * 0.5f;
-        var halfHeight = halfWidth * mainCamera.aspect;
-        var viewport = new Vector3(
-            1f - Margin - halfWidth,
-            HeaderBottom - Margin * mainCamera.aspect - halfHeight,
-            depth);
-        _cube.position = mainCamera.ViewportToWorldPoint(viewport);
+        // Against the right edge of the space, centred in it vertically.
+        var centre = new Vector3(right - box * 0.5f, (top + bottom) * 0.5f, depth);
+        _cube.position = mainCamera.ScreenToWorldPoint(centre);
     }
 }
