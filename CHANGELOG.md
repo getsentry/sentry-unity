@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- App hang detection no longer reports a false app hang when the game loses focus before its first frame, for example when the player switches away during the first scene load. Detection now arms once the game runs. ([#2952](https://github.com/getsentry/sentry-unity/pull/2952))
+
 ## 4.13.0
 
 ### Behavioral Changes
