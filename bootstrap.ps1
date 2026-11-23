@@ -133,14 +133,11 @@ else {
 }
 
 $sentryAssemblyMeta = Join-Path $repoRoot "package-dev/Runtime/Sentry.Unity.dll.meta"
-if (-not $Env:SENTRY_AUTH_TOKEN) {
-    Add-Result -Status "SKIP" -Name "Sentry CLI auth" -Detail "SENTRY_AUTH_TOKEN is not set." -Fix "Set SENTRY_AUTH_TOKEN, then rerun: pwsh bootstrap.ps1"
-}
-elseif (-not (Test-Path $sentryAssemblyMeta)) {
-    Add-Result -Status "WARN" -Name "Sentry CLI auth" -Detail "Managed SDK build output is unavailable." -Fix "Run: dotnet build, then rerun: pwsh bootstrap.ps1"
+if (-not (Test-Path $sentryAssemblyMeta)) {
+    Add-Result -Status "WARN" -Name "Sentry CLI options" -Detail "Managed SDK build output is unavailable." -Fix "Run: dotnet build, then rerun: pwsh bootstrap.ps1"
 }
 else {
-    Invoke-Stage -Name "Sentry CLI auth" -Action { & (Join-Path $repoRoot "scripts/samples-setup-cli-options.ps1") } -FailureStatus "WARN" -Fix "Confirm SENTRY_AUTH_TOKEN is valid, then rerun: pwsh bootstrap.ps1"
+    Invoke-Stage -Name "Sentry CLI options" -Action { & (Join-Path $repoRoot "scripts/samples-setup-cli-options.ps1") } -FailureStatus "WARN" -Fix "Rerun: pwsh bootstrap.ps1"
 }
 
 $localAssets = Join-Path $repoRoot "samples/unity-of-bugs-local/Assets"

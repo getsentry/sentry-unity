@@ -1,6 +1,7 @@
 Set-StrictMode -Version latest
 $ErrorActionPreference = "Stop"
 
+# The auth token isn't stored here: SentryCliConfiguration reads SENTRY_AUTH_TOKEN from the environment at build time.
 Write-Output "Creating Sentry CLI Options"
 
 $meta_path = "$PSScriptRoot/../package-dev/Runtime/Sentry.Unity.dll.meta"
@@ -35,7 +36,7 @@ MonoBehaviour:
   <UploadDevelopmentSymbols>k__BackingField: 0
   <UploadSources>k__BackingField: 1
   <UrlOverride>k__BackingField: 
-  <Auth>k__BackingField: $Env:SENTRY_AUTH_TOKEN
+  <Auth>k__BackingField: 
   <Organization>k__BackingField: sentry-sdks
   <Project>k__BackingField: sentry-unity
   <IgnoreCliErrors>k__BackingField: 0

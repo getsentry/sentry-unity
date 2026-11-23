@@ -37,7 +37,9 @@ Run the bootstrap script to initialize submodules, restore workloads, download p
 pwsh bootstrap.ps1
 ```
 
-Bootstrap continues after recoverable failures and prints the command needed to retry each step. Set `APPLE_ID` to configure Apple signing and `SENTRY_AUTH_TOKEN` to configure CLI symbol upload before running it.
+Bootstrap continues after recoverable failures and prints the command needed to retry each step. Set `APPLE_ID` to configure Apple signing before running it.
+
+Debug symbol upload from the sample reads `SENTRY_AUTH_TOKEN` from the environment; the token is not stored in the project. Set it in the shell that builds the sample or launches the Editor (`unity open`, `scripts/build-sample.ps1`): an Editor started from Unity Hub doesn't see it, and builds then skip the upload. A build writes the token into its own `sentry.properties`, which git ignores.
 
 ### 3. Build Changes
 

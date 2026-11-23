@@ -30,7 +30,8 @@ pwsh bootstrap.ps1
 
 - Checks for Git, .NET, GitHub CLI, and Unity CLI before initializing submodules, restoring workloads, downloading missing native artifacts and Sentry CLI, building the managed SDK, and configuring samples when matching environment variables are available.
 - Continues past recoverable failures and prints remediation for each stage.
-- `APPLE_ID` configures both sample projects' Apple Developer Team ID. `SENTRY_AUTH_TOKEN` configures shared Sentry CLI options.
+- `APPLE_ID` configures both sample projects' Apple Developer Team ID.
+- The sample's symbol upload reads `SENTRY_AUTH_TOKEN` from the environment at build time; it is not stored in the project. Set it in the shell that builds or launches the Editor (`unity open`, `scripts/build-sample.ps1`), not Unity Hub, which starts the Editor without it. The token lands in the build's gitignored `sentry.properties`.
 
 ## Prebuilt Native SDKs
 
