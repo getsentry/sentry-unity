@@ -9,6 +9,8 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
+# CMake output of the Android Gradle build
+/.utmp/
 
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data

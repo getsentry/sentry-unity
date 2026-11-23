@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Sentry.Unity.Samples
@@ -56,7 +57,8 @@ namespace Sentry.Unity.Samples
         public void Run(SampleEntry entry) => StartCoroutine(RunRoutine(entry));
 
         /// <summary>
-        /// Runs the sample the <c>sample</c> launch argument names, once per launch, then quits.
+        /// Runs the samples the <c>sample</c> launch argument names, once per launch, then quits. The argument holds
+        /// one ID, or several separated by commas that run in turn (<c>context/set-user,errors/capture-message</c>).
         /// Without the argument, nothing happens and the app stays open.
         /// </summary>
         public void RunFromLaunchArguments()
@@ -68,16 +70,16 @@ namespace Sentry.Unity.Samples
 
             _launchArgumentsRead = true;
 
-            var id = LaunchArguments.Get(LaunchArguments.Sample);
-            if (id == null)
+            var ids = LaunchArguments.Get(LaunchArguments.Sample);
+            if (ids == null)
             {
                 return;
             }
 
-            StartCoroutine(RunFromLaunchArguments(id, LaunchArguments.Get(LaunchArguments.RunId)));
+            StartCoroutine(RunFromLaunchArguments(ids, LaunchArguments.Get(LaunchArguments.RunId)));
         }
 
-        private IEnumerator RunFromLaunchArguments(string id, string runId)
+        private IEnumerator RunFromLaunchArguments(string ids, string runId)
         {
             foreach (var sample in SampleCatalogue.All)
             {
@@ -93,33 +95,44 @@ namespace Sentry.Unity.Samples
             // Scope sync to the native layer happens on a background thread on some platforms (Android JNI)
             yield return new WaitForSeconds(0.5f);
 
-            var entry = SampleCatalogue.Find(id);
-            string refusal = null;
-            if (entry == null)
+            // Every ID is checked before the first runs, so a typo in the last doesn't leave the first half-done.
+            var entries = new List<SampleEntry>();
+            foreach (var part in ids.Split(','))
             {
-                refusal = $"Unknown sample '{id}'";
-            }
-            else if (entry.ManualOnly)
-            {
-                refusal = $"Sample '{id}' needs a tap: run it from the menu";
-            }
-            else if (entry.UnmetReason != null)
-            {
-                refusal = $"Sample '{id}' can't run here: {entry.UnmetReason}";
+                var id = part.Trim();
+                var entry = SampleCatalogue.Find(id);
+                string refusal = null;
+                if (entry == null)
+                {
+                    refusal = $"Unknown sample '{id}'";
+                }
+                else if (entry.ManualOnly)
+                {
+                    refusal = $"Sample '{id}' needs a tap: run it from the menu";
+                }
+                else if (entry.UnmetReason != null)
+                {
+                    refusal = $"Sample '{id}' can't run here: {entry.UnmetReason}";
+                }
+
+                if (refusal != null)
+                {
+                    Debug.LogWarning(refusal);
+                    SetStatus(refusal);
+                    yield break;
+                }
+
+                entries.Add(entry);
             }
 
-            if (refusal != null)
+            foreach (var entry in entries)
             {
-                Debug.LogWarning(refusal);
-                SetStatus(refusal);
-                yield break;
+                Debug.Log($"Running sample from the launch arguments: {entry.Id}");
+                yield return RunRoutine(entry);
             }
-
-            Debug.Log($"Running sample from the launch arguments: {id}");
-            yield return RunRoutine(entry);
 
             // Only samples that don't end the app get here.
-            Debug.Log($"Sample finished: {id}. Flushing and quitting.");
+            Debug.Log($"Sample finished: {ids}. Flushing and quitting.");
             SentrySdk.Flush(TimeSpan.FromSeconds(5));
             Application.Quit(0);
         }

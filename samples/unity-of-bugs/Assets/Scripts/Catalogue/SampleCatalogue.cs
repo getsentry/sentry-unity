@@ -670,10 +670,17 @@ namespace Sentry.Unity.Samples
         // Scenes
         // ------------------------------------------------------------------------------------------------------------
 
-        private static void LoadExtraScene(LoadSceneMode mode)
+        // Each returns once the scene is loaded and the frame after it, when the SDK finishes the scene's transaction.
+        private static IEnumerator LoadExtraScene(LoadSceneMode mode)
         {
             ExtraScene.LoadedAdditively = mode == LoadSceneMode.Additive;
             SceneManager.LoadScene(ExtraScene.Name, mode);
+            while (!SceneManager.GetSceneByName(ExtraScene.Name).isLoaded)
+            {
+                yield return null;
+            }
+
+            yield return null;
             SampleRunner.Report($"Loaded {ExtraScene.Name} ({mode})");
         }
 
@@ -681,6 +688,7 @@ namespace Sentry.Unity.Samples
         {
             ExtraScene.LoadedAdditively = false;
             yield return SceneManager.LoadSceneAsync(ExtraScene.Name);
+            yield return null;
             SampleRunner.Report($"Loaded {ExtraScene.Name} asynchronously");
         }
 

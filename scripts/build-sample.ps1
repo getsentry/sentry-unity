@@ -5,12 +5,21 @@
 .DESCRIPTION
     Uses an open Unity Pipeline Editor when available. Otherwise, Unity CLI
     launches a batch-mode Editor to run the sample builder.
+
+    The iOS build is an Xcode project in Builds/iOS. -IosSdk picks whether it
+    builds for a phone (Device, the default) or the iOS Simulator.
+
+.EXAMPLE
+    pwsh scripts/build-sample.ps1 -Target iOS -IosSdk Simulator
 #>
 
 param(
     [Parameter(Mandatory)]
     [ValidateSet("StandaloneWindows64", "StandaloneOSX", "StandaloneLinux64", "Android", "iOS", "WebGL")]
-    [string] $Target
+    [string] $Target,
+
+    [ValidateSet("Device", "Simulator")]
+    [string] $IosSdk = "Device"
 )
 
 Set-StrictMode -Version latest
@@ -85,9 +94,12 @@ function Wait-ForUnityPipelineBuild([string] $projectPath, [int] $timeoutSeconds
     throw "Unity Pipeline build did not finish within $timeoutSeconds seconds."
 }
 
-$executionMode = Get-UnityExecutionMode -ProjectPath $projectPath
-if ($executionMode -eq "Pipeline") {
-    Prepare-UnityPipelineEditor -ProjectPath $projectPath -TimeoutSeconds $timeoutSeconds
+function Set-SampleIosSdk([string] $projectPath, [string] $sdk) {
+    $result = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "script eval" -CommandArguments @("--code", "return Editor.SampleBuilder.SetIosSdk(`"$sdk`");")
+    return "$result"
+}
+
+function Start-UnityPipelineBuild([string] $projectPath) {
     $started = Invoke-UnityPipelineCommand -ProjectPath $projectPath -Command "build run" -CommandArguments @("--target", $Target, "--outputPath", $outputPath, "--confirm", "true")
     if ($started.status -ne "queued") {
         $errorsProperty = $started.PSObject.Properties["validationErrors"]
@@ -95,8 +107,26 @@ if ($executionMode -eq "Pipeline") {
         $details = if ($errors.Count) { "`n$($errors.message -join "`n")" } else { "" }
         throw "Unity Pipeline build could not start: $($started.message)$details"
     }
+}
 
-    Wait-ForUnityPipelineBuild -ProjectPath $projectPath -TimeoutSeconds $timeoutSeconds
+$executionMode = Get-UnityExecutionMode -ProjectPath $projectPath
+if ($executionMode -eq "Pipeline") {
+    Prepare-UnityPipelineEditor -ProjectPath $projectPath -TimeoutSeconds $timeoutSeconds
+    # The open Editor builds with its own settings: set the iOS SDK there, and put the project's back afterwards.
+    $projectIosSdk = $null
+    if ($Target -eq "iOS") {
+        $projectIosSdk = Set-SampleIosSdk -ProjectPath $projectPath -Sdk $IosSdk
+    }
+
+    try {
+        Start-UnityPipelineBuild -ProjectPath $projectPath
+        Wait-ForUnityPipelineBuild -ProjectPath $projectPath -TimeoutSeconds $timeoutSeconds
+    }
+    finally {
+        if ($projectIosSdk) {
+            Set-SampleIosSdk -ProjectPath $projectPath -Sdk $projectIosSdk | Out-Null
+        }
+    }
 }
 else {
     $arguments = @(
@@ -105,6 +135,9 @@ else {
         "--execute-method", "Editor.SampleBuilder.Build",
         "--output-path", $outputPath
     )
+    if ($Target -eq "iOS") {
+        $arguments += @("--args", "-iosSdk $IosSdk")
+    }
 
     $run = Invoke-UnityCli -Arguments $arguments
     if ($run.ExitCode -ne 0) {

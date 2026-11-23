@@ -115,6 +115,20 @@ Supported targets are `StandaloneWindows64`, `StandaloneOSX`, `StandaloneLinux64
 `Android`, `iOS`, and `WebGL`. Build output is under
 `samples/unity-of-bugs-local/Builds/<Target>/`.
 
+### Running the Sample on Devices
+
+`scripts/run-sample.ps1` builds the sample, installs it on an Android or iOS
+device, emulator or simulator, runs samples from its catalogue, and checks in
+Sentry what each one sent:
+
+```pwsh
+pwsh scripts/run-sample.ps1 -Platform Android -Build -All -Report Builds/android.md
+```
+
+[docs/agent-guides/devices.md](docs/agent-guides/devices.md) covers what it
+needs, reproducing an issue on a phone, and when a real phone is needed over an
+emulator or simulator.
+
 ### Integration Tests
 
 Run integration tests locally using the same scripts as CI:

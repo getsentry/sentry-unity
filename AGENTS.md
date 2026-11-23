@@ -40,6 +40,7 @@ Read only guide relevant to task. Do not import all guides at startup.
 | Build targets and native bootstrap | `Directory.Build.*`, `build/`, build failures | `docs/agent-guides/build.md` |
 | GitHub Actions | `.github/workflows/`, CI failures | `docs/agent-guides/ci.md` |
 | Tests | `test/`, Unity test harness, integration tests | `docs/agent-guides/testing.md` |
+| Devices | Running the sample on devices; reproducing an issue on a phone, emulator or simulator | `docs/agent-guides/devices.md` |
 | Packaging and releases | `package*/`, `.craft.yml`, `scripts/pack.ps1`, `scripts/repack.ps1` | `docs/agent-guides/packaging.md` |
 | Runtime integrations | `src/Sentry.Unity/`, especially `Integrations/` | `docs/agent-guides/integrations.md` |
 | Android | `src/Sentry.Unity.Android/`, Android plugins or export | `docs/agent-guides/platform-android.md` |

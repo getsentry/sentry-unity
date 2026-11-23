@@ -31,3 +31,23 @@ Editor. Otherwise it starts a batch-mode Editor without opening its UI.
 Supported targets are `StandaloneWindows64`, `StandaloneOSX`,
 `StandaloneLinux64`, `Android`, `iOS`, and `WebGL`. Output is written under
 `Builds/<Target>/`.
+
+An iOS build writes the Xcode project to `Builds/iOS`, set up for an iPhone.
+`-IosSdk Simulator` sets it up for the iOS Simulator instead:
+
+```pwsh
+pwsh scripts/build-sample.ps1 -Target iOS -IosSdk Simulator
+```
+
+## Run on a device
+
+`scripts/run-sample.ps1` builds and installs the sample on an Android or iOS
+device, emulator or simulator, runs samples from the catalogue through launch
+arguments, and looks up in Sentry what each one sent:
+
+```pwsh
+pwsh scripts/run-sample.ps1 -List
+pwsh scripts/run-sample.ps1 -Platform Android -Build -All -Report Builds/android.md
+```
+
+See [docs/agent-guides/devices.md](../../docs/agent-guides/devices.md).

@@ -8,6 +8,11 @@ namespace Editor
 {
     public static class SampleBuilder
     {
+        /// <summary>
+        /// Builds the player for <c>-buildTarget</c> into <c>-buildOutput</c>. For iOS, <c>-iosSdk Device|Simulator</c>
+        /// picks the SDK the Xcode project builds against: a phone by default. The project's own setting is put back
+        /// afterwards, so a simulator build leaves ProjectSettings unchanged.
+        /// </summary>
         public static void Build()
         {
             var arguments = Environment.GetCommandLineArgs();
@@ -15,13 +20,27 @@ namespace Editor
             var outputPath = GetArgument(arguments, "-buildOutput");
             var scenes = GetEnabledScenes();
 
-            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            var projectSdk = PlayerSettings.iOS.sdkVersion;
+            if (target == BuildTarget.iOS)
             {
-                scenes = scenes,
-                locationPathName = outputPath,
-                target = target,
-                targetGroup = GetBuildTargetGroup(target)
-            });
+                SetIosSdk(FindArgument(arguments, "-iosSdk") ?? "Device");
+            }
+
+            BuildReport report;
+            try
+            {
+                report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+                {
+                    scenes = scenes,
+                    locationPathName = outputPath,
+                    target = target,
+                    targetGroup = GetBuildTargetGroup(target)
+                });
+            }
+            finally
+            {
+                PlayerSettings.iOS.sdkVersion = projectSdk;
+            }
 
             if (report.summary.result != BuildResult.Succeeded)
             {
@@ -50,7 +69,36 @@ namespace Editor
             return scenes.ToArray();
         }
 
+        /// <summary>
+        /// Sets the SDK the iOS player's Xcode project builds against, <c>Device</c> or <c>Simulator</c>, and returns
+        /// the one it replaced.
+        /// </summary>
+        public static string SetIosSdk(string sdk)
+        {
+            var previous = PlayerSettings.iOS.sdkVersion.ToString().Replace("SDK", "");
+            iOSSdkVersion version;
+            if (!Enum.TryParse(sdk + "SDK", true, out version))
+            {
+                throw new ArgumentException($"Unsupported iOS SDK '{sdk}': use Device or Simulator.");
+            }
+
+            PlayerSettings.iOS.sdkVersion = version;
+            Debug.Log($"iOS SDK: {version}");
+            return previous;
+        }
+
         private static string GetArgument(string[] arguments, string name)
+        {
+            var value = FindArgument(arguments, name);
+            if (value == null)
+            {
+                throw new ArgumentException($"Required command line argument '{name}' was not provided.");
+            }
+
+            return value;
+        }
+
+        private static string FindArgument(string[] arguments, string name)
         {
             for (var i = 0; i < arguments.Length - 1; i++)
             {
@@ -60,7 +108,7 @@ namespace Editor
                 }
             }
 
-            throw new ArgumentException($"Required command line argument '{name}' was not provided.");
+            return null;
         }
 
         private static BuildTarget GetBuildTarget(string target)
