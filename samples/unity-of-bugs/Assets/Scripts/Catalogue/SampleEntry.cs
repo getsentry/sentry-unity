@@ -16,6 +16,9 @@ namespace Sentry.Unity.Samples
         AndroidOrIOS = 1 << 3,
         DOTween = 1 << 4,
         UniTask = 1 << 5,
+        // Unity strips UnityEngine.Assertions calls from release players.
+        Assertions = 1 << 6,
+        Mono = 1 << 7,
     }
 
     /// <summary>
@@ -118,6 +121,11 @@ namespace Sentry.Unity.Samples
                 return "Needs IL2CPP";
             }
 
+            if (Has(requirements, SampleRequirements.Mono) && IsIL2CPP)
+            {
+                return "Needs Mono";
+            }
+
             if (Has(requirements, SampleRequirements.DOTween) && !HasDOTween)
             {
                 return "Needs DOTween";
@@ -126,6 +134,11 @@ namespace Sentry.Unity.Samples
             if (Has(requirements, SampleRequirements.UniTask) && !HasUniTask)
             {
                 return "Needs UniTask";
+            }
+
+            if (Has(requirements, SampleRequirements.Assertions) && !HasAssertions)
+            {
+                return "Needs a development build";
             }
 
             return null;
@@ -168,6 +181,12 @@ namespace Sentry.Unity.Samples
         private static readonly bool HasUniTask = true;
 #else
         private static readonly bool HasUniTask = false;
+#endif
+
+#if UNITY_ASSERTIONS
+        private static readonly bool HasAssertions = true;
+#else
+        private static readonly bool HasAssertions = false;
 #endif
     }
 }

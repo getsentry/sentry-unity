@@ -6,7 +6,9 @@
 
 NOINLINE void crash_in_c()
 {
-    char *ptr = 0;
+    // volatile: a plain null write is undefined behaviour, which the optimizer may drop, running on into the
+    // function after this one.
+    volatile char *ptr = 0;
     *ptr += 1;
 }
 

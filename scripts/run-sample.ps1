@@ -393,22 +393,33 @@ function Get-EventFrames($sentryEvent) {
     return $frames
 }
 
-# Symbolicated: every in-app managed frame has a file and a line, and every native frame a function name rather than
-# a bare address or <unknown>. Returns the verdict and the frames that fall short.
+# Native frames in the OS's own libraries: Sentry has no symbols for Android's (libart, boot.oat), so their missing
+# function names say nothing about the app's symbol upload.
+$systemLibraryPattern = '^(/apex/|/system/|/system_ext/|/vendor/|/product/|/data/misc/apexdata/|/usr/lib/|/System/|/Developer/)'
+
+# Symbolicated: every in-app managed frame has a file and a line, and every native frame of the app's own libraries a
+# function name rather than a bare address or <unknown>. Returns the verdict, the frames that fall short, and the
+# system frames without a name, which don't count against it.
 function Test-Symbolicated($sentryEvent) {
     Set-StrictMode -Version 1
     $frames = @(Get-EventFrames $sentryEvent)
     if ($frames.Count -eq 0) {
-        return @{ Verdict = "no stack trace"; Problems = @() }
+        return @{ Verdict = "no stack trace"; Problems = @(); SystemFrames = 0 }
     }
 
     $problems = [System.Collections.Generic.List[string]]::new()
+    $systemFrames = 0
     foreach ($frame in $frames) {
         $native = [bool]$frame.instructionAddr
         $function = "$($frame.function)"
         if ($native) {
             if (-not $function -or $function -eq "<unknown>" -or $function -match '^0x[0-9a-f]+$') {
-                $problems.Add("native frame $($frame.instructionAddr) in $($frame.package) has no function name")
+                if ("$($frame.package)" -match $systemLibraryPattern) {
+                    $systemFrames++
+                }
+                else {
+                    $problems.Add("native frame $($frame.instructionAddr) in $($frame.package) has no function name")
+                }
             }
         }
         elseif ($frame.inApp -and (-not $frame.filename -or -not $frame.lineNo)) {
@@ -417,7 +428,7 @@ function Test-Symbolicated($sentryEvent) {
     }
 
     $verdict = if ($problems.Count -eq 0) { "yes" } else { "no ($($problems.Count) of $($frames.Count) frames)" }
-    return @{ Verdict = $verdict; Problems = @($problems) }
+    return @{ Verdict = $verdict; Problems = @($problems); SystemFrames = $systemFrames }
 }
 
 function Get-EventLink($sentryEvent) {
@@ -448,12 +459,18 @@ function Get-EventSummary($sentryEvent) {
     }
 }
 
-# Finds the run's error and message events, with their full payloads.
+# Lists the run's error and message events, newest first: id, level and title. A run may send many (a crash that
+# leaves the app logging errors), so this reads the list and only the events it judges in full.
 function Find-RunEvents([string] $runId) {
     Set-StrictMode -Version 1
-    # Through the issues the tag matches: the project's event list doesn't filter by tag.
-    $found = Find-SentryEventByTag -TagName "sample.run_id" -TagValue $runId -Limit 10
-    return @($found | Where-Object { $_ })
+    $query = [uri]::EscapeDataString("sample.run_id:$runId")
+    $result = Invoke-SentryRead "organizations/$script:SentryOrg/events/?dataset=errors&project=$script:SentryProject&statsPeriod=24h&field=id&field=level&field=title&field=timestamp&sort=-timestamp&per_page=100&query=$query"
+    return @($result.data)
+}
+
+function Get-RunEvent([string] $eventId) {
+    Set-StrictMode -Version 1
+    return Invoke-SentryRead "projects/$script:SentryOrg/$script:SentryProject/events/$eventId/"
 }
 
 function Find-RunTransactions([string] $runId) {
@@ -492,14 +509,31 @@ function Test-RunInSentry($run) {
         "Event" {
             $events = @(Find-RunEvents $run.RunId)
             if ($events.Count -eq 0) { return $null }
-            $sentryEvent = $events | Sort-Object { $_.dateCreated } | Select-Object -Last 1
-            $result.Arrived = "yes ($($events.Count) event$(if ($events.Count -ne 1) { 's' }))"
+            $missing = [System.Collections.Generic.List[string]]::new()
+            $count = if ($events.Count -ge 100) { "100 or more events" } else { "$($events.Count) event$(if ($events.Count -ne 1) { 's' })" }
+            $listed = $events[0]
+            if ($run.Entry.Crashes) {
+                # A crash arrives as a fatal event on the next launch; until then, other events of the run may be there.
+                $fatal = @($events | Where-Object { $_.level -eq "fatal" })
+                if ($fatal.Count -eq 0) {
+                    if (-not $run.Final) { return $null }
+                    $titles = @($events | ForEach-Object { $_.title } | Select-Object -Unique -First 3) -join "; "
+                    $missing.Add("no crash (fatal) event arrived; the run sent $count instead: $titles")
+                }
+                else {
+                    $listed = $fatal[0]
+                }
+            }
+            $sentryEvent = Get-RunEvent $listed.id
+            $result.Arrived = "yes ($count)"
             $result.Link = Get-EventLink $sentryEvent
             $result.Summary = Get-EventSummary $sentryEvent
             $symbols = Test-Symbolicated $sentryEvent
             $result.Symbolicated = $symbols.Verdict
             $result.Problems = $symbols.Problems
-            $missing = [System.Collections.Generic.List[string]]::new()
+            if ($symbols.SystemFrames) {
+                $result.Summary."System frames without a name" = $symbols.SystemFrames
+            }
             if ($expectation.ContainsKey("Check")) {
                 $problem = & $expectation.Check $sentryEvent
                 if ($problem) { $missing.Add($problem) }
@@ -559,7 +593,7 @@ function Test-RunInSentry($run) {
             if ($events.Count) {
                 $result.Arrived = "yes"
                 $result.Details = "an event arrived that BeforeSend should have dropped"
-                $result.Link = Get-EventLink $events[0]
+                $result.Link = Get-EventLink (Get-RunEvent $events[0].id)
             }
             else {
                 $result.Arrived = "no, as expected"
@@ -662,20 +696,28 @@ function Invoke-AndroidRun([string] $ids, [string] $runId, [string] $logPath, [b
     $package = $script:AppId
     Invoke-Adb shell am force-stop $package | Out-Null
     Invoke-Adb logcat -c | Out-Null
-    Invoke-Adb shell am start -n "$package/$script:Activity" -e sample $ids -e run_id $runId | Out-Null
-    $exited = Wait-AndroidExit $package $TimeoutSeconds
+    # Streamed rather than dumped at the end: a run that logs a lot overflows the device's log buffer.
+    $logcat = Start-Process -FilePath "adb" -ArgumentList @("-s", $script:DeviceId, "logcat") -RedirectStandardOutput $logPath -RedirectStandardError "$logPath.stderr" -PassThru
+    try {
+        Invoke-Adb shell am start -n "$package/$script:Activity" -e sample $ids -e run_id $runId | Out-Null
+        $exited = Wait-AndroidExit $package $TimeoutSeconds
+        if (-not $exited) {
+            Invoke-Adb shell am force-stop $package | Out-Null
+        }
 
-    if ($crashes) {
-        # The crash is sent on the next launch.
-        Invoke-Adb shell am start -n "$package/$script:Activity" | Out-Null
-        Start-Sleep -Seconds 10
-        Invoke-Adb shell am force-stop $package | Out-Null
+        if ($crashes) {
+            # The crash is sent on the next launch.
+            Invoke-Adb shell am start -n "$package/$script:Activity" | Out-Null
+            Start-Sleep -Seconds 10
+            Invoke-Adb shell am force-stop $package | Out-Null
+        }
+        Start-Sleep -Seconds 1
     }
-    elseif (-not $exited) {
-        Invoke-Adb shell am force-stop $package | Out-Null
+    finally {
+        Stop-Process -Id $logcat.Id -ErrorAction SilentlyContinue
+        $logcat.WaitForExit(5000) | Out-Null
+        Remove-Item "$logPath.stderr" -ErrorAction SilentlyContinue
     }
-
-    & adb -s $script:DeviceId logcat -d *> $logPath
     return $exited
 }
 
@@ -766,14 +808,15 @@ function Build-Ios {
     }
 
     $log = Join-Path $projectPath "Builds/xcodebuild.log"
+    # The build phase that uploads debug symbols writes sentry-cli's output next to the Xcode project.
+    $uploadLog = Join-Path $projectPath "Builds/iOS/sentry-symbols-upload.log"
+    Remove-Item $uploadLog -ErrorAction SilentlyContinue
     Write-Host "xcodebuild $($arguments -join ' ') (log: $log)"
     & xcodebuild @arguments build *> $log
     if ($LASTEXITCODE -ne 0) {
         Get-Content $log -Tail 40 | Out-Host
         throw "xcodebuild failed with exit code $LASTEXITCODE. See $log."
     }
-    # The build phase that uploads debug symbols writes sentry-cli's output next to the Xcode project.
-    $uploadLog = Join-Path $projectPath "Builds/iOS/sentry-symbols-upload.log"
     if (Test-Path $uploadLog) {
         Write-Host "Debug symbol upload ($uploadLog):"
         Get-Content $uploadLog | Where-Object { $_ -match '^(> |  UPLOADED|  OK|error)' } | ForEach-Object { Write-Host $_ }
@@ -920,6 +963,7 @@ foreach ($entry in $selected) {
         FinishedAt  = $null
         Log         = $null
         Result      = $null
+        Final       = $false
         Note        = ""
     }
     $runs.Add($run)
@@ -961,8 +1005,8 @@ foreach ($entry in $selected) {
     }
 
     $run.Status = "sent"
-    if (-not $exited -and -not $entry.Crashes) {
-        $run.Note = "the app didn't exit within $TimeoutSeconds s"
+    if (-not $exited) {
+        $run.Note = if ($entry.Crashes) { "the app didn't end within $TimeoutSeconds s" } else { "the app didn't exit within $TimeoutSeconds s" }
     }
 }
 
@@ -978,6 +1022,8 @@ foreach ($run in ($runs | Where-Object Status -eq "sent")) {
             $wait = ($deadline - (Get-Date)).TotalSeconds
             if ($wait -gt 0) { Start-Sleep -Seconds ([math]::Ceiling($wait)) }
         }
+        # The last look: what has arrived by now is judged as it is.
+        $run.Final = (Get-Date) -ge $deadline
 
         try {
             $result = Test-RunInSentry $run
@@ -991,7 +1037,7 @@ foreach ($run in ($runs | Where-Object Status -eq "sent")) {
             $run.Result = $result
             break
         }
-        if ((Get-Date) -ge $deadline) {
+        if ($run.Final) {
             break
         }
         Start-Sleep -Seconds 5
