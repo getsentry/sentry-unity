@@ -97,10 +97,10 @@ namespace Sentry.Unity.Samples
                     "An uncaught exception on a Kotlin thread ends the app.",
                     ThrowKotlinOnBackground, SampleRequirements.Android, crashes: true),
                 new SampleEntry("platform/objective-c-exception", "Objective-C exception",
-                    "Throws an NSException in Objective-C. Needs GCC_ENABLE_OBJC_EXCEPTIONS in Xcode.",
+                    "Raises an NSException in Objective-C, which ends the app.",
                     ThrowObjectiveC, SampleRequirements.IOS, crashes: true),
                 new SampleEntry("platform/out-of-memory", "Run out of memory",
-                    "Allocates every frame until iOS ends the app.",
+                    "Allocates every frame until iOS ends the app. Arrives as a watchdog termination on the next launch.",
                     RunOutOfMemory, SampleRequirements.IOS, crashes: true)),
 
             new SampleCategory("Hangs",
@@ -462,7 +462,6 @@ namespace Sentry.Unity.Samples
         private static void ThrowObjectiveC()
         {
 #if UNITY_IOS && !UNITY_EDITOR
-            Debug.Log("The iOS SDK captures Objective-C exceptions. Consider enabling 'GCC_ENABLE_OBJC_EXCEPTIONS' in the Xcode build settings.");
             NativeBridge.throwObjectiveC();
 #else
             Debug.LogWarning("Throwing an Objective-C exception needs an iOS player.");

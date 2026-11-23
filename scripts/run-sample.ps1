@@ -393,8 +393,9 @@ function Get-EventFrames($sentryEvent) {
     return $frames
 }
 
-# Native frames in the OS's own libraries: Sentry has no symbols for Android's (libart, boot.oat), so their missing
-# function names say nothing about the app's symbol upload.
+# Native frames in the OS's own libraries, or in no library (a thread's last frame, at address 0x0): Sentry has no
+# symbols for Android's system libraries (libart, boot.oat), so their missing function names say nothing about the
+# app's symbol upload.
 $systemLibraryPattern = '^(/apex/|/system/|/system_ext/|/vendor/|/product/|/data/misc/apexdata/|/usr/lib/|/System/|/Developer/)'
 
 # Symbolicated: every in-app managed frame has a file and a line, and every native frame of the app's own libraries a
@@ -414,7 +415,7 @@ function Test-Symbolicated($sentryEvent) {
         $function = "$($frame.function)"
         if ($native) {
             if (-not $function -or $function -eq "<unknown>" -or $function -match '^0x[0-9a-f]+$') {
-                if ("$($frame.package)" -match $systemLibraryPattern) {
+                if (-not $frame.package -or "$($frame.package)" -match $systemLibraryPattern) {
                     $systemFrames++
                 }
                 else {
@@ -1005,13 +1006,23 @@ foreach ($entry in $selected) {
     }
 
     $run.Status = "sent"
+    # A launch the device refused (an iPhone that's locked, say) sends nothing: fail it now, with the reason.
+    if ($log -match "(?m)^ERROR: The application failed to launch" -or $log -match "Unable to launch \S+ because ([^\r\n.`")]+)") {
+        $reason = if ($log -match "Unable to launch \S+ because ([^\r\n.`")]+)") { "the app didn't launch: $($Matches[1].Trim())" } else { "the app didn't launch" }
+        $run.Result = [ordered]@{ Arrived = "no"; Symbolicated = ""; Passed = $false; Details = $reason; Link = ""; Summary = $null; Problems = @() }
+        continue
+    }
     if (-not $exited) {
         $run.Note = if ($entry.Crashes) { "the app didn't end within $TimeoutSeconds s" } else { "the app didn't exit within $TimeoutSeconds s" }
     }
 }
 
 # Look up every run, until each has arrived or its time is up. Drop samples are judged once their shorter wait is over.
-foreach ($run in ($runs | Where-Object Status -eq "sent")) {
+foreach ($run in ($runs | Where-Object { $_.Status -eq "sent" })) {
+    if ($run.Result) {
+        Write-Host "[$($run.Entry.Id)] FAIL - $($run.Result.Details)"
+        continue
+    }
     $kind = $run.Expectation.Kind
     $drop = $kind -in @("NoEvent", "NoLog")
     $deadline = $run.FinishedAt.AddSeconds($(if ($drop) { $dropWaitSeconds } else { $TimeoutSeconds }))

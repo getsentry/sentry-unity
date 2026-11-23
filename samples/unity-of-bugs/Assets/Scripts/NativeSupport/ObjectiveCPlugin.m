@@ -2,18 +2,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// Raised rather than @throw-n: Unity's Xcode project builds with Objective-C exceptions off, which only the @ syntax
+// needs.
 void throwObjectiveC()
 {
-#ifdef __EXCEPTIONS
     NSLog(@"Throwing an Objective-C Exception");
-    @throw [NSException exceptionWithName:@"Objective-C Exception"
-                                   reason:@"Sentry Unity Objective-C Support."
-                                 userInfo:nil];
-#else
-    NSLog(@"Objective-C Exceptions are disabled. "
-           "Consider enabling it in the Xcode project: "
-           "GCC_ENABLE_OBJC_EXCEPTIONS");
-#endif
+    [[NSException exceptionWithName:@"Objective-C Exception"
+                             reason:@"Sentry Unity Objective-C Support."
+                           userInfo:nil] raise];
 }
 
 void applicationNotResponding()
