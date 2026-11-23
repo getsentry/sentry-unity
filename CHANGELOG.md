@@ -4,7 +4,8 @@
 
 ### Features
 
-- Experimental session replay on Android and iOS ([#2948](https://github.com/getsentry/sentry-unity/pull/2948)):
+- Experimental session replay on Android and iOS ([#2948](https://github.com/getsentry/sentry-unity/pull/2948),
+  [#2951](https://github.com/getsentry/sentry-unity/pull/2951)):
   - Set `options.Experimental.SessionReplay.SessionSampleRate` or `OnErrorSampleRate` in code,
     in the options used both at build time and at runtime.
   - The native SDK records the game, and errors captured in C# send the replay of the moments before them,
