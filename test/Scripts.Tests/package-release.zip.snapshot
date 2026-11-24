@@ -388,12 +388,13 @@ Samples~/unity-of-bugs/Scripts/AutoInputModuleManager.cs.meta
 Samples~/unity-of-bugs/Scripts/Catalogue.meta
 Samples~/unity-of-bugs/Scripts/Editor.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport.meta
+Samples~/unity-of-bugs/Scripts/Resources.meta
 Samples~/unity-of-bugs/Scripts/SentryCliConfiguration.cs
 Samples~/unity-of-bugs/Scripts/SentryCliConfiguration.cs.meta
 Samples~/unity-of-bugs/Scripts/SentryOptionConfiguration.cs
 Samples~/unity-of-bugs/Scripts/SentryOptionConfiguration.cs.meta
-Samples~/unity-of-bugs/Scripts/SpinningCube.cs
-Samples~/unity-of-bugs/Scripts/SpinningCube.cs.meta
+Samples~/unity-of-bugs/Scripts/SpinningLogo.cs
+Samples~/unity-of-bugs/Scripts/SpinningLogo.cs.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/CPlugin.c
 Samples~/unity-of-bugs/Scripts/NativeSupport/CPlugin.c.meta
 Samples~/unity-of-bugs/Scripts/NativeSupport/CppPlugin.cpp
@@ -446,6 +447,8 @@ Samples~/unity-of-bugs/Scripts/Catalogue/TracingSamples.cs
 Samples~/unity-of-bugs/Scripts/Catalogue/TracingSamples.cs.meta
 Samples~/unity-of-bugs/Scripts/Editor/ThirdPartyDefineSetup.cs
 Samples~/unity-of-bugs/Scripts/Editor/ThirdPartyDefineSetup.cs.meta
+Samples~/unity-of-bugs/Scripts/Resources/SentryLogo.fbx
+Samples~/unity-of-bugs/Scripts/Resources/SentryLogo.fbx.meta
 Textures/Logo.png
 Textures/Logo.png.meta
 Textures/Megaphone.png

@@ -83,7 +83,7 @@ namespace Sentry.Unity.Samples
 
             _safeArea = SampleUI.Rect("SafeArea", transform);
 
-            // The scene keeps the header: SpinningCube finds it by name and puts its cube in the top-right corner.
+            // The scene keeps the header: SpinningLogo finds it by name and puts its logo in the top-right corner.
             var header = transform.Find("Header");
             _header = header != null ? (RectTransform)header : SampleUI.Rect("Header", transform);
             _header.SetParent(_safeArea, false);
@@ -157,7 +157,7 @@ namespace Sentry.Unity.Samples
                 TextAnchor.MiddleLeft);
             title.rectTransform.anchorMin = new Vector2(0, 0);
             title.rectTransform.anchorMax = new Vector2(1, 1);
-            // From the ✕ to short of the cube's corner
+            // From the ✕ to short of the logo's corner
             title.rectTransform.offsetMin = new Vector2(48, 0);
             title.rectTransform.offsetMax = new Vector2(-52, 0);
         }
