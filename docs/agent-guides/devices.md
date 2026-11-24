@@ -77,8 +77,9 @@ feedback. A real phone is needed for:
 
 - native crashes and their symbolication (the iOS Simulator runs a different architecture, and its crash reporting
   differs);
-- out of memory, watchdog terminations and App Hangs, which depend on the OS ending the app (the script skips the
-  out-of-memory sample on a simulator, which has no iOS memory limit);
+- out of memory, watchdog terminations and App Hangs, which depend on the OS ending the app. On an iOS Simulator the
+  script skips `platform/out-of-memory`, as a simulator has no iOS memory limit, and `hangs/main-thread-sleep` and
+  `hangs/native-freeze`, as sentry-cocoa can't capture an App Hang's stack there;
 - code signing and provisioning.
 
 ## Shared phones

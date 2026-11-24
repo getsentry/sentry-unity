@@ -103,7 +103,9 @@ $dropWaitSeconds = 45
 
 # Samples an iOS Simulator can't run as a phone does, and why.
 $simulatorSkips = @{
-    "platform/out-of-memory" = "phone only: a simulator has no iOS memory limit, so the app would take the Mac's memory"
+    "platform/out-of-memory"  = "phone only: a simulator has no iOS memory limit, so the app would take the Mac's memory"
+    "hangs/main-thread-sleep" = "phone only: sentry-cocoa can't capture an App Hang's stack on a simulator"
+    "hangs/native-freeze"     = "phone only: sentry-cocoa can't capture an App Hang's stack on a simulator"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
