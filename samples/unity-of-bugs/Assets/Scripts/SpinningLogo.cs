@@ -9,6 +9,8 @@ public class SpinningLogo : MonoBehaviour
     // A layer of its own, so only the logo's camera and light see the logo.
     private const int LogoLayer = 31;
 
+    private const string LogoImageName = "SpinningLogoImage";
+
     private Transform _logo;
     private RenderTexture _texture;
 
@@ -130,7 +132,13 @@ public class SpinningLogo : MonoBehaviour
             return;
         }
 
-        var image = new GameObject("SpinningLogoImage").AddComponent<RawImage>();
+        // A scene loaded additively hides its own header, so the header found is the one already showing the logo
+        if (header.transform.Find(LogoImageName) != null)
+        {
+            return;
+        }
+
+        var image = new GameObject(LogoImageName).AddComponent<RawImage>();
         image.texture = _texture;
         image.raycastTarget = false;
         var rect = image.rectTransform;
