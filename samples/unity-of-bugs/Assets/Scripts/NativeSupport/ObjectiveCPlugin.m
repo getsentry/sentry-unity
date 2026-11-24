@@ -2,8 +2,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Raised rather than @throw-n: Unity's Xcode project builds with Objective-C exceptions off, which only the @ syntax
-// needs.
+// Raised rather than @throw-n: Unity's Xcode project builds with Objective-C exceptions off, which
+// only the @ syntax needs.
 void throwObjectiveC()
 {
     NSLog(@"Throwing an Objective-C Exception");
