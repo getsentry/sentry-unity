@@ -130,6 +130,22 @@ public class CocoaReplayTests
         CollectionAssert.AreEqual(new[] { "UseUnityCapture", "Start" }, _replay.Calls);
     }
 
+    // pins existing behaviour
+    [Test]
+    public void UnityCapture_SdkStartedAgainAfterClose_InstallsUnityCaptureAgainBeforeTheReplayStarts()
+    {
+        _options.Experimental.SessionReplay.SessionSampleRate = 1;
+        _options.Experimental.SessionReplay.Capture = SessionReplayCapture.Unity;
+        CocoaReplayLifecycle.Use(_options, _replay, () => 0);
+        _options.NativeSupportCloseCallback?.Invoke();
+        _options.NativeSupportCloseCallback = null;
+        _replay.Calls.Clear();
+
+        CocoaReplayLifecycle.Use(_options, _replay, () => 0);
+
+        CollectionAssert.AreEqual(new[] { "UseUnityCapture", "Start" }, _replay.Calls);
+    }
+
     [Test]
     public void UnityCapture_Background_CancelsFrameRequestBeforePausing()
     {

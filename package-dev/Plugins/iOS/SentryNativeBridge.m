@@ -322,7 +322,7 @@ void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
     return self;
 }
 
-- (void)imageForView:(UIView *)view onComplete:(void (^)(UIImage *))onComplete
+- (void)imageWithView:(UIView *)view onComplete:(void (^)(UIImage *))onComplete
 {
     void (^replaced)(UIImage *) = nil;
     UIImage *fallback = nil;
@@ -499,7 +499,9 @@ char *_Nullable SentryNativeBridgeGetReplayId()
     return replayId.length > 0 ? strdup(replayId.UTF8String) : NULL;
 }
 
-// Lets Unity capture the replay's frames, for every replay started afterwards.
+// Lets Unity capture the replay's frames, for every replay started afterwards until the SDK closes: call it after each
+// start of the SDK, before the replay starts. sentry-cocoa sets the provider on the main thread, right away when called
+// there and otherwise queued ahead of a replay start queued later.
 void SentryNativeBridgeReplayUseUnityCapture()
 {
     if (!sentryUnityReplayFrameProvider) {
