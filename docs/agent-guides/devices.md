@@ -81,8 +81,3 @@ feedback. A real phone is needed for:
   script skips `platform/out-of-memory`, as a simulator has no iOS memory limit, and `hangs/main-thread-sleep` and
   `hangs/native-freeze`, as sentry-cocoa can't capture an App Hang's stack there;
 - code signing and provisioning.
-
-## Shared phones
-
-Phones on this machine may be in use by other work. Claim one before installing or launching on it, and release it
-when done: the device-testing skill's `device claim` and `device release` do that.

@@ -53,7 +53,7 @@
     pwsh scripts/run-sample.ps1 -List
 
 .EXAMPLE
-    pwsh scripts/run-sample.ps1 -Platform Android -Build -All -Report .spire/android.md
+    pwsh scripts/run-sample.ps1 -Platform Android -Build -All -Report Builds/android.md
 
 .EXAMPLE
     pwsh scripts/run-sample.ps1 -Platform iOS -Device "iPhone 17" -Sample errors/caught-exception,context/set-user
