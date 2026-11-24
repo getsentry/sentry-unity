@@ -26,7 +26,7 @@ namespace Sentry.Unity.Samples
     /// </summary>
     public sealed class SampleEntry
     {
-        /// <summary>A stable <c>category/name</c> ID, such as <c>crashes/native-c</c>. Launch arguments name samples by it.</summary>
+        /// <summary>A stable <c>category/name</c> ID, such as <c>crashes/native-c</c>.</summary>
         public string Id { get; }
 
         /// <summary>The category the menu lists the sample under.</summary>
@@ -42,35 +42,31 @@ namespace Sentry.Unity.Samples
         /// <summary>The sample ends the app. Its event is sent on the next launch.</summary>
         public bool Crashes { get; }
 
-        /// <summary>The sample needs someone at the screen, so a launch argument can't run it.</summary>
-        public bool ManualOnly { get; }
-
         private readonly Action _action;
         private readonly Func<IEnumerator> _routine;
 
         public SampleEntry(string id, string title, string description, Action run,
-            SampleRequirements requirements = SampleRequirements.None, bool crashes = false, bool manualOnly = false)
-            : this(id, title, description, requirements, crashes, manualOnly)
+            SampleRequirements requirements = SampleRequirements.None, bool crashes = false)
+            : this(id, title, description, requirements, crashes)
         {
             _action = run ?? throw new ArgumentNullException(nameof(run));
         }
 
         public SampleEntry(string id, string title, string description, Func<IEnumerator> run,
-            SampleRequirements requirements = SampleRequirements.None, bool crashes = false, bool manualOnly = false)
-            : this(id, title, description, requirements, crashes, manualOnly)
+            SampleRequirements requirements = SampleRequirements.None, bool crashes = false)
+            : this(id, title, description, requirements, crashes)
         {
             _routine = run ?? throw new ArgumentNullException(nameof(run));
         }
 
         private SampleEntry(string id, string title, string description,
-            SampleRequirements requirements, bool crashes, bool manualOnly)
+            SampleRequirements requirements, bool crashes)
         {
             Id = id;
             Title = title;
             Description = description;
             Requirements = requirements;
             Crashes = crashes;
-            ManualOnly = manualOnly;
         }
 
         /// <summary>Why the sample can't run here, or null when it can.</summary>

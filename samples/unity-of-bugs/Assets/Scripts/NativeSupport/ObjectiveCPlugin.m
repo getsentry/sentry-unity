@@ -19,19 +19,4 @@ void applicationNotResponding()
     NSLog(@"Objective-C main thread stall finished.");
 }
 
-// Returns the value that follows `--<name>` in the process arguments, or NULL. The copy is on the heap, as the
-// marshaller expects: see Tips for iOS in https://docs.unity3d.com/Manual/PluginsForIOS.html
-char *_Nullable getLaunchArgument(const char *name)
-{
-    NSString *flag = [NSString stringWithFormat:@"--%s", name];
-    NSArray<NSString *> *args = NSProcessInfo.processInfo.arguments;
-    for (NSUInteger i = 1; i + 1 < args.count; i++) {
-        if ([args[i] isEqualToString:flag]) {
-            return strdup([args[i + 1] UTF8String]);
-        }
-    }
-
-    return NULL;
-}
-
 NS_ASSUME_NONNULL_END

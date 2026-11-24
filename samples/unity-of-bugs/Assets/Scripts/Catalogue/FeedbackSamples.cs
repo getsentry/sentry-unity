@@ -8,7 +8,7 @@ namespace Sentry.Unity.Samples
         public static readonly SampleCategory Category = new SampleCategory("Feedback",
             new SampleEntry("feedback/widget", "Open the feedback widget",
                 "Opens the SentryUserFeedback form, the one behind the megaphone button.",
-                OpenFeedbackWidget, manualOnly: true),
+                OpenFeedbackWidget),
             new SampleEntry("feedback/capture", "Capture feedback from code",
                 "SentrySdk.CaptureFeedback with a message, an email and a name.",
                 CaptureFeedback));

@@ -32,10 +32,6 @@ namespace Sentry.Unity.Samples
 
         [DllImport("__Internal")]
         internal static extern void applicationNotResponding();
-
-        // Returns a heap copy, which the marshaller frees.
-        [DllImport("__Internal")]
-        internal static extern string getLaunchArgument(string name);
 #endif
     }
 }

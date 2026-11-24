@@ -107,8 +107,6 @@ namespace Sentry.Unity.Samples
             {
                 EventSystem.current.pixelDragThreshold = Mathf.Max(20, Mathf.RoundToInt(Screen.dpi / 160f * 10));
             }
-
-            SampleRunner.Instance.RunFromLaunchArguments();
         }
 
         private void OnDestroy() => SampleRunner.StatusChanged -= ShowStatus;

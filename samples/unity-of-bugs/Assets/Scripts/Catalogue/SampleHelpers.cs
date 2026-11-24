@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -102,25 +101,6 @@ namespace Sentry.Unity.Samples
 #else
             Debug.LogWarning($"KotlinPlugin.{method} needs an Android player.");
 #endif
-        }
-
-        internal static void AddRunId(SentryLog log)
-        {
-            if (!string.IsNullOrEmpty(SampleCatalogue.RunId))
-            {
-                log.SetAttribute("sample.run_id", SampleCatalogue.RunId);
-            }
-        }
-
-        internal static Dictionary<string, object> RunIdAttributes()
-        {
-            var attributes = new Dictionary<string, object>();
-            if (!string.IsNullOrEmpty(SampleCatalogue.RunId))
-            {
-                attributes["sample.run_id"] = SampleCatalogue.RunId;
-            }
-
-            return attributes;
         }
     }
 }

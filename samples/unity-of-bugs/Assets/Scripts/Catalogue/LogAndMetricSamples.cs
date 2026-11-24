@@ -1,5 +1,3 @@
-using static Sentry.Unity.Samples.SampleHelpers;
-
 namespace Sentry.Unity.Samples
 {
     /// <summary>The structured log and metric samples.</summary>
@@ -18,24 +16,24 @@ namespace Sentry.Unity.Samples
 
         private static void SendLogs()
         {
-            SentrySdk.Logger.LogInfo(AddRunId, "The 🐛s awaken!");
-            SentrySdk.Logger.LogWarning(AddRunId, "Here come the bugs 🐞🦋🐛🐜🕷!");
-            SentrySdk.Logger.LogError(AddRunId, "A bug got away 🦋");
+            SentrySdk.Logger.LogInfo("The 🐛s awaken!");
+            SentrySdk.Logger.LogWarning("Here come the bugs 🐞🦋🐛🐜🕷!");
+            SentrySdk.Logger.LogError("A bug got away 🦋");
             SampleRunner.Report("Logs sent: info, warning and error");
         }
 
         private static void SendSensitiveLog()
         {
             // SentryOptionConfiguration's BeforeSendLog drops logs that start with "Sensitive:"
-            SentrySdk.Logger.LogInfo(AddRunId, "Sensitive: the player's home address");
+            SentrySdk.Logger.LogInfo("Sensitive: the player's home address");
             SampleRunner.Report("Dropped by BeforeSendLog: nothing should arrive");
         }
 
         private static void EmitMetrics()
         {
-            SentrySdk.Metrics.EmitCounter("sample.bugs_squashed", 1, RunIdAttributes());
-            SentrySdk.Metrics.EmitGauge("sample.bugs_alive", 42, MeasurementUnit.None, RunIdAttributes());
-            SentrySdk.Metrics.EmitDistribution("sample.squash_time", 0.25, MeasurementUnit.Duration.Second, RunIdAttributes());
+            SentrySdk.Metrics.EmitCounter("sample.bugs_squashed", 1);
+            SentrySdk.Metrics.EmitGauge("sample.bugs_alive", 42, MeasurementUnit.None);
+            SentrySdk.Metrics.EmitDistribution("sample.squash_time", 0.25, MeasurementUnit.Duration.Second);
             SampleRunner.Report("Metrics sent: counter, gauge and distribution");
         }
     }

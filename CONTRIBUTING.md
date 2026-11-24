@@ -37,9 +37,7 @@ Run the bootstrap script to initialize submodules, restore workloads, download p
 pwsh bootstrap.ps1
 ```
 
-Bootstrap continues after recoverable failures and prints the command needed to retry each step. Set `APPLE_ID` to configure Apple signing before running it.
-
-Debug symbol upload from the sample reads `SENTRY_AUTH_TOKEN` from the environment; the token is not stored in the project. Set it in the shell that builds the sample or launches the Editor (`unity open`, `scripts/build-sample.ps1`): an Editor started from Unity Hub doesn't see it, and builds then skip the upload. A build writes the token into its own `sentry.properties`, which git ignores.
+Bootstrap continues after recoverable failures and prints the command needed to retry each step. Set `APPLE_ID` to configure Apple signing and `SENTRY_AUTH_TOKEN` to configure CLI symbol upload before running it.
 
 ### 3. Build Changes
 
@@ -114,20 +112,6 @@ that Editor. Otherwise it starts a batch-mode Editor without opening its UI.
 Supported targets are `StandaloneWindows64`, `StandaloneOSX`, `StandaloneLinux64`,
 `Android`, `iOS`, and `WebGL`. Build output is under
 `samples/unity-of-bugs-local/Builds/<Target>/`.
-
-### Running the Sample on Devices
-
-`scripts/run-sample.ps1` builds the sample, installs it on an Android phone or
-emulator, or an iOS Simulator, runs samples from its catalogue, and checks in
-Sentry what each one sent:
-
-```pwsh
-pwsh scripts/run-sample.ps1 -Platform Android -Build -All -Report Builds/android.md
-```
-
-[docs/agent-guides/devices.md](docs/agent-guides/devices.md) covers what it
-needs, reproducing an issue on a phone, and when a real phone is needed over an
-emulator or simulator.
 
 ### Integration Tests
 

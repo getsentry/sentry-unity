@@ -1,18 +1,16 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Sentry.Unity.Samples
 {
     /// <summary>
-    /// Runs samples, from the menu or from the <c>sample</c> launch argument, and keeps the status line's text.
-    /// It outlives scene loads, so a sample that loads a scene still finishes.
+    /// Runs samples from the menu and keeps the status line's text. It outlives scene loads, so a sample that loads a
+    /// scene still finishes.
     /// </summary>
     public class SampleRunner : MonoBehaviour
     {
         private static SampleRunner _instance;
-        private static bool _launchArgumentsRead;
         private static volatile string _reported;
 
         public static SampleRunner Instance
@@ -42,100 +40,17 @@ namespace Sentry.Unity.Samples
         private static void ResetStatics()
         {
             _instance = null;
-            _launchArgumentsRead = false;
             _reported = null;
             Status = null;
             StatusChanged = null;
             IsRunning = false;
             SampleCatalogue.RunOn = RunOn.MainThread;
-            SampleCatalogue.RunId = null;
         }
 
         /// <summary>A sample's own outcome, shown in the status line in place of the last event's ID.</summary>
         public static void Report(string outcome) => _reported = outcome;
 
         public void Run(SampleEntry entry) => StartCoroutine(RunRoutine(entry));
-
-        /// <summary>
-        /// Runs the samples the <c>sample</c> launch argument names, once per launch, then quits. The argument holds
-        /// one ID, or several separated by commas that run in turn (<c>context/set-user,errors/capture-message</c>).
-        /// Without the argument, nothing happens and the app stays open.
-        /// </summary>
-        public void RunFromLaunchArguments()
-        {
-            if (_launchArgumentsRead)
-            {
-                return;
-            }
-
-            _launchArgumentsRead = true;
-
-            var ids = LaunchArguments.Get(LaunchArguments.Sample);
-            if (ids == null)
-            {
-                return;
-            }
-
-            StartCoroutine(RunFromLaunchArguments(ids, LaunchArguments.Get(LaunchArguments.RunId)));
-        }
-
-        private IEnumerator RunFromLaunchArguments(string ids, string runId)
-        {
-            foreach (var sample in SampleCatalogue.All)
-            {
-                Debug.Log($"Sample: {sample.Id}");
-            }
-
-            if (runId != null)
-            {
-                SampleCatalogue.RunId = runId;
-                SentrySdk.ConfigureScope(scope => scope.SetTag("sample.run_id", runId));
-            }
-
-            // Scope sync to the native layer happens on a background thread on some platforms (Android JNI)
-            yield return new WaitForSeconds(0.5f);
-
-            // Every ID is checked before the first runs, so a typo in the last doesn't leave the first half-done.
-            var entries = new List<SampleEntry>();
-            foreach (var part in ids.Split(','))
-            {
-                var id = part.Trim();
-                var entry = SampleCatalogue.Find(id);
-                string refusal = null;
-                if (entry == null)
-                {
-                    refusal = $"Unknown sample '{id}'";
-                }
-                else if (entry.ManualOnly)
-                {
-                    refusal = $"Sample '{id}' needs a tap: run it from the menu";
-                }
-                else if (entry.UnmetReason != null)
-                {
-                    refusal = $"Sample '{id}' can't run here: {entry.UnmetReason}";
-                }
-
-                if (refusal != null)
-                {
-                    Debug.LogWarning(refusal);
-                    SetStatus(refusal);
-                    yield break;
-                }
-
-                entries.Add(entry);
-            }
-
-            foreach (var entry in entries)
-            {
-                Debug.Log($"Running sample from the launch arguments: {entry.Id}");
-                yield return RunRoutine(entry);
-            }
-
-            // Only samples that don't end the app get here.
-            Debug.Log($"Sample finished: {ids}. Flushing and quitting.");
-            SentrySdk.Flush(TimeSpan.FromSeconds(5));
-            Application.Quit(0);
-        }
 
         private IEnumerator RunRoutine(SampleEntry entry)
         {
