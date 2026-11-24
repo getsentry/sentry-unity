@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 #if SENTRY_HAS_UNITASK
 using Cysharp.Threading.Tasks;
@@ -23,36 +24,83 @@ namespace Sentry.Unity.Samples
                 "Awaits a UniTask that throws, catches it and captures it.",
                 ThrowUniTaskExceptionWithCatch, SampleRequirements.UniTask));
 
-        private static void ThrowInTween()
+        // Each starts work that throws or captures later, then waits for it, so the status line shows its event.
+        private static IEnumerator ThrowInTween()
         {
 #if SENTRY_HAS_DOTWEEN
+            var lastEventId = SentrySdk.LastEventId;
+            var completed = false;
             var target = new GameObject("Tweened").transform;
             target.DOPunchScale(new Vector3(1.1f, 1.1f), 0.5f)
                 .OnComplete(() =>
                 {
+                    completed = true;
                     UnityEngine.Object.Destroy(target.gameObject);
                     throw new NullReferenceException("There is nothing on complete.");
                 });
+            yield return WaitForEvent(lastEventId, () => completed);
+#else
+            yield break;
 #endif
         }
 
-        private static void ThrowUniTaskException()
+        private static IEnumerator ThrowUniTaskException()
         {
 #if SENTRY_HAS_UNITASK
+            var lastEventId = SentrySdk.LastEventId;
+            var finished = false;
             Debug.Log("Starting UniTask that will throw an exception! 🚀");
-            DoAsyncWorkAndThrow().Forget();
+            WhenFinished(DoAsyncWorkAndThrow(), () => finished = true).Forget();
+            yield return WaitForEvent(lastEventId, () => finished);
+#else
+            yield break;
 #endif
         }
 
-        private static void ThrowUniTaskExceptionWithCatch()
+        private static IEnumerator ThrowUniTaskExceptionWithCatch()
         {
 #if SENTRY_HAS_UNITASK
+            var lastEventId = SentrySdk.LastEventId;
+            var finished = false;
             Debug.Log("Starting UniTask with proper error handling! 🛡️");
-            DoAsyncWorkAndThrowWithCatch().Forget();
+            WhenFinished(DoAsyncWorkAndThrowWithCatch(), () => finished = true).Forget();
+            yield return WaitForEvent(lastEventId, () => finished);
+#else
+            yield break;
 #endif
         }
 
+        // Waits for the work to finish, then a moment for its event. The time limits keep a callback that never
+        // comes from holding up the menu.
+        private static IEnumerator WaitForEvent(SentryId lastEventId, Func<bool> finished)
+        {
+            var deadline = Time.realtimeSinceStartup + 5f;
+            while (!finished() && Time.realtimeSinceStartup < deadline)
+            {
+                yield return null;
+            }
+
+            deadline = Time.realtimeSinceStartup + 1f;
+            while (SentrySdk.LastEventId == lastEventId && Time.realtimeSinceStartup < deadline)
+            {
+                yield return null;
+            }
+        }
+
 #if SENTRY_HAS_UNITASK
+        // Rethrows what the work throws, so a forgotten task still reaches UniTask's unobserved exception handler.
+        private static async UniTask WhenFinished(UniTask work, Action finished)
+        {
+            try
+            {
+                await work;
+            }
+            finally
+            {
+                finished();
+            }
+        }
+
         private static async UniTask DoAsyncWorkAndThrow()
         {
             Debug.Log("UniTask started - doing some async work... 🔄");
