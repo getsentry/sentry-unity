@@ -1,0 +1,98 @@
+# getsentry/sentry-unity 555e3f859e74d3edb3c336f8bdf2b539fecdf499
+
+rubric = "sdk"
+
+# Managed runtime shared by every player platform (Windows, macOS, Linux, Android, iOS, WebGL, consoles).
+[[area]]
+paths = ["src/Sentry.Unity/**"]
+families = ["game-engine", "mobile-native", "browser"]
+shared_core = true
+
+# Platform bridges into the bundled native SDKs (Java/NDK, Cocoa, sentry-native, console backends).
+[[area]]
+paths = [
+  "src/Sentry.Unity.Android/**", "src/Sentry.Unity.iOS/**", "src/Sentry.Unity.MacOS/**",
+  "src/Sentry.Unity.Native/**", "package-dev/Plugins/**",
+]
+families = ["game-engine", "mobile-native", "native"]
+
+# Editor integration: configuration windows, build pre/post-processors, Gradle/Xcode project edits,
+# sentry-cli symbol upload. Runs on the game developer's machine and in their CI, and also
+# injects code and settings into the built player.
+[[area]]
+paths = ["src/Sentry.Unity.Editor/**", "src/Sentry.Unity.Editor.iOS/**", "package-dev/Editor/**", "package/Editor/**"]
+families = ["tooling", "game-engine"]
+
+# UPM package contents (package-dev is copied into package-release by scripts/pack.ps1, then package/ overrides it).
+[[area]]
+paths = ["package-dev/**", "package/**"]
+families = ["game-engine"]
+
+# The unity-of-bugs Scenes and Scripts folders are copied into the released package as Samples~ (scripts/pack.ps1),
+# so they ship and are deliberately not tagged samples.
+[[area]]
+paths = [
+  "samples/unity-of-bugs/Assets/Scenes/**", "samples/unity-of-bugs/Assets/Scenes.meta",
+  "samples/unity-of-bugs/Assets/Scripts/**", "samples/unity-of-bugs/Assets/Scripts.meta",
+]
+families = ["game-engine"]
+
+# Pins every assembly is built from: the sentry-dotnet submodule (much of the public API comes from it),
+# the .NET SDK in global.json, the build-wide Directory.Build.props, and .gitmodules.
+[[area]]
+paths = ["src/sentry-dotnet", "src/sentry-dotnet/**", ".gitmodules", "global.json", "Directory.Build.props", "src/Directory.Build.props"]
+families = ["game-engine", "mobile-native", "browser"]
+shared_core = true
+
+# Bundled native SDK submodules and the build files that compile them into the package.
+[[area]]
+paths = ["modules/sentry-cocoa", "modules/sentry-java", "modules/sentry-native", "modules/Directory.Build.*"]
+families = ["game-engine", "mobile-native", "native"]
+
+# sentry-cli version the editor integration downloads for symbol upload.
+[[area]]
+paths = ["modules/sentry-cli.properties"]
+families = ["tooling", "game-engine"]
+
+# Bundled SDKs: sentry-dotnet, sentry-java, sentry-native, sentry-cocoa and app-runner are submodules
+# (the gitlink entries match these patterns); sentry-cli is downloaded at the version in modules/sentry-cli.properties.
+[[kind]]
+paths = ["src/sentry-dotnet", "src/sentry-dotnet/**", "modules/**", "global.json"]
+kind = "dependencies"
+
+# PluginImporter settings decide which platforms each shipped binary is included in.
+[[kind]]
+paths = ["package-dev/**/*.dll.meta", "package/**/*.dll.meta", "package-dev/Plugins/**/*.meta", "**/*.asmdef", "**/*.asmdef.meta"]
+kind = "build-release"
+
+[[kind]]
+paths = [
+  "scripts/**", "build/**", "bootstrap.ps1", "Directory.Build.targets", "**/Directory.Build.targets",
+  "**/*.csproj", "**/*.props", "**/*.sln", "NuGet.config", "package-dev/Plugins/Android/*.pro",
+  # Directory.Build.props reads it to choose the Unity version the SDK is built with.
+  "samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt",
+]
+kind = "build-release"
+
+# Test assemblies under package-dev/Tests are excluded from the release package by scripts/pack.ps1.
+[[kind]]
+paths = ["test/**", "package-dev/Tests/**", "package-dev/Tests.meta"]
+kind = "tests"
+
+[[kind]]
+paths = [
+  "samples/Directory.Build.*", "samples/unity-of-bugs-local/**", "samples/unity-of-bugs/.gitignore",
+  "samples/unity-of-bugs/Assets/Editor/**", "samples/unity-of-bugs/Assets/Editor.meta",
+  "samples/unity-of-bugs/Assets/Plugins/**", "samples/unity-of-bugs/Assets/Plugins.meta",
+  "samples/unity-of-bugs/Assets/Resources/**", "samples/unity-of-bugs/Assets/Resources.meta",
+  "samples/unity-of-bugs/Packages/**", "samples/unity-of-bugs/ProjectSettings/**",
+]
+kind = "samples"
+
+[[kind]]
+paths = ["docs/**"]
+kind = "docs"
+
+[[kind]]
+paths = [".clang-format", "agents.toml"]
+kind = "dev-tooling"
