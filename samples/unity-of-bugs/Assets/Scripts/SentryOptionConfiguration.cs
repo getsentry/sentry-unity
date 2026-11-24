@@ -54,8 +54,6 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
         options.AndroidNativeInitializationType = NativeInitializationType.Runtime;
 #elif UNITY_IOS
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
-        // Reports the app being ended by iOS, as the out-of-memory sample is, on the next launch.
-        options.IosWatchdogTerminationIntegrationEnabled = true;
 #endif
 
         Debug.Log("SentryOptionConfigure finished.");

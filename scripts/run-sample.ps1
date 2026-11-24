@@ -101,6 +101,11 @@ $cataloguePath = Join-Path $sharedPath "Assets/Scripts/Catalogue/SampleCatalogue
 # Samples that drop what they send: nothing may arrive, and there's nothing to wait for beyond this.
 $dropWaitSeconds = 45
 
+# Samples an iOS Simulator can't run as a phone does, and why.
+$simulatorSkips = @{
+    "platform/out-of-memory" = "phone only: a simulator has no iOS memory limit, so the app would take the Mac's memory"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Catalogue
 # ---------------------------------------------------------------------------------------------------------------------
@@ -394,9 +399,10 @@ function Get-EventFrames($sentryEvent) {
 }
 
 # Native frames in the OS's own libraries, or in no library (a thread's last frame, at address 0x0): Sentry has no
-# symbols for Android's system libraries (libart, boot.oat), so their missing function names say nothing about the
-# app's symbol upload.
-$systemLibraryPattern = '^(/apex/|/system/|/system_ext/|/vendor/|/product/|/data/misc/apexdata/|/usr/lib/|/System/|/Developer/)'
+# symbols for Android's system libraries (libart, boot.oat) or for the iOS Simulator's runtime (its UIKit and
+# CoreFoundation load from the runtime's folder under CoreSimulator), so their missing function names say nothing about
+# the app's symbol upload.
+$systemLibraryPattern = '^(/apex/|/system/|/system_ext/|/vendor/|/product/|/data/misc/apexdata/|/usr/lib/|/System/|/Developer/)|/Library/Developer/CoreSimulator/Profiles/Runtimes/'
 
 # Symbolicated: every in-app managed frame has a file and a line, and every native frame of the app's own libraries a
 # function name rather than a bare address or <unknown>. Returns the verdict, the frames that fall short, and the
@@ -970,6 +976,9 @@ foreach ($entry in $selected) {
     $runs.Add($run)
 
     $mismatch = Get-PlatformMismatch $entry $Platform
+    if (-not $mismatch -and $script:IosSimulator -and $simulatorSkips.ContainsKey($entry.Id)) {
+        $mismatch = $simulatorSkips[$entry.Id]
+    }
     if ($entry.ManualOnly) {
         $run.Status = "manual"
         $run.Note = "needs a tap: run it from the menu"

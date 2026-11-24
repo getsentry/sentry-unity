@@ -77,7 +77,8 @@ feedback. A real phone is needed for:
 
 - native crashes and their symbolication (the iOS Simulator runs a different architecture, and its crash reporting
   differs);
-- out of memory, watchdog terminations and App Hangs, which depend on the OS ending the app;
+- out of memory, watchdog terminations and App Hangs, which depend on the OS ending the app (the script skips the
+  out-of-memory sample on a simulator, which has no iOS memory limit);
 - code signing and provisioning.
 
 ## Shared phones
