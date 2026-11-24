@@ -24,7 +24,7 @@ pwsh scripts/build-sample.ps1 -Target Android
   in batch mode.
 - Outputs under `samples/unity-of-bugs-local/Builds/<Target>/`.
 - iOS writes the Xcode project to `Builds/iOS`, for an iPhone; `-IosSdk Simulator` builds it for the iOS Simulator.
-- To run samples on a device, emulator or simulator and check what arrives in Sentry, use `scripts/run-sample.ps1`: see `docs/agent-guides/devices.md`.
+- To run samples on an Android phone or emulator, or an iOS Simulator, and check what arrives in Sentry, use `scripts/run-sample.ps1`: see `docs/agent-guides/devices.md`.
 
 ## Batch Unity Tests
 

@@ -1,13 +1,14 @@
 # Devices
 
-`scripts/run-sample.ps1` runs Unity of Bugs samples on an Android phone or emulator, an iPhone or an iOS Simulator,
-and checks in Sentry what each one sent. Use it to see an SDK change work on a device, or to reproduce an issue there.
+`scripts/run-sample.ps1` runs Unity of Bugs samples on an Android phone or emulator, or an iOS Simulator, and
+checks in Sentry what each one sent. Use it to see an SDK change work on a device, or to reproduce an issue there.
 
 ## Prerequisites
 
-- **Android:** `adb` on `PATH`, and the phone or emulator listed by `adb devices` as `device`.
-- **iOS:** Xcode, and for an iPhone a signing team: the project's `appleDeveloperTeamID`, or `APPLE_ID` set to the
-  team ID before `pwsh bootstrap.ps1`. The iPhone needs Developer Mode, and has to trust the Mac.
+- **Android:** `adb` on `PATH`, and the phone or emulator listed by `adb devices` as `device`. Installing needs `aapt`
+  (or `aapt2`) from the Android SDK's build-tools: when neither is on `PATH`, the script adds the newest build-tools of
+  the SDK in `ANDROID_HOME`, `ANDROID_SDK_ROOT`, or the SDK `adb` comes from.
+- **iOS:** Xcode with an iOS Simulator runtime.
 - **Symbol upload:** `SENTRY_AUTH_TOKEN` in the shell that builds, and `pwsh scripts/samples-setup-cli-options.ps1`
   run once. Without the token the build skips the upload, and native frames arrive unsymbolicated. The build writes the
   token into its own `sentry.properties`, which git ignores: under `samples/unity-of-bugs-local/Library/` for the
@@ -32,7 +33,7 @@ Build, install and run everything a platform can run, with a report:
 
 ```pwsh
 pwsh scripts/run-sample.ps1 -Platform Android -Build -All -Report Builds/android.md
-pwsh scripts/run-sample.ps1 -Platform iOS -Build -All -Report Builds/iphone.md
+pwsh scripts/run-sample.ps1 -Platform iOS -Build -All -Report Builds/ios-simulator.md
 ```
 
 Run a few samples, or a category, on an app that's already installed:
@@ -42,14 +43,17 @@ pwsh scripts/run-sample.ps1 -Platform Android -Sample errors/caught-exception,cr
 pwsh scripts/run-sample.ps1 -Platform iOS -Device "iPhone 17" -Build -Category context
 ```
 
-- `-Device` takes an adb serial, an iPhone's UDID, or a simulator's name or UDID. Leave it out when only one is
-  connected (or, on iOS, no iPhone is and one simulator is booted).
+- `-Device` takes an adb serial, or a simulator's name or UDID. Leave it out when only one device is connected (or,
+  on iOS, one simulator is booted). A simulator that isn't running is booted for the run and shut down after it.
 - `-Build` builds IL2CPP through `scripts/build-sample.ps1`. On Android it installs
-  `Builds/Android/unity-of-bugs-local.apk`. On iOS it builds the Xcode project with `xcodebuild` into
-  `Builds/iOS-derived` and installs the app. A simulator gets a Simulator build (`build-sample.ps1 -IosSdk Simulator`).
+  `Builds/Android/unity-of-bugs-local.apk`. On iOS it makes a Simulator build (`build-sample.ps1 -IosSdk Simulator`),
+  builds the Xcode project with `xcodebuild` into `Builds/iOS-derived` and installs the app.
 - Each sample runs in a launch of its own, with a new run ID: `am start -e sample <id> -e run_id <guid>` on Android,
   `--sample <id> --run_id <guid>` on iOS. The app runs the sample, flushes and quits. A sample that ends the app is
   relaunched once without a sample, which sends the crash. Samples that need a tap are listed as manual and skipped.
+- Connecting, installing, launching and reading the device log go through the app-runner modules in
+  `modules/app-runner`, as the integration tests do. The Android log is the device's whole logcat during the run and
+  its relaunch, crash dumps included; the iOS log is the app's console output.
 - Everything a run sends carries its ID: the `sample.run_id` tag on events, the attribute on logs and metrics. The
   script finds the run's events, transactions, logs, metrics or feedback by it, waiting up to `-TimeoutSeconds`.
 - A sample is checked against what it promises: that it arrived, that its stack trace is symbolicated (every in-app
@@ -76,7 +80,8 @@ pwsh scripts/run-sample.ps1 -Platform iOS -Device "iPhone 17" -Build -Category c
 
 ## Emulator or simulator, or a real phone
 
-An emulator or simulator is enough for C# and Java exceptions, messages, context, logs, metrics, transactions and
+The script runs on an Android phone or emulator, or an iOS Simulator; the iOS checks that need an iPhone are outside
+what it runs. An emulator or simulator is enough for C# and Java exceptions, messages, context, logs, metrics, transactions and
 feedback. A real phone is needed for:
 
 - native crashes and their symbolication (the iOS Simulator runs a different architecture, and its crash reporting

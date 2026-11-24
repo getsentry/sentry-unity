@@ -41,8 +41,8 @@ pwsh scripts/build-sample.ps1 -Target iOS -IosSdk Simulator
 
 ## Run on a device
 
-`scripts/run-sample.ps1` builds and installs the sample on an Android or iOS
-device, emulator or simulator, runs samples from the catalogue through launch
+`scripts/run-sample.ps1` builds and installs the sample on an Android phone or
+emulator, or an iOS Simulator, runs samples from the catalogue through launch
 arguments, and looks up in Sentry what each one sent:
 
 ```pwsh

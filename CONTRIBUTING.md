@@ -117,8 +117,8 @@ Supported targets are `StandaloneWindows64`, `StandaloneOSX`, `StandaloneLinux64
 
 ### Running the Sample on Devices
 
-`scripts/run-sample.ps1` builds the sample, installs it on an Android or iOS
-device, emulator or simulator, runs samples from its catalogue, and checks in
+`scripts/run-sample.ps1` builds the sample, installs it on an Android phone or
+emulator, or an iOS Simulator, runs samples from its catalogue, and checks in
 Sentry what each one sent:
 
 ```pwsh
