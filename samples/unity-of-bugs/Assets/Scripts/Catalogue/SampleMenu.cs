@@ -28,7 +28,9 @@ namespace Sentry.Unity.Samples
         private const float FeedbackWidth = 270;
         private const float FeedbackHeight = 480;
 
-        private static readonly Color UnselectedTab = new Color(1, 1, 1, 0.04f);
+        // White at 4% over the panel, made opaque: the project renders in linear colour space, where a see-through
+        // white blends far lighter than it does in sRGB.
+        private static readonly Color UnselectedTab = new Color32(0x21, 0x1C, 0x2E, 255);
 
         private static int _selectedCategory;
 
