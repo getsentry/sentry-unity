@@ -62,9 +62,13 @@ pwsh scripts/run-sample.ps1 -Platform iOS -Device "iPhone 17" -Build -Category c
 
 ## Reproducing an issue
 
-1. Add an entry to `samples/unity-of-bugs/Assets/Scripts/Catalogue/SampleCatalogue.cs` that does what the issue
-   describes, under the category it fits: `new SampleEntry("category/name", "Title",` on a line of its own (the script
-   reads the IDs from those lines), then the description and the code.
+1. Add an entry that does what the issue describes to the category it fits. Each category is a file of its own in
+   `samples/unity-of-bugs/Assets/Scripts/Catalogue/`: `ErrorSamples.cs`, `CrashSamples.cs`, `PlatformSamples.cs`,
+   `HangSamples.cs`, `ContextSamples.cs`, `TracingSamples.cs`, `LogAndMetricSamples.cs`, `FeedbackSamples.cs`,
+   `SceneSamples.cs` and `ThirdPartySamples.cs`, with what several of them share in `SampleHelpers.cs`. Write
+   `new SampleEntry("category/name", "Title",` on a line of its own (the script reads the IDs from those lines), then
+   the description and the code. A new category is a new `<Category>Samples.cs` whose `Category` is listed in
+   `SampleCatalogue.Categories`.
 2. When the entry only changes the scope, or its outcome isn't a plain event, add what to look for in
    `Get-SampleExpectation` in `scripts/run-sample.ps1`.
 3. Run it: `pwsh scripts/run-sample.ps1 -Platform Android -Build -Sample category/name -Report Builds/repro.md`.
@@ -79,5 +83,7 @@ feedback. A real phone is needed for:
   differs);
 - out of memory, watchdog terminations and App Hangs, which depend on the OS ending the app. On an iOS Simulator the
   script skips `platform/out-of-memory`, as a simulator has no iOS memory limit, and `hangs/main-thread-sleep` and
-  `hangs/native-freeze`, as sentry-cocoa can't capture an App Hang's stack there;
+  `hangs/native-freeze`, as sentry-cocoa can't capture an App Hang's stack there. On an iPhone, the out-of-memory
+  sample arrives as a watchdog termination only with `IosWatchdogTerminationIntegrationEnabled`, which is off by default
+  in the SDK: the sample turns it on in `SampleOptionConfiguration.cs`;
 - code signing and provisioning.

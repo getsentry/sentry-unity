@@ -10,7 +10,8 @@
     metrics in Sentry and checks them against what the sample promises: whether it arrived, whether its stack trace is
     symbolicated, and the context it carries.
 
-    The samples come from samples/unity-of-bugs/Assets/Scripts/Catalogue/SampleCatalogue.cs. Samples that need a tap
+    The samples come from the category files in samples/unity-of-bugs/Assets/Scripts/Catalogue/ (ErrorSamples.cs and
+    the like), in the order SampleCatalogue.cs lists them. Samples that need a tap
     are listed as manual and skipped; samples the build can't run (a missing third-party package) as unavailable.
     Samples that end the app are relaunched once without a sample, so the crash is sent.
 
@@ -96,7 +97,8 @@ $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path "$PSScriptRoot/..").Path
 $projectPath = Join-Path $repoRoot "samples/unity-of-bugs-local"
 $sharedPath = Join-Path $repoRoot "samples/unity-of-bugs"
-$cataloguePath = Join-Path $sharedPath "Assets/Scripts/Catalogue/SampleCatalogue.cs"
+$catalogueFolder = Join-Path $sharedPath "Assets/Scripts/Catalogue"
+$cataloguePath = Join-Path $catalogueFolder "SampleCatalogue.cs"
 
 # Samples that drop what they send: nothing may arrive, and there's nothing to wait for beyond this.
 $dropWaitSeconds = 45
@@ -114,8 +116,24 @@ $simulatorSkips = @{
 
 # Reads the samples from the catalogue's source: each entry starts with `new SampleEntry("category/name", "Title",` on
 # a line of its own, inside a `new SampleCategory("Name",` block.
+# The category classes in the order SampleCatalogue.Categories lists them (`ErrorSamples.Category,` and the like), each
+# in a file of its own.
+function Get-CategoryFiles {
+    $catalogue = Get-Content $cataloguePath -Raw
+    if ($catalogue -notmatch '(?s)Categories\s*=\s*new\[\]\s*\{(.*?)\};') {
+        throw "No Categories list in $cataloguePath."
+    }
+    $classes = @([regex]::Matches($Matches[1], '(\w+)\.Category\b') | ForEach-Object { $_.Groups[1].Value })
+    foreach ($class in $classes) {
+        $path = Join-Path $catalogueFolder "$class.cs"
+        if (-not (Test-Path $path)) {
+            throw "SampleCatalogue.cs lists $class, but there's no $path."
+        }
+        $path
+    }
+}
+
 function Get-SampleCatalogue {
-    $lines = Get-Content $cataloguePath
     $entries = [System.Collections.Generic.List[object]]::new()
     $categoryName = $null
     $current = $null
@@ -131,8 +149,24 @@ function Get-SampleCatalogue {
         }
     }
 
+    # A category's entries end with its declaration's `);`: the methods after it are never read into the last entry.
+    $lines = foreach ($file in Get-CategoryFiles) {
+        $inCategory = $false
+        foreach ($line in Get-Content $file) {
+            if ($line -match '\bnew SampleCategory\("') { $inCategory = $true }
+            if ($inCategory) { $line }
+            if ($inCategory -and $line -match '\);\s*$') { $inCategory = $false; "<end of category>" }
+        }
+    }
+
     foreach ($line in $lines) {
-        $categoryMatch = [regex]::Match($line, '^\s*new SampleCategory\("([^"]+)"')
+        if ($line -eq "<end of category>") {
+            . $finish
+            $current = $null
+            continue
+        }
+
+        $categoryMatch = [regex]::Match($line, '\bnew SampleCategory\("([^"]+)"')
         if ($categoryMatch.Success) {
             . $finish
             $current = $null
@@ -162,16 +196,12 @@ function Get-SampleCatalogue {
             }
 
             $body += "`n$line"
-            if ($line -match '^\s*\};') {
-                . $finish
-                $current = $null
-            }
         }
     }
 
     . $finish
     if ($entries.Count -eq 0) {
-        throw "No samples found in $cataloguePath."
+        throw "No samples found in $catalogueFolder."
     }
 
     return $entries

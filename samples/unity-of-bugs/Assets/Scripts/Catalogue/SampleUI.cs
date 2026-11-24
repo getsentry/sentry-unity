@@ -9,15 +9,16 @@ namespace Sentry.Unity.Samples
     /// </summary>
     public static class SampleUI
     {
-        public static readonly Color Background = new Color32(27, 23, 38, 255);
-        public static readonly Color HeaderColor = new Color32(54, 45, 89, 255);
-        public static readonly Color Panel = new Color32(36, 31, 51, 255);
-        public static readonly Color Row = new Color32(43, 36, 64, 255);
-        public static readonly Color Accent = new Color32(108, 95, 199, 255);
-        public static readonly Color Danger = new Color32(225, 86, 124, 255);
-        public static readonly Color TextColor = Color.white;
-        public static readonly Color Muted = new Color32(185, 178, 204, 255);
-        public static readonly Color Warning = new Color32(245, 176, 0, 255);
+        // Sentry's colours
+        public static readonly Color Background = new Color32(0x15, 0x0F, 0x22, 255);
+        public static readonly Color Panel = new Color32(0x18, 0x12, 0x25, 255);
+        public static readonly Color HeaderColor = new Color32(0x1F, 0x16, 0x33, 255);
+        public static readonly Color Row = new Color32(0x2B, 0x22, 0x40, 255);
+        public static readonly Color Accent = new Color32(0x75, 0x53, 0xFF, 255);
+        public static readonly Color Danger = new Color32(0xFF, 0x45, 0xA8, 255);
+        public static readonly Color TextColor = new Color32(0xF5, 0xF0, 0xFF, 255);
+        public static readonly Color Muted = new Color32(0xC9, 0xBE, 0xE8, 255);
+        public static readonly Color Warning = new Color32(0xFD, 0xB8, 0x1B, 255);
 
         private static Font _font;
 
@@ -133,7 +134,10 @@ namespace Sentry.Unity.Samples
             scroll = root.gameObject.AddComponent<ScrollRect>();
             scroll.horizontal = !vertical;
             scroll.vertical = vertical;
-            scroll.movementType = ScrollRect.MovementType.Clamped;
+            // Bounces softly at the ends, and a flick stops soon after the finger leaves.
+            scroll.movementType = ScrollRect.MovementType.Elastic;
+            scroll.elasticity = 0.1f;
+            scroll.decelerationRate = 0.1f;
             scroll.scrollSensitivity = 30;
             scroll.inertia = true;
 
