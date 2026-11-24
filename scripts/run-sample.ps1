@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Runs Unity of Bugs samples on an Android or iOS device, emulator or simulator, and looks up in Sentry what each
+    Runs Unity of Bugs samples on an Android phone or emulator, or an iOS Simulator, and looks up in Sentry what each
     one sent.
 
 .DESCRIPTION
@@ -19,14 +19,18 @@
     SENTRY_AUTH_TOKEN holds for symbol upload, can only upload). SENTRY_READ_TOKEN is used when SENTRY_API_TOKEN is
     unset.
 
+    The device work (connecting, installing, launching, reading the device log) goes through the app-runner modules in
+    modules/app-runner, and so do the Sentry reads of full events, logs and metrics. The lists of a run's events,
+    transactions and feedback come from Sentry's organization endpoints, which filter on the run ID tag.
+
     The guide is docs/agent-guides/devices.md.
 
 .PARAMETER Platform
-    Android or iOS.
+    Android or iOS. iOS runs on an iOS Simulator.
 
 .PARAMETER Device
-    An adb serial (Android), an iPhone's UDID, or an iOS Simulator's name or UDID. Optional when exactly one device is
-    connected (Android) or exactly one iPhone is connected or one simulator booted (iOS).
+    An adb serial (Android), or an iOS Simulator's name or UDID. Optional when exactly one device is connected
+    (Android) or one simulator booted (iOS).
 
 .PARAMETER Sample
     One or more sample IDs, such as errors/capture-message.
@@ -41,8 +45,8 @@
     Lists the samples and exits, without a device.
 
 .PARAMETER Build
-    Builds the sample (IL2CPP, release) and installs it before running. iOS builds and signs the Xcode project too,
-    with the team in the project's settings or APPLE_ID.
+    Builds the sample (IL2CPP, release) and installs it before running. iOS builds the Xcode project for the iOS
+    Simulator too. Installing on Android needs aapt from the Android SDK's build-tools.
 
 .PARAMETER Report
     Writes a Markdown report to this path. The device logs go in a folder next to it.
@@ -105,7 +109,7 @@ $dropWaitSeconds = 45
 
 # Samples an iOS Simulator can't run as a phone does, and why.
 $simulatorSkips = @{
-    "platform/out-of-memory"  = "phone only: a simulator has no iOS memory limit, so the app would take the Mac's memory"
+    "platform/out-of-memory"  = "phone only: a simulator has no iOS memory limit, so the app would take the Mac's memory; on a phone the report also needs IosWatchdogTerminationIntegrationEnabled, which is off by default"
     "hangs/main-thread-sleep" = "phone only: sentry-cocoa can't capture an App Hang's stack on a simulator"
     "hangs/native-freeze"     = "phone only: sentry-cocoa can't capture an App Hang's stack on a simulator"
 }
@@ -352,7 +356,6 @@ function Connect-SampleSentry {
         throw "Set SENTRY_API_TOKEN to a token with event:read, then rerun."
     }
 
-    . (Join-Path $repoRoot "modules/app-runner/import-modules.ps1")
     $dsn = Get-SampleDsn
     Connect-SentryApi -ApiToken $token -DSN $dsn
 
@@ -500,6 +503,8 @@ function Get-EventSummary($sentryEvent) {
 
 # Lists the run's error and message events, newest first: id, level and title. A run may send many (a crash that
 # leaves the app logging errors), so this reads the list and only the events it judges in full.
+# The list comes from the organization's errors dataset: the project events list the app-runner's
+# Get-SentryEventsByTag reads doesn't filter on custom tags such as sample.run_id.
 function Find-RunEvents([string] $runId) {
     Set-StrictMode -Version 1
     $query = [uri]::EscapeDataString("sample.run_id:$runId")
@@ -509,7 +514,7 @@ function Find-RunEvents([string] $runId) {
 
 function Get-RunEvent([string] $eventId) {
     Set-StrictMode -Version 1
-    return Invoke-SentryRead "projects/$script:SentryOrg/$script:SentryProject/events/$eventId/"
+    return Get-SentryEvent -EventId $eventId
 }
 
 function Find-RunTransactions([string] $runId) {
@@ -658,6 +663,37 @@ function Test-RunInSentry($run) {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Device
+# ---------------------------------------------------------------------------------------------------------------------
+
+# The app-runner modules print their progress and warnings (a launch's arguments, a check that found no process);
+# the script reports each run in its own lines, so the module calls run with those streams silenced.
+
+# Runs a launch with a run timeout of its own: the device provider waits for the app this long, then gives up on it.
+function Invoke-WithRunTimeout([int] $seconds, [scriptblock] $launch) {
+    $timeouts = (Get-DeviceSession).Provider.Timeouts
+    $timeouts['run-timeout'] = $seconds
+    try {
+        return & $launch
+    }
+    finally {
+        $timeouts['run-timeout'] = $TimeoutSeconds
+    }
+}
+
+# A sample that ends the app sends its crash on the next launch: relaunch without a sample for 10 s, then stop it.
+# What the relaunch returns (its exit code, a launch that outlives the 10 s) says nothing about the run.
+function Invoke-Relaunch([string] $executable) {
+    try {
+        return Invoke-WithRunTimeout 10 { Invoke-DeviceApp -ExecutablePath $executable 3>$null 6>$null }
+    }
+    catch {
+        Write-Warning "The relaunch that sends the crash failed: $_"
+        return $null
+    }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Android
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -698,6 +734,37 @@ function Get-AndroidActivity([string] $package) {
     return "com.unity3d.player.UnityPlayerActivity"
 }
 
+# The install reads the APK's package name with aapt (or aapt2), which comes with the Android SDK's build-tools rather
+# than its platform-tools. When neither is on PATH, the newest build-tools of the Android SDK (ANDROID_HOME,
+# ANDROID_SDK_ROOT, or the SDK adb comes from) goes on PATH for this run.
+function Add-AaptToPath {
+    if ((Get-Command aapt -ErrorAction SilentlyContinue) -or (Get-Command aapt2 -ErrorAction SilentlyContinue)) {
+        return
+    }
+
+    $sdks = [System.Collections.Generic.List[string]]::new()
+    foreach ($sdk in @($env:ANDROID_HOME, $env:ANDROID_SDK_ROOT)) {
+        if ($sdk) { $sdks.Add($sdk) }
+    }
+    $adb = (Get-Command adb).Source
+    $adbTarget = [System.IO.File]::ResolveLinkTarget($adb, $true)
+    if ($adbTarget) { $adb = $adbTarget.FullName }
+    $sdks.Add((Split-Path (Split-Path $adb -Parent) -Parent))
+
+    foreach ($sdk in $sdks) {
+        $newest = Get-ChildItem -Path (Join-Path $sdk "build-tools") -Directory -ErrorAction SilentlyContinue |
+            Where-Object { Get-ChildItem -Path $_.FullName -Filter "aapt*" -File -ErrorAction SilentlyContinue } |
+            Sort-Object { if ($_.Name -match '^\d+(\.\d+)*') { [version]($Matches[0] + $(if ($Matches[0] -notmatch '\.') { '.0' })) } else { [version]"0.0" } } -Descending |
+            Select-Object -First 1
+        if ($newest) {
+            Write-Verbose "Using aapt from $($newest.FullName)"
+            $env:PATH = $newest.FullName + [System.IO.Path]::PathSeparator + $env:PATH
+            return
+        }
+    }
+    throw "Installing on Android needs aapt from the Android SDK's build-tools, and none was found (looked in $($sdks -join ', ')). Install the build-tools, or set ANDROID_HOME to the Android SDK that has them, then rerun."
+}
+
 function Build-Android {
     & pwsh (Join-Path $PSScriptRoot "build-sample.ps1") -Target Android
     if ($LASTEXITCODE -ne 0) { throw "The Android build failed." }
@@ -717,37 +784,34 @@ function Build-Android {
 
     $apk = Join-Path $projectPath "Builds/Android/unity-of-bugs-local.apk"
     Write-Host "Installing $apk on $script:DeviceId"
-    Invoke-Adb install -r $apk | Out-Host
+    Add-AaptToPath
+    Install-DeviceApp -Path $apk 3>$null 6>$null | Out-Null
 }
 
-function Wait-AndroidExit([string] $package, [int] $seconds) {
-    $deadline = (Get-Date).AddSeconds($seconds)
-    Start-Sleep -Seconds 2
-    while ((Get-Date) -lt $deadline) {
-        $processId = & adb -s $script:DeviceId shell pidof $package 2>$null
-        if (-not $processId) { return $true }
-        Start-Sleep -Seconds 1
-    }
-    return $false
+function Test-AndroidRunning([string] $package) {
+    $processId = & adb -s $script:DeviceId shell pidof $package 2>$null
+    return [bool]$processId
 }
 
 function Invoke-AndroidRun([string] $ids, [string] $runId, [string] $logPath, [bool] $crashes) {
     $package = $script:AppId
+    $executable = "$package/$script:Activity"
     Invoke-Adb shell am force-stop $package | Out-Null
     Invoke-Adb logcat -c | Out-Null
-    # Streamed rather than dumped at the end: a run that logs a lot overflows the device's log buffer.
+    # Streamed rather than read once the app exits: a run that logs a lot overflows the device's log buffer, and the
+    # relaunch after a crash is a process of its own.
     $logcat = Start-Process -FilePath "adb" -ArgumentList @("-s", $script:DeviceId, "logcat") -RedirectStandardOutput $logPath -RedirectStandardError "$logPath.stderr" -PassThru
+    $launch = $null
     try {
-        Invoke-Adb shell am start -n "$package/$script:Activity" -e sample $ids -e run_id $runId | Out-Null
-        $exited = Wait-AndroidExit $package $TimeoutSeconds
+        # The launch's arguments reach adb through Invoke-Expression: the quotes keep a list of samples (a,b) one value.
+        $launch = Invoke-DeviceApp -ExecutablePath $executable -Arguments @("-e", "sample", "'$ids'", "-e", "run_id", $runId) 3>$null 6>$null
+        $exited = -not (Test-AndroidRunning $package)
         if (-not $exited) {
             Invoke-Adb shell am force-stop $package | Out-Null
         }
 
         if ($crashes) {
-            # The crash is sent on the next launch.
-            Invoke-Adb shell am start -n "$package/$script:Activity" | Out-Null
-            Start-Sleep -Seconds 10
+            Invoke-Relaunch $executable | Out-Null
             Invoke-Adb shell am force-stop $package | Out-Null
         }
         Start-Sleep -Seconds 1
@@ -757,14 +821,17 @@ function Invoke-AndroidRun([string] $ids, [string] $runId, [string] $logPath, [b
         $logcat.WaitForExit(5000) | Out-Null
         Remove-Item "$logPath.stderr" -ErrorAction SilentlyContinue
     }
+
+    # The app's own log lines, as the provider read them after the run, when the stream caught nothing.
+    if ($launch -and -not (Get-Content $logPath -TotalCount 1 -ErrorAction SilentlyContinue)) {
+        [System.IO.File]::WriteAllLines($logPath, [string[]]@($launch.Output))
+    }
     return $exited
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# iOS
+# iOS Simulator
 # ---------------------------------------------------------------------------------------------------------------------
-
-$script:IosSimulator = $false
 
 function Resolve-IosDevice {
     Set-StrictMode -Version 1
@@ -772,60 +839,32 @@ function Resolve-IosDevice {
         throw "xcrun was not found. Install Xcode and select it with xcode-select."
     }
 
-    $json = New-TemporaryFile
-    try {
-        & xcrun devicectl list devices --quiet --json-output $json.FullName 2>&1 | Out-Null
-        $phones = @((Get-Content $json.FullName -Raw | ConvertFrom-Json).result.devices | Where-Object {
-                $_.hardwareProperties.reality -eq "physical" -and $_.hardwareProperties.platform -eq "iOS" })
-    }
-    finally {
-        Remove-Item $json.FullName -ErrorAction SilentlyContinue
-    }
-
     $simulators = @(((& xcrun simctl list devices available --json) | ConvertFrom-Json).devices.PSObject.Properties.Value | ForEach-Object { $_ })
 
     if ($Device) {
-        $phone = $phones | Where-Object { $_.hardwareProperties.udid -eq $Device -or $_.identifier -eq $Device -or $_.deviceProperties.name -eq $Device } | Select-Object -First 1
-        if ($phone) {
-            return @{ Id = $phone.hardwareProperties.udid; Simulator = $false; Name = $phone.deviceProperties.name }
-        }
-        $simulator = $simulators | Where-Object { $_.udid -eq $Device -or $_.name -eq $Device } | Select-Object -First 1
+        $matched = @($simulators | Where-Object { $_.udid -eq $Device -or $_.name -eq $Device })
+        $simulator = @(@($matched | Where-Object state -eq "Booted") + $matched) | Select-Object -First 1
         if ($simulator) {
-            return @{ Id = $simulator.udid; Simulator = $true; Name = $simulator.name }
+            return @{ Id = $simulator.udid; Name = $simulator.name }
         }
-        throw "No iPhone or simulator '$Device'. Check 'xcrun devicectl list devices' and 'xcrun simctl list devices'."
+        throw "No iOS Simulator '$Device'. Check 'xcrun simctl list devices available'."
     }
 
-    $connected = @($phones | Where-Object { $_.connectionProperties.pairingState -eq "paired" })
-    if ($connected.Count -eq 1) {
-        return @{ Id = $connected[0].hardwareProperties.udid; Simulator = $false; Name = $connected[0].deviceProperties.name }
-    }
     $booted = @($simulators | Where-Object { $_.state -eq "Booted" })
-    if ($connected.Count -eq 0 -and $booted.Count -eq 1) {
-        return @{ Id = $booted[0].udid; Simulator = $true; Name = $booted[0].name }
+    if ($booted.Count -eq 1) {
+        return @{ Id = $booted[0].udid; Name = $booted[0].name }
     }
-    throw "Found $($connected.Count) iPhones and $($booted.Count) booted simulators: name one with -Device <udid or simulator name>."
-}
-
-function Get-SigningTeam {
-    $team = Get-ProjectSetting "appleDeveloperTeamID"
-    if (-not $team) { $team = $env:APPLE_ID }
-    if (-not $team) {
-        throw "No signing team: set APPLE_ID and rerun bootstrap."
-    }
-    return $team
+    throw "Found $($booted.Count) booted simulators: name one with -Device <simulator name or UDID>."
 }
 
 function Get-IosAppPath {
-    $configuration = if ($script:IosSimulator) { "Release-iphonesimulator" } else { "Release-iphoneos" }
-    $products = Join-Path $projectPath "Builds/iOS-derived/Build/Products/$configuration"
+    $products = Join-Path $projectPath "Builds/iOS-derived/Build/Products/Release-iphonesimulator"
     $app = Get-ChildItem -Path $products -Filter "*.app" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
     return $app
 }
 
 function Build-Ios {
-    $sdk = if ($script:IosSimulator) { "Simulator" } else { "Device" }
-    & pwsh (Join-Path $PSScriptRoot "build-sample.ps1") -Target iOS -IosSdk $sdk
+    & pwsh (Join-Path $PSScriptRoot "build-sample.ps1") -Target iOS -IosSdk Simulator
     if ($LASTEXITCODE -ne 0) { throw "The iOS build failed." }
 
     $derived = Join-Path $projectPath "Builds/iOS-derived"
@@ -833,18 +872,9 @@ function Build-Ios {
         "-project", (Join-Path $projectPath "Builds/iOS/Unity-iPhone.xcodeproj"),
         "-scheme", "Unity-iPhone",
         "-configuration", "Release",
-        "-derivedDataPath", $derived
+        "-derivedDataPath", $derived,
+        "-sdk", "iphonesimulator", "-destination", "generic/platform=iOS Simulator"
     )
-    if ($script:IosSimulator) {
-        $arguments += @("-sdk", "iphonesimulator", "-destination", "generic/platform=iOS Simulator")
-    }
-    else {
-        $arguments += @(
-            "-destination", "generic/platform=iOS",
-            "-allowProvisioningUpdates", "-allowProvisioningDeviceRegistration",
-            "CODE_SIGN_STYLE=Automatic", "DEVELOPMENT_TEAM=$(Get-SigningTeam)"
-        )
-    }
 
     $log = Join-Path $projectPath "Builds/xcodebuild.log"
     # The build phase that uploads debug symbols writes sentry-cli's output next to the Xcode project.
@@ -868,82 +898,25 @@ function Build-Ios {
     if (-not $app) { throw "xcodebuild produced no .app under $derived." }
 
     Write-Host "Installing $($app.FullName) on $script:DeviceName"
-    if ($script:IosSimulator) {
-        Start-IosSimulator
-        & xcrun simctl install $script:DeviceId $app.FullName
-    }
-    else {
-        & xcrun devicectl device install app --device $script:DeviceId $app.FullName
-    }
-    if ($LASTEXITCODE -ne 0) { throw "Installing $($app.Name) failed." }
-}
-
-function Start-IosSimulator {
-    Set-StrictMode -Version 1
-    $state = (((& xcrun simctl list devices --json) | ConvertFrom-Json).devices.PSObject.Properties.Value | ForEach-Object { $_ } | Where-Object udid -eq $script:DeviceId).state
-    if ($state -ne "Booted") {
-        & xcrun simctl boot $script:DeviceId
-        & xcrun simctl bootstatus $script:DeviceId | Out-Null
-    }
-}
-
-# Launches the app with its output streamed to the log, and waits for it to exit.
-function Start-IosProcess([string[]] $appArguments, [string] $logPath) {
-    if ($script:IosSimulator) {
-        & xcrun simctl terminate $script:DeviceId $script:AppId 2>$null | Out-Null
-        $arguments = @("simctl", "launch", "--console-pty", "--terminate-running-process", $script:DeviceId, $script:AppId) + $appArguments
-    }
-    else {
-        $arguments = @("devicectl", "device", "process", "launch", "--console", "--terminate-existing", "--device", $script:DeviceId, $script:AppId) + $appArguments
-    }
-    return Start-Process -FilePath "xcrun" -ArgumentList $arguments -RedirectStandardOutput $logPath -RedirectStandardError "$logPath.stderr" -PassThru
+    Install-DeviceApp -Path $app.FullName 3>$null 6>$null | Out-Null
 }
 
 function Stop-IosApp {
-    Set-StrictMode -Version 1
-    if ($script:IosSimulator) {
-        & xcrun simctl terminate $script:DeviceId $script:AppId 2>$null | Out-Null
-        return
-    }
-
-    $json = New-TemporaryFile
-    try {
-        & xcrun devicectl device info processes --device $script:DeviceId --quiet --json-output $json.FullName 2>&1 | Out-Null
-        $processes = @((Get-Content $json.FullName -Raw | ConvertFrom-Json).result.runningProcesses | Where-Object {
-                $_.executable -and $_.executable -like "*/$($script:IosExecutable).app/*" })
-        foreach ($process in $processes) {
-            & xcrun devicectl device process terminate --device $script:DeviceId --pid $process.processIdentifier --quiet 2>&1 | Out-Null
-        }
-    }
-    finally {
-        Remove-Item $json.FullName -ErrorAction SilentlyContinue
-    }
-}
-
-function Wait-IosProcess($process, [int] $seconds) {
-    if ($process.WaitForExit($seconds * 1000)) { return $true }
-    Stop-IosApp
-    if (-not $process.WaitForExit(10000)) { $process.Kill() }
-    return $false
+    & xcrun simctl terminate $script:DeviceId $script:AppId 2>$null | Out-Null
 }
 
 function Invoke-IosRun([string] $ids, [string] $runId, [string] $logPath, [bool] $crashes) {
-    $process = Start-IosProcess @("--sample", $ids, "--run_id", $runId) $logPath
-    $exited = Wait-IosProcess $process $TimeoutSeconds
+    $launch = Invoke-DeviceApp -ExecutablePath $script:AppId -Arguments @("--sample", $ids, "--run_id", $runId) 3>$null 6>$null
+    # The provider stops an app that outlives the run timeout and reports exit code -1.
+    $exited = $launch.ExitCode -ne -1
+    [System.IO.File]::WriteAllLines($logPath, [string[]]@($launch.Output))
 
     if ($crashes) {
-        # The crash is sent on the next launch.
-        $relaunch = Start-IosProcess @() "$logPath.relaunch"
-        Start-Sleep -Seconds 10
+        $relaunch = Invoke-Relaunch $script:AppId
         Stop-IosApp
-        if (-not $relaunch.WaitForExit(10000)) { $relaunch.Kill() }
-        Get-Content "$logPath.relaunch" -ErrorAction SilentlyContinue | Add-Content $logPath
-        Remove-Item "$logPath.relaunch" -ErrorAction SilentlyContinue
-    }
-
-    if (Test-Path "$logPath.stderr") {
-        Get-Content "$logPath.stderr" | Add-Content $logPath
-        Remove-Item "$logPath.stderr", "$logPath.relaunch.stderr" -ErrorAction SilentlyContinue
+        if ($relaunch) {
+            [System.IO.File]::AppendAllLines($logPath, [string[]]@($relaunch.Output))
+        }
     }
     return $exited
 }
@@ -955,6 +928,8 @@ function Invoke-IosRun([string] $ids, [string] $runId, [string] $logPath, [bool]
 $catalogue = Get-SampleCatalogue
 $selected = @(Select-Samples $catalogue)
 
+. (Join-Path $repoRoot "modules/app-runner/import-modules.ps1")
+
 $script:AppId = Get-ApplicationIdentifier $Platform
 if ($Platform -eq "Android") {
     $script:DeviceId = Resolve-AndroidDevice
@@ -964,23 +939,13 @@ else {
     $target = Resolve-IosDevice
     $script:DeviceId = $target.Id
     $script:DeviceName = "$($target.Name) ($($target.Id))"
-    $script:IosSimulator = $target.Simulator
 }
 
 Connect-SampleSentry
 
-if ($Build) {
-    if ($Platform -eq "Android") { Build-Android } else { Build-Ios }
-}
-
-if ($Platform -eq "Android") {
-    $script:Activity = Get-AndroidActivity $script:AppId
-}
-else {
-    $app = Get-IosAppPath
-    $script:IosExecutable = if ($app) { $app.BaseName } else { "unity-of-bugs" }
-    if ($script:IosSimulator) { Start-IosSimulator }
-}
+# Boots the simulator when it isn't running; disconnecting shuts down a simulator the connection booted.
+$devicePlatform = if ($Platform -eq "Android") { "Adb" } else { "iOSSimulator" }
+Connect-Device -Platform $devicePlatform -Target $script:DeviceId 3>$null 6>$null | Out-Null
 
 $reportPath = if ($Report) { [System.IO.Path]::GetFullPath($Report) } else { $null }
 $resultsDirectory = if ($reportPath) {
@@ -992,70 +957,94 @@ else {
 New-Item -ItemType Directory -Force -Path $resultsDirectory | Out-Null
 
 $runs = [System.Collections.Generic.List[object]]::new()
-foreach ($entry in $selected) {
-    $run = [ordered]@{
-        Entry       = $entry
-        RunId       = [guid]::NewGuid().ToString()
-        Expectation = Get-SampleExpectation $entry.Id
-        Status      = "pending"
-        Exited      = $null
-        FinishedAt  = $null
-        Log         = $null
-        Result      = $null
-        Final       = $false
-        Note        = ""
-    }
-    $runs.Add($run)
+try {
+    (Get-DeviceSession).Provider.Timeouts['run-timeout'] = $TimeoutSeconds
 
-    $mismatch = Get-PlatformMismatch $entry $Platform
-    if (-not $mismatch -and $script:IosSimulator -and $simulatorSkips.ContainsKey($entry.Id)) {
-        $mismatch = $simulatorSkips[$entry.Id]
-    }
-    if ($entry.ManualOnly) {
-        $run.Status = "manual"
-        $run.Note = "needs a tap: run it from the menu"
-        Write-Host "[$($entry.Id)] manual: skipped"
-        continue
-    }
-    if ($mismatch) {
-        $run.Status = "unavailable"
-        $run.Note = $mismatch
-        Write-Host "[$($entry.Id)] $mismatch`: skipped"
-        continue
+    if ($Build) {
+        if ($Platform -eq "Android") { Build-Android } else { Build-Ios }
     }
 
-    $ids = $entry.Id
-    if ($run.Expectation.ContainsKey("Then")) { $ids = "$ids,$($run.Expectation.Then)" }
-    $run.Log = Join-Path $resultsDirectory (($entry.Id -replace '/', '-') + ".log")
-    Write-Host "[$($entry.Id)] launching (run $($run.RunId))"
-
-    $exited = if ($Platform -eq "Android") {
-        Invoke-AndroidRun $ids $run.RunId $run.Log $entry.Crashes
-    }
-    else {
-        Invoke-IosRun $ids $run.RunId $run.Log $entry.Crashes
-    }
-    $run.Exited = $exited
-    $run.FinishedAt = Get-Date
-
-    $log = Get-Content $run.Log -Raw -ErrorAction SilentlyContinue
-    if ($log -match "Sample '[^']+' can't run here: ([^\r\n]+)") {
-        $run.Status = "unavailable"
-        $run.Note = $Matches[1].Trim()
-        Write-Host "[$($entry.Id)] unavailable: $($run.Note)"
-        continue
+    if ($Platform -eq "Android") {
+        $script:Activity = Get-AndroidActivity $script:AppId
     }
 
-    $run.Status = "sent"
-    # A launch the device refused (an iPhone that's locked, say) sends nothing: fail it now, with the reason.
-    if ($log -match "(?m)^ERROR: The application failed to launch" -or $log -match "Unable to launch \S+ because ([^\r\n.`")]+)") {
-        $reason = if ($log -match "Unable to launch \S+ because ([^\r\n.`")]+)") { "the app didn't launch: $($Matches[1].Trim())" } else { "the app didn't launch" }
-        $run.Result = [ordered]@{ Arrived = "no"; Symbolicated = ""; Passed = $false; Details = $reason; Link = ""; Summary = $null; Problems = @() }
-        continue
+    foreach ($entry in $selected) {
+        $run = [ordered]@{
+            Entry       = $entry
+            RunId       = [guid]::NewGuid().ToString()
+            Expectation = Get-SampleExpectation $entry.Id
+            Status      = "pending"
+            Exited      = $null
+            FinishedAt  = $null
+            Log         = $null
+            Result      = $null
+            Final       = $false
+            Note        = ""
+        }
+        $runs.Add($run)
+
+        $mismatch = Get-PlatformMismatch $entry $Platform
+        if (-not $mismatch -and $Platform -eq "iOS" -and $simulatorSkips.ContainsKey($entry.Id)) {
+            $mismatch = $simulatorSkips[$entry.Id]
+        }
+        if ($entry.ManualOnly) {
+            $run.Status = "manual"
+            $run.Note = "needs a tap: run it from the menu"
+            Write-Host "[$($entry.Id)] manual: skipped"
+            continue
+        }
+        if ($mismatch) {
+            $run.Status = "unavailable"
+            $run.Note = $mismatch
+            Write-Host "[$($entry.Id)] $mismatch`: skipped"
+            continue
+        }
+
+        $ids = $entry.Id
+        if ($run.Expectation.ContainsKey("Then")) { $ids = "$ids,$($run.Expectation.Then)" }
+        $run.Log = Join-Path $resultsDirectory (($entry.Id -replace '/', '-') + ".log")
+        Write-Host "[$($entry.Id)] launching (run $($run.RunId))"
+
+        try {
+            $exited = if ($Platform -eq "Android") {
+                Invoke-AndroidRun $ids $run.RunId $run.Log $entry.Crashes
+            }
+            else {
+                Invoke-IosRun $ids $run.RunId $run.Log $entry.Crashes
+            }
+        }
+        catch {
+            # A launch the device refused sends nothing: fail this run now, with the reason, and go on with the next.
+            $reason = ("$_" -split "`r?`n" | Where-Object { $_.Trim() } | Select-Object -First 1)
+            $run.Status = "sent"
+            $run.FinishedAt = Get-Date
+            $run.Result = [ordered]@{ Arrived = "no"; Symbolicated = ""; Passed = $false; Details = "the app didn't launch: $reason"; Link = ""; Summary = $null; Problems = @() }
+            continue
+        }
+        $run.Exited = $exited
+        $run.FinishedAt = Get-Date
+
+        $log = Get-Content $run.Log -Raw -ErrorAction SilentlyContinue
+        if ($log -match "Sample '[^']+' can't run here: ([^\r\n]+)") {
+            $run.Status = "unavailable"
+            $run.Note = $Matches[1].Trim()
+            Write-Host "[$($entry.Id)] unavailable: $($run.Note)"
+            continue
+        }
+
+        $run.Status = "sent"
+        # simctl's own error when the simulator refuses the launch: the app never ran, so nothing was sent.
+        if ($log -match "(?m)^An error was encountered processing the command") {
+            $run.Result = [ordered]@{ Arrived = "no"; Symbolicated = ""; Passed = $false; Details = "the app didn't launch"; Link = ""; Summary = $null; Problems = @() }
+            continue
+        }
+        if (-not $exited) {
+            $run.Note = if ($entry.Crashes) { "the app didn't end within $TimeoutSeconds s" } else { "the app didn't exit within $TimeoutSeconds s" }
+        }
     }
-    if (-not $exited) {
-        $run.Note = if ($entry.Crashes) { "the app didn't end within $TimeoutSeconds s" } else { "the app didn't exit within $TimeoutSeconds s" }
-    }
+}
+finally {
+    Disconnect-Device 3>$null 6>$null | Out-Null
 }
 
 # Look up every run, until each has arrived or its time is up. Drop samples are judged once their shorter wait is over.
