@@ -793,6 +793,12 @@ function Test-AndroidRunning([string] $package) {
     return [bool]$processId
 }
 
+# Whether the streamed log shows the app's process starting, or the app's own Unity lines.
+function Test-AndroidStarted([string] $package, [string] $logPath) {
+    if (-not (Test-Path $logPath)) { return $false }
+    return [bool](Select-String -Path $logPath -Pattern "Start proc \d+:$([regex]::Escape($package))/", " Unity   : " -Quiet)
+}
+
 function Invoke-AndroidRun([string] $ids, [string] $runId, [string] $logPath, [bool] $crashes) {
     $package = $script:AppId
     $executable = "$package/$script:Activity"
@@ -804,7 +810,16 @@ function Invoke-AndroidRun([string] $ids, [string] $runId, [string] $logPath, [b
     $launch = $null
     try {
         # The launch's arguments reach adb through Invoke-Expression: the quotes keep a list of samples (a,b) one value.
-        $launch = Invoke-DeviceApp -ExecutablePath $executable -Arguments @("-e", "sample", "'$ids'", "-e", "run_id", $runId) 3>$null 6>$null
+        try {
+            $launch = Invoke-DeviceApp -ExecutablePath $executable -Arguments @("-e", "sample", "'$ids'", "-e", "run_id", $runId) 3>$null 6>$null
+        }
+        catch {
+            # The provider throws when the app is gone before it first looks for its process (a crash at startup, a
+            # sample that can't run here and quits at once): the app did run then, and the streamed log shows it.
+            # Only a launch that left nothing of the app in the log failed.
+            if (-not (Test-AndroidStarted $package $logPath)) { throw }
+            Write-Verbose "The launch reported an error after the app ran: $_"
+        }
         $exited = -not (Test-AndroidRunning $package)
         if (-not $exited) {
             Invoke-Adb shell am force-stop $package | Out-Null
@@ -943,10 +958,6 @@ else {
 
 Connect-SampleSentry
 
-# Boots the simulator when it isn't running; disconnecting shuts down a simulator the connection booted.
-$devicePlatform = if ($Platform -eq "Android") { "Adb" } else { "iOSSimulator" }
-Connect-Device -Platform $devicePlatform -Target $script:DeviceId 3>$null 6>$null | Out-Null
-
 $reportPath = if ($Report) { [System.IO.Path]::GetFullPath($Report) } else { $null }
 $resultsDirectory = if ($reportPath) {
     Join-Path ([System.IO.Path]::GetDirectoryName($reportPath)) ([System.IO.Path]::GetFileNameWithoutExtension($reportPath) + "-logs")
@@ -957,7 +968,10 @@ else {
 New-Item -ItemType Directory -Force -Path $resultsDirectory | Out-Null
 
 $runs = [System.Collections.Generic.List[object]]::new()
+$devicePlatform = if ($Platform -eq "Android") { "Adb" } else { "iOSSimulator" }
 try {
+    # Boots the simulator when it isn't running; disconnecting shuts down a simulator the connection booted.
+    Connect-Device -Platform $devicePlatform -Target $script:DeviceId 3>$null 6>$null | Out-Null
     (Get-DeviceSession).Provider.Timeouts['run-timeout'] = $TimeoutSeconds
 
     if ($Build) {

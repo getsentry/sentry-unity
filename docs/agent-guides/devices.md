@@ -90,5 +90,5 @@ feedback. A real phone is needed for:
   script skips `platform/out-of-memory`, as a simulator has no iOS memory limit, and `hangs/main-thread-sleep` and
   `hangs/native-freeze`, as sentry-cocoa can't capture an App Hang's stack there. On an iPhone, the out-of-memory
   sample arrives as a watchdog termination only with `IosWatchdogTerminationIntegrationEnabled`, which is off by default
-  in the SDK: the sample turns it on in `SampleOptionConfiguration.cs`;
+  in the SDK: the sample app turns it on for every iOS run, in `SampleOptionConfiguration.cs`;
 - code signing and provisioning.

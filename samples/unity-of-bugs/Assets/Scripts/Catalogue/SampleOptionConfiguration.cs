@@ -11,8 +11,8 @@ public class SampleOptionConfiguration : SentryOptionConfiguration
 
 #if UNITY_IOS
         // Reports the app being ended by iOS, as the out-of-memory sample is, on the next launch. The option is off by
-        // default in the SDK: the sample turns it on only for the out-of-memory sample, whose iOS result holds only
-        // with it on.
+        // default in the SDK. The sample app turns it on for every iOS run, because the out-of-memory sample's result
+        // needs it.
         options.IosWatchdogTerminationIntegrationEnabled = true;
 #endif
     }

@@ -325,7 +325,7 @@ namespace Sentry.Unity.Samples
                 var content = SampleUI.Scroll(category.Name, _body, true, out var scroll);
                 SampleUI.Layout<VerticalLayoutGroup>(content, 8, 8, 8, 8, 6).childForceExpandWidth = true;
 
-                if (category.Name == "Errors")
+                if (category == ErrorSamples.Category)
                 {
                     BuildRunOnSelector(content);
                 }

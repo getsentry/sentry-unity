@@ -19,7 +19,7 @@ namespace Sentry.Unity.Samples
                 "Raises an NSException in Objective-C, which ends the app.",
                 ThrowObjectiveC, SampleRequirements.IOS, crashes: true),
             new SampleEntry("platform/out-of-memory", "Run out of memory",
-                "Allocates every frame until iOS ends the app. Arrives as a watchdog termination on the next launch. Needs IosWatchdogTerminationIntegrationEnabled, which is off by default: this sample turns it on.",
+                "Allocates every frame until iOS ends the app. Arrives as a watchdog termination on the next launch. Needs IosWatchdogTerminationIntegrationEnabled, which is off by default: the sample app turns it on.",
                 RunOutOfMemory, SampleRequirements.IOS, crashes: true));
 
         private static void ThrowKotlin() => CallKotlin("throw");
