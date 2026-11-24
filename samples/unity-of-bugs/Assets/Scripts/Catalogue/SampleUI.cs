@@ -20,6 +20,10 @@ namespace Sentry.Unity.Samples
         public static readonly Color Muted = new Color32(0xC9, 0xBE, 0xE8, 255);
         public static readonly Color Warning = new Color32(0xFD, 0xB8, 0x1B, 255);
 
+        // White at 8% over the header, made opaque: the project renders in linear colour space, where a see-through
+        // white blends far lighter than it does in sRGB.
+        private static readonly Color CloseChip = new Color32(0x31, 0x29, 0x43, 255);
+
         private static Font _font;
 
         public static Font Font
@@ -111,7 +115,7 @@ namespace Sentry.Unity.Samples
         /// <summary>A square button with an ✕ drawn from two bars, as the built-in font has no ✕.</summary>
         public static Button CloseButton(Transform parent, float size, UnityAction onClick)
         {
-            var button = Button("CloseButton", parent, null, 0, new Color(1, 1, 1, 0.08f), onClick);
+            var button = Button("CloseButton", parent, null, 0, CloseChip, onClick);
             var rect = (RectTransform)button.transform;
             rect.sizeDelta = new Vector2(size, size);
 
