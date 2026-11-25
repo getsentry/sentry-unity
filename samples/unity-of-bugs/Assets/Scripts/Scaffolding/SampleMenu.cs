@@ -350,9 +350,12 @@ namespace Sentry.Unity.Samples
             optionsLayout.childForceExpandHeight = true;
             SampleUI.Size(options, height: 24);
 
+            string unmet = null;
             foreach (RunOn runOn in Enum.GetValues(typeof(RunOn)))
             {
                 var value = runOn;
+                var reason = SampleHelpers.RunOnUnmetReason(value);
+                unmet = unmet ?? reason;
                 var button = SampleUI.Button(value.ToString(), options, RunOnLabel(value), 11, SampleUI.Row, () =>
                 {
                     SampleCatalogue.RunOn = value;
@@ -365,7 +368,18 @@ namespace Sentry.Unity.Samples
                 label.horizontalOverflow = HorizontalWrapMode.Wrap;
                 label.verticalOverflow = VerticalWrapMode.Truncate;
                 SampleUI.Size(button, flexibleWidth: 1);
+                button.interactable = reason == null;
+                if (reason != null)
+                {
+                    button.gameObject.AddComponent<CanvasGroup>().alpha = 0.55f;
+                }
+
                 _runOnButtons.Add(new KeyValuePair<RunOn, Button>(value, button));
+            }
+
+            if (unmet != null)
+            {
+                SampleUI.Text("Reason", row.transform, unmet, 11, SampleUI.Warning, FontStyle.Italic);
             }
 
             ShowRunOn();

@@ -10,11 +10,24 @@ namespace Sentry.Unity.Samples
     /// <summary>What the samples of more than one category share.</summary>
     internal static class SampleHelpers
     {
-        // Runs the sample where the "Run on" selector says, and returns once it's done there.
+        // Fields rather than constants, so the compiler doesn't flag the branches a platform never takes.
+#if UNITY_WEBGL && !UNITY_EDITOR
+        private static readonly bool HasThreads = false;
+#else
+        private static readonly bool HasThreads = true;
+#endif
+
+        /// <summary>Why the "Run on" choice can't run here, or null when it can.</summary>
+        internal static string RunOnUnmetReason(RunOn runOn) =>
+            HasThreads || runOn == RunOn.MainThread || runOn == RunOn.Coroutine ? null : "WebGL has no threads";
+
+        // Runs the sample where the "Run on" selector says, and returns once it's done there. A choice that can't run
+        // here runs on the main thread.
         internal static IEnumerator OnSelectedThread(Action sample)
         {
-            Debug.Log($"Running on: {SampleCatalogue.RunOn}");
-            switch (SampleCatalogue.RunOn)
+            var runOn = RunOnUnmetReason(SampleCatalogue.RunOn) == null ? SampleCatalogue.RunOn : RunOn.MainThread;
+            Debug.Log($"Running on: {runOn}");
+            switch (runOn)
             {
                 case RunOn.MainThread:
                     sample();
@@ -65,7 +78,7 @@ namespace Sentry.Unity.Samples
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(SampleCatalogue.RunOn), SampleCatalogue.RunOn, null);
+                    throw new ArgumentOutOfRangeException(nameof(SampleCatalogue.RunOn), runOn, null);
             }
         }
 
