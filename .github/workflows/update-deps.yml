@@ -64,12 +64,16 @@ jobs:
           ssh-key: ${{ secrets.CI_DEPLOY_KEY }}
 
       - name: Update unity-versions.json
+        env:
+          UNITY_PREFIX: ${{ matrix.unity-prefix }}
+          UNITY_VERSION: ${{ steps.version-select.outputs.version }}
+          UNITY_CHANGESET: ${{ steps.version-select.outputs.changeset }}
         run: |
           $file = "scripts/unity-versions.json"
           $data = Get-Content $file -Raw | ConvertFrom-Json
-          $prefix = '${{ matrix.unity-prefix }}'
-          $data.$prefix.version   = '${{ steps.version-select.outputs.version }}'
-          $data.$prefix.changeset = '${{ steps.version-select.outputs.changeset }}'
+          $prefix = $env:UNITY_PREFIX
+          $data.$prefix.version   = $env:UNITY_VERSION
+          $data.$prefix.changeset = $env:UNITY_CHANGESET
           $data | ConvertTo-Json -Depth 3 | Set-Content $file
 
       - run: git --no-pager diff

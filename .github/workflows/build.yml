@@ -47,7 +47,7 @@ jobs:
       - name: Load env
         id: env
         run: |
-          $v = (Get-Content scripts/unity-versions.json -Raw | ConvertFrom-Json).'${{ env.UNITY_VERSION }}'.version
+          $v = (Get-Content scripts/unity-versions.json -Raw | ConvertFrom-Json).$env:UNITY_VERSION.version
           "unityVersion=$v" >> $env:GITHUB_OUTPUT
 
       - name: Cache Unity Library
