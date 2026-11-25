@@ -4,13 +4,15 @@
 
 ### Features
 
-- Experimental session replay on Android ([#2948](https://github.com/getsentry/sentry-unity/pull/2948)):
+- Experimental session replay on Android and iOS ([#2948](https://github.com/getsentry/sentry-unity/pull/2948),
+  [#2951](https://github.com/getsentry/sentry-unity/pull/2951)):
   - Set `options.Experimental.SessionReplay.SessionSampleRate` or `OnErrorSampleRate` in code,
     in the options used both at build time and at runtime.
-  - The Android SDK records the game, and errors captured in C# send the replay of the moments before them,
+  - The native SDK records the game, and errors captured in C# send the replay of the moments before them,
     like native errors do.
-  - Session replay requires runtime initialization of the Android SDK and adds the Kotlin standard library to the build.
-  - By default, the Android SDK captures the frames; with `Capture = SessionReplayCapture.Unity`,
+  - Session replay requires runtime initialization of the native SDK.
+    On Android, it adds the Kotlin standard library to the build.
+  - By default, the native SDK captures the frames; with `Capture = SessionReplayCapture.Unity`,
     Unity captures them instead.
 
 ## 4.13.0

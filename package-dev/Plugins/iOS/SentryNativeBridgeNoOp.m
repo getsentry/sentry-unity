@@ -7,6 +7,8 @@ void *_Nullable SentryNativeBridgeOptionsNew() { return nil; }
 void SentryNativeBridgeOptionsSetString(void *options, const char *name, const char *value) { }
 void SentryNativeBridgeOptionsSetInt(void *options, const char *name, int32_t value) { }
 void SentryNativeBridgeOptionsSetDouble(void *options, const char *name, double value) { }
+void SentryNativeBridgeOptionsSetReplay(
+    void *options, double sessionSampleRate, double errorSampleRate, int32_t quality) { }
 void SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange(void *options, int32_t min, int32_t max) { }
 int SentryNativeBridgeStartWithOptions(void *options) { return 0; }
 
@@ -49,6 +51,28 @@ char *_Nullable SentryNativeBridgeGetUser() { return NULL; }
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId) { }
 
 void SentryNativeBridgeSetEnvironment(const char *environment) { }
+
+void SentryNativeBridgeReplayStart() { }
+
+void SentryNativeBridgeReplayStartBuffering() { }
+
+void SentryNativeBridgeReplayPause() { }
+
+void SentryNativeBridgeReplayResume() { }
+
+void SentryNativeBridgeReplayStop() { }
+
+int SentryNativeBridgeReplayCapture() { return 0; }
+
+char *_Nullable SentryNativeBridgeGetReplayId() { return NULL; }
+
+void SentryNativeBridgeReplayUseUnityCapture() { }
+
+int SentryNativeBridgeReplayTakeFrameRequest(int *width, int *height) { return 0; }
+
+void SentryNativeBridgeReplayDeliverFrame(int requestId, const void *rgba, int width, int height) { }
+
+void SentryNativeBridgeReplayCancelFrameRequest() { }
 
 void SentryNativeBridgeWriteScope( // clang-format off
     // // const char *AppStartTime,

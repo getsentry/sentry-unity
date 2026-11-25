@@ -144,6 +144,10 @@ void SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange(const void *option
     }
 }
 
+// Session replay is iOS only.
+void SentryNativeBridgeOptionsSetReplay(
+    const void *options, double sessionSampleRate, double errorSampleRate, int32_t quality) { }
+
 int SentryNativeBridgeStartWithOptions(const void *options)
 {
     NSMutableDictionary *dictOptions = (__bridge_transfer NSMutableDictionary *)options;
@@ -378,6 +382,29 @@ char *SentryNativeBridgeGetTraceHeader() { return NULL; }
 char *SentryNativeBridgeGetBaggageHeader() { return NULL; }
 
 char *SentryNativeBridgeGetUser() { return NULL; }
+
+// Session replay is iOS only.
+void SentryNativeBridgeReplayStart() { }
+
+void SentryNativeBridgeReplayStartBuffering() { }
+
+void SentryNativeBridgeReplayPause() { }
+
+void SentryNativeBridgeReplayResume() { }
+
+void SentryNativeBridgeReplayStop() { }
+
+int SentryNativeBridgeReplayCapture() { return 0; }
+
+char *SentryNativeBridgeGetReplayId() { return NULL; }
+
+void SentryNativeBridgeReplayUseUnityCapture() { }
+
+int SentryNativeBridgeReplayTakeFrameRequest(int *width, int *height) { return 0; }
+
+void SentryNativeBridgeReplayDeliverFrame(int requestId, const void *rgba, int width, int height) { }
+
+void SentryNativeBridgeReplayCancelFrameRequest() { }
 
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId)
 {

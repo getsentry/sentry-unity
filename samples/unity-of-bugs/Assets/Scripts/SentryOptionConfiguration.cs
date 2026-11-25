@@ -1,4 +1,7 @@
 using System;
+#if UNITY_IOS
+using System.Runtime.InteropServices;
+#endif
 using Sentry.Unity;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -55,20 +58,24 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
         ConfigureSessionReplay(options);
 #elif UNITY_IOS
         options.IosNativeInitializationType = NativeInitializationType.Runtime;
+        ConfigureSessionReplay(options);
 #endif
 
         Debug.Log("SentryOptionConfigure finished.");
     }
 
-#if UNITY_ANDROID
-    // Experimental session replay. Enabled at build time, so the build carries the replay library. At runtime, launch
-    // extras pick the mode: `adb shell am start -n <package>/com.unity3d.player.UnityPlayerActivity
-    // --es sentry_replay off|session|error --es sentry_replay_capture java|unity`. Without them, replays are sent for
-    // errors, with frames the Android SDK captures.
+#if UNITY_ANDROID || UNITY_IOS
+    // Experimental session replay. Enabled at build time, so the Android build carries the replay library. At runtime,
+    // launch arguments pick the mode and what captures the frames. On Android, launch extras:
+    // `adb shell am start -n <package>/com.unity3d.player.UnityPlayerActivity --es sentry_replay off|session|error
+    // --es sentry_replay_capture native|unity`. On iOS, process arguments:
+    // `xcrun devicectl device process launch --device <device> <bundle id> -sentry_replay off|session|error
+    // -sentry_replay_capture native|unity`. Without them, replays are sent for errors, with frames the native SDK
+    // captures.
     private static void ConfigureSessionReplay(SentryUnityOptions options)
     {
-        var mode = Application.isEditor ? null : GetLaunchExtra("sentry_replay");
-        var capture = Application.isEditor ? null : GetLaunchExtra("sentry_replay_capture");
+        var mode = Application.isEditor ? null : GetLaunchArgument("sentry_replay");
+        var capture = Application.isEditor ? null : GetLaunchArgument("sentry_replay_capture");
         var replay = options.Experimental.SessionReplay;
         switch (mode)
         {
@@ -82,12 +89,14 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
                 break;
         }
 
-        replay.Capture = capture == "unity" ? SessionReplayCapture.Unity : SessionReplayCapture.SentryJava;
+        replay.Capture = capture == "unity" ? SessionReplayCapture.Unity : SessionReplayCapture.Native;
 
         Debug.Log($"Session replay mode: {mode ?? "error"}, capture: {replay.Capture}");
     }
+#endif
 
-    internal static string GetLaunchExtra(string name)
+#if UNITY_ANDROID
+    internal static string GetLaunchArgument(string name)
     {
         try
         {
@@ -102,5 +111,11 @@ public class SentryOptionConfiguration : SentryOptionsConfiguration
             return null;
         }
     }
+#elif UNITY_IOS
+    internal static string GetLaunchArgument(string name) => sampleLaunchArgument(name);
+
+    // ObjectiveCPlugin.m
+    [DllImport("__Internal")]
+    private static extern string sampleLaunchArgument(string name);
 #endif
 }

@@ -129,6 +129,9 @@ void SentryNativeBridgeOptionsSetInt(const void *options, const char *name, int3
 
 void SentryNativeBridgeOptionsSetDouble(const void *options, const char *name, double value) { }
 
+void SentryNativeBridgeOptionsSetReplay(
+    const void *options, double sessionSampleRate, double errorSampleRate, int32_t quality) { }
+
 void SentryNativeBridgeOptionsAddFailedRequestStatusCodeRange(const void *options, int32_t min, int32_t max) { }
 
 int SentryNativeBridgeStartWithOptions(const void *options) { return 0; }
@@ -145,6 +148,29 @@ void SentryNativeBridgeSetUser(
 void SentryNativeBridgeUnsetUser() { }
 
 void SentryNativeBridgeSetTrace(const char *traceId, const char *spanId) { }
+
+// Session replay runs only with the SDK the game initializes at runtime.
+void SentryNativeBridgeReplayStart() { }
+
+void SentryNativeBridgeReplayStartBuffering() { }
+
+void SentryNativeBridgeReplayPause() { }
+
+void SentryNativeBridgeReplayResume() { }
+
+void SentryNativeBridgeReplayStop() { }
+
+int SentryNativeBridgeReplayCapture() { return 0; }
+
+char *_Nullable SentryNativeBridgeGetReplayId() { return NULL; }
+
+void SentryNativeBridgeReplayUseUnityCapture() { }
+
+int SentryNativeBridgeReplayTakeFrameRequest(int *width, int *height) { return 0; }
+
+void SentryNativeBridgeReplayDeliverFrame(int requestId, const void *rgba, int width, int height) { }
+
+void SentryNativeBridgeReplayCancelFrameRequest() { }
 
 static void SentryConfigureScope(void (^callback)(id))
 {

@@ -35,6 +35,7 @@ public static class SentryNativeCocoa
 
         if (platform == RuntimePlatform.IPhonePlayer)
         {
+            var initialized = false;
             if (SentryCocoaBridgeProxy.IsEnabled())
             {
                 Logger?.LogDebug("The native SDK is already initialized");
@@ -49,6 +50,26 @@ public static class SentryNativeCocoa
             {
                 Logger?.LogWarning("Failed to initialize the native SDK");
                 return;
+            }
+            else
+            {
+                initialized = true;
+            }
+
+            if (options.Experimental.SessionReplay.IsEnabled)
+            {
+                if (initialized)
+                {
+                    Logger?.LogDebug("Recording the session replay with sentry-cocoa.");
+                    CocoaReplayLifecycle.Use(options, new CocoaReplayBridge());
+                }
+                else
+                {
+                    Logger?.LogWarning(
+                        "Session replay requires the iOS SDK to be initialized at runtime. " +
+                        "Ignoring it with initialization type '{0}'.",
+                        options.IosNativeInitializationType);
+                }
             }
 
             options.ScopeObserver = isExternal
