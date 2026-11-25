@@ -16,7 +16,7 @@
 
 - Each backend's binaries are plugins under `package-dev/Plugins/macOS/`: `Sentry/Sentry.dylib` for Cocoa, `SentryNative/libsentry-native.dylib` and `SentryNative/SentryCrash.bundle` for native. Unity copies them into the app before it signs it, so the app's signature covers them.
 - `SentryCrash.bundle` wraps the `sentry-crash` daemon, because a plugin has to be a file or a bundle. Its `Info.plist` comes from `build/macos/SentryCrash-Info.plist`.
-- `build/native-sdks.targets` ad-hoc signs the binaries it builds. Release CI (`build.yml`, `release/*` branches) signs them with Sentry's Developer ID through rcodesign and notarizes them; Unity keeps those nested signatures when it signs the app.
+- `build/native-sdks.targets` ad-hoc signs the binaries it builds. CI on `main` and `release/*` (`build.yml`, `scripts/sign-macos-binaries.sh`) signs them with Sentry's Developer ID through rcodesign and notarizes them; Unity keeps those nested signatures when it signs the app.
 - Never write into a built `.app` after Unity has signed it.
 
 ## Cocoa Behavior
