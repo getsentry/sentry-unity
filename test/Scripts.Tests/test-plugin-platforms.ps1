@@ -54,11 +54,11 @@ $ExpectedPluginScopes = @{
 
 # Demo sources rather than SDK plugins, but they ship inside the package, so they are pinned too.
 $ExpectedSampleScopes = @{
-    "Samples~/unity-of-bugs/Scripts/NativeSupport/CPlugin.c"              = "Android, Any, iOS, Linux64, Lumin, OSXUniversal, tvOS, WebGL, Win, Win64"
-    "Samples~/unity-of-bugs/Scripts/NativeSupport/CppPlugin.cpp"          = "Android, Any, iOS, Linux64, Lumin, OSXUniversal, tvOS, WebGL, Win, Win64"
-    "Samples~/unity-of-bugs/Scripts/NativeSupport/JavaScriptPlugin.jslib" = "WebGL"
-    "Samples~/unity-of-bugs/Scripts/NativeSupport/KotlinPlugin.kt"        = "Android"
-    "Samples~/unity-of-bugs/Scripts/NativeSupport/ObjectiveCPlugin.m"     = "iOS, tvOS"
+    "Samples~/unity-of-bugs/Scripts/Samples/NativePlugins/CPlugin.c"              = "Android, Any, iOS, Linux64, Lumin, OSXUniversal, tvOS, WebGL, Win, Win64"
+    "Samples~/unity-of-bugs/Scripts/Samples/NativePlugins/CppPlugin.cpp"          = "Android, Any, iOS, Linux64, Lumin, OSXUniversal, tvOS, WebGL, Win, Win64"
+    "Samples~/unity-of-bugs/Scripts/Samples/NativePlugins/JavaScriptPlugin.jslib" = "WebGL"
+    "Samples~/unity-of-bugs/Scripts/Samples/NativePlugins/KotlinPlugin.kt"        = "Android"
+    "Samples~/unity-of-bugs/Scripts/Samples/NativePlugins/ObjectiveCPlugin.m"     = "iOS, tvOS"
 }
 
 # The third party assemblies scripts/alias-assemblies.ps1 renames into the `Sentry.` namespace. They

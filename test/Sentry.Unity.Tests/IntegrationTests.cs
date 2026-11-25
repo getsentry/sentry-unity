@@ -42,7 +42,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator ThrowException_EventContainingMessageGetsCaptured()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         using var _ = InitSentrySdk();
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
@@ -58,7 +58,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator ThrowException_EventIncludesApplicationProductNameAtVersionAsRelease()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         var testApp = new TestApplication();
         var expectedAttribute = CreateAttribute("release", $"{testApp.ProductName}@{testApp.Version}");
@@ -75,7 +75,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator ThrowException_CustomReleaseSet_EventIncludesCustomRelease()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         var customRelease = "CustomRelease";
         var expectedAttribute = CreateAttribute("release", customRelease);
@@ -92,7 +92,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator ThrowException_ProductNameWhitespace_EventIncludesApplicationVersionAsRelease()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         // When productName is whitespace, release should be just the version
         var testApp = new TestApplication(productName: " ");
@@ -110,7 +110,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator ThrowException_ProductNameEmpty_EventIncludesApplicationVersionAsRelease()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         // When productName is empty/null, release should be just the version
         var testApp = new TestApplication(productName: "");
@@ -128,7 +128,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator ThrowException_EditorTest_EventIncludesEditorAsEnvironment()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         var expectedAttribute = CreateAttribute("environment", "editor");
         using var _ = InitSentrySdk();
@@ -144,7 +144,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator ThrowException_SendDefaultPiiIsTrue_EventIncludesEnvironmentUserNameAsUserName()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         var expectedAttribute = CreateAttribute("username", Environment.UserName);
         using var _ = InitSentrySdk(o =>
@@ -164,7 +164,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator ThrowException_SendDefaultPiiIsFalse_EventDoesNotIncludeEnvironmentUserNameAsUserName()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         var expectedAttribute = CreateAttribute("username", Environment.UserName);
         using var _ = InitSentrySdk();
@@ -180,7 +180,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator BugFarmScene_MultipleSentryInit_SendEventForTheLatest()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         var firstHttpClientHandler = new TestHttpClientHandler("NotSupposedToBeCalled_TestHttpClientHandler");
         using var firstDisposable = InitSentrySdk(o =>
@@ -204,7 +204,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator DebugLogException_IsMarkedUnhandled()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         var expectedMechanism = "\"mechanism\":{\"type\":\"Unity.LogException\",\"handled\":false";
         using var _ = InitSentrySdk();
@@ -220,7 +220,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator DebugLogError_OnMainThread_IsCapturedAndIsMainThreadIsTrue()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         // 'Debug.LogError' is getting captured as message
         _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage);
@@ -243,7 +243,7 @@ public sealed class IntegrationTests
             Assert.Inconclusive("Flaky"); // Ignoring because of flakiness
         }
 
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         // 'Debug.LogError' is getting captured as message
         _identifyingEventValueAttribute = CreateAttribute("message", _eventMessage);
@@ -261,7 +261,7 @@ public sealed class IntegrationTests
     [UnityTest]
     public IEnumerator DebugLogException_OnMainThread_IsCapturedAndIsMainThreadIsTrue()
     {
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         using var _ = InitSentrySdk();
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();
@@ -281,7 +281,7 @@ public sealed class IntegrationTests
             Assert.Inconclusive("Flaky"); // Ignoring because of flakiness
         }
 
-        yield return SetupSceneCoroutine("1_BugFarm");
+        yield return SetupSceneCoroutine("BugFarm");
 
         using var _ = InitSentrySdk();
         var testBehaviour = new GameObject("TestHolder").AddComponent<TestMonoBehaviour>();

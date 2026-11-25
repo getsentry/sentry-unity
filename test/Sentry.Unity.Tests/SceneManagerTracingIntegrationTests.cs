@@ -36,7 +36,7 @@ namespace Sentry.Unity
             SentryUnitySdk.Init(_options);
 
             // Act
-            yield return SetupSceneCoroutine("1_Bugfarm");
+            yield return SetupSceneCoroutine("BugFarm");
 
             // Assert
             var triggeredEvent = _testHttpClientHandler.GetEvent("\"type\":\"transaction\"", _eventReceiveTimeout);
