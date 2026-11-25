@@ -4,7 +4,7 @@
 
 ### Features
 
-- App-hang events on Windows, Linux and macOS with the Native backend can now carry the stack traces of all threads, not only the hung main thread, so they show what the main thread is waiting on. Turn on `AttachAllThreadsToAppHangs` together with `EnableAppHangTracking`, in code or as `Attach All Threads` under App Hang Tracking in the Advanced tab. It is off by default. ([#2956](https://github.com/getsentry/sentry-unity/issues/2956))
+- App-hang events on Windows, Linux and macOS with the Native backend can now carry the stack traces of all threads, not only the hung main thread, so they show what the main thread is waiting on. Turn on `AttachAllThreadsToAppHangs` together with `EnableAppHangTracking`, in code or as `Attach All Threads` under App Hang Tracking in the Advanced tab. It is off by default. ([#2963](https://github.com/getsentry/sentry-unity/pull/2963), [#2956](https://github.com/getsentry/sentry-unity/issues/2956))
 
 ### Dependencies
 
