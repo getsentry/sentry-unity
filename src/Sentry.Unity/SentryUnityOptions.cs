@@ -248,6 +248,21 @@ public sealed class SentryUnityOptions : SentryOptions
     /// </summary>
     public TimeSpan AppHangTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
+    /// <summary>
+    /// Attaches the stack traces of all threads to app-hang events, not only that of the hung main thread, so an
+    /// event shows what the main thread is waiting on, such as a job worker, the render thread or a lock.
+    /// Requires <see cref="EnableAppHangTracking"/>. This is disabled by default.
+    /// </summary>
+    /// <remarks>
+    /// Works on Windows (64-bit), Linux and macOS with <see cref="ExperimentalSentryUnityOptions.MacosBackend"/> set
+    /// to <see cref="MacosBackend.Native"/>, where <c>sentry-native</c> detects app hangs. It has no effect on other
+    /// platforms, including iOS, Android, consoles (Xbox, PlayStation, Switch) and Windows x86.
+    /// To walk a thread's stack, the watchdog suspends the thread on Windows and macOS, and can block if that thread
+    /// holds a lock the walk needs, such as the heap lock. On Linux it signals the thread instead, which can end a
+    /// blocking call such as <c>sleep</c> or <c>poll</c> early with <c>EINTR</c>.
+    /// </remarks>
+    public bool AttachAllThreadsToAppHangs { get; set; } = false;
+
     // TODO: Remove with the next mayor. This is so we still support the experimental option
     internal bool NativeAppHangTrackingEnabled
     {

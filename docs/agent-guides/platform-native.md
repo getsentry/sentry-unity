@@ -7,6 +7,7 @@
 - `sentry_get_crashed_last_run` clears native state; SDK caches its result for the process lifetime. Do not make it repeatable.
 - Native backend reinstalls before first scene after Unity takes crash/signal handlers.
 - Native logger forwarding to C# exists only under IL2CPP.
+- `sentry_options_set_app_hang_thread_stackwalk_mode` is called only when `AttachAllThreadsToAppHangs` is on, and a missing entry point only logs a warning: console libraries are user-supplied and may predate it. Switch does not bind it, because its `__Internal` bindings link statically and an older `libsentry.a` would fail to link.
 - Desktop library is named `sentry-native`; plain `sentry` resolves to the managed `Sentry.dll` under Mono. Renamed in `build/native-sdks.targets`, so the package already ships it that way.
 - Android keeps `sentry` because sentry-java loads its AAR library by name, so it gets its own `Sentry.Unity.Native.Android.dll`.
 

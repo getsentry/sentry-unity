@@ -16,6 +16,9 @@ internal static class SentryNativeBridge
 {
     private const string SentryLib = SentryNativeLibrary.Name;
 
+    // sentry.h: sentry_thread_stackwalk_mode_t, SENTRY_THREAD_STACKWALK_MODE_ALL
+    internal const int ThreadStackwalkModeAll = 2;
+
     private static IDiagnosticLogger? Logger; // This is also the logger we're forwarding native messages to.
     private static bool UseLibC;
     private static bool IsLinuxArm64;
@@ -145,11 +148,40 @@ internal static class SentryNativeBridge
         Logger?.LogDebug("Setting AppHangTimeout: {0}ms", appHangTimeoutMs);
         sentry_options_set_app_hang_timeout(cOptions, appHangTimeoutMs);
 
+#if SENTRY_NATIVE_SWITCH
+        if (options.AttachAllThreadsToAppHangs)
+        {
+            Logger?.LogDebug("AttachAllThreadsToAppHangs is not supported on Switch - skipping.");
+        }
+#else
+        SetAppHangThreadStackwalkMode(options, mode => sentry_options_set_app_hang_thread_stackwalk_mode(cOptions, mode));
+#endif
+
         Logger?.LogDebug("Initializing sentry native");
         return 0 == sentry_init(cOptions);
     }
 
     public static void Close() => sentry_close();
+
+    // Only called when the option is on: console libraries are user-supplied and may predate the function.
+    internal static void SetAppHangThreadStackwalkMode(SentryUnityOptions options, Action<int> setMode)
+    {
+        if (!options.AttachAllThreadsToAppHangs)
+        {
+            return;
+        }
+
+        options.DiagnosticLogger?.LogDebug("Setting AttachAllThreadsToAppHangs: true");
+        try
+        {
+            setMode(ThreadStackwalkModeAll);
+        }
+        catch (EntryPointNotFoundException e)
+        {
+            options.DiagnosticLogger?.LogWarning("The native library does not support AttachAllThreadsToAppHangs - " +
+                                                 "app-hang events carry the hung thread only. {0}", e.Message);
+        }
+    }
 
     // Call after native init(), which reads and clears the persisted crash marker.
     internal static bool HandleCrashedLastRun(SentryUnityOptions options)
@@ -207,6 +239,9 @@ internal static class SentryNativeBridge
 
     [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
     private static extern void sentry_options_set_handler_pathw(IntPtr options, [MarshalAs(UnmanagedType.LPWStr)] string path);
+
+    [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
+    private static extern void sentry_options_set_app_hang_thread_stackwalk_mode(IntPtr options, int mode);
 #endif
 
     [DllImport(SentryLib, CallingConvention = CallingConvention.Cdecl)]
