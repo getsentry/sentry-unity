@@ -131,6 +131,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
     public int AnrTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
     [field: SerializeField] public bool EnableAppHangTracking { get; set; } = false;
     [field: SerializeField] public int AppHangTimeout { get; set; } = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
+    [field: SerializeField] public bool AttachAllThreadsToAppHangs { get; set; } = false;
 
     [field: SerializeField] public bool CaptureFailedRequests { get; set; } = true;
 
@@ -247,6 +248,7 @@ public class ScriptableSentryUnityOptions : ScriptableObject
 #pragma warning restore CS0618
             EnableAppHangTracking = EnableAppHangTracking,
             AppHangTimeout = TimeSpan.FromMilliseconds(AppHangTimeout),
+            AttachAllThreadsToAppHangs = AttachAllThreadsToAppHangs,
             CaptureFailedRequests = CaptureFailedRequests,
             FilterBadGatewayExceptions = FilterBadGatewayExceptions,
             IosNativeSupportEnabled = IosNativeSupportEnabled,

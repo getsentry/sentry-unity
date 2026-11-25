@@ -143,6 +143,28 @@ public class ScriptableSentryUnityOptionsTests
     }
 
     [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public void ToSentryUnityOptions_AttachAllThreadsToAppHangs_Propagates(bool attachAllThreads)
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        scriptableOptions.AttachAllThreadsToAppHangs = attachAllThreads;
+
+        var options = scriptableOptions.ToSentryUnityOptions(application: _fixture.Application);
+
+        Assert.AreEqual(attachAllThreads, options.AttachAllThreadsToAppHangs);
+    }
+
+    [Test]
+    public void AttachAllThreadsToAppHangs_DefaultsToFalse()
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+
+        Assert.IsFalse(scriptableOptions.AttachAllThreadsToAppHangs);
+        Assert.IsFalse(new SentryUnityOptions().AttachAllThreadsToAppHangs);
+    }
+
+    [Test]
     [TestCase(true, true)]
     [TestCase(false, false)]
     public void ShouldDebug_DebugOnlyInEditor_ReturnsExpectedDebug(bool isEditorPlayer, bool expectedDebug)

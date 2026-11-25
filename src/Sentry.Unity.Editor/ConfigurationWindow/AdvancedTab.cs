@@ -82,6 +82,15 @@ internal static class AdvancedTab
                         "detection.\nDefault: 5000ms"),
                     options.AppHangTimeout);
                 options.AppHangTimeout = Math.Max(0, options.AppHangTimeout);
+
+                options.AttachAllThreadsToAppHangs = EditorGUILayout.Toggle(
+                    new GUIContent("Attach All Threads",
+                        "Attaches the stack traces of all threads to app-hang events, not only that of the hung " +
+                        "main thread. Works on Windows (64-bit), Linux and macOS with the Native backend. No effect " +
+                        "on other platforms, including iOS, Android, consoles (Xbox, PlayStation, Switch) and " +
+                        "Windows x86.\nThe watchdog suspends each thread to walk its stack and can block if that " +
+                        "thread holds a lock the walk needs.\nDefault: off"),
+                    options.AttachAllThreadsToAppHangs);
             }
 
             EditorGUILayout.Space();

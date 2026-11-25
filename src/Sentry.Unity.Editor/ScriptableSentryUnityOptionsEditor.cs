@@ -77,6 +77,7 @@ public class ScriptableSentryUnityOptionsEditor : UnityEditor.Editor
         EditorGUILayout.LabelField("App Hang Tracking (Experimental)", EditorStyles.boldLabel);
         EditorGUILayout.Toggle("Enable", options.EnableAppHangTracking);
         EditorGUILayout.IntField("App Hang Timeout [ms]", options.AppHangTimeout);
+        EditorGUILayout.Toggle("Attach All Threads", options.AttachAllThreadsToAppHangs);
 
         EditorGUILayout.Space();
         EditorGUI.DrawRect(EditorGUILayout.GetControlRect(false, 1), Color.gray);
