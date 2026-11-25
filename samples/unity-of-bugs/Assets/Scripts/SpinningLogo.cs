@@ -38,17 +38,20 @@ public class SpinningLogo : MonoBehaviour
         var model = CreateModel();
         model.transform.SetParent(_logo, false);
 
-        // The primitive's and the model's default materials don't make it into a player build: use a shader the
-        // builds include.
-        var shader = Shader.Find("Legacy Shaders/Diffuse");
-        foreach (var modelRenderer in model.GetComponentsInChildren<Renderer>())
+        // The logo's own material, next to the model in Resources. Its colour is the menu's purple accent,
+        // SampleUI.Accent, as Sentry's own darker purple doesn't show on the dark header. The material names its
+        // shader, so player builds include the shader.
+        var material = Resources.Load<Material>("SentryLogo");
+        if (material != null)
         {
-            if (shader != null)
+            foreach (var modelRenderer in model.GetComponentsInChildren<Renderer>())
             {
-                modelRenderer.sharedMaterial = new Material(shader);
+                modelRenderer.sharedMaterial = material;
             }
-            // The menu's purple accent: Sentry's own darker purple doesn't show on the dark header
-            modelRenderer.material.color = Sentry.Unity.Samples.SampleUI.Accent;
+        }
+        else
+        {
+            Debug.LogWarning("The SentryLogo material is missing from Resources: the logo keeps its default material.");
         }
 
         foreach (var child in model.GetComponentsInChildren<Transform>())
