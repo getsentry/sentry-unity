@@ -4,7 +4,7 @@
 
 ### Features
 
-- The Unity of Bugs sample opens on a single catalogue of SDK samples, grouped by category, with compact rows that say what each sample sends to Sentry. It works in portrait and landscape, and the feedback button no longer covers the menu. ([#2958](https://github.com/getsentry/sentry-unity/pull/2958))
+- The Unity of Bugs sample opens on a single catalogue of SDK samples, grouped by category, with compact rows that say what each sample sends to Sentry. It works in portrait and landscape, and the feedback button no longer covers the menu. Its scripts keep the SDK usage in `Scripts/Samples/`, one file per tab, apart from the app around it in `Scripts/Scaffolding/`. ([#2958](https://github.com/getsentry/sentry-unity/pull/2958))
 
 ### Dependencies
 
