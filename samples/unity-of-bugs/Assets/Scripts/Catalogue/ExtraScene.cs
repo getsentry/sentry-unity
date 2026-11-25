@@ -21,6 +21,11 @@ namespace Sentry.Unity.Samples
         [SerializeField] private Camera _camera;
         [SerializeField] private GameObject _eventSystem;
 
+        // Only on its own: the header and the note sit in the screen's safe area
+        private RectTransform _safeArea;
+        private Vector2Int _laidOutScreen;
+        private Rect _laidOutSafeArea;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics() => LoadedAdditively = false;
 
@@ -55,6 +60,15 @@ namespace Sentry.Unity.Samples
             LoadedAdditively = false;
         }
 
+        private void Update()
+        {
+            if (_safeArea != null && (_laidOutScreen.x != Screen.width || _laidOutScreen.y != Screen.height
+                    || _laidOutSafeArea != Screen.safeArea))
+            {
+                FitToSafeArea();
+            }
+        }
+
         private void BuildHeader(RectTransform header)
         {
             var background = SampleUI.Image("Background", _canvas.transform, SampleUI.Background);
@@ -62,10 +76,14 @@ namespace Sentry.Unity.Samples
             SampleUI.Stretch(background.rectTransform);
             background.transform.SetAsFirstSibling();
 
+            _safeArea = SampleUI.Rect("SafeArea", _canvas.transform);
+            FitToSafeArea();
+
+            header.SetParent(_safeArea, false);
             header.anchorMin = new Vector2(0, 1);
             header.anchorMax = new Vector2(1, 1);
             header.pivot = new Vector2(0.5f, 1);
-            header.anchoredPosition = new Vector2(0, -SafeTopInset());
+            header.anchoredPosition = Vector2.zero;
             header.sizeDelta = new Vector2(0, 44);
 
             var headerBackground = SampleUI.Image("Background", header, SampleUI.HeaderColor);
@@ -86,7 +104,7 @@ namespace Sentry.Unity.Samples
             title.rectTransform.offsetMin = new Vector2(80, 0);
             title.rectTransform.offsetMax = new Vector2(-52, 0);
 
-            var note = SampleUI.Text("Note", _canvas.transform,
+            var note = SampleUI.Text("Note", _safeArea,
                 "Loaded on its own. The load arrives in Sentry as a transaction.", 13, SampleUI.Muted,
                 FontStyle.Normal, TextAnchor.MiddleCenter);
             SampleUI.Stretch(note.rectTransform);
@@ -113,10 +131,12 @@ namespace Sentry.Unity.Samples
             SampleUI.Size(close, height: 30);
         }
 
-        private static float SafeTopInset()
+        private void FitToSafeArea()
         {
+            _laidOutScreen = new Vector2Int(Screen.width, Screen.height);
+            _laidOutSafeArea = Screen.safeArea;
             var scale = Mathf.Min(Screen.width, Screen.height) / ReferenceShortSide;
-            return (Screen.height - Screen.safeArea.yMax) / scale;
+            SampleUI.FitToSafeArea(_safeArea, _laidOutSafeArea, scale);
         }
     }
 }

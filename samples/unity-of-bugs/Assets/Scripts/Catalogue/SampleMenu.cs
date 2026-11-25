@@ -185,12 +185,8 @@ namespace Sentry.Unity.Samples
 
             var scale = Mathf.Min(Screen.width, Screen.height) / ReferenceShortSide;
 
-            // The safe area in canvas units, as offsets from the screen's edges
             var safe = _laidOutSafeArea;
-            _safeArea.anchorMin = Vector2.zero;
-            _safeArea.anchorMax = Vector2.one;
-            _safeArea.offsetMin = new Vector2(safe.xMin, safe.yMin) / scale;
-            _safeArea.offsetMax = new Vector2(safe.xMax - Screen.width, safe.yMax - Screen.height) / scale;
+            SampleUI.FitToSafeArea(_safeArea, safe, scale);
 
             _header.anchorMin = new Vector2(0, 1);
             _header.anchorMax = new Vector2(1, 1);

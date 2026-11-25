@@ -59,6 +59,15 @@ namespace Sentry.Unity.Samples
             rect.offsetMax = Vector2.zero;
         }
 
+        /// <summary>Fits the rect to the screen's safe area, given in pixels, on a canvas scaled by scale.</summary>
+        public static void FitToSafeArea(RectTransform rect, Rect safeArea, float scale)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(safeArea.xMin, safeArea.yMin) / scale;
+            rect.offsetMax = new Vector2(safeArea.xMax - Screen.width, safeArea.yMax - Screen.height) / scale;
+        }
+
         public static Image Image(string name, Transform parent, Color color)
         {
             var image = Rect(name, parent).gameObject.AddComponent<Image>();
