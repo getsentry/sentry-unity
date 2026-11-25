@@ -48,14 +48,17 @@ jobs:
           SUBMODULES: ${{ steps.env.outputs.submodules }}
 
       - name: Update submobules
-        run: git submodule update --init --recursive ${{ steps.env.outputs.submodules }}
+        run: git submodule update --init --recursive $SUBMODULES
+        shell: bash
+        env:
+          SUBMODULES: ${{ steps.env.outputs.submodules }}
 
       - run: |
-          if [[ "${{ env.TARGET }}" == "Cocoa" ]]; then
+          if [[ "$TARGET" == "Cocoa" ]]; then
             cp -r package-dev/Plugins/iOS sdk-static/ || echo "never mind, no iOS files checked in..."
             cp -r package-dev/Plugins/macOS sdk-static/ || echo "never mind, no macOS files checked in..."
           else
-            cp -r package-dev/Plugins/${{ env.TARGET }} sdk-static || echo "never mind, no files checked in..."
+            cp -r "package-dev/Plugins/$TARGET" sdk-static || echo "never mind, no files checked in..."
           fi
         shell: bash
 
@@ -99,7 +102,8 @@ jobs:
       
       - name: Build
         if: steps.cache.outputs.cache-hit != 'true'
-        run: dotnet msbuild /t:Build${{ env.TARGET }}SDK /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        run: dotnet msbuild "/t:Build$($env:TARGET)SDK" /p:Configuration=Release /p:OutDir=other src/Sentry.Unity
+        shell: pwsh
 
       - name: Upload build logs on failure
         if: ${{ failure() }}
