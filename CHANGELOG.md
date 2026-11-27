@@ -15,6 +15,24 @@
   - [changelog](https://github.com/getsentry/sentry-java/blob/main/CHANGELOG.md#8651)
   - [diff](https://github.com/getsentry/sentry-java/compare/8.64.0...8.65.1)
 
+## Unreleased
+
+### Breaking Changes
+
+The .NET SDK update to 7.x removes or hides these APIs:
+
+- `Scope.Release` and `Scope.Distribution` are removed. Set `Release` and `Distribution` on the options instead. ([#5671](https://github.com/getsentry/sentry-dotnet/pull/5671))
+- `SentryOptions.ApplyDefaultTags` is removed. Tags in `DefaultTags` are still applied. ([#5671](https://github.com/getsentry/sentry-dotnet/pull/5671))
+- `SentryOptions.EnableMetrics` is removed. Drop metrics by returning `null` from `SetBeforeSendMetric`. ([#5690](https://github.com/getsentry/sentry-dotnet/pull/5690))
+- `SentryOptions.CrashedLastRun` is internal, and `ScopeObserver` and `EnableScopeSync` can only be set by subclasses of `SentryOptions`. The SDK sets them for its native integrations, and `SentrySdk.GetLastRunState()` tells whether the last run crashed. ([#5631](https://github.com/getsentry/sentry-dotnet/pull/5631), [#5930](https://github.com/getsentry/sentry-dotnet/pull/5930))
+- `EnableLogs` now lives on `SentryUnityOptions`, so code that sets `options.EnableLogs` keeps compiling. It gates only the automatic capture of `Debug.Log` calls and the native SDKs' logs. Logs written through `SentrySdk.Logger` are sent whatever its value; `options.SetBeforeSendLog(_ => null)` drops them. ([#5642](https://github.com/getsentry/sentry-dotnet/pull/5642))
+
+### Dependencies
+
+- Bump .NET SDK from v6.12.1-53-gd4a1de12 to v7.1.0-5-g2e865e68 ([#2967](https://github.com/getsentry/sentry-unity/pull/2967))
+  - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#710)
+  - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.12.1...2e865e68)
+
 ## 4.13.0
 
 ### Behavioral Changes

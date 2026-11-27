@@ -118,6 +118,19 @@ public class ScriptableSentryUnityOptionsTests
     }
 
     [Test]
+    [TestCase(true)]
+    [TestCase(false)]
+    public void ToSentryUnityOptions_EnableStructuredLogging_SetsEnableLogs(bool enableStructuredLogging)
+    {
+        var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();
+        scriptableOptions.EnableStructuredLogging = enableStructuredLogging;
+
+        var options = scriptableOptions.ToSentryUnityOptions(application: _fixture.Application);
+
+        Assert.AreEqual(enableStructuredLogging, options.EnableLogs);
+    }
+
+    [Test]
     public void ToSentryUnityOptions_MapsAutoMetricsOptions()
     {
         var scriptableOptions = ScriptableObject.CreateInstance<ScriptableSentryUnityOptions>();

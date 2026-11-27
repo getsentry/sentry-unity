@@ -191,6 +191,14 @@ public sealed class SentryUnityOptions : SentryOptions
     public int ScreenshotCompression { get; set; } = 75;
 
     /// <summary>
+    /// Whether the SDK captures Unity's <c>Debug.Log</c> calls as structured logs, for the log types enabled in
+    /// <see cref="CaptureStructuredLogsForLogType"/>. Also turns on structured logs in the native SDKs on Android, iOS
+    /// and macOS. Defaults to <see langword="false"/>.
+    /// </summary>
+    /// <seealso href="https://develop.sentry.dev/sdk/telemetry/logs/"/>
+    public bool EnableLogs { get; set; } = false;
+
+    /// <summary>
     /// Controls whether structured logs should be captured for each Unity log type.
     /// </summary>
     public Dictionary<LogType, bool> CaptureStructuredLogsForLogType { get; set; }
