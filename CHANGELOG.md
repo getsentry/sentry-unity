@@ -29,7 +29,7 @@ The .NET SDK update to 7.x removes or hides these APIs:
 
 ### Dependencies
 
-- Bump .NET SDK from v6.12.1-53-gd4a1de12 to v7.1.0-5-g2e865e68 ([#XXXX](https://github.com/getsentry/sentry-unity/pull/XXXX))
+- Bump .NET SDK from v6.12.1-53-gd4a1de12 to v7.1.0-5-g2e865e68 ([#2967](https://github.com/getsentry/sentry-unity/pull/2967))
   - [changelog](https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md#710)
   - [diff](https://github.com/getsentry/sentry-dotnet/compare/6.12.1...2e865e68)
 
