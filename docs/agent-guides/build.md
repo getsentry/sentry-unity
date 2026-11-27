@@ -2,7 +2,7 @@
 
 ## Toolchain
 
-- Use .NET SDK `10.0.302`; `global.json` disables roll-forward.
+- Use .NET SDK `11.0.100`; `global.json` disables roll-forward.
 - Run `pwsh bootstrap.ps1` after cloning. It restores workloads and attempts optional local setup.
 - Unity is resolved from `samples/unity-of-bugs/ProjectSettings/ProjectVersion.txt`; set `UNITY_VERSION` to override it.
 - `FindUnity` also honors `HubInstallDir` and `HubDefaultEditor` MSBuild properties.

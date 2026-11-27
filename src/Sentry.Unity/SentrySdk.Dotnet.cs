@@ -61,8 +61,10 @@ public static partial class SentrySdk
     /// Gets the structured logger instance for creating and sending logs to Sentry.
     /// </summary>
     /// <remarks>
-    /// Use this property to access structured logging functionality. Logs are only sent when
-    /// <see cref="SentryOptions.EnableLogs"/> is set to true.
+    /// Use this property to access structured logging functionality. Logs written through this logger are always
+    /// sent. Drop or change them with <see cref="SentryOptions.SetBeforeSendLog"/>; returning <see langword="null"/>
+    /// drops a log. <see cref="SentryUnityOptions.EnableLogs"/> only controls the automatic capture of Unity's
+    /// <c>Debug.Log</c> calls and the native SDKs' logs.
     /// </remarks>
     /// <seealso href="https://develop.sentry.dev/sdk/telemetry/logs/"/>
     public static SentryStructuredLogger Logger { [DebuggerStepThrough] get => Sentry.SentrySdk.Logger; }

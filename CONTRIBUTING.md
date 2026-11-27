@@ -8,7 +8,7 @@ The following tools are **required** before you can build and develop the SDK:
 |------|-------|
 | [Unity Hub](https://unity3d.com/get-unity/download) | Required for managing Unity installations |
 | Unity with iOS Build Support | The iOS module is required by `Sentry.Unity.Editor.iOS`. Install via Unity Hub. |
-| [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) | Version pinned in [`global.json`](global.json) |
+| [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/11.0) | Version pinned in [`global.json`](global.json) |
 | PowerShell | Install via `dotnet tool install --global PowerShell` |
 | [GitHub CLI](https://github.com/cli/cli/releases) | Recommended for downloading prebuilt native SDKs. On macOS: `brew install gh` |
 | Unity CLI | Required for the Unity test harness; add `unity` to `PATH` |

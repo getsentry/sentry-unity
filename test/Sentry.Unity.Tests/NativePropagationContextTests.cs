@@ -139,6 +139,19 @@ public class NativePropagationContextTests
     }
 
     [Test]
+    public void GetDynamicSamplingContext_ScopeSetsEnvironment_UsesScopeEnvironment()
+    {
+        _traceHeader = $"{TraceId}-{SpanId}-1";
+        _baggageHeader = null;
+        var options = GetOptions();
+        var scope = new Scope(options) { Environment = "scope" };
+
+        var dsc = options.ExternalPropagationContext!.Snapshot().GetDynamicSamplingContext(options, null!, scope);
+
+        Assert.AreEqual("scope", dsc!.Items["environment"]);
+    }
+
+    [Test]
     public void Snapshot_OnlyTraceAndSpanIdRead_DoesNotReadNativeBaggage()
     {
         _traceHeader = $"{TraceId}-{SpanId}-1";

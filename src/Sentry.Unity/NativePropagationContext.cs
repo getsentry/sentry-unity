@@ -90,8 +90,9 @@ internal sealed class NativePropagationContext : IExternalPropagationContext
         GetDynamicSamplingContext(_options, null)?.ToBaggageHeader()
         ?? BaggageHeader.Create(new List<KeyValuePair<string, string>>());
 
-    public DynamicSamplingContext? GetDynamicSamplingContext(SentryOptions options, IReplaySession? replaySession) =>
-        DynamicSamplingContext ?? this.CreateDynamicSamplingContext(options, replaySession);
+    public DynamicSamplingContext? GetDynamicSamplingContext(SentryOptions options, IReplaySession? replaySession,
+        Scope? scope = null) =>
+        DynamicSamplingContext ?? this.CreateDynamicSamplingContext(options, replaySession, scope);
 
     // Header and baggage are read separately, so the baggage is dropped if the native SDK moved to another trace.
     internal DynamicSamplingContext? GetNativeDynamicSamplingContext(SentryId traceId)
