@@ -144,23 +144,12 @@ jobs:
           name: WindowsNative-sdk
           path: package-dev/Plugins/Windows/SentryNative~
 
-      # TEMPORARY: shows whether this repo receives the Apple signing secrets. Prints only set or missing.
-      - name: Check Apple signing secrets (temporary)
-        shell: bash
-        env:
-          APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
-          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
-          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-        run: |
-          for name in APPLE_CERT_DATA APPLE_CERT_PASSWORD APPLE_API_KEY; do
-            if [ -n "${!name}" ]; then echo "$name: set"; else echo "$name: missing"; fi
-          done
-
       # Unity copies the macOS plugins into the app and signs it with the user's identity, keeping nested signatures.
       # The package ships them signed with Sentry's Developer ID and notarized. Signing on `main` too catches an expired
       # certificate or a rejected binary before release day. Pull requests never get the certificate.
       - name: Sign and notarize macOS binaries
-        if: startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/main'
+        # TEMPORARY: also signs on this pull request's branch, to try the secrets before merging.
+        if: startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/main' || github.head_ref == 'spire/unity-macos-signing'
         timeout-minutes: 30
         shell: bash
         env:
