@@ -57,6 +57,8 @@ jobs:
           if [[ "$TARGET" == "Cocoa" ]]; then
             cp -r package-dev/Plugins/iOS sdk-static/ || echo "never mind, no iOS files checked in..."
             cp -r package-dev/Plugins/macOS sdk-static/ || echo "never mind, no macOS files checked in..."
+          elif [[ "${{ env.TARGET }}" == "MacOSNative" ]]; then
+            cp -r package-dev/Plugins/macOS sdk-static/ || echo "never mind, no macOS files checked in..."
           else
             cp -r "package-dev/Plugins/$TARGET" sdk-static || echo "never mind, no files checked in..."
           fi
@@ -71,7 +73,7 @@ jobs:
           # hash of package/package.json for cache busting on release builds (version bump)
           path: |
             package-dev/Plugins
-          key: sdk=${{ env.ARTIFACT }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1') }}
+          key: sdk=${{ env.ARTIFACT }}-${{ hashFiles('submodules-status', 'package/package.json', 'Directory.Build.targets', 'build/native-sdks.targets', 'sdk-static/**', 'scripts/build-cocoa-sdk.ps1', 'scripts/build-native-ndk-local.ps1', 'build/macos/**') }}
 
       - name: Installing Linux Dependencies
         if: ${{ (env.TARGET == 'Linux' || env.TARGET == 'LinuxNative') && steps.cache.outputs.cache-hit != 'true' }}
@@ -115,13 +117,16 @@ jobs:
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
+      # The macOS plugins' .meta files ship from the checkout; the artifacts leave them out so they can't overwrite them.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ env.TARGET == 'Cocoa' }}
         with:
           name: ${{ env.TARGET }}-sdk
           path: |
             package-dev/Plugins/iOS/SentryObjC.xcframework~
+            package-dev/Plugins/macOS/Sentry
             package-dev/Plugins/macOS/Sentry~
+            !package-dev/Plugins/**/*.meta
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 
@@ -129,7 +134,10 @@ jobs:
         if: ${{ env.TARGET == 'MacOSNative' }}
         with:
           name: ${{ env.TARGET }}-sdk
-          path: package-dev/Plugins/macOS/SentryNative~
+          path: |
+            package-dev/Plugins/macOS/SentryNative
+            package-dev/Plugins/macOS/SentryNative~
+            !package-dev/Plugins/**/*.meta
           # Lower retention period - we only need this to retry CI.
           retention-days: 14
 

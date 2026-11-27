@@ -78,6 +78,9 @@ jobs:
     if: ${{ needs.changes.outputs.run == 'true' }}
     secrets:
       UNITY_LICENSE_SERVER_CONFIG: ${{ secrets.UNITY_LICENSE_SERVER_CONFIG }}
+      APPLE_CERT_DATA: ${{ secrets.APPLE_CERT_DATA }}
+      APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
     permissions:
       actions: read
       checks: write

@@ -37,6 +37,10 @@ $ExpectedPluginScopes = @{
     "Plugins/iOS/SentryNativeBridgeExternal.m"    = ""
     "Plugins/iOS/SentryNativeBridgeNoOp.m"        = ""
     "Plugins/macOS/SentryNativeBridge.m"          = "OSXUniversal"
+    # One backend's binaries each. MacOSNativePlugins leaves out the backend that isn't selected.
+    "Plugins/macOS/Sentry/Sentry.dylib"           = "OSXUniversal"
+    "Plugins/macOS/SentryNative/libsentry-native.dylib" = "OSXUniversal"
+    "Plugins/macOS/SentryNative/SentryCrash.bundle"     = "OSXUniversal"
     "Runtime/Sentry.dll"                          = "Any"
     "Runtime/Sentry.Unity.Android.dll"            = "Android"
     "Runtime/Sentry.Unity.MacOS.dll"              = "OSXUniversal"

@@ -101,6 +101,16 @@ jobs:
       - name: Assert symbols and sources were uploaded (Cocoa backend)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log
 
+      - name: Assert the app is signed and ships only the Cocoa backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          app=samples/IntegrationTest/Build/test.app
+          codesign --verify --deep --strict --all-architectures --verbose=2 "$app"
+          test -f "$app/Contents/PlugIns/Sentry.dylib"
+          test ! -e "$app/Contents/PlugIns/libsentry-native.dylib"
+          test ! -e "$app/Contents/PlugIns/SentryCrash.bundle"
+
       - name: Compare build sizes
         run: ./test/Scripts.Integration.Test/measure-build-size.ps1 -Path1 "samples/IntegrationTest/Build-NoSentry" -Path2 "samples/IntegrationTest/Build" -Platform MacOS -UnityVersion "$env:UNITY_VERSION"
 
@@ -140,6 +150,18 @@ jobs:
 
       - name: Assert symbols and sources were uploaded (Native backend)
         run: ./test/Scripts.Integration.Test/assert-symbol-upload.ps1 -LogPath unity.log
+
+      # Built over the Cocoa app, so this also checks that the Cocoa backend's files are gone.
+      - name: Assert the app is signed and ships only the Native backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          app=samples/IntegrationTest/Build/test.app
+          codesign --verify --deep --strict --all-architectures --verbose=2 "$app"
+          test -f "$app/Contents/PlugIns/libsentry-native.dylib"
+          test -x "$app/Contents/PlugIns/SentryCrash.bundle/Contents/MacOS/sentry-crash"
+          test ! -e "$app/Contents/PlugIns/Sentry.dylib"
+          test ! -e "$app/Contents/MacOS/sentry-crash"
 
       - name: Create archive (Native backend)
         run: |
